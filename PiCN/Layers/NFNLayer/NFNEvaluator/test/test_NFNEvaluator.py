@@ -12,7 +12,7 @@ class testNFNEvaluator(unittest.TestCase):
     """Tests for the NFNEvaluator"""
 
     def setUp(self):
-        self.optimizer = ToDataFirstOptimizer()
+        self.optimizer = ToDataFirstOptimizer(None, None, None, None)
         self.executor = NFNPythonExecutor()
         self.evaluator = NFNEvaluator(self.optimizer, None)
         pass
