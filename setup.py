@@ -10,7 +10,7 @@ config = {
     'download_url': 'https://github.com/cn-uofbasel/PiCN/archive/master.zip',
     'author_email': 'christopher.scherb@unibas.ch',
     'version': '0.1.0',
-    'license': 'BSD License',
+    'license': 'BSD 3-clause',
     'platforms': ['UNIX', 'POSIX', 'BSD', 'MacOS 10.X', 'Linux'],
     'description': 'Python ICN',
     'long_description': 'A modular Python ICN implementation',
