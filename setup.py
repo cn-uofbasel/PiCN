@@ -6,8 +6,8 @@ except ImportError:
 config = {
     'description': 'extendable ICN implementation in python',
     'author': 'Christopher Scherb',
-    'url': 'https://git.scicore.unibas.ch/cn/PiCN',
-    'download_url': 'https://git.scicore.unibas.ch/cn/PiCN/repository/archive.tar?ref=master',
+    'url': 'https://github.com/cn-uofbasel/PiCN',
+    'download_url': 'https://github.com/cn-uofbasel/PiCN/archive/master.zip',
     'author_email': 'christopher.scherb@unibas.ch',
     'version': '0.1.0',
     'license': 'BSD License',
