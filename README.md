@@ -1,6 +1,6 @@
-<aside class="warning">
-This is work in progress! Everything can change at any moment! :-)
-</aside>
+<span style="color:blue">*This is work in progress! Everything can change at any moment! :-)*</span>
+
+
 
 # PiCN 
 PiCN is a modular ICN implementation designed to support NFN and
