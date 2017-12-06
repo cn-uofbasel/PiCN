@@ -151,8 +151,9 @@ class test_DefaultNFNParser(unittest.TestCase):
         cmp_str = '/call/func(3,/lib/wcount(/call/libfun(/test/data),"HelloWorld"))'
         n.components.append(function_str)
         n.components.append("NFN")
-        res = self.parser.network_name_to_nfn_str(n)
+        res, prepended = self.parser.network_name_to_nfn_str(n)
         self.assertEqual(res, cmp_str)
+        self.assertEqual(prepended, Name("/test/data"))
 
     def test_nfn_str_to_network_name(self):
         "Test transforming nfn str to network name"

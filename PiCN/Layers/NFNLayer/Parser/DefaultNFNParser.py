@@ -86,7 +86,7 @@ class DefaultNFNParser(object):
         prepended_name.components = name.components[:-2]
         nfn_comp = name.components[-2].replace("_", prepended_name.to_string())
         nfn_comp = nfn_comp.replace("\\", "/")
-        return  nfn_comp
+        return  nfn_comp, prepended_name
 
     def nfn_str_to_network_name(self, nfn_str: str, prependmarker: str = "%") -> Name:
         if prependmarker not in nfn_str:

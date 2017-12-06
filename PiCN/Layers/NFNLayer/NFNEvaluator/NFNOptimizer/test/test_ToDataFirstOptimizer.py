@@ -49,8 +49,9 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
 
         name = self.parser.nfn_str_to_network_name(rules[0])
         self.assertEqual(name, cmp_name)
-        name_str = self.parser.network_name_to_nfn_str(name)
+        name_str, prepended = self.parser.network_name_to_nfn_str(name)
         self.assertEqual(name_str, workflow)
+        self.assertEqual(prepended, Name("/func/f1"))
 
     def test_simple_call_params_to_function(self):
         """Test, if ToDataFirstOptimizer works correctly with a single function call with parameter, to function"""
@@ -66,8 +67,9 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         self.assertEqual(rules, ['%/func/f1%(/test/data)'])
         name = self.parser.nfn_str_to_network_name(rules[0])
         self.assertEqual(name, cmp_name)
-        name_str = self.parser.network_name_to_nfn_str(name)
+        name_str, prepended = self.parser.network_name_to_nfn_str(name)
         self.assertEqual(name_str, workflow)
+        self.assertEqual(prepended, Name("/func/f1"))
 
     def test_simple_call_params_to_data(self):
         """Test, if ToDataFirstOptimizer works correctly with a single function call with parameter, to data"""
@@ -83,8 +85,9 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         self.assertEqual(rules, ['/func/f1(%/test/data%)'])
         name = self.parser.nfn_str_to_network_name(rules[0])
         self.assertEqual(name, cmp_name)
-        name_str = self.parser.network_name_to_nfn_str(name)
+        name_str, prepended = self.parser.network_name_to_nfn_str(name)
         self.assertEqual(name_str, workflow)
+        self.assertEqual(prepended, Name("/test/data"))
 
     def test_simple_call_params(self):
         """Test, if ToDataFirstOptimizer works correctly with a single function call with parameter"""
@@ -104,12 +107,14 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         self.assertEqual(rules, ['/func/f1(%/test/data%)', '%/func/f1%(/test/data)'])
         name1 = self.parser.nfn_str_to_network_name(rules[0])
         self.assertEqual(name1, cmp_name1)
-        name_str1 = self.parser.network_name_to_nfn_str(name1)
+        name_str1, prepended1 = self.parser.network_name_to_nfn_str(name1)
         self.assertEqual(name_str1, workflow)
+        self.assertEqual(prepended1, Name("/test/data"))
         name2 = self.parser.nfn_str_to_network_name(rules[1])
         self.assertEqual(name2, cmp_name2)
-        name_str2 = self.parser.network_name_to_nfn_str(name2)
+        name_str2, prepended2 = self.parser.network_name_to_nfn_str(name2)
         self.assertEqual(name_str2, workflow)
+        self.assertEqual(prepended2, Name("/func/f1"))
 
 
     def test_multiple_calls_params(self):
@@ -131,12 +136,14 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
                                  '/func/f1(/test/data,%/lib/f2%(2,/data/test))'])
         name1 = self.parser.nfn_str_to_network_name(rules[0])
         self.assertEqual(name1.to_string(), cmp_name1.to_string())
-        name_str1 = self.parser.network_name_to_nfn_str(name1)
+        name_str1, prepended1 = self.parser.network_name_to_nfn_str(name1)
         self.assertEqual(name_str1, workflow)
+        self.assertEqual(prepended1,  Name("/test/data"))
         name2 = self.parser.nfn_str_to_network_name(rules[1])
         self.assertEqual(name2, cmp_name2)
-        name_str2 = self.parser.network_name_to_nfn_str(name2)
+        name_str2, prepended2 = self.parser.network_name_to_nfn_str(name2)
         self.assertEqual(name_str2, workflow)
+        self.assertEqual(prepended2, Name("/lib/f2"))
 
 
 
