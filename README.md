@@ -1,3 +1,7 @@
+<aside class="warning">
+This is work in progress! Everything can change at any moment! :-)
+</aside>
+
 # PiCN 
 PiCN is a modular ICN implementation designed to support NFN and
 other in network applications written in Python 3
