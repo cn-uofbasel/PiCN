@@ -1,4 +1,4 @@
-<span style="color:blue">*This is work in progress! Everything can change at any moment! :-)*</span>
+*This is work in progress! Everything can change at any moment! :-)*
 
 
 
