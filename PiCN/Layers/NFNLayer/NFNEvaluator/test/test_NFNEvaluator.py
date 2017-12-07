@@ -59,8 +59,8 @@ class testNFNEvaluator(unittest.TestCase):
         self.assertEqual([c_comp2, c_comp1], c)
 
 
-    def test_local_execution_no_param(self):
-        """Test executing a function with no parameter"""
+    def test_local_execution_data_param(self):
+        """Test executing a function with data as parameter"""
         fname = Name("/func/f1")
         name = Name("/func/f1")
         name.components.append("_()")
@@ -82,5 +82,32 @@ def f():
         res = self.evaluator.computation_out_queue.get()
         self.assertEqual(res.content, "Hello World")
 
+    def test_local_execution_no_param(self):
+        """Test executing a function with no parameter"""
+        dname = Name("/test/data")
+        data = Content(dname, "hello world")
+
+        fname = Name("/func/f1")
+        name = Name("/func/f1")
+        name.components.append("_(/test/data)")
+        name.components.append("NFN")
+        interest = Interest(name)
+        self.evaluator.interest = interest
+        self.evaluator.start_process()
+        request = self.evaluator.computation_out_queue.get()
+        self.assertEqual(request.name, dname)
+        self.evaluator.computation_in_queue.put(data)
+        request = self.evaluator.computation_out_queue.get()
+        self.assertEqual(request.name, fname)
+
+        func1 = """PYTHON
+f
+def f(a):
+    return a.upper() 
+                """
+        content = Content(fname, func1)
+        self.evaluator.computation_in_queue.put(content)
+        res = self.evaluator.computation_out_queue.get()
+        self.assertEqual(res.content, "HELLO WORLD")
 
 

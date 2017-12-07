@@ -68,9 +68,15 @@ class NFNEvaluator(PiCNProcess):
             #request child nodes
             if isinstance(ast, AST_Name):
                 return
+            params_requests = []
             params = []
             for p in ast.params:
-                self.request_param(p)
+                i = self.request_param(p)
+                params_requests.append(i)
+            if len(params_requests) > 0:
+                params_data = self.await_data(params_requests)
+                for p in params_data:
+                    params.append(p.content)
 
             functionname = Name(ast._element)
             functionname_i = Interest(functionname)
@@ -84,7 +90,6 @@ class NFNEvaluator(PiCNProcess):
                 return res
             return None
 
-
     def get_nf_code_language(self, function: str):
         """extract the programming language of a function"""
         language = function.split("\n")[0]
@@ -92,7 +97,17 @@ class NFNEvaluator(PiCNProcess):
 
     def request_param(self, ast: AST):
         """Request the result of a subcomputation"""
-        pass
+        name = ""
+        if isinstance(ast, AST_Name):
+            name = ast._element
+        elif isinstance(ast, AST_FuncCall):
+            name = self.parser.nfn_str_to_network_name(ast)
+        else:
+            return None
+        interest = Interest(name)
+        self.request_data(interest)
+        return interest
+
 
     def request_data(self, interest):
         """Request data from the network"""
