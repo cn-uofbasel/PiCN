@@ -109,5 +109,3 @@ def f(a):
         self.evaluator.computation_in_queue.put(content)
         res = self.evaluator.computation_out_queue.get()
         self.assertEqual(res.content, "HELLO WORLD")
-
-
