@@ -25,6 +25,7 @@ class NFNEvaluator(PiCNProcess):
         self.interest: Interest = interest
         self.computation_in_queue: multiprocessing.Queue = multiprocessing.Queue()  # data to computation
         self.computation_out_queue: multiprocessing.Queue = multiprocessing.Queue()  # data from computation
+        
         self.start_time = time.time()
         self.content_table: Dict[Name, Content] = {}
         self.request_table: List[Name] = []
