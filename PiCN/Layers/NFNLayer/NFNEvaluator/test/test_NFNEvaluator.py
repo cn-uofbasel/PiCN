@@ -196,4 +196,5 @@ def f(a, b):
         self.evaluator.start_process()
         request = self.evaluator.computation_out_queue.get()
         self.assertEqual(request, [Interest(fwdname1), Interest(fwdname2)])
-        self.assertEqual(self.evaluator.rewrite_table[name], [Interest(fwdname1), Interest(fwdname2)])
+        self.assertEqual(self.evaluator.rewrite_table[fwdname1][0], name)
+        self.assertEqual(self.evaluator.rewrite_table[fwdname2][0], name)

@@ -27,9 +27,9 @@ class NFNEvaluator(PiCNProcess):
         self.computation_out_queue: multiprocessing.Queue = multiprocessing.Queue()  # data from computation
 
         self.start_time = time.time()
-        self.content_table: Dict[Name, Content] = {}
+        self.content_table: Dict[Name, Content] = {} #content name -> content
         self.request_table: List[Name] = []
-        self.rewrite_table: Dict[Interest, List[Interest]] = rewrite_table
+        self.rewrite_table: Dict[Name, List[Name]] = rewrite_table #remapped name -> original names
 
         self.cs: BaseContentStore = cs
         self.fib: BaseForwardingInformationBase = fib
@@ -65,12 +65,12 @@ class NFNEvaluator(PiCNProcess):
             for r in computation_strs:
                 name = self.parser.nfn_str_to_network_name(r)
                 interests.append(Interest(name))
-            if len(interests) > 0:
                 if self.rewrite_table is not None:
                     if self.rewrite_table.get(self.interest.name):
-                        self.rewrite_table[self.interest.name].append(interests)
+                        self.rewrite_table[name].append(self.interest.name)
                     else:
-                        self.rewrite_table[self.interest.name] = interests
+                        self.rewrite_table[name] = [self.interest.name]
+            if len(interests) > 0:
                 self.computation_out_queue.put(interests)
 
         if self.optimizer.compute_local(ast):
