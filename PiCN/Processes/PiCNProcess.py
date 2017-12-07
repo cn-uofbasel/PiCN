@@ -9,7 +9,7 @@ class PiCNProcess(object):
     """Abstract Process for PiCN"""
 
     def __init__(self, logger_name="PiCNProcess", debug_level=255):
-        self.process: multiprocessing.Process = None
+        self._process: multiprocessing.Process = None
         self.logger = Logger(logger_name, debug_level)
 
     @abc.abstractclassmethod
@@ -19,3 +19,12 @@ class PiCNProcess(object):
     @abc.abstractclassmethod
     def stop_process(self):
         """Stop the process"""
+
+    @property
+    def process(self):
+        """process instance"""
+        return self._process
+
+    @process.setter
+    def process(self, process):
+        self._process = process

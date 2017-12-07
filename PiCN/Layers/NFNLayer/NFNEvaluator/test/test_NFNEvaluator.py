@@ -1,23 +1,34 @@
 """Tests for the NFNEvaluator"""
 
+import multiprocessing
 import unittest
 
-from PiCN.Packets import Interest, Content
+from PiCN.Packets import Interest, Content, Name
 
 from PiCN.Layers.NFNLayer.NFNEvaluator import NFNEvaluator
 from PiCN.Layers.NFNLayer.NFNEvaluator.NFNOptimizer import ToDataFirstOptimizer
 from PiCN.Layers.NFNLayer.NFNEvaluator.NFNExecutor import NFNPythonExecutor
+from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
+from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseMemoryPrefix
+from PiCN.Layers.ICNLayer.PendingInterestTable import PendingInterstTableMemoryExact
 
 class testNFNEvaluator(unittest.TestCase):
     """Tests for the NFNEvaluator"""
 
     def setUp(self):
-        self.optimizer = ToDataFirstOptimizer(None, None, None, None)
+        self.manager = multiprocessing.Manager()
+        self.cs: ContentStoreMemoryExact = ContentStoreMemoryExact(self.manager)
+        self.fib: ForwardingInformationBaseMemoryPrefix = ForwardingInformationBaseMemoryPrefix(self.manager)
+        self.pit: PendingInterstTableMemoryExact = PendingInterstTableMemoryExact(self.manager)
+        self.optimizer = ToDataFirstOptimizer(None, self.cs, self.fib, self.pit)
         self.executor = NFNPythonExecutor()
-        self.evaluator = NFNEvaluator(self.optimizer, None)
+        self.evaluator = NFNEvaluator(None, self.cs, self.fib, self.pit)
+        self.evaluator.executor["PYTHON"] = self.executor
         pass
 
     def tearDown(self):
+        if self.evaluator.process:
+            self.evaluator.stop_process()
         pass
 
     def test_requesting_data(self):
@@ -46,3 +57,30 @@ class testNFNEvaluator(unittest.TestCase):
 
         c = self.evaluator.await_data([i_request2, i_request1])
         self.assertEqual([c_comp2, c_comp1], c)
+
+
+    def test_local_execution_no_param(self):
+        """Test executing a function with no parameter"""
+        fname = Name("/func/f1")
+        name = Name("/func/f1")
+        name.components.append("_()")
+        name.components.append("NFN")
+        interest = Interest(name)
+
+        self.evaluator.interest = interest
+        self.evaluator.start_process()
+        request = self.evaluator.computation_out_queue.get()
+        self.assertEqual(request.name, fname)
+
+        func1 = """PYTHON
+f
+def f():
+    return "Hello World" 
+        """
+        content = Content(fname, func1)
+        self.evaluator.computation_in_queue.put(content)
+        res = self.evaluator.computation_out_queue.get()
+        self.assertEqual(res.content, "Hello World")
+
+
+
