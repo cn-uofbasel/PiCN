@@ -72,7 +72,8 @@ class NFNEvaluator(PiCNProcess):
             params = []
             for p in ast.params:
                 i = self.request_param(p)
-                params_requests.append(i)
+                if i is not None:
+                    params_requests.append(i)
             if len(params_requests) > 0:
                 params_data = self.await_data(params_requests)
                 for p in params_data:
@@ -97,11 +98,12 @@ class NFNEvaluator(PiCNProcess):
 
     def request_param(self, ast: AST):
         """Request the result of a subcomputation"""
-        name = ""
         if isinstance(ast, AST_Name):
-            name = ast._element
+            name = Name(ast._element)
         elif isinstance(ast, AST_FuncCall):
-            name = self.parser.nfn_str_to_network_name(ast)
+            ast._prepend = True
+            name = self.parser.nfn_str_to_network_name(str(ast))
+            ast._prepend = False
         else:
             return None
         interest = Interest(name)
