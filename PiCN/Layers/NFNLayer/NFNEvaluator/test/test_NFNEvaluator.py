@@ -3,8 +3,8 @@
 import multiprocessing
 import unittest
 
-from PiCN.Packets import Interest, Content, Name
 
+from PiCN.Packets import Interest, Content, Name
 from PiCN.Layers.NFNLayer.NFNEvaluator import NFNEvaluator
 from PiCN.Layers.NFNLayer.NFNEvaluator.NFNOptimizer import ToDataFirstOptimizer
 from PiCN.Layers.NFNLayer.NFNEvaluator.NFNExecutor import NFNPythonExecutor
@@ -16,7 +16,7 @@ class testNFNEvaluator(unittest.TestCase):
     """Tests for the NFNEvaluator"""
 
     def setUp(self):
-        self.manager = multiprocessing.Manager()
+        self.manager: multiprocessing.Manager = multiprocessing.Manager()
         self.cs: ContentStoreMemoryExact = ContentStoreMemoryExact(self.manager)
         self.fib: ForwardingInformationBaseMemoryPrefix = ForwardingInformationBaseMemoryPrefix(self.manager)
         self.pit: PendingInterstTableMemoryExact = PendingInterstTableMemoryExact(self.manager)
@@ -173,3 +173,27 @@ def f(a, b):
         res = self.evaluator.computation_out_queue.get()
         self.assertEqual(res.content, "HELLO WORLD")
 
+    def test_fwd_multiple_params(self):
+        """Test fwd a function with multiple data as parameter"""
+        self.evaluator.fib.add_fib_entry(Name("/test"), 0, True)
+        fwdname1 = Name("/test/data1")
+        fwdname1.components.append("/func/f1(_,/test/data2)")
+        fwdname1.components.append("NFN")
+
+        fwdname2 = Name("/test/data2")
+        fwdname2.components.append("/func/f1(/test/data1,_)")
+        fwdname2.components.append("NFN")
+
+        name = Name("/func/f1")
+        name.components.append("_(/test/data1,/test/data2)")
+        name.components.append("NFN")
+        interest = Interest(name)
+
+        self.rewrite_table = self.manager.dict()
+        self.evaluator.rewrite_table = self.rewrite_table
+
+        self.evaluator.interest = interest
+        self.evaluator.start_process()
+        request = self.evaluator.computation_out_queue.get()
+        self.assertEqual(request, [Interest(fwdname1), Interest(fwdname2)])
+        self.assertEqual(self.evaluator.rewrite_table[name], [Interest(fwdname1), Interest(fwdname2)])

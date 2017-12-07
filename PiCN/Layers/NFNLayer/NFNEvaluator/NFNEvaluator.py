@@ -3,7 +3,7 @@
 import multiprocessing
 import select
 import time
-from typing import Dict
+from typing import Dict, List
 
 from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
 from PiCN.Layers.NFNLayer.Parser.AST import *
@@ -20,15 +20,16 @@ class NFNEvaluator(PiCNProcess):
     """NFN Dispatcher for PiCN"""
 
     def __init__(self, interest: Interest, cs: BaseContentStore, fib: BaseForwardingInformationBase,
-                 pit: BasePendingInterestTable):
+                 pit: BasePendingInterestTable, rewrite_table: Dict[Interest, List[Interest]] = None):
         super().__init__("NFNEvaluator", 255)
         self.interest: Interest = interest
         self.computation_in_queue: multiprocessing.Queue = multiprocessing.Queue()  # data to computation
         self.computation_out_queue: multiprocessing.Queue = multiprocessing.Queue()  # data from computation
-        
+
         self.start_time = time.time()
         self.content_table: Dict[Name, Content] = {}
         self.request_table: List[Name] = []
+        self.rewrite_table: Dict[Interest, List[Interest]] = rewrite_table
 
         self.cs: BaseContentStore = cs
         self.fib: BaseForwardingInformationBase = fib
@@ -58,12 +59,19 @@ class NFNEvaluator(PiCNProcess):
         ast: AST = self.parser.parse(name_str)
         self.optimizer = ToDataFirstOptimizer(prepended, self.cs, self.fib, self.pit)
 
-        if self.optimizer.compute_fwd(ast): #TODO use rewrite table, froward and return no result
-            computation_str = self.optimizer.rewrite(ast)
-            name = self.parser.nfn_str_to_network_name(computation_str)
-            interest = Interest(name)
-            content = self.await_data([interest])
-            return content[0].content
+        if self.optimizer.compute_fwd(ast):
+            computation_strs = self.optimizer.rewrite(ast)
+            interests = []
+            for r in computation_strs:
+                name = self.parser.nfn_str_to_network_name(r)
+                interests.append(Interest(name))
+            if len(interests) > 0:
+                if self.rewrite_table is not None:
+                    if self.rewrite_table.get(self.interest.name):
+                        self.rewrite_table[self.interest.name].append(interests)
+                    else:
+                        self.rewrite_table[self.interest.name] = interests
+                self.computation_out_queue.put(interests)
 
         if self.optimizer.compute_local(ast):
             #request child nodes
