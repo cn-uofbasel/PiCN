@@ -139,3 +139,37 @@ def f(a):
         res = self.evaluator.computation_out_queue.get()
         self.assertEqual(res.content, "result")
 
+    def test_local_execution_multiple_data_param(self):
+        """Test executing a function with multiple data as parameter"""
+        dname1 = Name("/test/data1")
+        dname2 = Name("/test/data2")
+        data1 = Content(dname1, "hello")
+        data2 = Content(dname2, "world")
+
+        fname = Name("/func/f1")
+        name = Name("/func/f1")
+        name.components.append("_(/test/data1,/test/data2)")
+        name.components.append("NFN")
+        interest = Interest(name)
+        self.evaluator.interest = interest
+        self.evaluator.start_process()
+        request = self.evaluator.computation_out_queue.get()
+        self.assertEqual(request.name, dname1)
+        self.evaluator.computation_in_queue.put(data1)
+        request = self.evaluator.computation_out_queue.get()
+        self.assertEqual(request.name, dname2)
+        self.evaluator.computation_in_queue.put(data2)
+        request = self.evaluator.computation_out_queue.get()
+        self.assertEqual(request.name, fname)
+
+        func1 = """PYTHON
+f
+def f(a, b):
+    string = a + " " + b
+    return string.upper()
+                """
+        content = Content(fname, func1)
+        self.evaluator.computation_in_queue.put(content)
+        res = self.evaluator.computation_out_queue.get()
+        self.assertEqual(res.content, "HELLO WORLD")
+

@@ -110,7 +110,6 @@ class NFNEvaluator(PiCNProcess):
         self.request_data(interest)
         return interest
 
-
     def request_data(self, interest):
         """Request data from the network"""
         self.computation_out_queue.put(interest)
