@@ -4,8 +4,11 @@ import multiprocessing
 import time
 import unittest
 
-from PiCN.Packets import Content, Interest
+from PiCN.Packets import Content, Interest, Name
 from PiCN.Layers.NFNLayer import BasicNFNLayer
+from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
+from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseMemoryPrefix
+from PiCN.Layers.ICNLayer.PendingInterestTable import PendingInterstTableMemoryExact
 
 class test_BasicNFNLayer(unittest.TestCase):
     """Test the BasicNFNLayer"""
@@ -59,3 +62,10 @@ class test_BasicNFNLayer(unittest.TestCase):
         # todo requires NFNEvaluator
         print("TODO")
         pass
+
+    def test_fwd_computation(self):
+        """Test rewriting and forwarding of a computation"""
+        self.nfnLayer.start_process()
+        name = Name("/test/data")
+        name.components.append("/func/f1(_)")
+
