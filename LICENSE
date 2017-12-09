@@ -18,6 +18,13 @@ modification, are permitted provided that the following conditions are met:
   contributors may be used to endorse or promote products derived from
   this software without specific prior written permission.
 
+* It is forbidden to use this Software in any system that is capable of 
+  killing a human beeing or cooperates with any system that is capable of that.
+  It is not allowed to use this Software in any System that has the intention 
+  to harm people. This includes any kind of reconnaissance or surveillance.
+  This applies to any form of law enforcement and Military as well as any kind 
+  of organzation that designs or builds hard- or software systems for those purposses.
+
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -28,3 +35,4 @@ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
