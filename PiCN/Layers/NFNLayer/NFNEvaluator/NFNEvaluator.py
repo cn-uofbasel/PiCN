@@ -50,6 +50,8 @@ class NFNEvaluator(PiCNProcess):
 
     def _run(self, name: Name):
         res = self.evaluate(name)
+        if res is None:
+            return
         content = Content(name, res)
         self.computation_out_queue.put(content)
 

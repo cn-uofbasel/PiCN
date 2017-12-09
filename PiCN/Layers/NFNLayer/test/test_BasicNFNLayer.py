@@ -41,10 +41,9 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.assertEqual(data, interest)
 
     def test_fwd_computation(self):
-        """Test rewriting and forwarding of a computation"""
+        """Test forwarding of a computation"""
         self.fib.add_fib_entry(Name("/test"), 1, True)
         self.nfnLayer.start_process()
-        time.sleep(0.5)
         self.nfnLayer.ageing()
         cid = 1
         name = Name("/test/data")
@@ -52,5 +51,46 @@ class test_BasicNFNLayer(unittest.TestCase):
         name.components.append("NFN")
         interest = Interest(name)
         self.nfnLayer.queue_from_lower.put([cid, interest])
+        fwded = self.nfnLayer.queue_to_lower.get()
+        self.assertEqual(name, fwded[1].name)
+        #self.assertEqual(0, len(self.nfnLayer._running_computations)) #todo, remove comp if process dies
+
+
+    def test_fwd_computation_change_name(self):
+        """Test rewriting and forwarding of a computation"""
+        self.fib.add_fib_entry(Name("/test"), 1, True)
+        self.nfnLayer.start_process()
+        self.nfnLayer.ageing()
+        cid = 1
+        name = Name("/func/f1")
+        name.components.append("_(/test/data)")
+        name.components.append("NFN")
+        name_cmp = Name("/test/data")
+        name_cmp.components.append("/func/f1(_)")
+        name_cmp.components.append("NFN")
+        interest = Interest(name)
+        self.nfnLayer.queue_from_lower.put([cid, interest])
         rewritten = self.nfnLayer.queue_to_lower.get()
-        self.assertEqual(rewritten.name, name)
+        self.assertEqual(name_cmp, rewritten[1].name)
+
+    def test_fwd_computation_change_name_map_back(self):
+        """Test rewriting and forwarding of a computation, map back"""
+        self.fib.add_fib_entry(Name("/test"), 1, True)
+        self.nfnLayer.start_process()
+        self.nfnLayer.ageing()
+        cid = 1
+        name = Name("/func/f1")
+        name.components.append("_(/test/data)")
+        name.components.append("NFN")
+        name_cmp = Name("/test/data")
+        name_cmp.components.append("/func/f1(_)")
+        name_cmp.components.append("NFN")
+        interest = Interest(name)
+        self.nfnLayer.queue_from_lower.put([cid, interest])
+        rewritten = self.nfnLayer.queue_to_lower.get()
+        self.assertEqual(name_cmp, rewritten[1].name)
+        content = Content(name_cmp, "Result")
+        self.nfnLayer.queue_from_lower.put([cid, content])
+        mapped_back = self.nfnLayer.queue_to_lower.get()
+        self.assertEqual(name, mapped_back[1].name)
+        self.assertEqual("Result", mapped_back[1].content)

@@ -69,17 +69,18 @@ class BasicNFNLayer(LayerProcess):
         original_names = self.rewrite_table[packet.name]
         for on in original_names:
             cid = 0
-            content = Content(on, packet.content)
-            self.queue_to_lower.put([cid, content])
+            mapped_back_content = Content(on, packet.content)
+            self.queue_to_lower.put([cid, mapped_back_content])
         #stop computation
-        waiting_comp_ids =  self._computation_request_table[packet.name]
-        remove_ids = []
-        for cid in waiting_comp_ids:
-            if self._running_computationsp[cid].interest.name == packet.name:
-                self._running_computations[cid].stop_process()
-                remove_ids.append(cid)
-        for cid in remove_ids:
-            del self._running_computations[cid]
+        if self._computation_request_table.get(packet.name):
+            waiting_comp_ids = self._computation_request_table[packet.name]
+            remove_ids = []
+            for cid in waiting_comp_ids:
+                if self._running_computationsp[cid].interest.name == packet.name:
+                    self._running_computations[cid].stop_process()
+                    remove_ids.append(cid)
+            for cid in remove_ids:
+                del self._running_computations[cid]
 
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
@@ -114,7 +115,7 @@ class BasicNFNLayer(LayerProcess):
                 packet = comp.computation_out_queue.get()
                 if isinstance(packet, List): #Rewritten packet
                     if packet[0].name in self.rewrite_table:
-                        self.queue_to_lower.put(packet[0])
+                        self.queue_to_lower.put([cid, packet[0]])
                 if isinstance(packet, Interest):
                     if(packet.name in self._computation_request_table):
                         self._computation_request_table[packet.name].append(cid)
@@ -122,7 +123,7 @@ class BasicNFNLayer(LayerProcess):
                         self._computation_request_table[packet.name] = [cid]
                     self.queue_to_lower.put([cid, packet])
                 elif isinstance(packet, Content):
-                    self.queue_to_lower.pit([cid, packet])
+                    self.queue_to_lower.put([cid, packet])
                     self.stop_computation(cid)
                     return
 
