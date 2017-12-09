@@ -79,9 +79,9 @@ class DefaultNFNParser(object):
 
     def network_name_to_nfn_str(self, name: Name) -> str:
         if len(name.components) == 2:
-            return name.components[1]
+            return name.components[1], None
         if name.components [-1] != "NFN":
-            return None
+            return None, None
         prepended_name = Name()
         prepended_name.components = name.components[:-2]
         nfn_comp = name.components[-2].replace("_", prepended_name.to_string())

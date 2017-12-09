@@ -19,25 +19,25 @@ from PiCN.Layers.NFNLayer.NFNEvaluator import NFNEvaluator
 class BasicNFNLayer(LayerProcess):
     """NFN Layer Implementation"""
 
-    def __init__(self, logger_name="PiCNProcess", debug_level=255, manager: multiprocessing.Manager=None,
-                 content_store: BaseContentStore=None, fib: BaseForwardingInformationBase=None,
-                 pit: BasePendingInterestTable=None):
-        super().__init__("NFN Layer", debug_level)
+    def __init__(self, manager: multiprocessing.Manager, content_store: BaseContentStore,
+                 fib: BaseForwardingInformationBase, pit: BasePendingInterestTable,
+                 logger_name="NFN Layer", debug_level=255):
+        super().__init__(logger_name, debug_level)
         self.manager = manager
         self.content_store = content_store
         self.fib = fib
         self.pit = pit
-        self._running_computations: Dict[int, NFNEvaluator] = {} #computation id --> computation
-        self._computation_request_table: Dict[Name, List[int]] = {}  # request(name) --> [computation id]
+        self._running_computations: Dict[int, NFNEvaluator] = {} #computation id -> computation
+        self._computation_request_table: Dict[Name, List[int]] = {}  # request(name) -> [computation id]
         self._pending_computations: multiprocessing.Queue[Interest] = multiprocessing.Queue()
         self.rewrite_table: Dict[Name, List[Name]] = self.manager.dict() #rewritten name -> original name
 
         self._max_running_computations: int = 50
         self._next_computation_id: int = 0
-        self._ageing_interval: int = 4
+        self._ageing_interval: int = 2
         self._timeout_interal: int = 20
 
-        self.nfn_evaluator_type = type(NFNEvaluator)
+        self.nfn_evaluator_type = NFNEvaluator
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         id = data[0]
@@ -52,7 +52,7 @@ class BasicNFNLayer(LayerProcess):
                 self.handle_R2C_content(packet)
             else:
                 if packet.name in self.rewrite_table:
-                    self.handle_request_table(packet)
+                    self.handle_rewrite_table(packet)
                 if packet.name in self._computation_request_table:
                     self.handle_compuation_request_table(packet)
 
@@ -64,7 +64,7 @@ class BasicNFNLayer(LayerProcess):
             self._running_computations[cid].computation_in_queue.put(packet)
         del self._computation_request_table[packet.name]
 
-    def handle_request_table(self, packet):
+    def handle_rewrite_table(self, packet):
         """handle computation request table entries"""
         original_names = self.rewrite_table[packet.name]
         for on in original_names:
@@ -92,11 +92,9 @@ class BasicNFNLayer(LayerProcess):
            """
         try:
             self.logger.debug("Ageing NFN")
-
             self.handle_computation_queue()
             self.handle_computation_timeouts()
             self.run_computation()
-
             t = threading.Timer(self._ageing_interval, self.ageing)
             t.setDaemon(True)
             t.start()
@@ -111,11 +109,11 @@ class BasicNFNLayer(LayerProcess):
     def handle_computation_queue(self):
         """check the computation queues """
         for cid in self._running_computations:
-            comp = self._running_computationsp[cid]
+            comp = self._running_computations[cid]
             while not comp.computation_out_queue.empty():
                 packet = comp.computation_out_queue.get()
-                if isinstance(packet, List):#Rewritten packet
-                    if self.rewrite_table is not None and packet[0] in self.rewrite_table:
+                if isinstance(packet, List): #Rewritten packet
+                    if packet[0].name in self.rewrite_table:
                         self.queue_to_lower.put(packet[0])
                 if isinstance(packet, Interest):
                     if(packet.name in self._computation_request_table):
@@ -144,9 +142,9 @@ class BasicNFNLayer(LayerProcess):
         if(num_running_computations > self._max_running_computations):
             return
         else:
-            while(len(self._running_computations) < self._max_running_computations
-                  and not self._pending_computations.empty()):
-                interest = self.queue_to_higher.get()
+            while((not self._pending_computations.empty())
+                  and len(self._running_computations) < self._max_running_computations):
+                interest = self._pending_computations.get()
                 evaluator = self.nfn_evaluator_type(interest, self.content_store, self.fib, self.pit, self.rewrite_table)
                 self._running_computations[self._next_computation_id] = evaluator
                 self._next_computation_id = self._next_computation_id + 1
