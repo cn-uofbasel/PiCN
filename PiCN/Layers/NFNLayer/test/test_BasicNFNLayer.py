@@ -123,7 +123,6 @@ class test_BasicNFNLayer(unittest.TestCase):
 
     def test_compute_simple_function(self):
         """Test if a simple function call is executed correctly"""
-        self.fib.add_fib_entry(Name("/test"), 1, True)
         self.nfnLayer.start_process()
         cid = 1
         name = Name("/func/f1")
@@ -143,3 +142,29 @@ def f():
         data = self.nfnLayer.queue_to_lower.get()
         self.assertEqual(name, data[1].name)
         self.assertEqual("Hello World", data[1].content)
+
+    def test_compute_simple_function_with_params(self):
+        """Test if a simple function call with params is executed correctly"""
+        self.nfnLayer.start_process()
+        cid = 1
+        name = Name("/func/f1")
+        name.components.append("_(/test/data)")
+        name.components.append("NFN")
+        interest = Interest(name)
+        self.nfnLayer.queue_from_lower.put([cid, interest])
+        data = self.nfnLayer.queue_to_lower.get()
+        self.assertEqual(data[1].name, Name("/test/data"))
+        content = Content("/test/data", "result")
+        self.nfnLayer.queue_from_lower.put([data[0], content])
+        data = self.nfnLayer.queue_to_lower.get()
+        self.assertEqual(data[1].name, Name("/func/f1"))
+        func1 = """PYTHON
+f
+def f(a):
+    return a.upper()        
+        """
+        func_data = Content(Name("/func/f1"), func1)
+        self.nfnLayer.queue_from_lower.put([cid, func_data])
+        data = self.nfnLayer.queue_to_lower.get()
+        self.assertEqual(name, data[1].name)
+        self.assertEqual("RESULT", data[1].content)
