@@ -152,8 +152,8 @@ class BasicNFNLayer(LayerProcess):
                 evaluator = self.nfn_evaluator_type(interest, self.content_store, self.fib, self.pit,
                                                     self.rewrite_table, self.executor)
                 running_computations[self._next_computation_id] = evaluator
+                running_computations[self._next_computation_id].start_process()
                 self._next_computation_id = self._next_computation_id + 1
-                evaluator.start_process()
 
     def request_data(self, computation_id):
         """request data for a computation"""
@@ -177,13 +177,17 @@ class BasicNFNLayer(LayerProcess):
         pass
 
     def start_process(self):
-        """Start the Layerprocess"""
         self.process = multiprocessing.Process(target=self._run, args=[self._queue_from_lower,
                                                                        self._queue_from_higher,
                                                                        self._queue_to_lower,
                                                                        self._queue_to_higher,
                                                                        self._running_computations])
         self.process.start()
+
+    def stop_process(self):
+        if self.process:
+            self.process.terminate()
+
 
     def _run(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
                   to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, running_computations: Dict):

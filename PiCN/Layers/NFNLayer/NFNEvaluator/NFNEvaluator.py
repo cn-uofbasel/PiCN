@@ -43,6 +43,7 @@ class NFNEvaluator(PiCNProcess):
     def stop_process(self):
         if self.process:
             self.process.terminate()
+            self.process = None
         pass
 
     def start_process(self):

@@ -27,6 +27,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.nfnLayer.executor = self.executor
 
     def tearDown(self):
+        self.nfnLayer.stop_process()
         pass
 
     def test_add_computation(self):
@@ -116,3 +117,5 @@ def f():
         func_data = Content(Name("/func/f1"), func1)
         self.nfnLayer.queue_from_lower.put([cid, func_data])
         data = self.nfnLayer.queue_to_lower.get()
+        self.assertEqual(name, data[1].name)
+        self.assertEqual("Hello World", data[1].content)
