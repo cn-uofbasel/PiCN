@@ -39,6 +39,7 @@ class BasicNFNLayer(LayerProcess):
         self._next_computation_id: int = 0
         self._ageing_interval: int = 3
         self._timeout_interal: int = 20
+        self.ageing_lock: threading.Lock = threading.Lock()
 
         self.nfn_evaluator_type = NFNEvaluator
 
@@ -47,7 +48,9 @@ class BasicNFNLayer(LayerProcess):
         id = data[0]
         packet = data[1]
         if isinstance(packet, Interest):
-            if len(packet.name.components) > 2 and packet.name.components[-3] == "R2C":
+            if packet.name.components[-1] != "NFN":
+                to_lower.put([id, packet])
+            elif len(packet.name.components) > 2 and packet.name.components[-3] == "R2C":
                 self.handle_R2C_interest(packet)
             else:
                 self.add_computation(packet, running_computations)
@@ -96,9 +99,9 @@ class BasicNFNLayer(LayerProcess):
            """
         try:
             self.logger.debug("Ageing NFN")
-            self.handle_computation_queue(running_computations)
+            #self.handle_computation_queue(running_computations)
             self.handle_computation_timeouts(running_computations)
-            self.run_computation(running_computations)
+            self.handle_pending_computation_queue(running_computations)
             t = threading.Timer(self._ageing_interval, self.ageing, args=[running_computations])
             t.setDaemon(True)
             t.start()
@@ -108,28 +111,47 @@ class BasicNFNLayer(LayerProcess):
 
     def add_computation(self, interest: Interest, running_computations: Dict):
         """add a computation to the list of pending computations"""
-        self._pending_computations.put(interest)
-        self.run_computation(running_computations)
+        if len(running_computations.keys()) > self._max_running_computations:
+            self._pending_computations.put(interest)
+        else:
+            self.start_computation(interest, running_computations)
+
+    def start_computation_queue_handler(self, running_computations: Dict):
+        """start a new thread to run the computation queue handler"""
+        t = threading.Thread(target=self.handle_computation_queue, args=[running_computations])
+        t.setDaemon(True)
+        t.start()
 
     def handle_computation_queue(self, running_computations: Dict):
-        """check the computation queues """
-        for cid in running_computations.keys():
-            comp = running_computations[cid]
-            while not comp.computation_out_queue.empty():
-                packet = comp.computation_out_queue.get()
-                if isinstance(packet, List): #Rewritten packet
-                    if packet[0].name in self.rewrite_table:
-                        self.queue_to_lower.put([cid, packet[0]])
-                if isinstance(packet, Interest):
-                    if(packet.name in self._computation_request_table):
-                        self._computation_request_table[packet.name].append(cid)
-                    else:
-                        self._computation_request_table[packet.name] = [cid]
-                    self.queue_to_lower.put([cid, packet])
-                elif isinstance(packet, Content):
-                    self.queue_to_lower.put([cid, packet])
-                    self.stop_computation(cid, running_computations)
-                    return
+        """check the computation queues use a poller, this must be executed in a thread
+        (use start_computation_queue_handler)"""
+        while True:
+            poller = select.poll()
+            READ_ONLY = select.POLLIN | select.POLLPRI | select.POLLHUP | select.POLLERR
+            if len(running_computations.keys()) == 0:
+                continue
+            for cid in running_computations.keys():
+                comp = running_computations[cid]
+                poller.register(comp.computation_out_queue._reader, READ_ONLY)
+            ready_vars = poller.poll()
+            for filno, var in ready_vars:
+                for cid in running_computations.keys():
+                    comp = running_computations[cid]
+                    if filno == comp.computation_out_queue._reader.fileno() and not comp.computation_out_queue.empty():
+                        while not comp.computation_out_queue.empty():
+                            packet = comp.computation_out_queue.get()
+                            if isinstance(packet, List):  # Rewritten packet
+                                if packet[0].name in self.rewrite_table:
+                                    self.queue_to_lower.put([cid, packet[0]])
+                            if isinstance(packet, Interest):
+                                if (packet.name in self._computation_request_table):
+                                    self._computation_request_table[packet.name].append(cid)
+                                else:
+                                    self._computation_request_table[packet.name] = [cid]
+                                self.queue_to_lower.put([cid, packet])
+                            elif isinstance(packet, Content):
+                                self.queue_to_lower.put([cid, packet])
+                                self.stop_computation(cid, running_computations)
 
     def stop_computation(self, cid: int, running_computations: Dict):
         """Stop a running computation"""
@@ -141,20 +163,27 @@ class BasicNFNLayer(LayerProcess):
         #todo
         pass
 
-    def run_computation(self, running_computations: Dict):
+    def handle_pending_computation_queue(self, running_computations: Dict):
         """execute a computation if there are capacities"""
-        num_running_computations = len(self._running_computations.keys())
+        self.ageing_lock.acquire()
+        num_running_computations = len(running_computations.keys())
         if(num_running_computations > self._max_running_computations):
+            self.ageing_lock.release()
             return
         else:
+
             while((not self._pending_computations.empty())
-                  and (len(self._running_computations.keys()) < self._max_running_computations)):
+                  and (len(running_computations.keys()) < self._max_running_computations)):
                 interest = self._pending_computations.get()
-                evaluator = self.nfn_evaluator_type(interest, self.content_store, self.fib, self.pit,
-                                                    self.rewrite_table, self.executor)
-                running_computations[self._next_computation_id] = evaluator
-                running_computations[self._next_computation_id].start_process()
-                self._next_computation_id = self._next_computation_id + 1
+                self.start_computation(interest, running_computations)
+            self.ageing_lock.release()
+
+    def start_computation(self, interest, running_computations):
+        evaluator = self.nfn_evaluator_type(interest, self.content_store, self.fib, self.pit,
+                                            self.rewrite_table, self.executor)
+        running_computations[self._next_computation_id] = evaluator
+        running_computations[self._next_computation_id].start_process()
+        self._next_computation_id = self._next_computation_id + 1
 
     def request_data(self, computation_id):
         """request data for a computation"""
@@ -193,6 +222,7 @@ class BasicNFNLayer(LayerProcess):
     def _run(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
                   to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, running_computations: Dict):
         """ Process loop, handle incomming packets, use poll if many file descripors are required"""
+        self.start_computation_queue_handler(running_computations)
         self.ageing(running_computations)
         poller = select.poll()
         READ_ONLY = select.POLLIN | select.POLLPRI | select.POLLHUP | select.POLLERR

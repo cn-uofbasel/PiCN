@@ -33,7 +33,10 @@ class test_BasicNFNLayer(unittest.TestCase):
     def test_add_computation(self):
         """Test the pending computation queue"""
         interest = Interest("/test/data")
-        self.nfnLayer.add_computation(interest, {})
+        running_comps = {}
+        for i in range(0,self.nfnLayer._max_running_computations + 1):
+            running_comps[i] = i
+        self.nfnLayer.add_computation(interest, running_comps)
         self.assertEqual(interest, self.nfnLayer._pending_computations.get())
 
     def test_data_from_lower_interest(self):
@@ -42,8 +45,8 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.nfnLayer.start_process()
         self.nfnLayer.queue_from_lower.put([1, interest])
         time.sleep(0.3)
-        data = self.nfnLayer._pending_computations.get()
-        self.assertEqual(data, interest)
+        data = self.nfnLayer.queue_to_lower.get()
+        self.assertEqual([1, interest], data)
 
     def test_fwd_computation(self):
         """Test forwarding of a computation"""

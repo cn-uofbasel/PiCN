@@ -78,8 +78,8 @@ class NFNEvaluator(PiCNProcess):
 
         if self.optimizer.compute_local(ast):
             #request child nodes
-            if isinstance(ast, AST_Name):
-                return
+            if not isinstance(ast, AST_FuncCall):
+                return None
             params_requests = []
             params = []
             for p in ast.params:
