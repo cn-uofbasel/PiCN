@@ -33,7 +33,7 @@ class test_BasicNFNLayer(unittest.TestCase):
     def test_add_computation(self):
         """Test the pending computation queue"""
         interest = Interest("/test/data")
-        self.nfnLayer.add_computation(interest)
+        self.nfnLayer.add_computation(interest, {})
         self.assertEqual(interest, self.nfnLayer._pending_computations.get())
 
     def test_data_from_lower_interest(self):

@@ -37,7 +37,7 @@ class BasicNFNLayer(LayerProcess):
 
         self._max_running_computations: int = 50
         self._next_computation_id: int = 0
-        self._ageing_interval: int = 2
+        self._ageing_interval: int = 3
         self._timeout_interal: int = 20
 
         self.nfn_evaluator_type = NFNEvaluator
@@ -50,7 +50,7 @@ class BasicNFNLayer(LayerProcess):
             if len(packet.name.components) > 2 and packet.name.components[-3] == "R2C":
                 self.handle_R2C_interest(packet)
             else:
-                self.add_computation(packet)
+                self.add_computation(packet, running_computations)
         elif isinstance(packet, Content):
             if len(packet.name.components) > 2 and packet.name.components[-3] == "R2C":
                 self.handle_R2C_content(packet)
@@ -106,9 +106,10 @@ class BasicNFNLayer(LayerProcess):
             pass
         pass
 
-    def add_computation(self, interest: Interest):
+    def add_computation(self, interest: Interest, running_computations: Dict):
         """add a computation to the list of pending computations"""
         self._pending_computations.put(interest)
+        self.run_computation(running_computations)
 
     def handle_computation_queue(self, running_computations: Dict):
         """check the computation queues """
