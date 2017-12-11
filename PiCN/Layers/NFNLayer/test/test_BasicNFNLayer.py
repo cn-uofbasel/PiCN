@@ -47,6 +47,10 @@ class test_BasicNFNLayer(unittest.TestCase):
         time.sleep(0.3)
         data = self.nfnLayer.queue_to_lower.get()
         self.assertEqual([1, interest], data)
+        content = Content(interest.name, "Result")
+        self.nfnLayer.queue_from_lower.put([3, content])
+        data = self.nfnLayer.queue_to_lower.get()
+        self.assertEqual([3, content], data)
 
     def test_fwd_computation(self):
         """Test forwarding of a computation"""
@@ -62,6 +66,23 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.assertEqual(name, fwded[1].name)
         #self.assertEqual(0, len(self.nfnLayer._running_computations)) #todo, remove comp if process dies
 
+    def test_fwd_computation_back(self):
+        """Test forwarding of a computation sending data back"""
+        self.fib.add_fib_entry(Name("/test"), 1, True)
+        self.nfnLayer.start_process()
+        cid = 1
+        name = Name("/test/data")
+        name.components.append("/func/f1(_)")
+        name.components.append("NFN")
+        interest = Interest(name)
+        self.nfnLayer.queue_from_lower.put([cid, interest])
+        fwded = self.nfnLayer.queue_to_lower.get()
+        self.assertEqual(name, fwded[1].name)
+        #self.assertEqual(0, len(self.nfnLayer._running_computations)) #todo, remove comp if process dies
+        content = Content(name, "Result")
+        self.nfnLayer.queue_from_lower.put([2, content])
+        data = self.nfnLayer.queue_to_lower.get()
+        self.assertEqual([0, content], data)
 
     def test_fwd_computation_change_name(self):
         """Test rewriting and forwarding of a computation"""

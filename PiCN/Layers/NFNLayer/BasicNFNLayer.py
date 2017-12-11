@@ -58,10 +58,15 @@ class BasicNFNLayer(LayerProcess):
             if len(packet.name.components) > 2 and packet.name.components[-3] == "R2C":
                 self.handle_R2C_content(packet)
             else:
+                in_table = False
                 if packet.name in self.rewrite_table:
                     self.handle_packet_in_rewrite_table(packet, running_computations)
+                    in_table = True
                 if packet.name in self._computation_request_table:
                     self.handle_packet_in_compuation_request_table(packet, running_computations)
+                    in_table = True
+                if not in_table and packet.name.components[-1] != "NFN":
+                    to_lower.put([id, packet])
 
     def handle_packet_in_compuation_request_table(self, packet, running_computations: Dict):
         """handle computation request table entries"""
@@ -207,7 +212,7 @@ class BasicNFNLayer(LayerProcess):
         pass
 
     def start_process(self):
-        self.process = multiprocessing.Process(target=self._run, args=[self._queue_from_lower,
+        self.process = multiprocessing.Process(target=self._run_nfn_layer, args=[self._queue_from_lower,
                                                                        self._queue_from_higher,
                                                                        self._queue_to_lower,
                                                                        self._queue_to_higher,
@@ -219,7 +224,7 @@ class BasicNFNLayer(LayerProcess):
             self.process.terminate()
 
 
-    def _run(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
+    def _run_nfn_layer(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
                   to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, running_computations: Dict):
         """ Process loop, handle incomming packets, use poll if many file descripors are required"""
         self.start_computation_queue_handler(running_computations)
