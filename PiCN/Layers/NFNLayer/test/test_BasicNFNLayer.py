@@ -6,6 +6,7 @@ import unittest
 
 from PiCN.Packets import Content, Interest, Name
 from PiCN.Layers.NFNLayer import BasicNFNLayer
+from PiCN.Layers.NFNLayer.NFNEvaluator.NFNExecutor import NFNPythonExecutor
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseMemoryPrefix
 from PiCN.Layers.ICNLayer.PendingInterestTable import PendingInterstTableMemoryExact
@@ -18,9 +19,12 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.cs = ContentStoreMemoryExact(self.manager)
         self.fib = ForwardingInformationBaseMemoryPrefix(self.manager)
         self.pit = PendingInterstTableMemoryExact(self.manager)
-        self.nfnLayer: BasicNFNLayer = BasicNFNLayer(self.manager, self.cs, self.fib, self.pit)
+        self.executor = {"PYTHON": NFNPythonExecutor()}
+        self.nfnLayer: BasicNFNLayer = BasicNFNLayer(self.manager, self.cs, self.fib, self.pit, self.executor)
         self.nfnLayer.queue_from_lower = multiprocessing.Queue()
         self.nfnLayer.queue_to_lower = multiprocessing.Queue()
+
+        self.nfnLayer.executor = self.executor
 
     def tearDown(self):
         pass
@@ -44,7 +48,6 @@ class test_BasicNFNLayer(unittest.TestCase):
         """Test forwarding of a computation"""
         self.fib.add_fib_entry(Name("/test"), 1, True)
         self.nfnLayer.start_process()
-        self.nfnLayer.ageing()
         cid = 1
         name = Name("/test/data")
         name.components.append("/func/f1(_)")
@@ -60,7 +63,6 @@ class test_BasicNFNLayer(unittest.TestCase):
         """Test rewriting and forwarding of a computation"""
         self.fib.add_fib_entry(Name("/test"), 1, True)
         self.nfnLayer.start_process()
-        self.nfnLayer.ageing()
         cid = 1
         name = Name("/func/f1")
         name.components.append("_(/test/data)")
@@ -77,7 +79,6 @@ class test_BasicNFNLayer(unittest.TestCase):
         """Test rewriting and forwarding of a computation, map back"""
         self.fib.add_fib_entry(Name("/test"), 1, True)
         self.nfnLayer.start_process()
-        self.nfnLayer.ageing()
         cid = 1
         name = Name("/func/f1")
         name.components.append("_(/test/data)")
@@ -94,3 +95,24 @@ class test_BasicNFNLayer(unittest.TestCase):
         mapped_back = self.nfnLayer.queue_to_lower.get()
         self.assertEqual(name, mapped_back[1].name)
         self.assertEqual("Result", mapped_back[1].content)
+
+    def test_compute_simple_function(self):
+        """Test if a simple function call is executed correctly"""
+        self.fib.add_fib_entry(Name("/test"), 1, True)
+        self.nfnLayer.start_process()
+        cid = 1
+        name = Name("/func/f1")
+        name.components.append("_()")
+        name.components.append("NFN")
+        interest = Interest(name)
+        self.nfnLayer.queue_from_lower.put([cid, interest])
+        data = self.nfnLayer.queue_to_lower.get()
+        self.assertEqual(data[1].name, Name("/func/f1"))
+        func1 = """PYTHON
+f
+def f():
+    return "Hello World"        
+        """
+        func_data = Content(Name("/func/f1"), func1)
+        self.nfnLayer.queue_from_lower.put([cid, func_data])
+        data = self.nfnLayer.queue_to_lower.get()

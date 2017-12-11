@@ -20,7 +20,8 @@ class NFNEvaluator(PiCNProcess):
     """NFN Dispatcher for PiCN"""
 
     def __init__(self, interest: Interest, cs: BaseContentStore, fib: BaseForwardingInformationBase,
-                 pit: BasePendingInterestTable, rewrite_table: Dict[Interest, List[Interest]]):
+                 pit: BasePendingInterestTable, rewrite_table: Dict[Interest, List[Interest]],
+                 executor: Dict[str, type(BaseNFNExecutor)] = {}):
         super().__init__("NFNEvaluator", 255)
         self.interest: Interest = interest
         self.computation_in_queue: multiprocessing.Queue = multiprocessing.Queue()  # data to computation
@@ -37,7 +38,7 @@ class NFNEvaluator(PiCNProcess):
 
         self.parser: DefaultNFNParser = DefaultNFNParser()
         self.optimizer: BaseNFNOptimizer = None
-        self.executor: Dict[str, type(BaseNFNExecutor)] = {}
+        self.executor: Dict[str, type(BaseNFNExecutor)] = executor
 
     def stop_process(self):
         if self.process:
@@ -60,7 +61,6 @@ class NFNEvaluator(PiCNProcess):
         name_str, prepended = self.parser.network_name_to_nfn_str(name)
         ast: AST = self.parser.parse(name_str)
         self.optimizer = ToDataFirstOptimizer(prepended, self.cs, self.fib, self.pit)
-
         if self.optimizer.compute_fwd(ast):
             computation_strs = self.optimizer.rewrite(ast)
             interests = []
