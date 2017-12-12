@@ -1,6 +1,6 @@
 *This is work in progress! Everything can change at any moment! :-)*
 
-Requires Python  >=3.6 
+**Requires Python  >=3.6** 
 
 # PiCN 
 PiCN is a modular ICN implementation designed to support NFN and
