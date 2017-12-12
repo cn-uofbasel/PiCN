@@ -10,7 +10,7 @@ import time
 from typing import List, Dict
 
 from PiCN.Processes import LayerProcess
-from PiCN.Packets import Interest, Content, Name
+from PiCN.Packets import Interest, Content, Name, Packet
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
 from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
@@ -60,13 +60,17 @@ class BasicNFNLayer(LayerProcess):
             else:
                 in_table = False
                 if packet.name in self.rewrite_table:
+                    in_table = True
                     self.handle_packet_in_rewrite_table(packet, running_computations)
-                    in_table = True
                 if packet.name in self._computation_request_table:
-                    self.handle_packet_in_compuation_request_table(packet, running_computations)
                     in_table = True
+                    self.handle_packet_in_compuation_request_table(packet, running_computations)
                 if not in_table and packet.name.components[-1] != "NFN":
                     to_lower.put([id, packet])
+
+    def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
+        """empty since there is no higher layer"""
+        pass
 
     def handle_packet_in_compuation_request_table(self, packet, running_computations: Dict):
         """handle computation request table entries"""
@@ -94,17 +98,12 @@ class BasicNFNLayer(LayerProcess):
             for cid in remove_ids:
                 del running_computations[cid]
 
-    def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
-        """empty since there is no higher layer"""
-        pass
-
     def ageing(self, running_computations: Dict):
         """perform the aging operations for the NFN Layer
            perfom the timeout prevention
            """
         try:
             self.logger.debug("Ageing NFN")
-            #self.handle_computation_queue(running_computations)
             self.handle_computation_timeouts(running_computations)
             self.handle_pending_computation_queue(running_computations)
             t = threading.Timer(self._ageing_interval, self.ageing, args=[running_computations])
@@ -140,23 +139,45 @@ class BasicNFNLayer(LayerProcess):
                 poller.register(comp.computation_out_queue._reader, READ_ONLY)
             ready_vars = poller.poll()
             for filno, var in ready_vars:
+                new_comps = []
+                stop_comps = []
                 for cid in running_computations.keys():
                     comp = running_computations[cid]
                     if filno == comp.computation_out_queue._reader.fileno() and not comp.computation_out_queue.empty():
                         while not comp.computation_out_queue.empty():
                             packet = comp.computation_out_queue.get()
-                            if isinstance(packet, List):  # Rewritten packet
-                                if packet[0].name in self.rewrite_table:
-                                    self.queue_to_lower.put([cid, packet[0]])
-                            if isinstance(packet, Interest):
-                                if (packet.name in self._computation_request_table):
-                                    self._computation_request_table[packet.name].append(cid)
-                                else:
-                                    self._computation_request_table[packet.name] = [cid]
-                                self.queue_to_lower.put([cid, packet])
-                            elif isinstance(packet, Content):
-                                self.queue_to_lower.put([cid, packet])
-                                self.stop_computation(cid, running_computations)
+                            self.handle_packet_from_computation_queues(cid, packet, running_computations,
+                                                                       new_comps, stop_comps)
+                for nc in new_comps:
+                    self.add_computation(nc, running_computations)
+                for scid in stop_comps:
+                    self.stop_computation(scid, running_computations)
+
+    def handle_packet_from_computation_queues(self, cid: int, packet: Packet, running_computations: Dict,
+                                              new_comps: List, stop_comps: List):
+        """handle an incomming packet from a computation process"""
+        if isinstance(packet, List):  # Rewritten packet
+            if packet[0].name in self.rewrite_table:
+                self.queue_to_lower.put([cid, packet[0]])
+        if isinstance(packet, Interest):
+            if (packet.name in self._computation_request_table):
+                self._computation_request_table[packet.name].append(cid)
+            else:
+                if packet.name.components[-1] == "NFN":
+                    new_comps.append(packet)
+                    self._computation_request_table[packet.name] = [cid]
+                    return
+                else:
+                    self._computation_request_table[packet.name] = [cid]
+            self.queue_to_lower.put([cid, packet])
+        elif isinstance(packet, Content):
+            waiting_cids = self._computation_request_table.get(packet.name)
+            if waiting_cids is None:
+                self.queue_to_lower.put([cid, packet])
+            else:
+                for wc in waiting_cids:
+                    running_computations[wc].computation_in_queue.put(packet)
+            stop_comps.append(cid)
 
     def stop_computation(self, cid: int, running_computations: Dict):
         """Stop a running computation"""

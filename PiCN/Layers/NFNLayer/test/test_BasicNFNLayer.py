@@ -168,3 +168,38 @@ def f(a):
         data = self.nfnLayer.queue_to_lower.get()
         self.assertEqual(name, data[1].name)
         self.assertEqual("RESULT", data[1].content)
+
+    def test_compute_function_sub_with_params(self):
+        """Test if a simple function call with params is executed correctly"""
+        self.nfnLayer.start_process()
+        cid = 1
+        name = Name("/func/f1")
+        name.components.append("_(/func/f2(/test/data))")
+        name.components.append("NFN")
+        interest = Interest(name)
+        self.nfnLayer.queue_from_lower.put([cid, interest])
+        data = self.nfnLayer.queue_to_lower.get()
+        self.assertEqual(data[1].name, Name("/test/data"))
+        content = Content("/test/data", "tluser")
+        self.nfnLayer.queue_from_lower.put([data[0], content])
+        data = self.nfnLayer.queue_to_lower.get()
+        self.assertEqual(data[1].name, Name("/func/f2"))
+        func2 = """PYTHON
+f
+def f(a):
+    return a.upper()        
+        """
+        func_data = Content(Name("/func/f2"), func2)
+        self.nfnLayer.queue_from_lower.put([cid, func_data])
+        data = self.nfnLayer.queue_to_lower.get()
+        self.assertEqual(data[1].name, Name("/func/f1"))
+        func1 = """PYTHON
+f
+def f(a):
+    return a[::-1]        
+                """
+        func_data = Content(Name("/func/f1"), func1)
+        self.nfnLayer.queue_from_lower.put([cid, func_data])
+        data = self.nfnLayer.queue_to_lower.get()
+        self.assertEqual(name.to_string(), data[1].name.to_string())
+        self.assertEqual("RESULT", data[1].content)
