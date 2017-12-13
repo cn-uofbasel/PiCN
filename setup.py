@@ -24,7 +24,7 @@ config = {
                  'PiCN.Layers.RepositoryLayer', 'PiCN.Layers.RepositoryLayer.Repository',
                  'PiCN.ProgramLibs.ICNDataRepository', 'PiCN.Layers.NFNLayer', 'PiCN.Layers.NFNLayer.Parser',
                  'PiCN.Layers.NFNLayer.NFNEvaluator', 'PiCN.Layers.NFNLayer.NFNEvaluator.NFNOptimizer',
-                 'PiCN.Layers.NFNLayer.NFNEvaluator.NFNExecutor'],
+                 'PiCN.Layers.NFNLayer.NFNEvaluator.NFNExecutor', 'PiCN.ProgramLibs.NFNForwarder'],
     'scripts': [],
     'test_suite': 'nose.collector',
     'tests_require': ['nose'],
