@@ -47,7 +47,7 @@ class BasicICNLayer(LayerProcess):
             else:
                 self.logger.info("No FIB entry, sending Nack")
                 nack = Nack(packet.name, "No FIB Entry", packet.name_payload)
-                if pit_entry is not None:
+                if pit_entry is not None: #if pit entry is available, consider it, otherwise assume interest came from higher
                     for i in range(0, len(pit_entry.faceids)):
                         if pit_entry._local_app[i]:
                             to_higher.put([highlevelid, nack])
