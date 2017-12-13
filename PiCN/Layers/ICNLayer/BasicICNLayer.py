@@ -47,7 +47,14 @@ class BasicICNLayer(LayerProcess):
             else:
                 self.logger.info("No FIB entry, sending Nack")
                 nack = Nack(packet.name, "No FIB Entry", packet.name_payload)
-                to_higher.put([highlevelid, nack])
+                if pit_entry is not None:
+                    for i in range(0, len(pit_entry.faceids)):
+                        if pit_entry._local_app[i]:
+                            to_higher.put([highlevelid, nack])
+                        else:
+                            to_lower.put([pit_entry._faceids[i], nack])
+                else:
+                    to_higher.put([highlevelid, nack])
         elif isinstance(packet, Content):
             self.handleContent(highlevelid, packet, to_lower, to_higher, True) #content handled same as for content from network
         elif isinstance(packet, Nack):
