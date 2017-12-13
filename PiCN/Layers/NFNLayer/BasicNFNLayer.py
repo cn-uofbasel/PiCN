@@ -47,7 +47,9 @@ class BasicNFNLayer(LayerProcess):
                         running_computations: Dict):
         id = data[0]
         packet = data[1]
+        self.logger.info("Handling Packet")
         if isinstance(packet, Interest):
+            self.logger.info("Handling Interest")
             if packet.name.components[-1] != "NFN":
                 to_lower.put([id, packet])
             elif len(packet.name.components) > 2 and packet.name.components[-3] == "R2C":
@@ -55,6 +57,7 @@ class BasicNFNLayer(LayerProcess):
             else:
                 self.add_computation(packet, running_computations)
         elif isinstance(packet, Content):
+            self.logger.info("Handling Content")
             if len(packet.name.components) > 2 and packet.name.components[-3] == "R2C":
                 self.handle_R2C_content(packet)
             else:

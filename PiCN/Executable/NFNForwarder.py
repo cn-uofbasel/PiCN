@@ -15,7 +15,7 @@ def main(argv):
     except Exception:
         port = 9000
 
-    forwarder = PiCN.ProgramLibs.NFNForwarder.ICNForwarder(port, logging.DEBUG)
+    forwarder = PiCN.ProgramLibs.NFNForwarder.NFNForwarder(port, logging.DEBUG)
     forwarder.start_forwarder()
 
     forwarder.linklayer.process.join()

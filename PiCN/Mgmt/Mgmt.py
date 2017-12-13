@@ -45,7 +45,7 @@ class Mgmt(PiCNProcess):
             fields = request_string.split("\r\n")
             request = fields[0]
             fields = fields[1:]
-            type, name, httpversion = request.split(" ")
+            type, name, httpversion = request.split(" ", 3)
             http = {}
             for field in fields:
                 if (len(field.split(":")) == 2):

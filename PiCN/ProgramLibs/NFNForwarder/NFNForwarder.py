@@ -42,6 +42,7 @@ class NFNForwarder(object):
         self.icnlayer.pit = self.pit
 
         # setup nfn
+        self.icnlayer._interest_to_app = True
         self.executors = [NFNPythonExecutor]
         self.nfnlayer = BasicNFNLayer(self.icnlayer.manager, self.cs, self.fib, self.pit, self.executors,
                                       debug_level=debug_level)
@@ -77,7 +78,7 @@ class NFNForwarder(object):
 
         # set nfn layer
         self.nfnlayer.queue_to_lower = self.q_nfn_to_icn
-        self.nfnlayer.queue_from_higher = self.q_icn_to_nfn
+        self.nfnlayer.queue_from_lower = self.q_icn_to_nfn
 
         # routing
         self.routing = BasicRouting(self.icnlayer.pit, None, debug_level=debug_level)  # TODO NOT IMPLEMENTED YET
