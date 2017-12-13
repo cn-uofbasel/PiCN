@@ -220,4 +220,4 @@ def f():
         content = Content(fname, func1)
         self.evaluator.computation_in_queue.put(content)
         res = self.evaluator.computation_out_queue.get()
-        self.assertEqual(res, Nack(name, "Could not Compute"))
+        self.assertEqual(Nack(name, "Could not Compute"), res)

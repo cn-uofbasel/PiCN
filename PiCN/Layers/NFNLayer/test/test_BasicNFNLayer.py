@@ -4,7 +4,7 @@ import multiprocessing
 import time
 import unittest
 
-from PiCN.Packets import Content, Interest, Name
+from PiCN.Packets import Content, Interest, Name, Nack
 from PiCN.Layers.NFNLayer import BasicNFNLayer
 from PiCN.Layers.NFNLayer.NFNEvaluator.NFNExecutor import NFNPythonExecutor
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
@@ -203,3 +203,25 @@ def f(a):
         data = self.nfnLayer.queue_to_lower.get()
         self.assertEqual(name.to_string(), data[1].name.to_string())
         self.assertEqual("RESULT", data[1].content)
+
+    def test_nack_if_error(self):
+        """Test if an error returns a nack"""
+        self.nfnLayer.start_process()
+        cid = 1
+        name = Name("/func/f1")
+        name.components.append("_()")
+        name.components.append("NFN")
+        interest = Interest(name)
+        self.nfnLayer.queue_from_lower.put([cid, interest])
+        data = self.nfnLayer.queue_to_lower.get()
+        self.assertEqual(data[1].name, Name("/func/f1"))
+        func1 = """PYTHON
+f
+def f():
+    return fds "Hello World"        
+            """
+        func_data = Content(Name("/func/f1"), func1)
+        self.nfnLayer.queue_from_lower.put([cid, func_data])
+        data = self.nfnLayer.queue_to_lower.get()
+        self.assertEqual(name, data[1].name)
+        self.assertEqual(Nack(name, "Could not Compute"), data[1])
