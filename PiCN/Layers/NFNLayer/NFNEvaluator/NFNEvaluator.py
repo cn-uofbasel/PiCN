@@ -53,10 +53,10 @@ class NFNEvaluator(PiCNProcess):
     def _run(self, name: Name):
         res = self.evaluate(name)
         content = Content(name, res)
-        if content is None or res is None:
+        if res == None:
             nack = Nack(name, "Could not Compute")
             self.computation_out_queue.put(nack)
-        else:
+        elif res != "did_fwd":
             self.computation_out_queue.put(content)
 
     def evaluate(self, name: Name):
@@ -64,7 +64,9 @@ class NFNEvaluator(PiCNProcess):
         name_str, prepended = self.parser.network_name_to_nfn_str(name)
         ast: AST = self.parser.parse(name_str)
         self.optimizer = ToDataFirstOptimizer(prepended, self.cs, self.fib, self.pit)
+        did_fwd = False
         if self.optimizer.compute_fwd(ast):
+            did_fwd = True
             computation_strs = self.optimizer.rewrite(ast)
             interests = []
             for r in computation_strs:
@@ -102,9 +104,10 @@ class NFNEvaluator(PiCNProcess):
             executor = self.executor.get(language)
             if executor:
                 res = executor.execute(functioncode, params)
-                print("res")
                 return res
-            return None
+        if did_fwd:
+            return "did_fwd"
+        return None
 
     def get_nf_code_language(self, function: str):
         """extract the programming language of a function"""
