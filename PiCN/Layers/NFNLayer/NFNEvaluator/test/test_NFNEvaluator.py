@@ -4,7 +4,7 @@ import multiprocessing
 import unittest
 
 
-from PiCN.Packets import Interest, Content, Name
+from PiCN.Packets import Interest, Content, Name, Nack
 from PiCN.Layers.NFNLayer.NFNEvaluator import NFNEvaluator
 from PiCN.Layers.NFNLayer.NFNEvaluator.NFNOptimizer import ToDataFirstOptimizer
 from PiCN.Layers.NFNLayer.NFNEvaluator.NFNExecutor import NFNPythonExecutor
@@ -199,3 +199,25 @@ def f(a, b):
         self.assertEqual(request, [Interest(fwdname1), Interest(fwdname2)])
         self.assertEqual(self.evaluator.rewrite_table[fwdname1][0], name)
         self.assertEqual(self.evaluator.rewrite_table[fwdname2][0], name)
+
+    def test_nack_if_comp_failed(self):
+        """Test if a failed computation issues a nack"""
+        fname = Name("/func/f1")
+        name = Name("/func/f1")
+        name.components.append("_()")
+        name.components.append("NFN")
+        interest = Interest(name)
+
+        self.evaluator.interest = interest
+        self.evaluator.start_process()
+        request = self.evaluator.computation_out_queue.get()
+        self.assertEqual(request.name, fname)
+        func1 = """PYTHON
+f
+def f():
+    return asf "Hello World" 
+                """
+        content = Content(fname, func1)
+        self.evaluator.computation_in_queue.put(content)
+        res = self.evaluator.computation_out_queue.get()
+        self.assertEqual(res, Nack(name, "Could not Compute"))

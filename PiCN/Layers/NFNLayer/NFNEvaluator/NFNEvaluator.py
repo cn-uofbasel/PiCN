@@ -13,7 +13,7 @@ from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
 from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
 from PiCN.Processes import PiCNProcess
-from PiCN.Packets import Content, Interest, Name
+from PiCN.Packets import Content, Interest, Name, Nack
 
 
 class NFNEvaluator(PiCNProcess):
@@ -52,10 +52,12 @@ class NFNEvaluator(PiCNProcess):
 
     def _run(self, name: Name):
         res = self.evaluate(name)
-        if res is None:
-            return
         content = Content(name, res)
-        self.computation_out_queue.put(content)
+        if content is None or res is None:
+            nack = Nack(name, "Could not Compute")
+            self.computation_out_queue.put(nack)
+        else:
+            self.computation_out_queue.put(content)
 
     def evaluate(self, name: Name):
         """Run the evaluation process"""
@@ -100,6 +102,7 @@ class NFNEvaluator(PiCNProcess):
             executor = self.executor.get(language)
             if executor:
                 res = executor.execute(functioncode, params)
+                print("res")
                 return res
             return None
 

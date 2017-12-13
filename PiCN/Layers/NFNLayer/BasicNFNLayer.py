@@ -10,7 +10,7 @@ import time
 from typing import List, Dict
 
 from PiCN.Processes import LayerProcess
-from PiCN.Packets import Interest, Content, Name, Packet
+from PiCN.Packets import Interest, Content, Name, Packet, Nack
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
 from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
@@ -177,6 +177,9 @@ class BasicNFNLayer(LayerProcess):
             else:
                 for wc in waiting_cids:
                     running_computations[wc].computation_in_queue.put(packet)
+            stop_comps.append(cid)
+        elif isinstance(packet, Nack):
+            self.queue_to_lower.put([cid, packet])
             stop_comps.append(cid)
 
     def stop_computation(self, cid: int, running_computations: Dict):

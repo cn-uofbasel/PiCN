@@ -12,32 +12,31 @@ class NFNPythonExecutor(BaseNFNExecutor):
         self._sandbox = self._init_sandbox()
 
     def execute(self, function_code: str, params: List):
-
-        entry_function_name, program_code = self._get_entry_function_name(function_code)
-        if entry_function_name is None or program_code is None:
-            return None
-        machine_code = compile(program_code, '', 'exec')
-        if machine_code is None:
-            return None
-        entry_point = None
-        lib_functions = []
-        for fcode in machine_code.co_consts:
-            if isinstance(fcode, CodeType):
-                if fcode.co_name == entry_function_name:
-                    entry_point = FunctionType(fcode, self._sandbox)
-                else:
-                    lib_functions.append((fcode.co_name, FunctionType(fcode, self._sandbox)))
-
-        if entry_point is None:
-            return None
-        for lf in lib_functions: #enable calling of all functions but not the entry point
-            if lf[1] is None:
-                continue
-            self._sandbox[lf[0]] = lf[1]
         try:
+            entry_function_name, program_code = self._get_entry_function_name(function_code)
+            if entry_function_name is None or program_code is None:
+                return None
+            machine_code = compile(program_code, '', 'exec')
+            if machine_code is None:
+                return None
+            entry_point = None
+            lib_functions = []
+            for fcode in machine_code.co_consts:
+                if isinstance(fcode, CodeType):
+                    if fcode.co_name == entry_function_name:
+                        entry_point = FunctionType(fcode, self._sandbox)
+                    else:
+                        lib_functions.append((fcode.co_name, FunctionType(fcode, self._sandbox)))
+
+            if entry_point is None:
+                return None
+            for lf in lib_functions: #enable calling of all functions but not the entry point
+                if lf[1] is None:
+                    continue
+                self._sandbox[lf[0]] = lf[1]
             return entry_point(*params)
         except:
-            None #Code Error
+            return None
 
     def _get_entry_function_name(self, function: str) -> (str, str):
         code_parts = function.split('\n', 2)
