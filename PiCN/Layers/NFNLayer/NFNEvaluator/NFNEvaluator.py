@@ -73,7 +73,7 @@ class NFNEvaluator(PiCNProcess):
                 name = self.parser.nfn_str_to_network_name(r)
                 interests.append(Interest(name))
                 if self.rewrite_table is not None:
-                    if self.rewrite_table.get(self.interest.name):
+                    if self.rewrite_table.get(name):
                         self.rewrite_table[name].append(self.interest.name)
                     else:
                         self.rewrite_table[name] = [self.interest.name]

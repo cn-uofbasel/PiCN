@@ -32,7 +32,7 @@ class BasicNFNLayer(LayerProcess):
         self._running_computations: Dict[int, NFNEvaluator] = {} # {} #computation id -> computation
         self._computation_request_table: Dict[Name, List[int]] = self.manager.dict()  # request(name) -> [computation id]
         self._pending_computations: multiprocessing.Queue[Interest] = multiprocessing.Queue() # computations not started yet
-        self._further_rewirtes_table: Dict[Interest, List[Interest]] = self.manager.dict()
+        self._further_rewirtes_table: Dict[Name, List[Name]] = self.manager.dict()
         self.rewrite_table: Dict[Name, List[Name]] = self.manager.dict() #rewritten name -> original name
         self.executor: Dict[str, type(BaseNFNExecutor)] = executor
 
@@ -80,13 +80,15 @@ class BasicNFNLayer(LayerProcess):
             del self.rewrite_table[packet.name]
             if not self._further_rewirtes_table.get(packet.name):
                 self.queue_to_lower.put([id, packet])
+                if packet.name in self._further_rewirtes_table.keys():
+                    del self._further_rewirtes_table[packet.name]
                 return
-            next_pkts = self._further_rewirtes_table.get(packet.name)
+            next_names = self._further_rewirtes_table.get(packet.name)
             del self._further_rewirtes_table[packet.name]
-            send_pkt = next_pkts[0]
-            self.queue_to_lower.pit([id, send_pkt])
-            self.rewrite_table[send_pkt.name] = original_packet_names
-            self._further_rewirtes_table[send_pkt] = next_pkts[1:]
+            send_names = next_names[0]
+            self.queue_to_lower.put([id, Interest(send_names)])
+            self.rewrite_table[send_names] = original_packet_names
+            self._further_rewirtes_table[send_names] = next_names[1:]
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         """empty since there is no higher layer"""
@@ -179,8 +181,9 @@ class BasicNFNLayer(LayerProcess):
         if isinstance(packet, List):  # Rewritten packet
             if packet[0].name in self.rewrite_table:
                 self.queue_to_lower.put([cid, packet[0]])
-                self._further_rewirtes_table[packet[0]] = packet[1:]
-        if isinstance(packet, Interest):
+                names = [p.name for p in packet]
+                self._further_rewirtes_table[packet[0].name] = names[1:]
+        elif isinstance(packet, Interest):
             if (packet.name in self._computation_request_table):
                 self._computation_request_table[packet.name].append(cid)
             else:

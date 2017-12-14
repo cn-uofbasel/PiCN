@@ -225,3 +225,30 @@ def f():
         data = self.nfnLayer.queue_to_lower.get()
         self.assertEqual(name, data[1].name)
         self.assertEqual(Nack(name, "Could not Compute"), data[1])
+
+    def test_fwd_computation_nack(self):
+        """Test forwarding of a computation and applying second rule"""
+        self.fib.add_fib_entry(Name("/test"), 1, True)
+        self.fib.add_fib_entry(Name("/func"), 2, True)
+        self.nfnLayer.start_process()
+        cid = 1
+        name = Name("/test/data")
+        name.components.append("/func/f1(_)")
+        name.components.append("NFN")
+        interest = Interest(name)
+        self.nfnLayer.queue_from_lower.put([cid, interest])
+        fwded = self.nfnLayer.queue_to_lower.get()
+        self.assertEqual(name, fwded[1].name)
+        #self.assertEqual(0, len(self.nfnLayer._running_computations)) #todo, remove comp if process dies
+        nack = Nack(name, "No PIT Entry found")
+        self.nfnLayer.queue_from_lower.put([2, nack])
+        data = self.nfnLayer.queue_to_lower.get()
+        name2 = Name("/func/f1")
+        name2.components.append("_(/test/data)")
+        name2.components.append("NFN")
+        self.assertEqual(name2, data[1].name)
+        content = Content(name2, "Hello World")
+        self.nfnLayer.queue_from_lower.put([2, content])
+        data = self.nfnLayer.queue_to_lower.get()
+        self.assertEqual(name, data[1].name)
+        self.assertEqual("Hello World", data[1].content)
