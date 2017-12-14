@@ -7,17 +7,16 @@ from random import randint
 
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 from PiCN.Packets import Content, Interest, Name
-from PiCN.ProgramLibs.ICNForwarder import ICNForwarder
+from PiCN.ProgramLibs.NFNForwarder import NFNForwarder
 
-
-class test_ICNForwarder(unittest.TestCase):
+class test_NFNForwarder(unittest.TestCase):
     """Test the ICN Forwarder"""
 
     def setUp(self):
         self.portoffset = randint(0,999)
 
-        self.forwarder1 = ICNForwarder(3000 + self.portoffset, debug_level=255)
-        self.forwarder2 = ICNForwarder(4000 + self.portoffset, debug_level=255)
+        self.forwarder1 = NFNForwarder(3000 + self.portoffset, debug_level=255)
+        self.forwarder2 = NFNForwarder(4000 + self.portoffset, debug_level=255)
         self.encoder = SimpleStringEncoder()
 
         self.testSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -29,7 +28,7 @@ class test_ICNForwarder(unittest.TestCase):
         self.testSock.close()
         pass
 
-    def test_ICNForwarder_simple_find_content_one_node(self):
+    def test_NFNForwarder_simple_find_content_one_node(self):
         """Test a simple forwarding scenario, getting content from a Node"""
         self.forwarder1.start_forwarder()
 
@@ -59,7 +58,7 @@ class test_ICNForwarder(unittest.TestCase):
         content = self.encoder.decode(encoded_content)
         self.assertEqual(content, test_content)
 
-    def test_ICNForwarder_simple_find_content_two_nodes(self):
+    def test_NFNForwarder_simple_find_content_two_nodes(self):
         """Test a simple forwarding scenario with one additional node forwarding the data"""
         self.forwarder1.start_forwarder()
         self.forwarder2.start_forwarder()

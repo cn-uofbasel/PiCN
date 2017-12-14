@@ -32,7 +32,7 @@ class BasicNFNLayer(LayerProcess):
         self._running_computations: Dict[int, NFNEvaluator] = {} # {} #computation id -> computation
         self._computation_request_table: Dict[Name, List[int]] = self.manager.dict()  # request(name) -> [computation id]
         self._pending_computations: multiprocessing.Queue[Interest] = multiprocessing.Queue() # computations not started yet
-        self._further_rewirtes_table: Dict[Name, List[Name]] = self.manager.dict()
+        self._further_rewirtes_table: Dict[Name, List[Name]] = self.manager.dict() #current rewrite --> next rewrites
         self.rewrite_table: Dict[Name, List[Name]] = self.manager.dict() #rewritten name -> original name
         self.executor: Dict[str, type(BaseNFNExecutor)] = executor
 
