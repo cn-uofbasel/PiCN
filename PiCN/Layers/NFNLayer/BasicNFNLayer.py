@@ -31,7 +31,8 @@ class BasicNFNLayer(LayerProcess):
         self.pit = pit
         self._running_computations: Dict[int, NFNEvaluator] = {} # {} #computation id -> computation
         self._computation_request_table: Dict[Name, List[int]] = self.manager.dict()  # request(name) -> [computation id]
-        self._pending_computations: multiprocessing.Queue[Interest] = multiprocessing.Queue()
+        self._pending_computations: multiprocessing.Queue[Interest] = multiprocessing.Queue() # computations not started yet
+        self._further_rewirtes_table: Dict[Interest, List[Interest]] = self.manager.dict()
         self.rewrite_table: Dict[Name, List[Name]] = self.manager.dict() #rewritten name -> original name
         self.executor: Dict[str, type(BaseNFNExecutor)] = executor
 
@@ -70,6 +71,22 @@ class BasicNFNLayer(LayerProcess):
                     self.handle_packet_in_compuation_request_table(packet, running_computations)
                 if not in_table and packet.name.components[-1] != "NFN":
                     to_lower.put([id, packet])
+        elif isinstance(packet, Nack):
+            self.logger.info("Handling Nack")
+            if not self.rewrite_table.get(packet.name):
+                self.queue_to_lower.put([id, packet])
+                return
+            original_packet_names = self.rewrite_table.get(packet.name)
+            del self.rewrite_table[packet.name]
+            if not self._further_rewirtes_table.get(packet.name):
+                self.queue_to_lower.put([id, packet])
+                return
+            next_pkts = self._further_rewirtes_table.get(packet.name)
+            del self._further_rewirtes_table[packet.name]
+            send_pkt = next_pkts[0]
+            self.queue_to_lower.pit([id, send_pkt])
+            self.rewrite_table[send_pkt.name] = original_packet_names
+            self._further_rewirtes_table[send_pkt] = next_pkts[1:]
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         """empty since there is no higher layer"""
@@ -162,6 +179,7 @@ class BasicNFNLayer(LayerProcess):
         if isinstance(packet, List):  # Rewritten packet
             if packet[0].name in self.rewrite_table:
                 self.queue_to_lower.put([cid, packet[0]])
+                self._further_rewirtes_table[packet[0]] = packet[1:]
         if isinstance(packet, Interest):
             if (packet.name in self._computation_request_table):
                 self._computation_request_table[packet.name].append(cid)
