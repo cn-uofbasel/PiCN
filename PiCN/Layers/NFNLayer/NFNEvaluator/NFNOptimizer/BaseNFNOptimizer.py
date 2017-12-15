@@ -13,9 +13,9 @@ class BaseNFNOptimizer(object):
     def __init__(self, prefix: Name, cs: BaseContentStore, fib: BaseForwardingInformationBase,
                  pit: BasePendingInterestTable):
         self.prefix: Name = prefix
-        self.cs: BaseContentStore = cs
-        self.fib: BaseForwardingInformationBase = fib
-        self.pit: BasePendingInterestTable = pit
+        self._cs: BaseContentStore = cs
+        self._fib: BaseForwardingInformationBase = fib
+        self._pit: BasePendingInterestTable = pit
 
     @abc.abstractclassmethod
     def compute_local(self, ast: AST) -> bool:
@@ -28,3 +28,28 @@ class BaseNFNOptimizer(object):
     @abc.abstractclassmethod
     def rewrite(self, ast: AST):
         """rewrite the NFN interest and prepend a name"""
+
+    @property
+    def cs(self):
+        return self._cs
+
+    @cs.setter
+    def cs(self, cs):
+        self._cs = cs
+
+    @property
+    def fib(self):
+        return self._fib
+
+    @fib.setter
+    def fib(self, fib):
+        self._fib = fib
+
+    @property
+    def pit(self):
+        return self._pit
+
+    @pit.setter
+    def pit(self, pit):
+        self._pit = pit
+

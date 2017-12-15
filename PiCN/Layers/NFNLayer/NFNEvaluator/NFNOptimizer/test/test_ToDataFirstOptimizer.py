@@ -3,8 +3,10 @@
 import multiprocessing
 import unittest
 
-from PiCN.Packets import Name
+from PiCN.Packets import Name, Content
+from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseMemoryPrefix
+
 from PiCN.Layers.NFNLayer.Parser.AST import *
 from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
 from PiCN.Layers.NFNLayer.NFNEvaluator.NFNOptimizer import ToDataFirstOptimizer
@@ -15,11 +17,9 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
     def setUp(self):
         self.parser: DefaultNFNParser = DefaultNFNParser()
         self.manager = multiprocessing.Manager()
-        self.optimizer: ToDataFirstOptimizer = ToDataFirstOptimizer(None, None,
+        self.optimizer: ToDataFirstOptimizer = ToDataFirstOptimizer(None, ContentStoreMemoryExact(self.manager),
                                                                     ForwardingInformationBaseMemoryPrefix(self.manager),
                                                                     None)
-
-
 
     def tearDown(self):
         pass
@@ -70,6 +70,42 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         name_str, prepended = self.parser.network_name_to_nfn_str(name)
         self.assertEqual(name_str, workflow)
         self.assertEqual(prepended, Name("/func/f1"))
+
+    def test_simple_call_params_to_function_local_prepended_data(self):
+        """Test, if ToDataFirstOptimizer works correctly with a single function call with parameter, to function,
+        compute local since prepended data are local"""
+        cmp_name = Name("/func/f1")
+        cmp_name._components.append("_(/test/data)")
+        cmp_name._components.append("NFN")
+        workflow = "/func/f1(/test/data)"
+        self.optimizer.fib.add_fib_entry(Name("/func"), 1, False)
+        self.optimizer.prefix = Name("/func/f1")
+        self.optimizer.cs.add_content_object(
+            Content(Name("/func/f1"), "PYTHON\nf\ndef f():\n    return 'Hello World'"),True)
+        ast = self.parser.parse(workflow)
+        self.assertFalse(self.optimizer.compute_fwd(ast))
+        self.assertTrue(self.optimizer.compute_local(ast))
+        rules = self.optimizer.rewrite(ast)
+        self.assertEqual(rules, ['%/func/f1%(/test/data)'])
+        name = self.parser.nfn_str_to_network_name(rules[0])
+        self.assertEqual(name, cmp_name)
+        name_str, prepended = self.parser.network_name_to_nfn_str(name)
+        self.assertEqual(name_str, workflow)
+        self.assertEqual(prepended, Name("/func/f1"))
+
+    def test_simple_call_params_to_function_no_local_prepended_data(self):
+        """Test, if ToDataFirstOptimizer works correctly with a single function call with parameter, to function,
+        fwd since prepended data are not local"""
+        cmp_name = Name("/func/f1")
+        cmp_name._components.append("_(/test/data)")
+        cmp_name._components.append("NFN")
+        workflow = "/func/f1(/test/data)"
+        self.optimizer.fib.add_fib_entry(Name("/func"), 1, False)
+        self.optimizer.prefix = Name("/func/f1")
+        ast = self.parser.parse(workflow)
+        self.assertTrue(self.optimizer.compute_fwd(ast))
+        self.assertFalse(self.optimizer.compute_local(ast))
+
 
     def test_simple_call_params_to_data(self):
         """Test, if ToDataFirstOptimizer works correctly with a single function call with parameter, to data"""
