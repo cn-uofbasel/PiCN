@@ -43,9 +43,11 @@ class Mgmt(PiCNProcess):
             request_string = data.decode()
             # Parse HTTP
             fields = request_string.split("\r\n")
-            request = fields[0]
+            request: str = fields[0]
             fields = fields[1:]
-            type, name, httpversion = request.split(" ", 2)
+            type, name = request.split(" ", 1)
+            httpversion = request.rsplit(" ", 1)[-1]
+
             http = {}
             for field in fields:
                 if (len(field.split(":")) == 2):
@@ -53,6 +55,7 @@ class Mgmt(PiCNProcess):
                     http[key] = value
 
             # Execute MGMT
+            name = name.replace(" HTTP/1.1", "")
             mgmt_request = name.split("/")
             if (len(mgmt_request) == 4):
                 layer = mgmt_request[1]
