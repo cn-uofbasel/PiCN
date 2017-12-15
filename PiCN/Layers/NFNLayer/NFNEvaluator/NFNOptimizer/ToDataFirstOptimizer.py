@@ -32,6 +32,8 @@ class ToDataFirstOptimizer(BaseNFNOptimizer):
         return True
 
     def compute_fwd(self, ast: AST) -> bool:
+        if self.cs.find_content_object(self.prefix):
+            return True
         names = self._get_names_from_ast(ast)
         functions = self._get_functions_from_ast(ast)
         names_in_fib = []
