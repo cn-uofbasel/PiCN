@@ -143,14 +143,21 @@ class test_NFNForwarder(unittest.TestCase):
         self.assertEqual(0, self.forwarder1.fib.find_fib_entry(Name("/lib/func")).faceid)
 
         #add function
-        funcname = Name("/lib/func/f1")
-        funccode = """PYTHON
-f
-def f():
-    return "Hello World" """
-        content = Content(funcname, funccode)
-        #TODO use mgmt api when possible
-        self.forwarder2.cs.add_content_object(content, True)
+        #funcname = Name("/lib/func/f1")
+        #funccode = """PYTHON
+#f
+#def f():
+   # return "Hello World" """
+        #content = Content(funcname, funccode)
+        ##TODO use mgmt api when possible
+        #self.forwarder2.cs.add_content_object(content, True)
+        testMgmtSock3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        testMgmtSock3.connect(("127.0.0.1", 4000 + self.portoffset))
+        testMgmtSock3.send("GET /icnlayer/newcontent/%2Flib%2Ffunc%2Ff1:PYTHON\nf\ndef f():\n    return 'Hello World' HTTP/1.1\r\n\r\n".encode())
+        data = testMgmtSock3.recv(1024)
+        testMgmtSock3.close()
+        self.assertEqual(data.decode(),
+                         "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newcontent OK\r\n")
 
         # create interest
         name = Name("/lib/func/f1")
