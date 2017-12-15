@@ -8,6 +8,7 @@ from random import randint
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 from PiCN.Packets import Content, Interest, Name
 from PiCN.ProgramLibs.NFNForwarder import NFNForwarder
+from PiCN.Layers.NFNLayer.NFNEvaluator.NFNExecutor import NFNPythonExecutor
 
 class test_NFNForwarder(unittest.TestCase):
     """Test the ICN Forwarder"""
@@ -109,6 +110,60 @@ class test_NFNForwarder(unittest.TestCase):
         encoded_content, addr = self.testSock.recvfrom(8192)
         content = self.encoder.decode(encoded_content)
         self.assertEqual(content, test_content)
+        self.assertEqual(len(self.forwarder1.pit.container), 0)
+        time.sleep(0.5)
+
+
+#TODO Test COMPUTATION
+    def test_NFNForwarder_simple_compute_two_nodes(self):
+        """Test a simple forwarding scenario with one additional node forwarding the data"""
+        self.forwarder1.start_forwarder()
+        self.forwarder2.start_forwarder()
+        # client <---> node1 <---> node2
+
+        # create a face
+        testMgmtSock1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        testMgmtSock1.connect(("127.0.0.1", 3000 + self.portoffset))
+        port_to = 4000 + self.portoffset
+        testMgmtSock1.send(("GET /linklayer/newface/127.0.0.1:" + str(port_to) + " HTTP/1.1\r\n\r\n").encode())
+        data = testMgmtSock1.recv(1024)
+        testMgmtSock1.close()
+        self.assertEqual(data.decode(),
+                         "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newface OK:0\r\n")
+        self.assertEqual(self.forwarder1.linklayer._ip_to_fid[("127.0.0.1", 4000 + self.portoffset)], 0)
+
+        # register a prefix
+        testMgmtSock2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        testMgmtSock2.connect(("127.0.0.1", 3000 + self.portoffset))
+        testMgmtSock2.send("GET /icnlayer/newforwardingrule/%2Flib%2Ffunc:0 HTTP/1.1\r\n\r\n".encode())
+        data = testMgmtSock2.recv(1024)
+        testMgmtSock2.close()
+        self.assertEqual(data.decode(),
+                         "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newforwardingrule OK:0\r\n")
+        self.assertEqual(0, self.forwarder1.fib.find_fib_entry(Name("/lib/func")).faceid)
+
+        #add function
+        funcname = Name("/lib/func/f1")
+        funccode = """PYTHON
+f
+def f():
+    return "Hello World" """
+        content = Content(funcname, funccode)
+        #TODO use mgmt api when possible
+        self.forwarder2.cs.add_content_object(content, True)
+
+        # create interest
+        name = Name("/lib/func/f1")
+        name.components.append("_()")
+        name.components.append("NFN")
+        encoded_interest = self.encoder.encode(Interest(name))
+        # send interest
+        self.testSock.sendto(encoded_interest, ("127.0.0.1", 3000 + self.portoffset))
+        # receive content
+        encoded_content, addr = self.testSock.recvfrom(8192)
+        content: Content = self.encoder.decode(encoded_content)
+        self.assertEqual("Hello World", content.content)
+        self.assertEqual(name, content.name)
         self.assertEqual(len(self.forwarder1.pit.container), 0)
         time.sleep(0.5)
 

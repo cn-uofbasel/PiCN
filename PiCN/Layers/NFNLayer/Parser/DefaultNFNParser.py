@@ -48,7 +48,8 @@ class DefaultNFNParser(object):
         """Take a string and create an AST"""
 
         tokens = self.tokenizer.tokenize(string)
-
+        if tokens is None:
+            return None
         depth = 0
         root = None
         for token in tokens:

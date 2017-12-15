@@ -27,7 +27,6 @@ class NFNPythonExecutor(BaseNFNExecutor):
                         entry_point = FunctionType(fcode, self._sandbox)
                     else:
                         lib_functions.append((fcode.co_name, FunctionType(fcode, self._sandbox)))
-
             if entry_point is None:
                 return None
             for lf in lib_functions: #enable calling of all functions but not the entry point
@@ -36,6 +35,7 @@ class NFNPythonExecutor(BaseNFNExecutor):
                 self._sandbox[lf[0]] = lf[1]
             return entry_point(*params)
         except:
+            #raise
             return None
 
     def _get_entry_function_name(self, function: str) -> (str, str):

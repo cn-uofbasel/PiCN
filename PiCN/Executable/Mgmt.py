@@ -29,11 +29,10 @@ def main(argv):
     elif command == "newforwardingrule":
         data = mgmt_client.add_forwarding_rule(Name(param.split(":")[0]), param.split(":")[1])
     elif command == "newcontent":
-        data = mgmt_client.add_new_content(Name(param.split(":")[0]), param.split(":")[1])
+        data = mgmt_client.add_new_content(Name(param.split(":", 1)[0]), param.split(":", 1)[1])
     if data == "error":
         error()
         return
-    print(data)
 
 def error():
     print("usage:", sys.argv[0], "port command [param]")

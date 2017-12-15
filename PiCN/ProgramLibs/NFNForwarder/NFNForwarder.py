@@ -43,7 +43,7 @@ class NFNForwarder(object):
 
         # setup nfn
         self.icnlayer._interest_to_app = True
-        self.executors = [NFNPythonExecutor]
+        self.executors = {"PYTHON": NFNPythonExecutor}
         self.nfnlayer = BasicNFNLayer(self.icnlayer.manager, self.cs, self.fib, self.pit, self.executors,
                                       debug_level=debug_level)
 

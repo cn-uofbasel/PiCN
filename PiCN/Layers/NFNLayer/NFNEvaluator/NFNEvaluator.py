@@ -63,6 +63,7 @@ class NFNEvaluator(PiCNProcess):
         """Run the evaluation process"""
         name_str, prepended = self.parser.network_name_to_nfn_str(name)
         ast: AST = self.parser.parse(name_str)
+
         self.optimizer = ToDataFirstOptimizer(prepended, self.cs, self.fib, self.pit)
         did_fwd = False
         if self.optimizer.compute_fwd(ast):
@@ -101,7 +102,7 @@ class NFNEvaluator(PiCNProcess):
             functioncode_packet = self.await_data([functionname_i])
             functioncode = functioncode_packet[0].content
             language = self.get_nf_code_language(functioncode)
-            executor = self.executor.get(language)
+            executor: BaseNFNExecutor = self.executor.get(language)()
             if executor:
                 res = executor.execute(functioncode, params)
                 return res

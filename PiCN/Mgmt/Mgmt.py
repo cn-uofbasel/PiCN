@@ -45,11 +45,11 @@ class Mgmt(PiCNProcess):
             fields = request_string.split("\r\n")
             request = fields[0]
             fields = fields[1:]
-            type, name, httpversion = request.split(" ", 3)
+            type, name, httpversion = request.split(" ", 2)
             http = {}
             for field in fields:
                 if (len(field.split(":")) == 2):
-                    key, value = field.split(':')
+                    key, value = field.split(':', 1)
                     http[key] = value
 
             # Execute MGMT
@@ -75,7 +75,7 @@ class Mgmt(PiCNProcess):
     def ll_mgmt(self, command, params, replysock):
         # newface expects /linklayer/newface/ip:port
         if (command == "newface"):
-            ip, port = params.split(":")
+            ip, port = params.split(":", 1)
             port = int(port)
             fid = self._linklayer.get_or_create_fid((ip, port), static=True)
             reply = "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newface OK:" + str(fid) + "\r\n"
@@ -88,7 +88,7 @@ class Mgmt(PiCNProcess):
     def icnl_mgmt(self, command, params, replysock):
         # newface expects /linklayer/newface/ip:port
         if (command == "newforwardingrule"):
-            prefix, faceid = params.split(":")
+            prefix, faceid = params.split(":", 1)
             faceid = int(faceid)
             prefix = prefix.replace("%2F", "/")
             name = Name(prefix)
@@ -98,7 +98,7 @@ class Mgmt(PiCNProcess):
             self.logger.info("New Forwardingrule added " + prefix + "|" + str(faceid))
             return
         elif(command == "newcontent"):
-            prefix, content = params.split(":")
+            prefix, content = params.split(":", 1)
             prefix = prefix.replace("%2F", "/")
             name = Name(prefix)
             content = Content(name, content)

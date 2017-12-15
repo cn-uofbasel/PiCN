@@ -19,7 +19,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.cs = ContentStoreMemoryExact(self.manager)
         self.fib = ForwardingInformationBaseMemoryPrefix(self.manager)
         self.pit = PendingInterstTableMemoryExact(self.manager)
-        self.executor = {"PYTHON": NFNPythonExecutor()}
+        self.executor = {"PYTHON": NFNPythonExecutor}
         self.nfnLayer: BasicNFNLayer = BasicNFNLayer(self.manager, self.cs, self.fib, self.pit, self.executor)
         self.nfnLayer.queue_from_lower = multiprocessing.Queue()
         self.nfnLayer.queue_to_lower = multiprocessing.Queue()

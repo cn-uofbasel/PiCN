@@ -21,7 +21,7 @@ class testNFNEvaluator(unittest.TestCase):
         self.fib: ForwardingInformationBaseMemoryPrefix = ForwardingInformationBaseMemoryPrefix(self.manager)
         self.pit: PendingInterstTableMemoryExact = PendingInterstTableMemoryExact(self.manager)
         self.optimizer = ToDataFirstOptimizer(None, self.cs, self.fib, self.pit)
-        self.executor = NFNPythonExecutor()
+        self.executor = NFNPythonExecutor
         self.rewrite_table = self.manager.dict()
         self.evaluator = NFNEvaluator(None, self.cs, self.fib, self.pit, self.rewrite_table)
         self.evaluator.executor["PYTHON"] = self.executor
