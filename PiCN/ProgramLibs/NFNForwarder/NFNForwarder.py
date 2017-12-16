@@ -18,7 +18,7 @@ from PiCN.Routing import BasicRouting
 
 class NFNForwarder(object):
     """NFN Forwarder for PICN"""
-
+#TODO add chunking layer
     def __init__(self, port=9000, debug_level=255):
         # debug level
         logger = Logger("NFNForwarder", debug_level)

@@ -211,6 +211,3 @@ class test_NFNForwarder(unittest.TestCase):
         self.assertEqual(name, content.name)
         self.assertEqual(len(self.forwarder1.pit.container), 0)
         time.sleep(0.5)
-        #TODO, name components must be escaped when encoding and unescaped when decoding
-
-
