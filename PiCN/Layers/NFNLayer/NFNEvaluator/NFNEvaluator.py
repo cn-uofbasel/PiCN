@@ -95,7 +95,6 @@ class NFNEvaluator(PiCNProcess):
                 params_data = self.await_data(params_requests)
                 for p in params_data:
                     params.append(p.content)
-
             functionname = Name(ast._element)
             functionname_i = Interest(functionname)
             self.request_data(functionname_i)
