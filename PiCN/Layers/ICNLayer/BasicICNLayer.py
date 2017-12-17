@@ -118,7 +118,7 @@ class BasicICNLayer(LayerProcess):
 
     def handleContent(self, faceid: int, content: Content, to_lower: multiprocessing.Queue,
                        to_higher: multiprocessing.Queue, from_local: bool = False):
-        self.logger.info("Handling Content")
+        self.logger.info("Handling Content " + str(content.name) + " " + str(content.content))
         pit_entry = self.check_pit(content.name, content.name_payload)
         if pit_entry is None:
             self.logger.info("No PIT entry for content object available, dropping")

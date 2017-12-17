@@ -39,7 +39,7 @@ class BasicChunkLayer(LayerProcess):
         faceid = data[0]
         packet = data[1]
         if isinstance(packet, Interest):
-            self.logger.info("Packet is Interest")
+            self.logger.info("Packet is Interest " + str(packet.name))
             requestentry = self.get_requesttableentry(packet.name)
             if requestentry is not None:
                 return
@@ -47,7 +47,7 @@ class BasicChunkLayer(LayerProcess):
             to_lower.put([faceid, packet])
             return
         if isinstance(packet, Content):
-            self.logger.info("Packet is Content")
+            self.logger.info("Packet is Content " + str(packet.name) + "; " + str(packet.content))
             if len(packet.content) < self.chunk_size:
                 to_lower.put([faceid, packet])
             else:

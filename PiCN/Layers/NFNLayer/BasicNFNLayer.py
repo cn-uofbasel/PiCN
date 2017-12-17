@@ -50,7 +50,7 @@ class BasicNFNLayer(LayerProcess):
         packet = data[1]
         self.logger.info("Handling Packet")
         if isinstance(packet, Interest):
-            self.logger.info("Handling Interest")
+            self.logger.info("Handling Interest " + str(packet.name))
             if packet.name.components[-1] != "NFN":
                 to_lower.put([id, packet])
             elif len(packet.name.components) > 2 and packet.name.components[-3] == "R2C":
@@ -58,7 +58,7 @@ class BasicNFNLayer(LayerProcess):
             else:
                 self.add_computation(packet, running_computations)
         elif isinstance(packet, Content):
-            self.logger.info("Handling Content")
+            self.logger.info("Handling Content " + str(packet.name) + " " + str(packet.content))
             if len(packet.name.components) > 2 and packet.name.components[-3] == "R2C":
                 self.handle_R2C_content(packet)
             else:
@@ -159,7 +159,7 @@ class BasicNFNLayer(LayerProcess):
             for cid in running_computations.keys():
                 comp = running_computations[cid]
                 poller.register(comp.computation_out_queue._reader, READ_ONLY)
-            ready_vars = poller.poll()
+            ready_vars = poller.poll(0.1)
             for filno, var in ready_vars:
                 new_comps = []
                 stop_comps = []
@@ -168,6 +168,7 @@ class BasicNFNLayer(LayerProcess):
                     if filno == comp.computation_out_queue._reader.fileno() and not comp.computation_out_queue.empty():
                         while not comp.computation_out_queue.empty():
                             packet = comp.computation_out_queue.get()
+                            self.logger.info("Packet from comp queue")
                             self.handle_packet_from_computation_queues(cid, packet, running_computations,
                                                                        new_comps, stop_comps)
                 for nc in new_comps:
@@ -233,7 +234,7 @@ class BasicNFNLayer(LayerProcess):
 
     def start_computation(self, interest, running_computations):
         evaluator = self.nfn_evaluator_type(interest, self.content_store, self.fib, self.pit,
-                                            self.rewrite_table, self.executor)
+                                            self.rewrite_table, self.executor, self.logger.level)
         running_computations[self._next_computation_id] = evaluator
         running_computations[self._next_computation_id].start_process()
         self._next_computation_id = self._next_computation_id + 1

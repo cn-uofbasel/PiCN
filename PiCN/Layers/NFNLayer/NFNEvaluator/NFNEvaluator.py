@@ -21,8 +21,8 @@ class NFNEvaluator(PiCNProcess):
 
     def __init__(self, interest: Interest, cs: BaseContentStore, fib: BaseForwardingInformationBase,
                  pit: BasePendingInterestTable, rewrite_table: Dict[Interest, List[Interest]],
-                 executor: Dict[str, type(BaseNFNExecutor)] = {}):
-        super().__init__("NFNEvaluator", 255)
+                 executor: Dict[str, type(BaseNFNExecutor)] = {}, debug_level: int = 255):
+        super().__init__("NFNEvaluator", debug_level)
         self.interest: Interest = interest
         self.computation_in_queue: multiprocessing.Queue = multiprocessing.Queue()  # data to computation
         self.computation_out_queue: multiprocessing.Queue = multiprocessing.Queue()  # data from computation
@@ -63,10 +63,11 @@ class NFNEvaluator(PiCNProcess):
         """Run the evaluation process"""
         name_str, prepended = self.parser.network_name_to_nfn_str(name)
         ast: AST = self.parser.parse(name_str)
-
+        self.logger.info("Evaluating " + str(name))
         self.optimizer = ToDataFirstOptimizer(prepended, self.cs, self.fib, self.pit)
         did_fwd = False
         if self.optimizer.compute_fwd(ast):
+            self.logger.info("FWD")
             did_fwd = True
             computation_strs = self.optimizer.rewrite(ast)
             interests = []
@@ -82,6 +83,7 @@ class NFNEvaluator(PiCNProcess):
                 self.computation_out_queue.put(interests)
 
         if self.optimizer.compute_local(ast):
+            self.logger.info("Compute Local")
             #request child nodes
             if not isinstance(ast, AST_FuncCall):
                 return None
@@ -92,7 +94,9 @@ class NFNEvaluator(PiCNProcess):
                 if i is not None:
                     params_requests.append(i)
             if len(params_requests) > 0:
+                self.logger.info("Data awaiting")
                 params_data = self.await_data(params_requests)
+                self.logger.info("Data received")
                 for p in params_data:
                     params.append(p.content)
             functionname = Name(ast._element)
@@ -125,6 +129,7 @@ class NFNEvaluator(PiCNProcess):
         else:
             return None
         interest = Interest(name)
+        self.logger.info("Request data " + str(name))
         self.request_data(interest)
         return interest
 
