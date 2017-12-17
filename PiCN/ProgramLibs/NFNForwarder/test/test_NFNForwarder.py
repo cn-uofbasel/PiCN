@@ -17,7 +17,7 @@ class test_NFNForwarder(unittest.TestCase):
         self.portoffset = randint(0,999)
 
         self.forwarder1 = NFNForwarder(3000 + self.portoffset, debug_level=255)
-        self.forwarder2 = NFNForwarder(4000 + self.portoffset, debug_level=0)
+        self.forwarder2 = NFNForwarder(4000 + self.portoffset, debug_level=255)
         self.encoder = SimpleStringEncoder()
 
         self.testSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

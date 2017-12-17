@@ -108,7 +108,11 @@ class BasicNFNLayer(LayerProcess):
         for on in original_names:
             cid = 0
             mapped_back_content = Content(on, packet.content)
-            self.queue_to_lower.put([cid, mapped_back_content])
+            if(on in self._computation_request_table):
+                cids = self._computation_request_table[on]
+                for cid in cids:
+                    self._running_computations[cid].computation_in_queue.put(mapped_back_content)
+            self.queue_to_lower.put([cid, mapped_back_content]) #TODO, avoid this if not necessary? cid=-1?
         #stop computation
         if self._computation_request_table.get(packet.name):
             waiting_comp_ids = self._computation_request_table[packet.name]
@@ -168,7 +172,6 @@ class BasicNFNLayer(LayerProcess):
                     if filno == comp.computation_out_queue._reader.fileno() and not comp.computation_out_queue.empty():
                         while not comp.computation_out_queue.empty():
                             packet = comp.computation_out_queue.get()
-                            self.logger.info("Packet from comp queue")
                             self.handle_packet_from_computation_queues(cid, packet, running_computations,
                                                                        new_comps, stop_comps)
                 for nc in new_comps:

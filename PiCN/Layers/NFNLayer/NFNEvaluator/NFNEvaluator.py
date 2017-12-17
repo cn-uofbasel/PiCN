@@ -94,9 +94,7 @@ class NFNEvaluator(PiCNProcess):
                 if i is not None:
                     params_requests.append(i)
             if len(params_requests) > 0:
-                self.logger.info("Data awaiting")
                 params_data = self.await_data(params_requests)
-                self.logger.info("Data received")
                 for p in params_data:
                     params.append(p.content)
             functionname = Name(ast._element)
