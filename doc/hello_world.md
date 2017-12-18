@@ -8,14 +8,25 @@ Also note that we currently develop and test PiCN on Linux and Mac OS X machines
 
 ## Getting Started as a User
 
-**Clone the Repository:**
+**Clone the Repository**
+
+Download the latest version of PiCN to your machine:
 
 > `git clone https://github.com/cn-uofbasel/PiCN.git`
 
-**Run a ...**
+If you run that command in your home directory, the root of PiCN is `~/PiCN`. In case you decided to clone to another directory, adjust the following commands accordingly.
+
+**Run Unit Tests (optional)**
 
 > xxx
 
+**...**
+
+> xxx
+
+**Next Steps**
+
+Congratulations, PiCN runs on your machine! If you want to learn more, go to   
 
 
 ## Getting Started as a Developer
@@ -25,3 +36,5 @@ If you do not yet have a favourite Python IDE, we recommend you to try [PyCharm 
 **Clone the Repository:**
 
 > `git clone https://github.com/cn-uofbasel/PiCN.git`
+
+...
