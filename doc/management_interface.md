@@ -47,6 +47,8 @@ Applies to all [runnables](runnables.md).
 * [RFC 3986](https://tools.ietf.org/html/rfc3986)
 * [Wikipedia](https://en.wikipedia.org/wiki/Percent-encoding)
 
+|Escaped|ASCII|
+|-----|---|
 |`%21`|`!`|
 |`%22`|`"`|
 |`%23`|`#`|
