@@ -4,4 +4,4 @@
 * [Runnables](runnables.md)
 * [Management Interface](management_interface.md)
 * [Architecture](architecture.md)
-* [Project Structure](project_structure.md)
+* [Package Structure](package_structure.md)

@@ -8,7 +8,7 @@ This page describes PiCN's HTTP-based management protocol. If your are intereste
 
 Instructs the [link layer](architecture.md) to create a new UDP face. 
 
-> GET /linklayer/newface/< ip >:< targetport > HTTP/1.1\r\n\r\n
+> `GET /linklayer/newface/< ip >:< targetport > HTTP/1.1\r\n\r\n`
 
 **Return:** Face ID
 
@@ -18,7 +18,7 @@ Instructs the [link layer](architecture.md) to create a new UDP face.
 
 Instructs the [ICN layer](architecture.md) to add a certain forwarding rule to the forwarding information base.
 
-> GET /icnlayer/newforwardingrule/<prefix>:<faceid> HTTP/1.1\r\n\r\n
+> `GET /icnlayer/newforwardingrule/<prefix>:<faceid> HTTP/1.1\r\n\r\n`
 
 **Return:** ...
 
@@ -28,7 +28,7 @@ Instructs the [ICN layer](architecture.md) to add a certain forwarding rule to t
 
 Instructs the [ICN layer](architecture.md) to generate a certain data packet and put it into the content store.
 
-> GET /icnlayer/newcontent/< name >:< data > HTTP/1.1\r\n\r\n
+> `GET /icnlayer/newcontent/< name >:< data > HTTP/1.1\r\n\r\n`
 
 **Return:** ...
 
@@ -38,7 +38,7 @@ Instructs the [ICN layer](architecture.md) to generate a certain data packet and
 
 Instructs the main process of a runnable to terminate all layers and exit. Applies to all [runnables](runnables.md).
 
-> GET /shutdown HTTP/1.1\r\n\r\n
+> `GET /shutdown HTTP/1.1\r\n\r\n`
 
 **Return:** ...
 
