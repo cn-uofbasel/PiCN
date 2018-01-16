@@ -46,3 +46,17 @@ If you do not yet have a favourite Python IDE, we recommend you to try [PyCharm 
 ![PyCharm Open 2](https://raw.githubusercontent.com/cn-uofbasel/PiCN/master/doc/pycharm-open-2.png "PyCharm Open 2")
 
 Note: Select the root of the cloned git repository.
+
+**3. Mark Sources Root (Optional)**
+
+On some systems it is necessary to mark the root folder of the python sources in PyCharm. If the following steps fail, try:
+ * Right-click the root python packet ("PiCN") in the project outline.
+ * Select `Mark directory as..` -> `Sources Root`
+ 
+**4. Start a CCN Forwarder**
+ 
+ * Right-click the file `PiCN.Executable.ICNForwarder.py` in the project outline
+ * Select `Run ''ICNForwarder'`
+ * If you see following output in the tool bar, a forwarder is running (UDP face on port 9000):
+ 
+ ![PyCharm Relay](https://raw.githubusercontent.com/cn-uofbasel/PiCN/master/doc/pycharm-run-relay.png "PyCharm Open 2")
