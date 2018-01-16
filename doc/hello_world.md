@@ -39,9 +39,10 @@ If you do not yet have a favourite Python IDE, we recommend you to try [PyCharm 
 
 **2. Run PyCharm**
 
-**3. Open Project**
+**3. Open PiCN project in PyCharm**
 
-![PyCharm Open 1](https://raw.githubusercontent.com/cn-uofbasel/PiCN/master/doc/pycharm-open-1.png "PyCharm Open 1")
+![PyCharm Open 1](https://raw.githubusercontent.com/cn-uofbasel/PiCN/master/doc/pycharm-open-1.png "PyCharm Open 1" | width=500)
 
 ![PyCharm Open 2](https://raw.githubusercontent.com/cn-uofbasel/PiCN/master/doc/pycharm-open-2.png "PyCharm Open 2")
 
+Note: Select the root of the cloned git repository.
