@@ -13,7 +13,7 @@ Instructs the [link layer](architecture.md) to create a new UDP face.
 **Return:** Face ID
 
 
-s
+
 ### Add Forwarding Rule
 
 Instructs the [ICN layer](architecture.md) to add a certain forwarding rule to the forwarding information base.

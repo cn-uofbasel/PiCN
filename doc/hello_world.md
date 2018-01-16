@@ -58,7 +58,7 @@ Note: Select the root of the cloned git repository.
 
 **3. Mark Sources Root (Optional)**
 
-On some systems it is necessary to mark the root folder of the python sources in PyCharm. If the following steps fail, try:
+On some systems it is necessary to mark the root folder of the python sources in PyCharm. If the following step fails, try:
  * Right-click the root python packet (`PiCN`) in the project outline.
  * Select `Mark directory as..` -> `Sources Root`
  
@@ -74,4 +74,4 @@ On some systems it is necessary to mark the root folder of the python sources in
 
 **Next Steps**
 
-Nice, your development environment is ready! If you want to learn more about how to setup an entire network, read the [Tutorial](tutorial.md). If you want to learn about the internals of PiCN go to [Architecture](architecture.md).
+Nice, your development environment is ready! If you want to learn more about how to setup an entire network, read the [Tutorial](tutorial.md). If you want to understand the internals of PiCN go to [Architecture](architecture.md).
