@@ -20,13 +20,13 @@ If you run that command in your home directory, the root of PiCN is `~/PiCN`. In
 
 > xxx
 
-**...**
+**Xxx**
 
 > xxx
 
 **Next Steps**
 
-Congratulations, PiCN runs on your machine! If you want to learn more, go to   
+Congratulations, PiCN runs on your machine! If you want to learn more, go to the [tutorial](tutorial.md).  
 
 
 ## Getting Started as a Developer
