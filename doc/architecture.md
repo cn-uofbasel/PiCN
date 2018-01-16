@@ -8,8 +8,8 @@ At its highest level, a node in PiCN is a stack of layers. Each layer interacts 
 
 The stack of a vanilla relay might look as following:
 
+|        |
 |:------:|
-| xxxxxx |
 | xxxxxx |
 | xxxxxx |
 | xxxxxx |
