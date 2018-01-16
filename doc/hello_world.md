@@ -60,3 +60,7 @@ On some systems it is necessary to mark the root folder of the python sources in
  * If you see following output in the tool bar, a forwarder is running (UDP face on port 9000):
  
  ![PyCharm Relay](https://raw.githubusercontent.com/cn-uofbasel/PiCN/master/doc/pycharm-run-relay.png "PyCharm Open 2")
+
+**Next Steps**
+
+Nice, your development environment is read! If you want to learn more about how to setup an entire network, read [tutorial](tutorial.md). If you want to learn about the internals of PiCN go to [Architecture](architecture.md).
