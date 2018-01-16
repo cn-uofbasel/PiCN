@@ -6,7 +6,7 @@
 * [Getting Started with PiCN](hello_world.md)
 * [Tutorial](tutorial.md)
 
-### Operational xxx
+### Operational Matters
 
 * [Runnables](runnables.md)
 * [Management Interface](management_interface.md)
