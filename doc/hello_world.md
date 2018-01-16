@@ -33,8 +33,15 @@ Congratulations, PiCN runs on your machine! If you want to learn more, go to the
 
 If you do not yet have a favourite Python IDE, we recommend you to try [PyCharm (Community Edition)](https://www.jetbrains.com/pycharm/download).
 
-**Clone the Repository:**
+**1. Clone the Repository**
 
 > `git clone https://github.com/cn-uofbasel/PiCN.git`
 
-...
+**2. Run PyCharm**
+
+**3. Open Project**
+
+![PyCharm Open 1](https://raw.githubusercontent.com/cn-uofbasel/PiCN/master/doc/pycharm-open-1.png "PyCharm Open 1")
+
+![PyCharm Open 2](https://raw.githubusercontent.com/cn-uofbasel/PiCN/master/doc/pycharm-open-2.png "PyCharm Open 2")
+
