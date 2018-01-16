@@ -8,11 +8,14 @@ At its highest level, a node in PiCN is a stack of layers. Each layer interacts 
 
 The stack of a vanilla relay might look as following:
 
-|   xxxxxxxxxxxxxx   |
-|:------------------:|
-| **xxxxxxxxxxxxxx** |
-| **xxxxxxxxxxxxxx** |
-| **xxxxxxxxxxxxxx** |
-| **xxxxxxxxxxxxxx** |
-| **xxxxxxxxxxxxxx** |
-| **xxxxxxxxxxxxxx** |
+|         ICN Layer         |
+|:-------------------------:|
+| **Packet Encoding Layer** |
+| **Link Layer**            |
+
+
+A Link Layer implements the face abstraction and manages the linking with neighbouring nodes. 
+The Packet Encoding Layer encodes and decodes wire format packets (as used by the link layer) to python objects (as handled by the ICN layer).
+The ICN Layer inplements the actual handling of interests and content objects. Also state (CS, FIB, PIT) are maintained by the ICN layer.
+
+By convention classes implementing a layer are placed in the packet `PiCN.Layers`. Such a class inherits from `PiCN.Processes.LayerProcess` . On OS level each layer is a separate process.
