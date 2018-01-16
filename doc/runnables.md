@@ -6,9 +6,11 @@
 > python3 PiCn/Executable/ICNForwarder.py < listeningport >
 
 
+
 ### Starting a Repository
 
 > python3 PiCn/Executable/ICNDataRepository.py < path-on-disk > < name-prefix > < listeningport >
+
 
 
 ### Fetching a single content object (without chunking)
@@ -16,9 +18,11 @@
 > python3 PiCn/Executable/Fetch.py < ip > < port > < name >
 
 
+
 ### Fetch a high-level object (i.e. handle chunking)
 
 > python3 PiCn/Executable/Fetch.py < ip > < port > < name >
+
 
 
 ### Send a Management Command to an Instance

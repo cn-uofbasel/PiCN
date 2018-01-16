@@ -13,14 +13,12 @@ Instructs the [link layer](architecture.md) to create a new UDP face.
 **Return:** Face ID
 
 
-
+s
 ### Add Forwarding Rule
 
 Instructs the [ICN layer](architecture.md) to add a certain forwarding rule to the forwarding information base.
 
 > `GET /icnlayer/newforwardingrule/<prefix>:<faceid> HTTP/1.1\r\n\r\n`
-
-**Return:** ...
 
 
 
@@ -30,8 +28,6 @@ Instructs the [ICN layer](architecture.md) to generate a certain data packet and
 
 > `GET /icnlayer/newcontent/< name >:< data > HTTP/1.1\r\n\r\n`
 
-**Return:** ...
-
 
 
 ### Shutdown
@@ -40,7 +36,6 @@ Instructs the main process of a runnable to terminate all layers and exit. Appli
 
 > `GET /shutdown HTTP/1.1\r\n\r\n`
 
-**Return:** ...
 
 --- 
 
