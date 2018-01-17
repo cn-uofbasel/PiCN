@@ -106,3 +106,18 @@ class test_Fetch(unittest.TestCase):
         fetch_name.components.append("NFN")
         content = self.fetch.fetch_data(fetch_name)
         self.assertEqual(self.data3.upper(), content)
+
+    def test_compute_on_large_data_over_forwarder_data_from_repo_to_data_prefix(self):
+        """Test fetch result with large input data from repo with a to data prefix"""
+        #TODO, if nack is received and no other strategy, compute local <<< TEST FAILS!!!
+        self.ICNRepo.start_repo()
+        self.forwarder1.start_forwarder()
+        self.forwarder2.start_forwarder()
+        time.sleep(0.1)
+        self.add_face_and_forwadingrule()
+        self.mgmtClient2.add_new_content(Name("/lib/func/f1"), "PYTHON\nf\ndef f(a):\n    return a.upper()")
+        fetch_name = Name("/test/data/d3")
+        fetch_name.components.append("/lib/func/f1(_)")
+        fetch_name.components.append("NFN")
+        content = self.fetch.fetch_data(fetch_name)
+        self.assertEqual(self.data3.upper(), content)
