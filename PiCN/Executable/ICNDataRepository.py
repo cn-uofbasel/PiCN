@@ -18,7 +18,7 @@ def main(argv):
 
     port = 9000
     try:
-        port = int(argv[1])
+        port = int(argv[3])
     except Exception:
         port = 9000
 
