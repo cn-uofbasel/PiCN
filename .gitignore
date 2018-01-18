@@ -3,6 +3,7 @@ build/*
 .idea/*
 .eggs/*
 PiCN.egg-info/*
+pyndn.egg-info/*
 dist/*
 .coverage
 nosetests.xml
