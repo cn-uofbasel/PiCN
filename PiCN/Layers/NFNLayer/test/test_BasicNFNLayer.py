@@ -228,6 +228,7 @@ def f():
 
     def test_fwd_computation_nack_stop_fwd_nack(self):
         """Test forwarding of a computation and stop computation"""
+        #FIXME Test will fail and block if NFN tries to compute local if nack is received
         self.fib.add_fib_entry(Name("/test"), 1, True)
         self.nfnLayer.start_process()
         cid = 1
