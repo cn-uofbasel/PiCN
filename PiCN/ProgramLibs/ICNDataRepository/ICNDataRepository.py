@@ -12,6 +12,7 @@ from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 from PiCN.Layers.RepositoryLayer.Repository import SimpleFileSystemRepository
 from PiCN.Logger import Logger
 from PiCN.Packets import Name
+from PiCN.Mgmt import Mgmt
 
 
 class ICNDataRepository(object):
@@ -70,12 +71,18 @@ class ICNDataRepository(object):
         self.repolayer.queue_from_lower = self.q_chunk_to_repo_up
         self.repolayer.queue_to_lower = self.q_repo_to_chunk_down
 
+        # mgmt
+        self.mgmt = Mgmt(None, None, None, self.linklayer, port, self.start_repo, repo_path=foldername,
+                         repo_prfx=icnprefix, debug_level=debug_level)
+
     def start_repo(self):
         # start processes
         self.linklayer.start_process()
         self.packetencodinglayer.start_process()
         self.chunklayer.start_process()
         self.repolayer.start_process()
+        self.mgmt.start_process()
+
 
     def stop_repo(self):
         #Stop processes

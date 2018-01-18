@@ -79,7 +79,8 @@ class BasicNFNLayer(LayerProcess):
             original_packet_names = self.rewrite_table.get(packet.name)
             del self.rewrite_table[packet.name]
             if not self._further_rewirtes_table.get(packet.name):
-                self.queue_to_lower.put([id, packet])
+                #TODO Start Computation here, if no name is left
+                #self.queue_to_lower.put([id, packet])
                 if packet.name in self._further_rewirtes_table.keys():
                     del self._further_rewirtes_table[packet.name]
                 return

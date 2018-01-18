@@ -24,6 +24,13 @@ class MgmtClient(object):
         param = name.to_string() + ":" + data
         return self.layercommand("icnlayer", "newcontent", param.replace("/", "%2F"))
 
+    def get_repo_prefix(self):
+        return self.layercommand("repolayer", "getprefix", "")
+
+    def get_repo_path(self):
+        return self.layercommand("repolayer", "getpath", "")
+
+
     def layercommand(self, layer: str, command: str, param: str) -> str:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((self.target_ip, self.target_port))

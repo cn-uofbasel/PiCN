@@ -21,12 +21,11 @@ If you run that command in your home directory, the root of PiCN is `~/PiCN`. In
 
 **Run Unit Tests (optional)**
 
-> xxx
+> `python setup.py test`
 
+or
 
-**Xxx**
-
-> xxx
+> `python setup.py nosetests`
 
 
 **Next Steps**

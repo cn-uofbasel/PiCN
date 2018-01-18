@@ -1,6 +1,7 @@
 """Mgmt System for PiCN"""
 
 import multiprocessing
+import os
 import select
 import socket
 import time
@@ -18,12 +19,14 @@ class Mgmt(PiCNProcess):
     """Mgmt System for PiCN"""
 
     def __init__(self, cs: BaseContentStore, fib: BaseForwardingInformationBase, pit: BasePendingInterestTable,
-                 linklayer: LayerProcess, port: int, shutdown = None, debug_level=255):
+                 linklayer: LayerProcess, port: int, shutdown = None, repo_prfx: str=None, repo_path: str=None,  debug_level=255):
         super().__init__("MgmtSys", debug_level)
         self._cs: BaseContentStore = cs
         self._fib: BaseForwardingInformationBase = fib
         self._pit: BasePendingInterestTable = pit
         self._linklayer: LayerProcess = linklayer
+        self._repo_prfx = repo_prfx
+        self._repo_path = repo_path
         self._port: int = port
 
         # init MGMT
@@ -65,6 +68,8 @@ class Mgmt(PiCNProcess):
                     self.ll_mgmt(command, params, replysock)
                 elif(layer == "icnlayer"):
                     self.icnl_mgmt(command, params, replysock)
+                elif(layer == "repolayer"):
+                    self.repol_mgmt(command, params, replysock)
             elif len(mgmt_request) == 2:
                 if mgmt_request[1] == "shutdown":
                     self.logger.info("Shutdown")
@@ -89,11 +94,14 @@ class Mgmt(PiCNProcess):
             return
 
     def icnl_mgmt(self, command, params, replysock):
+        if(self._cs == None or self._fib == None or self._pit == None):
+            reply = "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n Not a Forwarder OK\r\n"
+            replysock.send(reply.encode())
         # newface expects /linklayer/newface/ip:port
-        if (command == "newforwardingrule"):
+        elif (command == "newforwardingrule"):
             prefix, faceid = params.split(":", 1)
             faceid = int(faceid)
-            prefix = prefix.replace("%2F", "/")
+            prefix = prefix.replace("%2F", "/a")
             name = Name(prefix)
             self._fib.add_fib_entry(name, faceid, True)
             reply = "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newforwardingrule OK:" + str(faceid) + "\r\n"
@@ -113,6 +121,22 @@ class Mgmt(PiCNProcess):
         else:
             self.unknown_command(replysock)
             return
+
+    def repol_mgmt(self, command, params, replysock):
+        if(self._repo_path == None or self._repo_prfx == None):
+            reply = "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n Not a Repo OK\r\n"
+            replysock.send(reply.encode())
+        elif(command == "getprefix"):
+            reply = "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n " + str(self._repo_prfx) + " OK\r\n"
+            replysock.send(reply.encode())
+        elif(command =="getpath"):
+            abs_path = os.path.abspath(str(self._repo_path))
+            reply = "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n " + str(abs_path) + " OK\r\n"
+            replysock.send(reply.encode())
+        else:
+            self.unknown_command(replysock)
+            return
+
 
     def unknown_command(self, replysock):
         reply = "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n Unknown Command\r\n"
