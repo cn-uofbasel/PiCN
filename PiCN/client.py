@@ -13,13 +13,15 @@ from   PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 from   PiCN.Packets import Content, Interest, Nack
 import PiCN.Mgmt
 
+# -----------------------------------------------------------------
+
 class ICN():
 
     def __init__(self):
         self.encoder = SimpleStringEncoder()
         self.sock = None
 
-    def attach(self, ipAddr, ipPort, repoPort):
+    def attach(self, ipAddr: str, ipPort: int, repoPort: int):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         send_port = randint(10000, 64000)
         self.sock.bind(("0.0.0.0", send_port))
@@ -28,8 +30,6 @@ class ICN():
         mgmt = PiCN.Mgmt.MgmtClient(repoPort)
         self.repoPrefix = mgmt.get_repo_prefix()
         self.repoPath = mgmt.get_repo_path()
-        # self.repoPrefix = mgmt.parseHTTPReply(self.repoPrefix)
-        # self.repoPath   = mgmt.parseHTTPReply(self.repoPath)
 
     def detach(self):
         self.sock = None
@@ -44,17 +44,19 @@ class ICN():
             return None
         return self.repoPath
 
-    def writeChunk(self, name, data):
+    def writeChunk(self, name: str, data: bytes):
         pfx = self.repoPrefix + '/'
         if name[:len(pfx)] != pfx:
             print("wrong prefix")
             return
         fname = os.path.join(self.repoPath, name[len(pfx):])
         # FIXME: should create subdirectories if fname has slashes
+        if os.path.isfile(fname):
+            raise IOError
         with open(fname, "wb") as f:
-            f.write(data.encode('ascii'))
+            f.write(data)
 
-    def readChunk(self, name):
+    def readChunk(self, name: str):
         interest = Interest(name)
         encoded_interest = self.encoder.encode(interest)
         self.sock.sendto(encoded_interest, (self.ipAddr, self.ipPort))
