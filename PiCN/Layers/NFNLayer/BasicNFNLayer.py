@@ -80,7 +80,7 @@ class BasicNFNLayer(LayerProcess):
             del self.rewrite_table[packet.name]
             if not self._further_rewirtes_table.get(packet.name):
                 #TODO Start Computation here, if no name is left
-                #self.queue_to_lower.put([id, packet])
+                self.queue_to_lower.put([id, packet])
                 if packet.name in self._further_rewirtes_table.keys():
                     del self._further_rewirtes_table[packet.name]
                 return
@@ -229,7 +229,6 @@ class BasicNFNLayer(LayerProcess):
             self.ageing_lock.release()
             return
         else:
-
             while((not self._pending_computations.empty())
                   and (len(running_computations.keys()) < self._max_running_computations)):
                 interest = self._pending_computations.get()
