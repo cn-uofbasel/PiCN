@@ -6,7 +6,6 @@ from PiCN.Packets import Name
 
 def main(argv):
 
-
     if len(argv) < 3:
         error()
         return
@@ -14,16 +13,25 @@ def main(argv):
     command = argv[2]
 
     mgmt_client = MgmtClient(port)
+    data = "error"
 
     if command == "shutdown":
         mgmt_client.shutdown()
         return
+    elif command == "getrepoprefix":
+        data = mgmt_client.get_repo_prefix()
+        print(data)
+        return
+    elif command == "getrepopath":
+        data = mgmt_client.get_repo_path()
+        print(data)
+        return
+
     if len(argv) != 4:
         error()
         return
 
     param: str = argv[3]
-    data = "error"
     if command == "newface":
         data = mgmt_client.add_face(param.split(":")[0], param.split(":")[1])
     elif command == "newforwardingrule":
@@ -34,10 +42,14 @@ def main(argv):
         error()
         return
 
+    print(data)
+
 def error():
     print("usage:", sys.argv[0], "port command [param]")
     print("\tcommands:")
     print("\t\tshutdown")
+    print("\t\tgetrepopath")
+    print("\t\tgetrepoprefix")
     print("\t\tnewface ip:port")
     print("\t\tnewforwardingrule prefix:face")
     print("\t\tnewcontent name:content")
