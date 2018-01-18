@@ -1,3 +1,5 @@
+#!/usr/bin/env python3.6
+
 """Client for The Mgmt of PiCN"""
 
 import socket
@@ -25,17 +27,17 @@ class MgmtClient(object):
         return self.layercommand("icnlayer", "newcontent", param.replace("/", "%2F"))
 
     def get_repo_prefix(self):
-        return self.layercommand("repolayer", "getprefix", "")
+        reply = self.layercommand("repolayer", "getprefix", "")
+        return self.parseHTTPReply(reply)
 
     def get_repo_path(self):
-        return self.layercommand("repolayer", "getpath", "")
-
+        reply = self.layercommand("repolayer", "getpath", "")
+        return self.parseHTTPReply(reply)
 
     def parseHTTPReply(self, data: str):
         data = data.replace("HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n ", "")
         data = data[:-5]
         return data
-
 
     def layercommand(self, layer: str, command: str, param: str) -> str:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

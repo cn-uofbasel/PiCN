@@ -1,15 +1,17 @@
 #!/usr/bin/env python3.6
+
 # PiCN/client.py
 # (c) 2018-01-18 <christian.tschudin@unibas.ch>
 
-import binascii
+import os
+from   random import randint
 import socket
 import sys
 sys.path.append('..')
-from random import randint,getrandbits
 
-from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
-from PiCN.Packets import Content, Interest, Nack
+from   PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
+from   PiCN.Packets import Content, Interest, Nack
+import PiCN.Mgmt
 
 class ICN():
 
@@ -17,34 +19,42 @@ class ICN():
         self.encoder = SimpleStringEncoder()
         self.sock = None
 
-    def attach(self, ipAddr, ipPort):
+    def attach(self, ipAddr, ipPort, repoPort):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         send_port = randint(10000, 64000)
         self.sock.bind(("0.0.0.0", send_port))
         self.ipAddr = ipAddr
         self.ipPort = ipPort
-        self.prefix = "/the/prefix"
-        self.repoPath = "/Users/tschudin/pap/PiCN/examples/repo"
+        mgmt = PiCN.Mgmt.MgmtClient(repoPort)
+        self.repoPrefix = mgmt.get_repo_prefix()
+        self.repoPath = mgmt.get_repo_path()
+        # self.repoPrefix = mgmt.parseHTTPReply(self.repoPrefix)
+        # self.repoPath   = mgmt.parseHTTPReply(self.repoPath)
 
     def detach(self):
         self.sock = None
-        pass
 
-    def getDefaultPrefix(self):
+    def getRepoPrefix(self):
         if not self.sock:
             return None
-        return self.prefix
+        return self.repoPrefix
+
+    def getRepoPath(self):
+        if not self.sock:
+            return None
+        return self.repoPath
 
     def writeChunk(self, name, data):
-        repoDir = self.repoPath
-        c = Content(name, data)
-        encoded_content = self.encoder.encode(c)
-        fname = binascii.hexlify(getrandbits(64).to_bytes(8, byteorder='big'))
-        with open(repoDir + "/" + fname.decode('ascii'), "wb") as f:
-            f.write(encoded_content)
+        pfx = self.repoPrefix + '/'
+        if name[:len(pfx)] != pfx:
+            print("wrong prefix")
+            return
+        fname = os.path.join(self.repoPath, name[len(pfx):])
+        # FIXME: should create subdirectories if fname has slashes
+        with open(fname, "wb") as f:
+            f.write(data.encode('ascii'))
 
     def readChunk(self, name):
-        print("reading %s" % name)
         interest = Interest(name)
         encoded_interest = self.encoder.encode(interest)
         self.sock.sendto(encoded_interest, (self.ipAddr, self.ipPort))
