@@ -101,7 +101,7 @@ class Mgmt(PiCNProcess):
         elif (command == "newforwardingrule"):
             prefix, faceid = params.split(":", 1)
             faceid = int(faceid)
-            prefix = prefix.replace("%2F", "/a")
+            prefix = prefix.replace("%2F", "/")
             name = Name(prefix)
             self._fib.add_fib_entry(name, faceid, True)
             reply = "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newforwardingrule OK:" + str(faceid) + "\r\n"

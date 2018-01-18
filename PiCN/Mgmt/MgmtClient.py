@@ -31,6 +31,12 @@ class MgmtClient(object):
         return self.layercommand("repolayer", "getpath", "")
 
 
+    def parseHTTPReply(self, data: str):
+        data = data.replace("HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n ", "")
+        data = data[:-5]
+        return data
+
+
     def layercommand(self, layer: str, command: str, param: str) -> str:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((self.target_ip, self.target_port))
