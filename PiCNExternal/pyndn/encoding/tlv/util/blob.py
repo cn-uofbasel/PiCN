@@ -26,7 +26,7 @@ Note that the pointer to the buffer can be None.
 
 import sys
 from io import BytesIO
-from standalone.util.common import Common
+from PiCNExternal.pyndn.encoding.tlv.util.common import Common
 
 class Blob(object):
     """
