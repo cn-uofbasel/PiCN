@@ -5,11 +5,14 @@
 
 # (c) 2018-01-19 <christian.tschudin@unibas.ch>
 
-class DeFLICer():
+class DeFlic():
 
-    def __init__(self, icnLayer, decoder):
-        self.icnLayer = icnLayer
+    def __init__(self, icn, decoder=None):
+        self.icn = icn
         self.decoder = decoder
+
+    def _payload2table(self, data: bytes):
+        pass
 
     def _indexTable2data(self, table): # traverse the manifest tree
         # input: index table
@@ -32,12 +35,10 @@ class DeFLICer():
     def manifestToBytes(self, manifest: bytes):
         # input: chunk (containing a manifest)
         # output: re-assembled (raw e2e) bytes
-        pkt = self.decoder(manifest)
-        if pkt.T != Manifest:
-            raise XXX
-        tbl = self.decoder(pkt.V)
-        # TODO: get index table which is a list of pointers
-        return self._indexTable2data(tbl)
+        decoder = TlvDecoder(manifest)
+        manifest = decoder.readBlobTlv(self.NDN_TYPE_MANIFEST)
+        table = decoder.readBlobTlv(self.NDN_TYPE_MANIFEST_INDEXTABLE)
+        return self._indexTable2data(table)
 
     def NFNresultToBytes(self, data):
         # input: byte array (containting a "NFN result TLV")

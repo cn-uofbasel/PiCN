@@ -7,16 +7,16 @@
 
 import copy
 import hashlib
-import PiCNExternal.pyndn.encoding.tlv.tlv.tlv_encoder          as ndn_enc
-import PiCNExternal.pyndn.encoding.tlv.tlv.tlv                  as ndn_const
-import PiCN.Packets.Content                                     as picn_content
-import PiCN.Layers.PacketEncodingLayer.Encoder.NdnTlvEncoder.py as picn_ndn_enc
+import PiCNExternal.pyndn.encoding.tlv.tlv.tlv_encoder        as ndn_enc
+import PiCNExternal.pyndn.encoding.tlv.tlv.tlv                as ndn_const
+from   PiCN.Packets                                       import Content
+import PiCN.Layers.PacketEncodingLayer.Encoder.NdnTlvEncoder  as picn_ndn_enc
 from   PiCN.Packets.Name import Name
 
-class FLICer():
+class MkFlic():
 
-    def __init__(self, repo, MTU=4000):
-        self.repo = repo
+    def __init__(self, icn, MTU=4000):
+        self.icn = icn
         # self.encoder = ndn_encoder.TlvEncoder()
         self.MTU = MTU
         self.NDN_TYPE_MANIFEST             = 0x990
@@ -27,9 +27,9 @@ class FLICer():
     def _mkContentChunk(self, name: Name, data: bytes):
         # input: name, payload bytes
         # output: chunk bytes
-        c = picn_content(name, data)
-        pkt = picn_ndn_enc.NdnTlvEncoder()
-        return pkt.encode(c) # and sign
+        c = Content(name, data)
+        ndn = picn_ndn_enc.NdnTlvEncoder()
+        return ndn.encode(c) # and sign
 
     def bytesToManifest(self, name: Name, data: bytes):
         # input: byte array
@@ -38,30 +38,31 @@ class FLICer():
         # cut content in pieces
         raw = []
         while len(data) > 0:
-            raw.append(data[:MTU])
-            data = data[MTU:]
+            raw.append(data[:self.MTU])
+            data = data[self.MTU:]
 
         # persist pieces and learn their hash pointers
         ptrs = []
         for r in raw:
             chunk = self._mkContentChunk(name, r)
-            h = hashlib.sha1()
+            self.icn.writeChunk(name, chunk)
+            h = hashlib.sha256()
             h.update(chunk)
-            n = copy.copy(name)
-            n.__add__(h.digest)
-            ptrs.append(n.as_bytes())
-            self.repo.write(name, chunk)
+            ptrs.append(h.digest())
+            # n = copy.copy(name)
+            # n.__add__([h.digest])
+            # ptrs.append(n.as_bytes())
 
         # create list of index tables, the M pointers will be added later
         # -> DDDDDDM -> DDDDDM -> ...
         tables = []
         while len(ptrs) > 0:
-            tbl = '' # index table
+            tbl = b'' # index table
             while len(ptrs) > 0:
                 # add an entry to the index table
                 e = ndn_enc.TlvEncoder()
-                e.writeBlobTlv(self.MANIFEST_DATAPTR, ptrs[0])
-                e = e.getOutput()
+                e.writeBlobTlv(self.NDN_TYPE_MANIFEST_DATAPTR, ptrs[0])
+                e = e.getOutput().tobytes()
                 # collect pointers as long as the manifest fits in a chunk
                 if len(tbl) + len(e) + 100 > self.MTU:
                     break
@@ -78,43 +79,44 @@ class FLICer():
                 e.writeBlobTlv(self.MANIFEST_MANIFESTPTR, tailPtr)
                 tbl += e.getOutput()
             m = ndn_enc.TlvEncoder()
-            m.writeBlobTlv(self.MANIFEST_INDEXTABLE, tbl)
-            c = picn_content(name, m.getOutput())
-            pkt = picn_ndn_enc.NdnTlvEncoder()
-            chunk = pkt.encode(c) # and sign
+            m.writeBlobTlv(self.NDN_TYPE_MANIFEST_INDEXTABLE, tbl)
+            c = Content(name, m.getOutput())
+            ndn = picn_ndn_enc.NdnTlvEncoder()
+            chunk = ndn.encode(c) # and sign
             if len(tables) == 1:
                 name = copy.copy(name)
-                name.__add__('_')
-            self.repo.write(name, chunk)
-            h = hashlib.sha1()
+                name.__add__([b'_'])
+            self.icn.writeChunk(name, chunk)
+            h = hashlib.sha256()
             h.update(chunk)
             tailPtr = h.digest()
             tables = tables[:-1]
 
         return (name, chunk)
 
+    # this method should move to some NFN module
     def bytesToNFNresult(self, localName: Name, data: bytes, 
                          forceManifest=False):
         # input: e2e result bytes, as produced by NFN execution
         # output: "NFN result TLV", either constant or indirect (=manifest)
 
-        n = copy.copy(repo.getDefaultPrefix())
+        n = copy.copy(icn.getRepoPrefix())
         n.__add__(localName._components)
         localName = n
         if len(data) < self.MTU and not forceManifest:
             # NFN direct result
             payload = ndn_enc.TlvEncoder()
             payload.writeBlobTlv(self.NFN_DIRECT_RESULT, data)
-            c = picn_content(localName, payload.getOutput())
-            pkt = picn_ndn_enc.NdnTlvEncoder()
-            return pkt.encode(c) # and sign
+            c = Content(localName, payload.getOutput())
+            ndn = picn_ndn_enc.NdnTlvEncoder()
+            return ndn.encode(c) # and sign
 
         # NFN indirect result
         name, manifest = self.bytesToManifest(localName, data)
         payload = ndn_enc.TlvEncoder()
         payload.writeBlobTlv(self.NFN_INDIRECT_RESULT, manifest)
-        c = picn_content(name, payload.getOutput())
-        pkt = picn_ndn_enc.NdnTlvEncoder()
-        return pkt.encode(c) # and sign
+        c = Content(name, payload.getOutput())
+        ndn = picn_ndn_enc.NdnTlvEncoder()
+        return ndn.encode(c) # and sign
 
 # eof
