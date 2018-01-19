@@ -168,7 +168,7 @@ class NdnTlvEncoder(BasicEncoder):
         :param input:  Packet in NDN-TLV wire format
         :return: True if content object
         """
-        return False # TODO
+        return input[0] == Tlv.Data
 
     def is_interest(self, input: bytearray) -> bool:
         """
@@ -176,7 +176,7 @@ class NdnTlvEncoder(BasicEncoder):
         :param input:  Packet in NDN-TLV wire format
         :return: True if interest
         """
-        return False # TODO
+        return input[0] == Tlv.Interest
 
     def is_nack(selfself, input: bytearray) -> bool:
         """
