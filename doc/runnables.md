@@ -3,7 +3,7 @@
 
 ### Starting a Forwarder
 
-> python3 PiCn/Executable/ICNForwarder.py < listeningport >
+> python3 PiCn/Executable/ICNForwarder.py < listeningport > [<wireformat>]
 
 
 
@@ -15,7 +15,7 @@
 
 ### Fetching a single content object (without chunking)
 
-> python3 PiCn/Executable/Fetch.py < ip > < port > < name >
+> python3 PiCn/Executable/SimpleFetch.py < ip > < port > < name > [< wireformat >]
 
 
 
@@ -42,3 +42,10 @@
 
 ##### Shutdown instance
 > shutdown
+
+---
+
+### Wireformat
+
+* `simple'(default)
+* `ndntlv'
