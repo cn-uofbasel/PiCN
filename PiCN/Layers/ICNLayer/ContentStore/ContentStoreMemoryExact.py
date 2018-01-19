@@ -12,7 +12,7 @@ class ContentStoreMemoryExact(BaseContentStore):
     def __init__(self, manager: multiprocessing.Manager):
         BaseContentStore.__init__(self, manager)
 
-    def find_content_object(self, name: Name, name_payload=None) -> ContentStoreEntry:
+    def find_content_object(self, name: Name) -> ContentStoreEntry:
         for c in self._container:
             if c.content.name == name: #and c.content.name_payload == name_payload:
                 return c
@@ -24,8 +24,8 @@ class ContentStoreMemoryExact(BaseContentStore):
                 return
         self._container.append(ContentStoreEntry(content, static=static))
 
-    def remove_content_object(self, name: Name, name_payload=None):
-        rem = self.find_content_object(name, name_payload)
+    def remove_content_object(self, name: Name):
+        rem = self.find_content_object(name)
         if rem is not None:
             self._container.remove(rem)
 

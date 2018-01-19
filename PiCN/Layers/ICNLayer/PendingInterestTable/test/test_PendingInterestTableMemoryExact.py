@@ -21,7 +21,7 @@ class test_PendingInterstTableMemoryExact(unittest.TestCase):
         """Test adding data to PIT"""
         fid = 1
         name = Name("/test/data")
-        self.pit.add_pit_entry(name, None, fid)
+        self.pit.add_pit_entry(name, fid)
         data = self.pit._container[0]
         self.assertEqual(data.name, name)
 
@@ -29,10 +29,10 @@ class test_PendingInterstTableMemoryExact(unittest.TestCase):
         """Test finding data in PIT exact"""
         fid = 1
         name = Name("/test/data")
-        self.pit.add_pit_entry(name, None, fid)
+        self.pit.add_pit_entry(name, fid)
         data = self.pit._container[0]
         self.assertEqual(data.name, name)
-        res = self.pit.find_pit_entry(name, None)
+        res = self.pit.find_pit_entry(name)
         self.assertEqual(res.name, name)
         self.assertEqual(res.face_id, [fid])
 
@@ -41,10 +41,10 @@ class test_PendingInterstTableMemoryExact(unittest.TestCase):
         fid = 1
         name1 = Name("/test/data")
         name2 = Name("/data/test")
-        self.pit.add_pit_entry(name1, None, fid)
+        self.pit.add_pit_entry(name1, fid)
         data = self.pit._container[0]
         self.assertEqual(data.name, name1)
-        res = self.pit.find_pit_entry(name2, None)
+        res = self.pit.find_pit_entry(name2)
         self.assertEqual(res, None)
 
     def test_find_data_to_pit_deduplication(self):
@@ -53,11 +53,11 @@ class test_PendingInterstTableMemoryExact(unittest.TestCase):
         fid2 = 2
 
         name = Name("/test/data")
-        self.pit.add_pit_entry(name, None, fid1)
-        self.pit.add_pit_entry(name, None, fid2)
+        self.pit.add_pit_entry(name, fid1)
+        self.pit.add_pit_entry(name, fid2)
         data = self.pit._container[0]
         self.assertEqual(data.name, name)
-        res = self.pit.find_pit_entry(name, None)
+        res = self.pit.find_pit_entry(name)
         self.assertEqual(res.name, name)
         self.assertEqual(res.face_id, [fid1, fid2])
 
@@ -65,11 +65,11 @@ class test_PendingInterstTableMemoryExact(unittest.TestCase):
         """Test finding data in PIT with two time same fids"""
         fid = 1
         name = Name("/test/data")
-        self.pit.add_pit_entry(name, None, fid)
-        self.pit.add_pit_entry(name, None, fid)
+        self.pit.add_pit_entry(name, fid)
+        self.pit.add_pit_entry(name, fid)
         data = self.pit._container[0]
         self.assertEqual(data.name, name)
-        res = self.pit.find_pit_entry(name, None)
+        res = self.pit.find_pit_entry(name)
         self.assertEqual(res.name, name)
         self.assertEqual(res.face_id, [fid])
 
@@ -77,18 +77,18 @@ class test_PendingInterstTableMemoryExact(unittest.TestCase):
         """Test removing data from PIT"""
         fid = 1
         name = Name("/test/data")
-        self.pit.add_pit_entry(name, None, fid)
+        self.pit.add_pit_entry(name, fid)
 
         data = self.pit._container[0]
         self.assertEqual(data.name, name)
         self.assertEqual(len(self.pit._container), 1)
-        self.pit.remove_pit_entry(name, None)
+        self.pit.remove_pit_entry(name)
         self.assertEqual(len(self.pit._container), 0)
 
     def test_add_already_used_fib_entry(self):
         """Test adding an already used FIB Entry"""
         n1 = Name("/test/data")
         fib_entry = ForwardingInformationBaseEntry(n1, 2, False)
-        self.pit.add_pit_entry(n1, None, 1, None, False)
-        self.pit.add_used_fib_entry(n1, None, fib_entry)
-        self.assertEqual(self.pit.get_already_used_pit_entries(n1, None)[0], fib_entry)
+        self.pit.add_pit_entry(n1, 1, None, False)
+        self.pit.add_used_fib_entry(n1, fib_entry)
+        self.assertEqual(self.pit.get_already_used_pit_entries(n1)[0], fib_entry)

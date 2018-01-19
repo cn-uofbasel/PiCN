@@ -53,11 +53,11 @@ class BaseContentStore(object):
         """check if there is already a content object stored, otherewise store it in the container"""
 
     @abc.abstractclassmethod
-    def find_content_object(self, name: Name, name_payload=None) -> ContentStoreEntry:
+    def find_content_object(self, name: Name) -> ContentStoreEntry:
         """check if there is a matching content object"""
 
     @abc.abstractclassmethod
-    def remove_content_object(self, name: Name, name_payload=None):
+    def remove_content_object(self, name: Name):
         """Remove a content object from CS"""
 
     @abc.abstractclassmethod

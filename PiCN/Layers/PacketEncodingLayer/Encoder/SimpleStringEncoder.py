@@ -12,21 +12,12 @@ class SimpleStringEncoder(BasicEncoder):
         res = None
         name = self.escape_name(packet.name)
         if(isinstance(packet, Interest)):
-            name_payload = ""
-            if packet.name_payload is not None:
-               name_payload = packet.name_payload
-            res = "I:" + name.to_string() + ":" + name_payload
+            res = "I:" + name.to_string() + ":"
         elif(isinstance(packet, Content)):
-            name_payload = ""
-            if packet.name_payload is not None:
-                name_payload = packet.name_payload
             content = packet.content.replace(":", "%58")
-            res = "C:" + name.to_string() + ":" + name_payload + ":" + content
+            res = "C:" + name.to_string() + ":" + ":" + content
         elif(isinstance(packet, Nack)):
-            name_payload = ""
-            if packet.name_payload is not None:
-                name_payload = packet.name_payload
-            res = "N:" + name.to_string() + ":" + name_payload + ":" + packet.reason
+            res = "N:" + name.to_string() + ":" + ":" + packet.reason
         if res is not None:
             return res.encode()
         return None
@@ -35,24 +26,15 @@ class SimpleStringEncoder(BasicEncoder):
         data: str = wire_data.decode()
         if data[0] == "I":
             name = data.split(":")[1]
-            name_payload = data.split(":")[2]
-            if name_payload == "":
-                name_payload = None
-            return Interest(self.unescape_name(Name(name)), name_payload)
+            return Interest(self.unescape_name(Name(name)))
         elif data[0] == "C":
             name = data.split(":")[1]
-            name_payload = data.split(":")[2]
-            if name_payload == "":
-                name_payload = None
             content = data.split(":")[3].replace("%58", ":")
-            return Content(self.unescape_name(Name(name)), content, name_payload)
+            return Content(self.unescape_name(Name(name)), content)
         elif data[0] == "N":
             name = data.split(":")[1]
-            name_payload = data.split(":")[2]
             reason = data.split(":")[3]
-            if name_payload == "":
-                name_payload = None
-            return Nack(self.unescape_name(Name(name)), reason, name_payload)
+            return Nack(self.unescape_name(Name(name)), reason)
 
 
     def escape_name(self, name: Name):
