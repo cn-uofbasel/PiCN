@@ -60,7 +60,7 @@ class test_BasicRepositoryLayer(unittest.TestCase):
         """Test if repo returns Nack if no matching content available"""
         self.repositoryLayer.start_process()
         i1 = Interest("/test/data/f3")
-        n1 = Nack(i1.name, "No Matching Content", i1.name_payload)
+        n1 = Nack(i1.name, "No Matching Content")
         self.repositoryLayer.queue_from_lower.put([0, i1])
         data = self.repositoryLayer.queue_to_lower.get()
         self.assertEqual(n1, data[1])
@@ -69,7 +69,7 @@ class test_BasicRepositoryLayer(unittest.TestCase):
         """Test if repo returns Nack if nprefix not matching"""
         self.repositoryLayer.start_process()
         i1 = Interest("/data/test/f1")
-        n1 = Nack(i1.name, "No Matching Content", i1.name_payload)
+        n1 = Nack(i1.name, "No Matching Content")
         self.repositoryLayer.queue_from_lower.put([0, i1])
         data = self.repositoryLayer.queue_to_lower.get()
         self.assertEqual(n1, data[1])

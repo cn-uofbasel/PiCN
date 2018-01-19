@@ -5,8 +5,8 @@ from .Packet import Packet
 class Content(Packet):
     """Content data structure for PiCN"""
 
-    def __init__(self, name = None, content = None, name_payload = None):
-        Packet.__init__(self, name, name_payload)
+    def __init__(self, name = None, content = None):
+        Packet.__init__(self, name)
         self._content = content
 
     @property
@@ -20,4 +20,4 @@ class Content(Packet):
     def __eq__(self, other):
         if type(other) is not Content:
             return False
-        return self.name == other.name and self.name_payload == other.name_payload and self.content == other.content
+        return self.name == other.name and self.content == other.content

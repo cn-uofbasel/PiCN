@@ -43,7 +43,7 @@ class test_ContentStoreMemoryExact(unittest.TestCase):
         self.cs.add_content_object(c)
         entry = self.cs._container[0].content
         self.assertEqual(entry, c)
-        fc = self.cs.find_content_object(c.name, c.name_payload)
+        fc = self.cs.find_content_object(c.name)
         self.assertEqual(fc.content, c)
 
     def test_find_multiple_content_to_cs(self):
@@ -59,10 +59,10 @@ class test_ContentStoreMemoryExact(unittest.TestCase):
         self.assertTrue(entry2 in self.cs.container)
         self.assertEqual(entry2.content, c2)
 
-        fc1 = self.cs.find_content_object(c1.name, c1.name_payload)
+        fc1 = self.cs.find_content_object(c1.name)
         self.assertEqual(fc1.content, c1)
 
-        fc2 = self.cs.find_content_object(c2.name, c2.name_payload)
+        fc2 = self.cs.find_content_object(c2.name)
         self.assertEqual(fc2.content, c2)
 
 
@@ -74,7 +74,7 @@ class test_ContentStoreMemoryExact(unittest.TestCase):
         self.cs.add_content_object(c1)
         entry = self.cs._container[0].content
         self.assertEqual(entry, c1)
-        fc = self.cs.find_content_object(c2.name, c2.name_payload)
+        fc = self.cs.find_content_object(c2.name)
         self.assertEqual(fc, None)
 
     def test_remove_content_from_cs(self):
@@ -84,5 +84,5 @@ class test_ContentStoreMemoryExact(unittest.TestCase):
         entry = self.cs._container[0].content
         self.assertEqual(entry, c)
         self.assertEqual(len(self.cs.container), 1)
-        self.cs.remove_content_object(c.name, c.name_payload)
+        self.cs.remove_content_object(c.name)
         self.assertEqual(len(self.cs.container), 0)

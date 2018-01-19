@@ -60,14 +60,13 @@ class TestBasicPacketEncodingLayer(unittest.TestCase):
         self.linkLayer2.stop_process()
         time.sleep(0.3)
 
-
     def test_EncoderMock_encode_interest_equal(self):
         """Test the interest encoding of EncoderMock: equal"""
         i = Interest("/test/data")
         ei = self.encoder1.encode(i)
         self.assertEqual(ei.decode(), "I:/test/data:")
 
-    def test_EncoderMock_encode_interest__not_equal(self):
+    def test_EncoderMock_encode_interest_not_equal(self):
         """Test the interest encoding of EncoderMock: not equal"""
         i = Interest("/data/test")
         ei = self.encoder1.encode(i)
@@ -87,23 +86,9 @@ class TestBasicPacketEncodingLayer(unittest.TestCase):
         cmp_interest = Interest("/test/data")
         self.assertFalse(di == cmp_interest)
 
-    def test_EncoderMock_decode_interest_equal_payload(self):
-        """Test the interest decoding of EncoderMock with payload: equal"""
-        data = "I:/test/data:payload".encode()
-        di = self.encoder1.decode(data)
-        cmp_interest = Interest("/test/data", "payload")
-        self.assertTrue(di == cmp_interest)
-
     def test_EncoderMock_encode_decode_interest(self):
         """Test the interest decoding of EncoderMock: equal"""
         i = Interest("/data/test")
-        ei = self.encoder1.encode(i)
-        di = self.encoder1.decode(ei)
-        self.assertTrue(i == di)
-
-    def test_EncoderMock_encode_decode_interest_payload(self):
-        """Test the interest decoding of EncoderMock with payload: equal"""
-        i = Interest("/data/test", "payload")
         ei = self.encoder1.encode(i)
         di = self.encoder1.decode(ei)
         self.assertTrue(i == di)
@@ -113,13 +98,6 @@ class TestBasicPacketEncodingLayer(unittest.TestCase):
         data = "C:/data/test::HelloWorld".encode()
         dc = self.encoder1.decode(data)
         cmp_interest = Content("/data/test", "HelloWorld")
-        self.assertTrue(dc == cmp_interest)
-
-    def test_EncoderMock_decode_content_equal_payload(self):
-        """Test the Content decoding of EncoderMock with payload: equal"""
-        data = "C:/data/test:payload:HelloWorld".encode()
-        dc = self.encoder1.decode(data)
-        cmp_interest = Content("/data/test", "HelloWorld", "payload")
         self.assertTrue(dc == cmp_interest)
 
     def test_EncoderMock_decode_content_not_equal(self):

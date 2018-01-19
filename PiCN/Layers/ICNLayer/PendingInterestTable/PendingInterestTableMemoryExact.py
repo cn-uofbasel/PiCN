@@ -13,9 +13,9 @@ class PendingInterstTableMemoryExact(BasePendingInterestTable):
     def __init__(self, manager: multiprocessing.Manager) -> None:
         super().__init__(manager)
 
-    def add_pit_entry(self, name, name_payload, faceid: int, interest: Interest = None, local_app = False):
+    def add_pit_entry(self, name, faceid: int, interest: Interest = None, local_app = False):
         for pit_entry in self._container:
-            if pit_entry.name == name: # and pit_entry.name_payload == name_payload:
+            if pit_entry.name == name:
                 if faceid in pit_entry.face_id:
                     return
                 pit_entry._faceids.append(faceid)
@@ -23,16 +23,16 @@ class PendingInterstTableMemoryExact(BasePendingInterestTable):
                 self._container.remove(pit_entry)
                 self._container.append(pit_entry)
                 return
-        self._container.append(PendingInterestTableEntry(name, name_payload, faceid, interest, local_app))
+        self._container.append(PendingInterestTableEntry(name, faceid, interest, local_app))
 
-    def remove_pit_entry(self, name: Name, name_payload):
+    def remove_pit_entry(self, name: Name):
         for pit_entry in self._container:
-            if(pit_entry.name == name and pit_entry.name_payload == name_payload):
+            if(pit_entry.name == name):
                 self._container.remove(pit_entry)
 
-    def find_pit_entry(self, name: Name, name_payload) -> PendingInterestTableEntry:
+    def find_pit_entry(self, name: Name) -> PendingInterestTableEntry:
         for pit_entry in self._container:
-            if (pit_entry.name == name and pit_entry.name_payload == name_payload):
+            if (pit_entry.name == name):
                 return pit_entry
         return None
 
@@ -42,13 +42,13 @@ class PendingInterstTableMemoryExact(BasePendingInterestTable):
         pit_entry.retransmits = 0
         self._container.append(pit_entry)
 
-    def add_used_fib_entry(self, name: Name, name_payload: str, used_fib_entry: ForwardingInformationBaseEntry):
-        pit_entry = self.find_pit_entry(name, name_payload)
+    def add_used_fib_entry(self, name: Name, used_fib_entry: ForwardingInformationBaseEntry):
+        pit_entry = self.find_pit_entry(name)
         self._container.remove(pit_entry)
         pit_entry.fib_entries_already_used.append(used_fib_entry)
         self._container.append(pit_entry)
 
-    def get_already_used_pit_entries(self, name: Name, name_payload: str):
-        pit_entry = self.find_pit_entry(name, name_payload)
+    def get_already_used_pit_entries(self, name: Name):
+        pit_entry = self.find_pit_entry(name)
         return pit_entry.fib_entries_already_used
 

@@ -33,20 +33,20 @@ class BasicICNLayer(LayerProcess):
         highlevelid = data[0]
         packet = data[1]
         if isinstance(packet, Interest):
-            cs_entry = self._cs.find_content_object(packet.name, packet.name_payload)
+            cs_entry = self._cs.find_content_object(packet.name)
             if cs_entry is not None:
                 self.queue_to_higher.put([highlevelid, cs_entry.content])
                 return
-            pit_entry = self._pit.find_pit_entry(packet.name, packet.name_payload)
+            pit_entry = self._pit.find_pit_entry(packet.name)
             if pit_entry is None: #if pit entry is not none --> just forward interest, pit entry exists
-                self._pit.add_pit_entry(packet.name, packet.name_payload, highlevelid, packet, local_app=True)
+                self._pit.add_pit_entry(packet.name, highlevelid, packet, local_app=True)
             fib_entry = self._fib.find_fib_entry(packet.name)
             if fib_entry is not None:
-                self._pit.add_used_fib_entry(packet.name, packet.name_payload, fib_entry)
+                self._pit.add_used_fib_entry(packet.name, fib_entry)
                 to_lower.put([fib_entry.faceid, packet])
             else:
                 self.logger.info("No FIB entry, sending Nack")
-                nack = Nack(packet.name, "No FIB Entry", packet.name_payload)
+                nack = Nack(packet.name, "No FIB Entry")
                 if pit_entry is not None: #if pit entry is available, consider it, otherwise assume interest came from higher
                     for i in range(0, len(pit_entry.faceids)):
                         if pit_entry._local_app[i]:
@@ -91,26 +91,26 @@ class BasicICNLayer(LayerProcess):
             to_lower.put([faceid, cs_entry.content])
             self._cs.update_timestamp(cs_entry)
             return
-        pit_entry = self.check_pit(interest.name, interest.name_payload)
+        pit_entry = self.check_pit(interest.name)
         if pit_entry is not None:
             self.logger.info("Found in PIT, apending")
             self._pit.update_timestamp(pit_entry)
-            self._pit.add_pit_entry(interest.name, interest.name_payload, faceid, interest, local_app=from_local)
+            self._pit.add_pit_entry(interest.name, faceid, interest, local_app=from_local)
             return
         if self._interest_to_app is True and to_higher is not None: #App layer support
             self.logger.info("Sending to higher Layer")
-            self._pit.add_pit_entry(interest.name, interest.name_payload, faceid, interest, local_app=from_local)
+            self._pit.add_pit_entry(interest.name, faceid, interest, local_app=from_local)
             self.queue_to_higher.put([faceid, interest])
             return
         newfaceid = self.check_fib(interest.name, None)
         if newfaceid is not None:
             self.logger.info("Found in FIB, forwarding")
-            self._pit.add_pit_entry(interest.name, interest.name_payload, faceid, interest ,local_app=from_local)
-            self._pit.add_used_fib_entry(interest.name, interest.name_payload, newfaceid)
+            self._pit.add_pit_entry(interest.name, faceid, interest ,local_app=from_local)
+            self._pit.add_used_fib_entry(interest.name, newfaceid)
             to_lower.put([newfaceid.faceid, interest])
             return
         self.logger.info("No FIB entry, sending Nack")
-        nack = Nack(interest.name, "No FIB Entry", interest.name_payload)
+        nack = Nack(interest.name, "No FIB Entry")
         if from_local:
             to_higher.put([faceid, nack])
         else:
@@ -119,7 +119,7 @@ class BasicICNLayer(LayerProcess):
     def handleContent(self, faceid: int, content: Content, to_lower: multiprocessing.Queue,
                        to_higher: multiprocessing.Queue, from_local: bool = False):
         self.logger.info("Handling Content " + str(content.name) + " " + str(content.content))
-        pit_entry = self.check_pit(content.name, content.name_payload)
+        pit_entry = self.check_pit(content.name)
         if pit_entry is None:
             self.logger.info("No PIT entry for content object available, dropping")
             return
@@ -129,13 +129,13 @@ class BasicICNLayer(LayerProcess):
                     to_higher.put([faceid, content])
                 else:
                     to_lower.put([pit_entry.faceids[i], content])
-            self._pit.remove_pit_entry(pit_entry.name, pit_entry.name_payload)
+            self._pit.remove_pit_entry(pit_entry.name)
             self._cs.add_content_object(content)
 
     def handleNack(self, faceid: int, nack: Nack, to_lower: multiprocessing.Queue,
                        to_higher: multiprocessing.Queue, from_local: bool = False):
         self.logger.info("Handling Nack")
-        pit_entry = self.check_pit(nack.name, nack.name_payload)
+        pit_entry = self.check_pit(nack.name)
         if pit_entry is None:
             self.logger.info("No PIT entry for Nack available, dropping")
             return
@@ -148,10 +148,10 @@ class BasicICNLayer(LayerProcess):
                         to_higher.put([faceid, nack])
                     else:
                         to_lower.put([pit_entry.faceids[i], nack])
-                self._pit.remove_pit_entry(pit_entry.name, pit_entry.name_payload)
+                self._pit.remove_pit_entry(pit_entry.name)
             else:
                 self.logger.info("Try using next FIB path")
-                self._pit.add_used_fib_entry(nack.name, nack.name_payload, fib_entry)
+                self._pit.add_used_fib_entry(nack.name, fib_entry)
                 to_lower.put([fib_entry.faceid, pit_entry.interest])
 
 
@@ -183,9 +183,9 @@ class BasicICNLayer(LayerProcess):
                 if newfaceid is not None:
                     self.queue_to_lower.put([newfaceid.faceid, pit_entry.interest])
         for pit_entry in remove:
-            self._pit.remove_pit_entry(pit_entry.name, pit_entry.name_payload)
+            self._pit.remove_pit_entry(pit_entry.name)
         for pit_entry in updated:
-            self._pit.remove_pit_entry(pit_entry.name, pit_entry.name_payload)
+            self._pit.remove_pit_entry(pit_entry.name)
             self._pit.container.append(pit_entry)
 
     def cs_ageing(self):
@@ -198,14 +198,14 @@ class BasicICNLayer(LayerProcess):
             if cs_entry.timestamp + self._cs_timeout < cur_time:
                 remove.append(cs_entry)
         for cs_entry in remove:
-            self._cs.remove_content_object(cs_entry.content.name, cs_entry.content.name_payload)
+            self._cs.remove_content_object(cs_entry.content.name)
 
 
     def check_cs(self, interest: Interest) -> Content:
-        return self._cs.find_content_object(interest.name, interest.name_payload)
+        return self._cs.find_content_object(interest.name)
 
-    def check_pit(self, name: Name, name_payload) -> PendingInterestTableEntry:
-        return self._pit.find_pit_entry(name, name_payload)
+    def check_pit(self, name: Name) -> PendingInterestTableEntry:
+        return self._pit.find_pit_entry(name)
 
     def check_fib(self, name: Name, alreadused: List[ForwardingInformationBaseEntry]) \
             -> ForwardingInformationBaseEntry:

@@ -12,9 +12,8 @@ from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformation
 class PendingInterestTableEntry(object):
     """An entry in the Forwarding Information Base"""
 
-    def __init__(self, name: Name, name_payload, faceid: int, interest:Interest = None, local_app: bool=False):
+    def __init__(self, name: Name, faceid: int, interest:Interest = None, local_app: bool=False):
         self.name = name
-        self.name_payload = name_payload
         self._faceids: List[int] = []
         self._faceids.append(faceid)
         self._timestamp = time.time()
@@ -27,7 +26,7 @@ class PendingInterestTableEntry(object):
     def __eq__(self, other):
         if other is None:
             return False
-        return self.name == other.name and self.name_payload == other.name_payload
+        return self.name == other.name
 
     @property
     def interest(self):
@@ -94,15 +93,15 @@ class BasePendingInterestTable(object):
         self._container: List[PendingInterestTableEntry] = self._manager.list()
 
     @abc.abstractclassmethod
-    def add_pit_entry(self, name: Name, name_payload: str, faceid: int, interest: Interest = None, local_app: bool = False):
+    def add_pit_entry(self, name: Name, faceid: int, interest: Interest = None, local_app: bool = False):
         """Add an new entry"""
 
     @abc.abstractclassmethod
-    def find_pit_entry(self, name: Name, name_payload: str) -> int:
+    def find_pit_entry(self, name: Name) -> int:
         """Find an entry in the PIT"""
 
     @abc.abstractclassmethod
-    def remove_pit_entry(self, name: Name, name_payload: str):
+    def remove_pit_entry(self, name: Name):
         """Remove an entry in the PIT"""
 
     @abc.abstractclassmethod
@@ -110,10 +109,10 @@ class BasePendingInterestTable(object):
         """Update Timestamp of a PIT Entry"""
 
     @abc.abstractclassmethod
-    def add_used_fib_entry(self, name: Name, name_payload: str, used_fib_entry: ForwardingInformationBaseEntry):
+    def add_used_fib_entry(self, name: Name, used_fib_entry: ForwardingInformationBaseEntry):
         """Add a used fib entry to the already used fib entries"""
 
-    def get_already_used_pit_entries(self, name: Name, name_payload: str):
+    def get_already_used_pit_entries(self, name: Name):
         """Get already used fib entries"""
 
     @property
