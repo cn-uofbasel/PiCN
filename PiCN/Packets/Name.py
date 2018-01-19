@@ -1,6 +1,7 @@
 """Name data structure for PiCN"""
 
-from functools import reduce
+import os
+# from functools import reduce
 
 class Name(object):
     """Name data structure for PiCN"""
@@ -17,8 +18,9 @@ class Name(object):
 
     def to_string(self) -> str:
         """Transform name to string, components separated by /"""
-        string =  "/" + reduce((lambda x, y: x + "/" + y), self._components)
-        return string
+        # FIXME: handle '/' as part of a component, and binary components
+        s = '/' + '/'.join(self._components)
+        return s
 
     def __str__(self) -> str:
         return self.to_string()
@@ -28,8 +30,18 @@ class Name(object):
             return False
         return self.to_string() == other.to_string()
 
+    def __add__(self, compList):
+        for c in compList:
+            self._components.append(c)
+
     def __hash__(self) -> int:
         return self._components.__str__().__hash__()
+
+    def is_prefix_of(self, name):
+        # if type(name) is not Name:
+        #    raise XXX
+        pfx = os.path.commonprefix([self._components, name._components])
+        return len(pfx) == len(self._components)
 
     @property
     def components(self):

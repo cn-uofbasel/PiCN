@@ -1,5 +1,3 @@
-#!/usr/bin/env python3.6
-
 """A extrem simple Packet Encoder for the BasicPacketEncodingLayer"""
 
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
@@ -16,7 +14,8 @@ class SimpleStringEncoder(BasicEncoder):
         if(isinstance(packet, Interest)):
             res = "I:" + name.to_string() + ":"
         elif(isinstance(packet, Content)):
-            content = packet.content.replace(":", "%58")
+            content = packet.content.decode('ascii')
+            content = content.replace(":", "%58")
             res = "C:" + name.to_string() + ":" + ":" + content
         elif(isinstance(packet, Nack)):
             res = "N:" + name.to_string() + ":" + ":" + packet.reason

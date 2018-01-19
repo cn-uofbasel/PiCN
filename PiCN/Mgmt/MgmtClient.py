@@ -1,5 +1,3 @@
-#!/usr/bin/env python3.6
-
 """Client for The Mgmt of PiCN"""
 
 import socket
