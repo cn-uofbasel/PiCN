@@ -22,12 +22,21 @@ class NdnTlvEncoder(BasicEncoder):
         :param packet: Packet in PiCN's representation
         :return: Packet in NDN TLV representation
         """
-        if(isinstance(packet, Interest)):
-            return self.encode_interest(packet.name.to_string())
-        if(isinstance(packet, Content)):
-            return self.encode_data(packet.name.to_string(), packet.get_bytes())
-        if(isinstance(packet, Nack)):
+        if isinstance(packet, Interest):
+            if isinstance(packet, Content):
+                return packet.wire_data
+            else:
+                return self.encode_interest(packet.name.to_string())
+
+        if isinstance(packet, Content):
+            if isinstance(packet.wire_data, bytes):
+                return packet.wire_data
+            else:
+                return self.encode_data(packet.name.to_string(), packet.get_bytes())
+
+        if isinstance(packet, Nack):
             return None # TODO
+
         return None
 
     def decode(self, wire_data) -> Packet:
@@ -36,13 +45,15 @@ class NdnTlvEncoder(BasicEncoder):
         :param wire_data: Packet in NDN TLV representation
         :return: Packet in PiCN's internal representation
         """
-        if(self.is_content(wire_data)):
+        if self.is_content(wire_data):
             (name, payload) = self.decode_data(wire_data)
-            return None # TODO: Put into Data Packet
-        if(self.is_interest(wire_data)):
+            nameStr = ''.join('/' + e.decode() for e in name)
+            return Content(nameStr, payload, wire_data)
+        if self.is_interest(wire_data):
             name = self.decode_interest(wire_data)
-            return None # TODO: Put into Interest Packet
-        if(self.is_nack(wire_data)):
+            nameStr = ''.join('/' + e.decode() for e in name)
+            return Interest(nameStr)
+        if self.is_nack(wire_data):
             return None # TODO: Put into NACK Packet
         return None
 
