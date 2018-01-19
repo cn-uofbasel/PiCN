@@ -5,13 +5,18 @@ from .Packet import Packet
 class Content(Packet):
     """Content data structure for PiCN"""
 
-    def __init__(self, name = None, content = None):
+    def __init__(self, name = None, content = None, wire_data = None):
         Packet.__init__(self, name)
         self._content = content
+        self._wire_data = wire_data
 
     @property
     def content(self):
         return self._content
+
+    @property
+    def wire_data(self):
+        return self._wire_data
 
     def get_bytes(self) -> bytearray:
         if(isinstance(self._content, bytearray)):
