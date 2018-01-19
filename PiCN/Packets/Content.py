@@ -19,7 +19,7 @@ class Content(Packet):
         if(isinstance(self._content, bytes)):
             return self._content
         if(isinstance(self._content, str)):
-            return elem.encode()
+            return self._content.encode()
         else:
             return self._content
 
