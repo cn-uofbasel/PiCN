@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.6
+#!/usr/bin/env python3
 
 # examples/write_read.py
 #
@@ -7,9 +7,11 @@
 #
 # (c) 2018-01-18 <christian.tschudin@unibas.ch>
 
+import copy
 import sys
 sys.path.append('..')
 
+from PiCN.Packets.Name import Name
 import PiCN.client as client
 import time
 
@@ -19,13 +21,15 @@ if __name__ == '__main__':
 
     icn = client.ICN()
     # repo must be running at localhost:9876
-    icn.attach("127.0.0.1", 9876, 9876)
+    icn.attach("127.0.0.1", 9876, 9876, 'ndn2013')
 
     pfx = icn.getRepoPrefix()
-    name = pfx + '/' + time.strftime('%Y%m%d-%H%M%S') + '.txt'
+    name = copy.copy(pfx)
+    name.__add__([time.strftime('%Y%m%d-%H%M%S') + '.txt'])
 
-    content = "my content is known under <%s>" % name
+    content = "my content is known under <%s>" % name.to_string()
     icn.writeChunk(name, content.encode('ascii'))
+
     c = icn.readChunk(name)
     if c:
         print("retrieved content: %s" % c)
