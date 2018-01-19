@@ -31,7 +31,7 @@ class BasicNFNLayer(LayerProcess):
         self.pit = pit
         self._running_computations: Dict[int, NFNEvaluator] = {} # {} #computation id -> computation
         self._computation_request_table: Dict[Name, List[int]] = self.manager.dict()  # request(name) -> [computation id]
-        self._pending_computations: multiprocessing.Queue[Interest] = multiprocessing.Queue() # computations not started yet
+        self._pending_computations: multiprocessing.Queue[(Interest, bool)] = multiprocessing.Queue() # computations not started yet
         self._further_rewirtes_table: Dict[Name, List[Name]] = self.manager.dict() #current rewrite --> next rewrites
         self.rewrite_table: Dict[Name, List[Name]] = self.manager.dict() #rewritten name -> original name
         self.executor: Dict[str, type(BaseNFNExecutor)] = executor
@@ -80,7 +80,8 @@ class BasicNFNLayer(LayerProcess):
             del self.rewrite_table[packet.name]
             if not self._further_rewirtes_table.get(packet.name):
                 #TODO Start Computation here, if no name is left
-                self.queue_to_lower.put([id, packet])
+                #self.queue_to_lower.put([id, packet])
+                self.add_computation(Interest(packet.name), running_computations, local=True)
                 if packet.name in self._further_rewirtes_table.keys():
                     del self._further_rewirtes_table[packet.name]
                 return
@@ -140,12 +141,12 @@ class BasicNFNLayer(LayerProcess):
             pass
         pass
 
-    def add_computation(self, interest: Interest, running_computations: Dict):
+    def add_computation(self, interest: Interest, running_computations: Dict, local: bool=False):
         """add a computation to the list of pending computations"""
         if len(running_computations.keys()) > self._max_running_computations:
-            self._pending_computations.put(interest)
+            self._pending_computations.put((interest, local))
         else:
-            self.start_computation(interest, running_computations)
+            self.start_computation(interest, running_computations, local)
 
     def start_computation_queue_handler(self, running_computations: Dict):
         """start a new thread to run the computation queue handler"""
@@ -232,12 +233,12 @@ class BasicNFNLayer(LayerProcess):
             while((not self._pending_computations.empty())
                   and (len(running_computations.keys()) < self._max_running_computations)):
                 interest = self._pending_computations.get()
-                self.start_computation(interest, running_computations)
+                self.start_computation(interest[0], running_computations, interest[1])
             self.ageing_lock.release()
 
-    def start_computation(self, interest, running_computations):
+    def start_computation(self, interest, running_computations, local: bool=False):
         evaluator = self.nfn_evaluator_type(interest, self.content_store, self.fib, self.pit,
-                                            self.rewrite_table, self.executor, self.logger.level)
+                                            self.rewrite_table, self.executor, local, self.logger.level)
         running_computations[self._next_computation_id] = evaluator
         running_computations[self._next_computation_id].start_process()
         self._next_computation_id = self._next_computation_id + 1

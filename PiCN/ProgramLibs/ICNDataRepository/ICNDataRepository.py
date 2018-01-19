@@ -83,10 +83,10 @@ class ICNDataRepository(object):
         self.repolayer.start_process()
         self.mgmt.start_process()
 
-
     def stop_repo(self):
         #Stop processes
         self.linklayer.stop_process()
         self.packetencodinglayer.stop_process()
         self.chunklayer.stop_process()
         self.repolayer.stop_process()
+        self.mgmt.stop_process()
