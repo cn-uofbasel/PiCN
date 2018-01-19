@@ -8,7 +8,8 @@ from PiCN.Layers.RepositoryLayer import BasicRepositoryLayer
 
 from PiCN.Layers.ChunkLayer.Chunkifyer import SimpleContentChunkifyer
 from PiCN.Layers.LinkLayer import UDP4LinkLayer
-from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
+# from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
+from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from PiCN.Layers.RepositoryLayer.Repository import SimpleFileSystemRepository
 from PiCN.Logger import Logger
 from PiCN.Packets import Name
@@ -27,7 +28,8 @@ class ICNDataRepository(object):
         logger.info("Start PiCN Repository on port " + str(port))
 
         #packet encoder
-        self.encoder = SimpleStringEncoder()
+        # self.encoder = SimpleStringEncoder()
+        self.encoder = NdnTlvEncoder.NdnTlvEncoder()
 
         #chunkifyer
         self.chunkifyer = SimpleContentChunkifyer()

@@ -23,9 +23,9 @@ class NdnTlvEncoder(BasicEncoder):
         :return: Packet in NDN TLV representation
         """
         if(isinstance(packet, Interest)):
-            return self.encode_interest(packet.name.to_string())
+            return self.encode_interest(packet.name)
         if(isinstance(packet, Content)):
-            return self.encode_data(packet.name.to_string(), packet.get_bytes())
+            return self.encode_data(packet.name, packet.get_bytes())
         if(isinstance(packet, Nack)):
             return None # TODO
         return None
@@ -33,15 +33,16 @@ class NdnTlvEncoder(BasicEncoder):
     def decode(self, wire_data) -> Packet:
         """
         NDN TLV wire format packet to python object
-        :param wire_data: Packet in NDN TLV representation
+        :param wire_data: Packet in wire formate (NDN TLV representation)
         :return: Packet in PiCN's internal representation
         """
+        # print("got %d bytes to decode" % len(wire_data))
         if(self.is_content(wire_data)):
             (name, payload) = self.decode_data(wire_data)
-            return None # TODO: Put into Data Packet
+            return Content(name, payload)
         if(self.is_interest(wire_data)):
             name = self.decode_interest(wire_data)
-            return None # TODO: Put into Interest Packet
+            return Interest(name)
         if(self.is_nack(wire_data)):
             return None # TODO: Put into NACK Packet
         return None
@@ -49,23 +50,25 @@ class NdnTlvEncoder(BasicEncoder):
 
     ### Helpers ###
 
-    def encode_name(self, name: str) -> bytearray:
+    def encode_name(self, name: Name) -> bytearray:
         """
         Assembly a name-TLV
-        :param name: Name in format like /this/name/has/five/components
+        :param name: Name
         :return: Name-TLV
         """
-        name = name[1:].split('/')
         encoder = TlvEncoder()
-        for component in name[::-1]:
-            encoder.writeBlobTlv(Tlv.NameComponent, [ord(c) for c in component])
+        # name = name[1:].split('/')
+        # for component in name[::-1]:
+        #     encoder.writeBlobTlv(Tlv.NameComponent, [ord(c) for c in component])
+        for c in name._components[::-1]:
+            encoder.writeBlobTlv(Tlv.NameComponent, c)
         encoder.writeTypeAndLength(Tlv.Name, len(encoder))
-        return encoder.getOutput().tobytes()
+        return encoder.getOutput() #.tobytes()
 
-    def encode_interest(self, name) -> bytearray:
+    def encode_interest(self, name: Name) -> bytearray:
         """
         Assembly an interest packet
-        :param name: Name (as bytearray or String)
+        :param name: Name
         :return: Interest-TLV
         """
         encoder = TlvEncoder()
@@ -75,34 +78,28 @@ class NdnTlvEncoder(BasicEncoder):
             nonce[i] = SystemRandom().randint(0, 0xff)
         encoder.writeBlobTlv(Tlv.Nonce, nonce)
         # Add name
-        if isinstance(name, str):
-            name = self.encode_name(name)
-        encoder.writeBuffer(name)
+        encoder.writeBuffer(self.encode_name(name))
         # Add interest type and len
         encoder.writeTypeAndLength(Tlv.Interest, len(encoder))
         return encoder.getOutput().tobytes()
 
-    def encode_data(self, name, payload: bytearray) -> bytearray:
+    def encode_data(self, name: Name, payload: bytearray) -> bytearray:
         """
         Assembly a data packet
-        :param name: Name (as bytearray or String)
+        :param name: Name
         :param payload: Payload
         :return: Data-TLV
         """
         encoder = TlvEncoder()
         # Add content
-        encoder.writeBuffer(payload)
-        encoder.writeTypeAndLength(Tlv.Content, len(encoder))
+        encoder.writeBlobTlv(Tlv.Content, payload)
         # Add meta info (empty)
         encoder.writeTypeAndLength(Tlv.MetaInfo, 0)
         # Add name
-        if isinstance(name, str):
-            name = self.encode_name(name)
-        encoder.writeBuffer(name)
+        encoder.writeBuffer(self.encode_name(name))
         # Add data type and len
         encoder.writeTypeAndLength(Tlv.Data, len(encoder))
         return encoder.getOutput().tobytes()
-
 
     def decode_name_component(self, decoder: TlvDecoder) -> bytearray:
         """
@@ -115,18 +112,18 @@ class NdnTlvEncoder(BasicEncoder):
         decoder.seek(savePosition)
         return decoder.readBlobTlv(type).tobytes()
 
-    def decode_name(self, decoder: TlvDecoder) -> [[bytearray]]:
+    def decode_name(self, decoder: TlvDecoder) -> Name:
         """
         Decode a name
         :param decoder: Decoder
-        :return: Name (array of bytearrays)
+        :return: Name
         """
         endOffset = decoder.readNestedTlvsStart(Tlv.Name)
         name = []
         while decoder.getOffset() < endOffset:
             name.append(self.decode_name_component(decoder))
         decoder.finishNestedTlvs(endOffset)
-        return name
+        return Name(suite='ndn2013').__add__(name)
 
     def decode_meta_info(self, decoder: TlvDecoder) -> None:
         """
@@ -139,11 +136,11 @@ class NdnTlvEncoder(BasicEncoder):
         # Lets the decoder jump over meta data.
         decoder.finishNestedTlvs(endOffset)
 
-    def decode_interest(self, input: bytearray) -> [[bytearray]]:
+    def decode_interest(self, input: bytearray) -> Name:
         """
         Decode an interest packet
         :param input: Interest packet in NDN-TLV wire format
-        :return: Name (array of bytearrays)
+        :return: Name
         """
         decoder = TlvDecoder(input)
         decoder.readNestedTlvsStart(Tlv.Interest)

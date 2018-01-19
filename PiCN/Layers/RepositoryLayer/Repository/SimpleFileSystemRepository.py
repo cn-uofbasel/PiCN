@@ -2,7 +2,7 @@
 
 '''
 chunks are stored in files named as follows:
-  base64(icnname) + '.' + sha1(chunk)
+  base64(icnname) + '.' + sha256(chunk)
 '''
 
 import base64
@@ -54,7 +54,7 @@ class SimpleFileSystemRepository(BaseRepository):
     def set_content(self, icnname: Name, chunk: bytes):
         if not self._prefix.is_prefix_of(icnname):
             raise IOError
-        h = hashlib.sha1()
+        h = hashlib.sha256()
         h.update(chunk)
         fn = self._name2pattern(icnname, h.digest())
         fn = os.path.join(self._safepath, fn)

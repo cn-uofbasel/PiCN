@@ -12,7 +12,8 @@ import socket
 import sys
 sys.path.append('..')
 
-from   PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
+#from   PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
+from   PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from   PiCN.Layers.RepositoryLayer.Repository import SimpleFileSystemRepository
 from   PiCN.Packets import Content, Interest, Name, Nack
 import PiCN.Mgmt
@@ -22,7 +23,8 @@ import PiCN.Mgmt
 class ICN():
 
     def __init__(self):
-        self.encoder = SimpleStringEncoder()
+        # self.encoder = SimpleStringEncoder()
+        self.encoder = NdnTlvEncoder.NdnTlvEncoder()
         self.sock = None
 
     def attach(self, ipAddr: str, ipPort: int, repoPort: int, suite: str):
@@ -33,7 +35,7 @@ class ICN():
         self.ipPort = ipPort
         self.suite = suite
         mgmt = PiCN.Mgmt.MgmtClient(repoPort)
-        self.repoPrefix = Name(mgmt.get_repo_prefix())
+        self.repoPrefix = mgmt.get_repo_prefix()
         self.repoPath = mgmt.get_repo_path()
         self.repo = SimpleFileSystemRepository(self.repoPath,
                                                self.repoPrefix)

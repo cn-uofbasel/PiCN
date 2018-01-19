@@ -26,7 +26,8 @@ class MgmtClient(object):
 
     def get_repo_prefix(self):
         reply = self.layercommand("repolayer", "getprefix", "")
-        return self.parseHTTPReply(reply)
+        reply = self.parseHTTPReply(reply)
+        return Name(reply)
 
     def get_repo_path(self):
         reply = self.layercommand("repolayer", "getpath", "")

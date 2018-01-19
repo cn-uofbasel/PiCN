@@ -25,7 +25,8 @@ if __name__ == '__main__':
 
     pfx = icn.getRepoPrefix()
     name = copy.copy(pfx)
-    name.__add__([time.strftime('%Y%m%d-%H%M%S') + '.txt'])
+    tstamp = time.strftime('%Y%m%d-%H%M%S') + '.txt'
+    name.__add__([tstamp.encode('ascii')])
 
     content = "my content is known under <%s>" % name.to_string()
     icn.writeChunk(name, content.encode('ascii'))
