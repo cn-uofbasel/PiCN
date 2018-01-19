@@ -15,7 +15,6 @@ from PiCN.Logger import Logger
 from PiCN.Mgmt import Mgmt
 from PiCN.Routing import BasicRouting
 
-
 class ICNForwarder(object):
     """A ICN Forwarder using PiCN"""
 

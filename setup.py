@@ -3,7 +3,7 @@ try:
 except ImportError:
     from distutils.core import setup
 
-config = {
+config_PiCN = {
     'description': 'extendable ICN implementation in python',
     'author': 'Christopher Scherb',
     'url': 'https://github.com/cn-uofbasel/PiCN',
@@ -30,11 +30,28 @@ config = {
     'tests_require': ['nose'],
     'name': 'PiCN'
 }
-
-classifiers=[
+classifiers_PiCN=[
     'Programming Language :: Python',
     'Environment :: Console',
     'Network Application :: ICN :: NFN'
 ]
+setup(**config_PiCN, classifiers=classifiers_PiCN)
 
-setup(**config, classifiers=classifiers)
+
+config_PyNDN = {
+    'description': 'PyNDN',
+    'author': 'UCLA, Jeff Thompson',
+    'url': 'https://github.com/cn-uofbasel/PiCN',
+    'download_url': '',
+    'author_email': 'jefft0@remap.ucla.edu',
+    'version': '2',
+    'license': 'GNU LESSER GENERAL PUBLIC LICENSE, Version 3, 29 June 2007',
+    'platforms': ['UNIX', 'POSIX', 'BSD', 'MacOS 10.X', 'Linux'],
+    'description': 'PyNDN Packet encoder',
+    'long_description': 'PyNDN Packet encoder for the NDN packet format',
+    'install_requires': [],
+    'packages': ['PiCNExternal.pyndn'],
+    'scripts': [],
+    'name': 'pyndn'
+}
+setup(**config_PyNDN)

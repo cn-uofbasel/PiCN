@@ -193,7 +193,7 @@ class test_BasicICNLayer(unittest.TestCase):
         name = Name("/test/data")
         content = Content("/test/data")
 
-        self.icn_layer.pit.add_pit_entry(name, None, from_faceid)
+        self.icn_layer.pit.add_pit_entry(name, from_faceid)
 
         self.queue1_icn_routing_up.put([content_in_faceid, content])
 
@@ -211,8 +211,8 @@ class test_BasicICNLayer(unittest.TestCase):
         name = Name("/test/data")
         content = Content("/test/data")
 
-        self.icn_layer.pit.add_pit_entry(name, None, from_faceid1)
-        self.icn_layer.pit.add_pit_entry(name, None, from_faceid2)
+        self.icn_layer.pit.add_pit_entry(name, from_faceid1)
+        self.icn_layer.pit.add_pit_entry(name, from_faceid2)
 
         self.queue1_icn_routing_up.put([content_in_faceid, content])
 
@@ -240,7 +240,7 @@ class test_BasicICNLayer(unittest.TestCase):
         interest = Interest(name)
 
         self.icn_layer.fib.add_fib_entry(name, to_faceid)
-        self.icn_layer.pit.add_pit_entry(name, None, from_faceid1, interest)
+        self.icn_layer.pit.add_pit_entry(name, from_faceid1, interest)
         self.assertEqual(len(self.icn_layer.pit.container), 1)
         self.assertEqual(self.icn_layer.pit.container[0].name, name)
 
@@ -333,9 +333,9 @@ class test_BasicICNLayer(unittest.TestCase):
         self.icn_layer.start_process()
         faceid = 1
         n = Name("/test/data")
-        self.icn_layer._pit.add_pit_entry(n, None, faceid)
+        self.icn_layer._pit.add_pit_entry(n, faceid)
         self.assertEqual(len(self.icn_layer._pit.container), 1)
-        c = Content(n, "HelloWorld", None)
+        c = Content(n, "HelloWorld")
         self.icn_layer.queue_from_higher.put([0, c])
         data = self.icn_layer.queue_to_lower.get()
         self.assertEqual(data, [1, c])
@@ -350,7 +350,7 @@ class test_BasicICNLayer(unittest.TestCase):
         faceid = -1
         from_faceid = 1
         n = Name("/test/data")
-        c = Content(n, "HelloWorld", None)
+        c = Content(n, "HelloWorld")
         self.icn_layer.queue_from_lower.put([from_faceid, c])
         time.sleep(1)
         self.assertTrue(self.icn_layer.queue_to_higher.empty())
@@ -365,9 +365,9 @@ class test_BasicICNLayer(unittest.TestCase):
         faceid = -1
         from_faceid = 1
         n = Name("/test/data")
-        self.icn_layer._pit.add_pit_entry(n, None, faceid, local_app=True)
+        self.icn_layer._pit.add_pit_entry(n, faceid, local_app=True)
         self.assertEqual(len(self.icn_layer._pit.container), 1)
-        c = Content(n, "HelloWorld", None)
+        c = Content(n, "HelloWorld")
         self.icn_layer.queue_from_lower.put([from_faceid, c])
         data = self.icn_layer.queue_to_higher.get()
         self.assertEqual(data, [1, c])
@@ -404,7 +404,7 @@ class test_BasicICNLayer(unittest.TestCase):
         n = Name("/test/data")
         i = Interest(n)
         self.icn_layer._fib.add_fib_entry(n, faceid, True)
-        self.icn_layer._pit.add_pit_entry(n, None, from_faceid, i, local_app=False)
+        self.icn_layer._pit.add_pit_entry(n, from_faceid, i, local_app=False)
         self.assertFalse(self.icn_layer._pit.container[0].local_app[0])
         self.icn_layer.queue_from_higher.put([0, i])
         to_faceid, data = self.icn_layer.queue_to_lower.get()
@@ -444,7 +444,7 @@ class test_BasicICNLayer(unittest.TestCase):
         n = Name("/test/data")
         i = Interest(n)
         self.icn_layer._fib.add_fib_entry(n, faceid, True)
-        self.icn_layer._pit.add_pit_entry(n, None, from_faceid, i, local_app=False)
+        self.icn_layer._pit.add_pit_entry(n, from_faceid, i, local_app=False)
         self.icn_layer.queue_from_lower.put([from_faceid, i])
         time.sleep(1)
         self.assertTrue(self.icn_layer.queue_to_higher.empty()) #--> deduplication by pit entry
@@ -474,7 +474,7 @@ class test_BasicICNLayer(unittest.TestCase):
         """Test if ICN Layer issues Nack if no content and no fib entry is available from lower"""
         self.icn_layer.start_process()
         interest = Interest("/test/data")
-        nack = Nack(interest.name, "No FIB Entry", interest.name_payload)
+        nack = Nack(interest.name, "No FIB Entry")
         self.icn_layer.queue_from_lower.put([1, interest])
         data = self.icn_layer.queue_to_lower.get()
         fid = data[0]
@@ -490,7 +490,7 @@ class test_BasicICNLayer(unittest.TestCase):
         self.icn_layer.queue_from_higher = queue_from_higher
         self.icn_layer.start_process()
         interest = Interest("/test/data")
-        nack = Nack(interest.name, "No FIB Entry", interest.name_payload)
+        nack = Nack(interest.name, "No FIB Entry")
         self.icn_layer.queue_from_higher.put([1, interest])
         data = self.icn_layer.queue_to_higher.get()
         fid = data[0]
@@ -504,8 +504,8 @@ class test_BasicICNLayer(unittest.TestCase):
         n1 = Name("/test/data")
         i1 = Interest(n1)
         fid1 = 1
-        nack1 = Nack(n1, "No FIB Entry", i1.name_payload)
-        self.pit.add_pit_entry(n1, i1.name_payload, fid1, i1)
+        nack1 = Nack(n1, "No FIB Entry")
+        self.pit.add_pit_entry(n1, fid1, i1)
         self.icn_layer.queue_from_lower.put([2, nack1])
         data = self.icn_layer.queue_to_lower.get()
         self.assertEqual(data[0], fid1)
@@ -520,8 +520,8 @@ class test_BasicICNLayer(unittest.TestCase):
         to_fib1 = 2
         to_fib2 = 3
         to_fib3 = 4
-        nack1 = Nack(n1, "No FIB Entry", i1.name_payload)
-        self.pit.add_pit_entry(n1, i1.name_payload, from_fid, i1)
+        nack1 = Nack(n1, "No FIB Entry")
+        self.pit.add_pit_entry(n1, from_fid, i1)
         self.fib.add_fib_entry(Name("/test"), to_fib2)
         self.fib.add_fib_entry(Name("/test/data"), to_fib3)
         self.icn_layer.queue_from_lower.put([to_fib1, nack1])

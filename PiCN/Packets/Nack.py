@@ -5,8 +5,8 @@ from .Packet import Packet
 class Nack(Packet):
     """Nack data structure for PiCN"""
 
-    def __init__(self, name = None, reason = None, name_payload = None):
-        Packet.__init__(self, name, name_payload)
+    def __init__(self, name = None, reason = None):
+        Packet.__init__(self, name)
         self._reason = reason
 
     @property
@@ -20,4 +20,4 @@ class Nack(Packet):
     def __eq__(self, other):
         if type(other) is not Nack:
             return False
-        return self.name == other.name and self.name_payload == other.name_payload and self.reason == other.reason
+        return self.name == other.name and self.reason == other.reason
