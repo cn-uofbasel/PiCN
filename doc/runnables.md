@@ -3,7 +3,7 @@
 
 ### Starting a Forwarder
 
-> python3 PiCn/Executable/ICNForwarder.py < listeningport > [<wireformat>]
+> python3 PiCn/Executable/ICNForwarder.py < listeningport > [< wireformat >]
 
 
 
@@ -45,7 +45,7 @@
 
 ---
 
-### Wireformat
+##### Wireformat
 
-* `simple'(default)
-* `ndntlv'
+* `simple` (if not specified)
+* `ndntlv`
