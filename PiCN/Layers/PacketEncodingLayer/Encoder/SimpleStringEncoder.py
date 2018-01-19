@@ -4,7 +4,7 @@ from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
 from PiCN.Packets import Packet, Content, Interest, Nack, Name
 
 class SimpleStringEncoder(BasicEncoder):
-    """A extrem simple Packet Encoder for the BasicPacketEncodingLayer"""
+    """An extreme simple Packet Encoder for the BasicPacketEncodingLayer"""
     def __init__(self):
         BasicEncoder.__init__(self)
 

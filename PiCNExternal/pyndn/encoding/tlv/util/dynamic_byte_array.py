@@ -22,7 +22,7 @@ This module defines the DynamicByteArray class which holds a
 bytearray which can be expanded as needed.
 """
 
-from standalone.util.blob import _memoryviewWrapper
+from PiCNExternal.pyndn.encoding.tlv.util.blob import _memoryviewWrapper
 
 class DynamicByteArray(object):
     """

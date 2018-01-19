@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # A copy of the GNU Lesser General Public License is in the file COPYING.
 
-from standalone.util.dynamic_byte_array import DynamicByteArray
+from PiCNExternal.pyndn.encoding.tlv.util.dynamic_byte_array import DynamicByteArray
 
 """
 This module defines the TlvEncoder class for encoding in the NDN-TLV wire
