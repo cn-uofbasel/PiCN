@@ -15,7 +15,15 @@ def main(argv):
     except Exception:
         port = 9000
 
-    forwarder = PiCN.ProgramLibs.ICNForwarder.ICNForwarder(port, logging.DEBUG)
+    try:
+        if argv[2] == "ndntlv":
+            encoder = argv[2]
+        else:
+            encoder = None
+    except:
+        encoder = None
+
+    forwarder = PiCN.ProgramLibs.ICNForwarder.ICNForwarder(port, logging.DEBUG, encoder)
     forwarder.start_forwarder()
 
     forwarder.linklayer.process.join()
