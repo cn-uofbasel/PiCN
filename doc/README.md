@@ -18,4 +18,4 @@
 
 ### About
 
-* [Licensing](lincensing.md)
+* [Licensing](licensing.md)
