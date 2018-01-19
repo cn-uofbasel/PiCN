@@ -15,3 +15,7 @@
 
 * [Architecture](architecture.md)
 * [Package Structure](package_structure.md)
+
+### About
+
+* [Licensing](lincensing.md)
