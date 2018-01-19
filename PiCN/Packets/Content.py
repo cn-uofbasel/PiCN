@@ -13,6 +13,16 @@ class Content(Packet):
     def content(self):
         return self._content
 
+    def get_bytes(self) -> bytearray:
+        if(isinstance(self._content, bytearray)):
+            return self._content
+        if(isinstance(self._content, bytes)):
+            return self._content
+        if(isinstance(self._content, str)):
+            return elem.encode()
+        else:
+            return self._content
+
     @content.setter
     def content(self, content):
         self._content = content
