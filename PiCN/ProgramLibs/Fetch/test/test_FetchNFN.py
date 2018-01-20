@@ -109,7 +109,6 @@ class test_Fetch(unittest.TestCase):
 
     def test_compute_on_large_data_over_forwarder_data_from_repo_to_data_prefix(self):
         """Test fetch result with large input data from repo with a to data prefix"""
-        #TODO, if nack is received and no other strategy, compute local <<< TEST FAILS!!!
         self.ICNRepo.start_repo()
         self.forwarder1.start_forwarder()
         self.forwarder2.start_forwarder()

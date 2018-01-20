@@ -37,7 +37,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         for i in range(0,self.nfnLayer._max_running_computations + 1):
             running_comps[i] = i
         self.nfnLayer.add_computation(interest, running_comps)
-        self.assertEqual(interest, self.nfnLayer._pending_computations.get())
+        self.assertEqual(interest, self.nfnLayer._pending_computations.get()[0])
 
     def test_data_from_lower_interest(self):
         """Test interest from lower"""
@@ -228,7 +228,6 @@ def f():
 
     def test_fwd_computation_nack_stop_fwd_nack(self):
         """Test forwarding of a computation and stop computation"""
-        #FIXME Test will fail and block if NFN tries to compute local if nack is received
         self.fib.add_fib_entry(Name("/test"), 1, True)
         self.nfnLayer.start_process()
         cid = 1
@@ -243,8 +242,13 @@ def f():
         nack = Nack(name, "No PIT Entry found")
         self.nfnLayer.queue_from_lower.put([2, nack])
         data = self.nfnLayer.queue_to_lower.get()
+        self.assertTrue(isinstance(data[1], Interest))
+        self.assertEqual( Name("/test/data"), data[1].name)
+        self.nfnLayer.queue_from_lower.put([data[0], nack])
+        data = self.nfnLayer.queue_to_lower.get()
         self.assertTrue(isinstance(data[1], Nack))
         self.assertEqual(name, data[1].name)
+
 
     def test_fwd_computation_nack_second_path(self):
         """Test forwarding of a computation and applying second rule"""

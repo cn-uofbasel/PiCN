@@ -5,20 +5,26 @@ import sys
 from random import randint
 
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
+from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from PiCN.Packets import Content, Interest
 
 
 def main(argv):
-    if len(argv) != 4:
-        print("usage: ", argv[0], "ip, port, name")
+    if len(argv) < 4 or len(argv) > 5:
+        print("usage: ", argv[0], "ip, port, name, [wireformat]")
+        print("  wire formats:  ndntlv")
         return
 
-    #parameter
+    # parameter
     ip = argv[1]
     port = int(argv[2])
     name = argv[3]
 
-    encoder = SimpleStringEncoder()
+
+    if len(argv) == 5 and argv[4] == "ndntlv":
+        encoder = NdnTlvEncoder()
+    else:
+        encoder = SimpleStringEncoder()
 
     # create interest
     interest: Interest = Interest(name)
@@ -32,6 +38,9 @@ def main(argv):
     encoded_content, addr = sock.recvfrom(8192)
     content: Content = encoder.decode(encoded_content)
 
+    print("-- Name:")
+    print(content.name)
+    print("-- Payload:")
     print(content.content)
 
 

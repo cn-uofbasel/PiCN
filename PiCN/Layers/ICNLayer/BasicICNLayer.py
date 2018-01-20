@@ -38,8 +38,7 @@ class BasicICNLayer(LayerProcess):
                 self.queue_to_higher.put([highlevelid, cs_entry.content])
                 return
             pit_entry = self._pit.find_pit_entry(packet.name)
-            if pit_entry is None: #if pit entry is not none --> just forward interest, pit entry exists
-                self._pit.add_pit_entry(packet.name, highlevelid, packet, local_app=True)
+            self._pit.add_pit_entry(packet.name, highlevelid, packet, local_app=True)
             fib_entry = self._fib.find_fib_entry(packet.name)
             if fib_entry is not None:
                 self._pit.add_used_fib_entry(packet.name, fib_entry)
@@ -122,6 +121,7 @@ class BasicICNLayer(LayerProcess):
         pit_entry = self.check_pit(content.name)
         if pit_entry is None:
             self.logger.info("No PIT entry for content object available, dropping")
+            #todo NACK
             return
         else:
             for i in range(0, len(pit_entry.faceids)):
@@ -143,12 +143,20 @@ class BasicICNLayer(LayerProcess):
             fib_entry = self.check_fib(nack.name, pit_entry.fib_entries_already_used)
             if fib_entry is None:
                 self.logger.info("Sending Nack to previous node(s)")
+                re_add = False
+                for i in range(0, len(pit_entry.faceids)):
+                    if pit_entry.local_app[i] == True: #Go with nack first only to app layer if it was requested
+                        re_add = True
+                self._pit.remove_pit_entry(pit_entry.name)
                 for i in range(0, len(pit_entry.faceids)):
                     if to_higher and pit_entry.local_app[i]:
                         to_higher.put([faceid, nack])
-                    else:
+                        del pit_entry.face_id[i]
+                        del pit_entry.local_app[i]
+                    elif not re_add:
                         to_lower.put([pit_entry.faceids[i], nack])
-                self._pit.remove_pit_entry(pit_entry.name)
+                if re_add:
+                    self._pit.container.append(pit_entry)
             else:
                 self.logger.info("Try using next FIB path")
                 self._pit.add_used_fib_entry(nack.name, fib_entry)

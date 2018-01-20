@@ -21,7 +21,7 @@ class NFNEvaluator(PiCNProcess):
 
     def __init__(self, interest: Interest, cs: BaseContentStore, fib: BaseForwardingInformationBase,
                  pit: BasePendingInterestTable, rewrite_table: Dict[Interest, List[Interest]],
-                 executor: Dict[str, type(BaseNFNExecutor)] = {}, debug_level: int = 255):
+                 executor: Dict[str, type(BaseNFNExecutor)] = {}, local: bool=False ,debug_level: int = 255):
         super().__init__("NFNEvaluator", debug_level)
         self.interest: Interest = interest
         self.computation_in_queue: multiprocessing.Queue = multiprocessing.Queue()  # data to computation
@@ -39,6 +39,7 @@ class NFNEvaluator(PiCNProcess):
         self.parser: DefaultNFNParser = DefaultNFNParser()
         self.optimizer: BaseNFNOptimizer = None
         self.executor: Dict[str, type(BaseNFNExecutor)] = executor
+        self.force_compute_local = local
 
     def stop_process(self):
         if self.process:
@@ -66,7 +67,7 @@ class NFNEvaluator(PiCNProcess):
         self.logger.info("Evaluating " + str(name))
         self.optimizer = ToDataFirstOptimizer(prepended, self.cs, self.fib, self.pit)
         did_fwd = False
-        if self.optimizer.compute_fwd(ast):
+        if self.optimizer.compute_fwd(ast) and not self.force_compute_local:
             self.logger.info("FWD")
             did_fwd = True
             computation_strs = self.optimizer.rewrite(ast)
@@ -82,7 +83,7 @@ class NFNEvaluator(PiCNProcess):
             if len(interests) > 0:
                 self.computation_out_queue.put(interests)
 
-        if self.optimizer.compute_local(ast):
+        if self.optimizer.compute_local(ast) or self.force_compute_local:
             self.logger.info("Compute Local")
             #request child nodes
             if not isinstance(ast, AST_FuncCall):

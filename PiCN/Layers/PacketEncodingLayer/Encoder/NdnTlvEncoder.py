@@ -22,12 +22,21 @@ class NdnTlvEncoder(BasicEncoder):
         :param packet: Packet in PiCN's representation
         :return: Packet in NDN TLV representation
         """
-        if(isinstance(packet, Interest)):
-            return self.encode_interest(packet.name)
-        if(isinstance(packet, Content)):
-            return self.encode_data(packet.name, packet.get_bytes())
-        if(isinstance(packet, Nack)):
+        if isinstance(packet, Interest):
+            if isinstance(packet, Content):
+                return packet.wire_data
+            else:
+                return self.encode_interest(packet.name)
+
+        if isinstance(packet, Content):
+            if isinstance(packet.wire_data, bytes):
+                return packet.wire_data
+            else:
+                return self.encode_data(packet.name, packet.get_bytes())
+
+        if isinstance(packet, Nack):
             return None # TODO
+
         return None
 
     def decode(self, wire_data) -> Packet:

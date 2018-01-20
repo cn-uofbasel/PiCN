@@ -28,6 +28,10 @@ class Name(object):
     def __str__(self) -> str:
         return self.to_string()
 
+    def __add__(self, other):
+        for o in other:
+            self._components.append(o)
+
     def __eq__(self, other) -> bool:
         if type(other) is not Name:
             return False
