@@ -32,17 +32,17 @@ class SimpleFileSystemRepository(BaseRepository):
             fnpattern += b'.*'
         return fnpattern.decode('ascii')
 
-    def is_content_available(self, icnname: Name, digest=None) -> bool:
-        fnpattern = self._name2pattern(icnname, digest)
+    def is_content_available(self, icnname: Name) -> bool:
+        fnpattern = self._name2pattern(icnname, icnname.digest)
         for file in os.listdir(self._safepath):
             if fnmatch.fnmatch(file, fnpattern):
                 return True
         return False
 
-    def get_content(self, icnname: Name, digest=None) -> Content:
+    def get_content(self, icnname: Name) -> Content:
         if not self._prefix.is_prefix_of(icnname):
             return None
-        fnpattern = self._name2pattern(icnname, digest)
+        fnpattern = self._name2pattern(icnname, icnname.digest)
         for fn in os.listdir(self._safepath):
             if fnmatch.fnmatch(fn, fnpattern):
                 fn = os.path.join(self._safepath, fn)

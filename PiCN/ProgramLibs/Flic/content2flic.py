@@ -10,7 +10,8 @@ import hashlib
 import PiCNExternal.pyndn.encoding.tlv.tlv.tlv_encoder        as ndn_enc
 import PiCNExternal.pyndn.encoding.tlv.tlv.tlv                as ndn_const
 from   PiCN.Packets                                       import Content
-import PiCN.Layers.PacketEncodingLayer.Encoder.NdnTlvEncoder  as picn_ndn_enc
+from   PiCN.Layers.PacketEncodingLayer.Encoder            import NdnTlvEncoder
+from   PiCN.Layers.PacketEncodingLayer.Encoder.NdnTlvEncoder import TlvEncoder
 from   PiCN.Packets.Name import Name
 
 class MkFlic():
@@ -28,7 +29,7 @@ class MkFlic():
         # input: name, payload bytes
         # output: chunk bytes
         c = Content(name, data)
-        ndn = picn_ndn_enc.NdnTlvEncoder()
+        ndn = NdnTlvEncoder()
         return ndn.encode(c) # and sign
 
     def bytesToManifest(self, name: Name, data: bytes):
@@ -60,7 +61,7 @@ class MkFlic():
             tbl = b'' # index table
             while len(ptrs) > 0:
                 # add an entry to the index table
-                e = ndn_enc.TlvEncoder()
+                e = TlvEncoder()
                 e.writeBlobTlv(self.NDN_TYPE_MANIFEST_DATAPTR, ptrs[0])
                 e = e.getOutput().tobytes()
                 # collect pointers as long as the manifest fits in a chunk
@@ -75,13 +76,14 @@ class MkFlic():
         while len(tables) > 0:
             tbl = tables[-1]
             if tailPtr:
-                e = ndn_enc.TlvEncoder()
+                e = TlvEncoder()
                 e.writeBlobTlv(self.MANIFEST_MANIFESTPTR, tailPtr)
                 tbl += e.getOutput()
-            m = ndn_enc.TlvEncoder()
+            m = TlvEncoder()
             m.writeBlobTlv(self.NDN_TYPE_MANIFEST_INDEXTABLE, tbl)
+            m.writeTypeAndLength(self.NDN_TYPE_MANIFEST, len(m))
             c = Content(name, m.getOutput())
-            ndn = picn_ndn_enc.NdnTlvEncoder()
+            ndn = NdnTlvEncoder()
             chunk = ndn.encode(c) # and sign
             if len(tables) == 1:
                 name = copy.copy(name)
@@ -105,18 +107,18 @@ class MkFlic():
         localName = n
         if len(data) < self.MTU and not forceManifest:
             # NFN direct result
-            payload = ndn_enc.TlvEncoder()
+            payload = TlvEncoder()
             payload.writeBlobTlv(self.NFN_DIRECT_RESULT, data)
             c = Content(localName, payload.getOutput())
-            ndn = picn_ndn_enc.NdnTlvEncoder()
+            ndn = NdnTlvEncoder()
             return ndn.encode(c) # and sign
 
         # NFN indirect result
         name, manifest = self.bytesToManifest(localName, data)
-        payload = ndn_enc.TlvEncoder()
+        payload = TlvEncoder()
         payload.writeBlobTlv(self.NFN_INDIRECT_RESULT, manifest)
         c = Content(name, payload.getOutput())
-        ndn = picn_ndn_enc.NdnTlvEncoder()
+        ndn = NdnTlvEncoder()
         return ndn.encode(c) # and sign
 
 # eof

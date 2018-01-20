@@ -1,13 +1,16 @@
 """Name data structure for PiCN"""
 
+import binascii
+import json
 import os
-# from functools import reduce
+
 
 class Name(object):
     """Name data structure for PiCN"""
 
     def __init__(self, name: str = None, suite='ndn2013'):
         self.suite = suite
+        self.digest = None
         if name:
             self.from_string(name)
         else:
@@ -25,6 +28,26 @@ class Name(object):
         s = '/' + '/'.join([c.decode('ascii') for c in self._components])
         return s
 
+    def to_json(self) -> str:
+        """encoded name as JSON"""
+        n = {}
+        n['suite'] = self.suite
+        n['comps'] = [ binascii.hexlify(c).decode('ascii') for c in self._components ]
+        if self.digest:
+            n['dgest'] = binascii.hexlify(self.digest).decode('ascii')
+        return json.dumps(n)
+
+    def from_json(self, s: str) -> str:
+        n = json.loads(s)
+        self.suite = n['suite']
+        self._components = [ binascii.dehexlify(c) for c in n['comps'] ]
+        self.digest = binascii.dehexlify(n['dgest']) if 'dgest' in n else None
+        return self
+
+    def setDigest(self, digest : str = None):
+        self.digest = digest
+        return self
+        
     def __str__(self) -> str:
         return self.to_string()
 

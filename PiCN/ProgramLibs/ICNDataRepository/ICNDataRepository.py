@@ -29,7 +29,7 @@ class ICNDataRepository(object):
 
         #packet encoder
         # self.encoder = SimpleStringEncoder()
-        self.encoder = NdnTlvEncoder.NdnTlvEncoder()
+        self.encoder = NdnTlvEncoder()
 
         #chunkifyer
         self.chunkifyer = SimpleContentChunkifyer()

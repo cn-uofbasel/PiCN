@@ -24,7 +24,7 @@ class ICN():
 
     def __init__(self):
         # self.encoder = SimpleStringEncoder()
-        self.encoder = NdnTlvEncoder.NdnTlvEncoder()
+        self.encoder = NdnTlvEncoder()
         self.sock = None
 
     def attach(self, ipAddr: str, ipPort: int, repoPort: int, suite: str):

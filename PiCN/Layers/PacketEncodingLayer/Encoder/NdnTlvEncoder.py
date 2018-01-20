@@ -69,6 +69,9 @@ class NdnTlvEncoder(BasicEncoder):
         # name = name[1:].split('/')
         # for component in name[::-1]:
         #     encoder.writeBlobTlv(Tlv.NameComponent, [ord(c) for c in component])
+        # fill backwards
+        if name.digest:
+            encoder.writeBlobTlv(Tlv.ImplicitSha256DigestComponent, name.digest)
         for c in name._components[::-1]:
             encoder.writeBlobTlv(Tlv.NameComponent, c)
         encoder.writeTypeAndLength(Tlv.Name, len(encoder))
@@ -86,6 +89,7 @@ class NdnTlvEncoder(BasicEncoder):
         for i in range(4):
             nonce[i] = SystemRandom().randint(0, 0xff)
         encoder.writeBlobTlv(Tlv.Nonce, nonce)
+        # TODO: add implicitDigest flag here ?
         # Add name
         encoder.writeBuffer(self.encode_name(name))
         # Add interest type and len
@@ -128,11 +132,16 @@ class NdnTlvEncoder(BasicEncoder):
         :return: Name
         """
         endOffset = decoder.readNestedTlvsStart(Tlv.Name)
-        name = []
+        comps = []
+        dgest = None
         while decoder.getOffset() < endOffset:
-            name.append(self.decode_name_component(decoder))
+            if decoder.peekType(Tlv.ImplicitSha256DigestComponent, endOffset):
+                dgest = decoder.readBlobTlv(Tlv.ImplicitSha256DigestComponent)
+                dgest = dgest.tobytes()
+            else:
+                comps.append(self.decode_name_component(decoder))
         decoder.finishNestedTlvs(endOffset)
-        return Name(suite='ndn2013').__add__(name)
+        return Name(suite='ndn2013').__add__(comps).setDigest(dgest)
 
     def decode_meta_info(self, decoder: TlvDecoder) -> None:
         """
