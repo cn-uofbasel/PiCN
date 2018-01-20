@@ -15,9 +15,6 @@ NDN_TYPE_MANIFEST_INDEXTABLE  = 0x991
 NDN_TYPE_MANIFEST_DATAPTR     = 0x992
 NDN_TYPE_MANIFEST_MANIFESTPTR = 0x993
 
-NFN_TYPE_RESULT_DIRECT        = 0x998
-NFN_TYPE_RESULT_INDIRECT      = 0x999
-
 # ----------------------------------------------------------------------
 
 class MkFlic():
@@ -35,6 +32,11 @@ class MkFlic():
     def bytesToManifest(self, name: Name, data: bytes) -> (Name, bytes):
         # input: byte array
         # output: (nameOfRootManifest, rootManifestChunk)
+        # name already has an additional component (that will be dropped for
+        # the non-root manifest or data nodes)
+
+        subname = copy.deepcopy(name)
+        subname._components.pop()
 
         # cut content in pieces
         raw = []
@@ -45,8 +47,9 @@ class MkFlic():
         # persist pieces and learn their hash pointers
         ptrs = []
         for r in raw:
-            chunk = self._mkContentChunk(name, r)
-            self.icn.writeChunk(name, chunk)
+            chunk = self._mkContentChunk(subname, r)
+            # print(name)
+            self.icn.writeChunk(subname, chunk)
             h = hashlib.sha256()
             h.update(chunk)
             ptrs.append(h.digest())
@@ -82,11 +85,11 @@ class MkFlic():
             m = TlvEncoder()
             m.writeBlobTlv(NDN_TYPE_MANIFEST_INDEXTABLE, tbl)
             m.writeTypeAndLength(NDN_TYPE_MANIFEST, len(m))
-            c = Content(name, m.getOutput())
-            chunk = NdnTlvEncoder().encode(c) # and sign
             if len(tables) == 1:
-                name = copy.copy(name)
-                name.__add__([b'_'])
+                subname = name #copy.copy(name)
+                # name.__add__([b'_'])
+            c = Content(subname, m.getOutput())
+            chunk = NdnTlvEncoder().encode(c) # and sign
             self.icn.writeChunk(name, chunk)
             h = hashlib.sha256()
             h.update(chunk)
@@ -95,30 +98,6 @@ class MkFlic():
 
         return (name, chunk)
 
-    ''' pseudo code for the time being:
-    # this method should move to some NFN module
-    def bytesToNFNresult(self, localName: Name, data: bytes, 
-                         forceManifest=False):
-        # input: e2e result bytes, as produced by NFN execution
-        # output: "NFN result TLV", either constant or indirect (=manifest)
-
-        n = copy.copy(icn.getRepoPrefix())
-        n.__add__(localName._components)
-        localName = n
-        if len(data) < self.MTU and not forceManifest:
-            # NFN direct result
-            payload = TlvEncoder()
-            payload.writeBlobTlv(self.NFN_DIRECT_RESULT, data)
-            c = Content(localName, payload.getOutput())
-            return NdnTlvEncoder().encode(c) # and sign
-
-        # NFN indirect result
-        name, manifest = self.bytesToManifest(localName, data)
-        payload = TlvEncoder()
-        payload.writeBlobTlv(self.NFN_INDIRECT_RESULT, manifest)
-        c = Content(name, payload.getOutput())
-        returnNdnTlvEncoder().encode(c) # and sign
-    '''
 
 # ----------------------------------------------------------------------
 
@@ -167,20 +146,8 @@ class DeFlic():
     def bytesFromManifestName(self, name: Name):
         chunk = self.icn.readChunk(name)
         content = NdnTlvEncoder().decode(chunk)
-        name._components.pop() # drop the '_'
+        name._components.pop() # drop the last component (e.g. '_')
         return self._manifestToBytes(name, content.get_bytes())
-
-    ''' pseudo code for the time being:
-    # this method should move to some NFN module
-    def NFNresultToBytes(self, data):
-        # input: byte array (containting a "NFN result TLV")
-        # output: e2e raw result bytes
-        pkt = self.decoder(data)
-        if pkt.T == NFNdirectResult:
-            return pkt.V
-        # we got a manifest
-        return self.manifestToBytes(pkt.V)
-    '''
 
     # TODO:
     # def iterFromName(self, name):

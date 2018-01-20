@@ -8,3 +8,4 @@ dist/*
 .coverage
 nosetests.xml
 .DS_Store
+*~
