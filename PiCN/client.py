@@ -8,6 +8,7 @@ import binascii
 import hashlib
 import os
 from   random import randint
+import select
 import socket
 import sys
 sys.path.append('..')
@@ -17,6 +18,9 @@ from   PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from   PiCN.Layers.RepositoryLayer.Repository import SimpleFileSystemRepository
 from   PiCN.Packets import Content, Interest, Name, Nack
 import PiCN.Mgmt
+
+RECV_MAX_RETRY_COUNT = 3
+RECV_TIMEOUT         = 2.0   # in seconds
 
 # -----------------------------------------------------------------
 
@@ -31,6 +35,7 @@ class ICN():
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         send_port = randint(10000, 64000)
         self.sock.bind(("0.0.0.0", send_port))
+        self.sock.setblocking(0)
         self.ipAddr = ipAddr
         self.ipPort = ipPort
         self.suite = suite
@@ -59,11 +64,18 @@ class ICN():
     def readChunk(self, name: Name, digest=None):
         interest = Interest(name)
         encoded_interest = self.encoder.encode(interest)
-        self.sock.sendto(encoded_interest, (self.ipAddr, self.ipPort))
-        encoded_content, addr = self.sock.recvfrom(8192)
-        content = self.encoder.decode(encoded_content)
-        if isinstance(content, Content):
-            return content.content
+        for i in range(RECV_MAX_RETRY_COUNT):
+            if i != 0:
+                print("retransmitting Interest")
+            self.sock.sendto(encoded_interest, (self.ipAddr, self.ipPort))
+            ok = select.select([self.sock], [], [], RECV_TIMEOUT)
+            if ok[0]:
+                encoded_content, addr = self.sock.recvfrom(8192)
+                content = self.encoder.decode(encoded_content)
+                if isinstance(content, Content):
+                    return content.content
+                # here we should also capture and return NACKs
+        # raise MAXRETRY
         return None
 
 # eof
