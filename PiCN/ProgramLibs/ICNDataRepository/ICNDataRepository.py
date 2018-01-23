@@ -33,7 +33,7 @@ class ICNDataRepository(object):
         self.chunkifyer = SimpleContentChunkifyer()
 
         #repo
-        self.repo = SimpleFileSystemRepository(foldername, icnprefix)
+        self.repo = SimpleFileSystemRepository(foldername, icnprefix, logger)
 
         #initialize layers
         self.linklayer = UDP4LinkLayer(port, debug_level=debug_level)
