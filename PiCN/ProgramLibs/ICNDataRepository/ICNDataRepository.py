@@ -25,7 +25,8 @@ class ICNDataRepository(object):
 
         #debug level
         logger = Logger("ICNRepo", debug_level)
-        logger.info("Start PiCN Repository on port " + str(port))
+        logger.info("Start PiCN Repository on port %d, prefix %s" % \
+                    (port, str(icnprefix)))
 
         #packet encoder
         # self.encoder = SimpleStringEncoder()

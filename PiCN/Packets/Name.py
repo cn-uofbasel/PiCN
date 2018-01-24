@@ -22,10 +22,16 @@ class Name(object):
         comps = name.split("/")[1:]
         self._components = [c.encode('ascii') for c in comps]
 
-    def to_string(self) -> str:
-        """Transform name to string, components separated by /"""
+    def components_to_string(self) -> str:
         # FIXME: handle '/' as part of a component, and binary components
         s = '/' + '/'.join([c.decode('ascii') for c in self._components])
+        return s
+
+    def to_string(self) -> str:
+        """Transform name to string, components separated by /"""
+        s = self.components_to_string()
+        if self.digest:
+            s += "[hashId=%s]" % binascii.hexlify(self.digest).decode('ascii')
         return s
 
     def to_json(self) -> str:
