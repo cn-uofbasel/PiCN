@@ -1,7 +1,15 @@
 """A Simple File System Repository"""
 
+'''
+chunks are stored in files named as follows:
+  base64(icnname) + '.' + sha1(chunk)
+'''
 
-import os.path
+import base64
+import binascii
+import fnmatch
+import hashlib
+import os
 
 from PiCN.Layers.RepositoryLayer.Repository import BaseRepository
 from PiCN.Packets import Content, Name
@@ -18,31 +26,43 @@ class SimpleFileSystemRepository(BaseRepository):
         self._prefix = prefix
         self.logger = logger
 
+    def _name2pattern(self, icnname: Name, digest=None) -> str:
+        fnpattern = base64.b64encode(icnname.to_string().encode('ascii'))
+        if digest:
+            fnpattern += b'.' + binascii.hexlify(digest)
+        else:
+            fnpattern += b'.*'
+        return fnpattern.decode('ascii')
 
-    def is_content_available(self, icnname: Name) -> bool:
-        if not icnname.to_string().startswith(self._prefix.to_string()):
-            return False
-        filename = icnname.components[-1]
-        filename_abs = self._foldername + "/" + filename
-        filepath = os.path.abspath(filename_abs)
-        if os.path.commonprefix([filepath, self._safepath]) != self._safepath:  # prevent directory traversal
-            return False
-        if os.path.isfile(filename_abs):
-            return True
+    def is_content_available(self, icnname: Name, digest=None) -> bool:
+        fnpattern = self._name2pattern(icnname, digest)
+        for file in os.listdir(self._safepath):
+            if fnmatch.fnmatch(file, fnpattern):
+                return True
         return False
 
+    def get_content(self, icnname: Name, digest=None) -> Content:
+        if not self._prefix.is_prefix_of(icnname):
+            return None
+        fnpattern = self._name2pattern(icnname, digest)
+        for fn in os.listdir(self._safepath):
+            if fnmatch.fnmatch(fn, fnpattern):
+                fn = os.path.join(self._safepath, fn)
+                with open(fn, 'rb') as f:
+                    chunk = f.read()
+                    return Content(icnname, chunk)
+        return None
 
-    def get_content(self, icnname: Name) -> Content:
-        if not icnname.to_string().startswith(self._prefix.to_string()):
-            return None
-        try:
-            filename = icnname.components[-1]
-            filename_abs = self._foldername + "/" + filename
-            filepath = os.path.abspath(filename_abs)
-            if os.path.commonprefix([filepath, self._safepath]) != self._safepath: #prevent directory traversal
-                return None
-            with open(filename_abs, 'r') as content_file:
-                content = content_file.read()
-            return Content(icnname, content)
-        except:
-            return None
+    def set_content(self, icnname: Name, chunk: bytes):
+        if not self._prefix.is_prefix_of(icnname):
+            raise IOError
+        h = hashlib.sha1()
+        h.update(chunk)
+        fn = self._name2pattern(icnname, h.digest())
+        fn = os.path.join(self._safepath, fn)
+        if os.path.isfile(fn):
+            raise IOError
+        with open(fn, "wb") as f:
+            f.write(chunk)
+
+# eof

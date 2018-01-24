@@ -1,7 +1,10 @@
+#!/usr/bin/env python3.6
+
 """ICN Data Repository executable"""
 
 import logging
 import sys
+sys.path.append('..')
 
 import PiCN.ProgramLibs.ICNDataRepository
 from PiCN.Packets import Name
