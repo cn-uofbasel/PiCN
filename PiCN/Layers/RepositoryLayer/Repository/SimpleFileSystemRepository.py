@@ -13,16 +13,18 @@ import os
 
 from PiCN.Layers.RepositoryLayer.Repository import BaseRepository
 from PiCN.Packets import Content, Name
+from PiCN.Logger import Logger
 
 
 class SimpleFileSystemRepository(BaseRepository):
     """A Simple File System Repository"""
 
-    def __init__(self, foldername: str, prefix: Name):
+    def __init__(self, foldername: str, prefix: Name, logger: Logger=None):
         super().__init__()
         self._foldername: str = foldername
         self._safepath = safepath = os.path.abspath(self._foldername)
         self._prefix = prefix
+        self.logger = logger
 
     def _name2pattern(self, icnname: Name, digest=None) -> str:
         fnpattern = base64.b64encode(icnname.to_string().encode('ascii'))
