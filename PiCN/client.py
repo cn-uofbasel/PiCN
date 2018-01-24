@@ -15,7 +15,7 @@ sys.path.append('..')
 
 #from   PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 from   PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
-from   PiCN.Layers.RepositoryLayer.Repository import SimpleFileSystemRepository
+from   PiCN.Layers.RepositoryLayer.Repository import FlicFileSystemRepository
 from   PiCN.Packets import Content, Interest, Name, Nack
 import PiCN.Mgmt
 
@@ -42,8 +42,8 @@ class ICN():
         mgmt = PiCN.Mgmt.MgmtClient(repoPort)
         self.repoPrefix = mgmt.get_repo_prefix()
         self.repoPath = mgmt.get_repo_path()
-        self.repo = SimpleFileSystemRepository(self.repoPath,
-                                               self.repoPrefix)
+        self.repo = FlicFileSystemRepository(self.repoPath,
+                                             self.repoPrefix)
 
     def detach(self):
         self.sock = None

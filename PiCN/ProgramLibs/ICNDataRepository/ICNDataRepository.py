@@ -10,7 +10,7 @@ from PiCN.Layers.ChunkLayer.Chunkifyer import SimpleContentChunkifyer
 from PiCN.Layers.LinkLayer import UDP4LinkLayer
 # from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
-from PiCN.Layers.RepositoryLayer.Repository import SimpleFileSystemRepository
+from PiCN.Layers.RepositoryLayer.Repository import FlicFileSystemRepository
 from PiCN.Logger import Logger
 from PiCN.Packets import Name
 from PiCN.Mgmt import Mgmt
@@ -25,7 +25,7 @@ class ICNDataRepository(object):
 
         #debug level
         logger = Logger("ICNRepo", debug_level)
-        logger.info("Start PiCN Repository on port %d, prefix %s" % \
+        logger.info("Start PiCN FLIC Repository on port %d, prefix %s" % \
                     (port, str(icnprefix)))
 
         #packet encoder
@@ -36,7 +36,7 @@ class ICNDataRepository(object):
         self.chunkifyer = SimpleContentChunkifyer()
 
         #repo
-        self.repo = SimpleFileSystemRepository(foldername, icnprefix, logger)
+        self.repo = FlicFileSystemRepository(foldername, icnprefix, logger)
 
         #initialize layers
         self.linklayer = UDP4LinkLayer(port, debug_level=debug_level)
