@@ -22,7 +22,7 @@ class SimpleFileSystemRepository(BaseRepository):
     def is_content_available(self, icnname: Name) -> bool:
         if not icnname.to_string().startswith(self._prefix.to_string()):
             return False
-        filename = icnname.components[-1]
+        filename = icnname.string_components[-1]
         filename_abs = self._foldername + "/" + filename
         filepath = os.path.abspath(filename_abs)
         if os.path.commonprefix([filepath, self._safepath]) != self._safepath:  # prevent directory traversal
@@ -36,7 +36,7 @@ class SimpleFileSystemRepository(BaseRepository):
         if not icnname.to_string().startswith(self._prefix.to_string()):
             return None
         try:
-            filename = icnname.components[-1]
+            filename = icnname.string_components[-1]
             filename_abs = self._foldername + "/" + filename
             filepath = os.path.abspath(filename_abs)
             if os.path.commonprefix([filepath, self._safepath]) != self._safepath: #prevent directory traversal
