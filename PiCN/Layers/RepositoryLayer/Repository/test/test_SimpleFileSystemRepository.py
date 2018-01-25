@@ -64,17 +64,17 @@ class test_SimpleFileSystemRepository(unittest.TestCase):
         self.assertEqual(c6, None)
 
         n1 = Name("/test/data")
-        n1.components.append("../f3")
+        n1 += "../f3"
         c7 = self.repository.get_content(n1)
         self.assertEqual(c7, None)
 
         n2 = Name("/test/data")
-        n2.components.append("..%2ff3")
+        n2 += "..%2ff3"
         c8 = self.repository.get_content(n2)
         self.assertEqual(c8, None)
 
         n3 = Name("/test/data")
-        n3.components.append("..%2Ff3")
+        n3 += "..%2Ff3"
         c9 = self.repository.get_content(n3)
         self.assertEqual(c9, None)
 
