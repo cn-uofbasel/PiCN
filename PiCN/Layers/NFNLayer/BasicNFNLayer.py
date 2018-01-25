@@ -51,15 +51,15 @@ class BasicNFNLayer(LayerProcess):
         self.logger.info("Handling Packet")
         if isinstance(packet, Interest):
             self.logger.info("Handling Interest " + str(packet.name))
-            if packet.name.components[-1] != "NFN":
+            if packet.name.string_components[-1] != "NFN":
                 to_lower.put([id, packet])
-            elif len(packet.name.components) > 2 and packet.name.components[-3] == "R2C":
+            elif len(packet.name.string_components) > 2 and packet.name.string_components[-3] == "R2C":
                 self.handle_R2C_interest(packet)
             else:
                 self.add_computation(packet, running_computations)
         elif isinstance(packet, Content):
             self.logger.info("Handling Content " + str(packet.name) + " " + str(packet.content))
-            if len(packet.name.components) > 2 and packet.name.components[-3] == "R2C":
+            if len(packet.name.string_components) > 2 and packet.name.string_components[-3] == "R2C":
                 self.handle_R2C_content(packet)
             else:
                 in_table = False
@@ -69,7 +69,7 @@ class BasicNFNLayer(LayerProcess):
                 if packet.name in self._computation_request_table:
                     in_table = True
                     self.handle_packet_in_compuation_request_table(packet, running_computations)
-                if not in_table and packet.name.components[-1] != "NFN":
+                if not in_table and packet.name.string_components[-1] != "NFN":
                     to_lower.put([id, packet])
         elif isinstance(packet, Nack):
             self.logger.info("Handling Nack")
@@ -193,7 +193,7 @@ class BasicNFNLayer(LayerProcess):
             if (packet.name in self._computation_request_table):
                 self._computation_request_table[packet.name].append(cid)
             else:
-                if packet.name.components[-1] == "NFN":
+                if packet.name.string_components[-1] == "NFN":
                     new_comps.append(packet)
                     self._computation_request_table[packet.name] = [cid]
                     return
@@ -253,7 +253,7 @@ class BasicNFNLayer(LayerProcess):
         if interest.name not in self._computation_request_table:
             return
         cid = self._computation_request_table[interest.name]
-        if interest.name.components[-2] == "STOP":
+        if interest.name.string_components[-2] == "STOP":
             #TODO , check no one else awaits result
             self.stop_computation(cid)
             #TODO , send reply message
