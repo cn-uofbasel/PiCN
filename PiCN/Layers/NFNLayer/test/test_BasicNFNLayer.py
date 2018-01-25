@@ -58,8 +58,8 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.nfnLayer.start_process()
         cid = 1
         name = Name("/test/data")
-        name.components.append("/func/f1(_)")
-        name.components.append("NFN")
+        name += "/func/f1(_)"
+        name += "NFN"
         interest = Interest(name)
         self.nfnLayer.queue_from_lower.put([cid, interest])
         fwded = self.nfnLayer.queue_to_lower.get()
@@ -72,8 +72,8 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.nfnLayer.start_process()
         cid = 1
         name = Name("/test/data")
-        name.components.append("/func/f1(_)")
-        name.components.append("NFN")
+        name += "/func/f1(_)"
+        name += "NFN"
         interest = Interest(name)
         self.nfnLayer.queue_from_lower.put([cid, interest])
         fwded = self.nfnLayer.queue_to_lower.get()
@@ -90,11 +90,11 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.nfnLayer.start_process()
         cid = 1
         name = Name("/func/f1")
-        name.components.append("_(/test/data)")
-        name.components.append("NFN")
+        name += "_(/test/data)"
+        name += "NFN"
         name_cmp = Name("/test/data")
-        name_cmp.components.append("/func/f1(_)")
-        name_cmp.components.append("NFN")
+        name_cmp += "/func/f1(_)"
+        name_cmp += "NFN"
         interest = Interest(name)
         self.nfnLayer.queue_from_lower.put([cid, interest])
         rewritten = self.nfnLayer.queue_to_lower.get()
@@ -106,11 +106,11 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.nfnLayer.start_process()
         cid = 1
         name = Name("/func/f1")
-        name.components.append("_(/test/data)")
-        name.components.append("NFN")
+        name += "_(/test/data)"
+        name += "NFN"
         name_cmp = Name("/test/data")
-        name_cmp.components.append("/func/f1(_)")
-        name_cmp.components.append("NFN")
+        name_cmp += "/func/f1(_)"
+        name_cmp += "NFN"
         interest = Interest(name)
         self.nfnLayer.queue_from_lower.put([cid, interest])
         rewritten = self.nfnLayer.queue_to_lower.get()
@@ -126,8 +126,8 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.nfnLayer.start_process()
         cid = 1
         name = Name("/func/f1")
-        name.components.append("_()")
-        name.components.append("NFN")
+        name += "_()"
+        name += "NFN"
         interest = Interest(name)
         self.nfnLayer.queue_from_lower.put([cid, interest])
         data = self.nfnLayer.queue_to_lower.get()
@@ -148,8 +148,8 @@ def f():
         self.nfnLayer.start_process()
         cid = 1
         name = Name("/func/f1")
-        name.components.append("_(/test/data)")
-        name.components.append("NFN")
+        name += "_(/test/data)"
+        name += "NFN"
         interest = Interest(name)
         self.nfnLayer.queue_from_lower.put([cid, interest])
         data = self.nfnLayer.queue_to_lower.get()
@@ -174,8 +174,8 @@ def f(a):
         self.nfnLayer.start_process()
         cid = 1
         name = Name("/func/f1")
-        name.components.append("_(/func/f2(/test/data))")
-        name.components.append("NFN")
+        name += "_(/func/f2(/test/data))"
+        name += "NFN"
         interest = Interest(name)
         self.nfnLayer.queue_from_lower.put([cid, interest])
         data = self.nfnLayer.queue_to_lower.get()
@@ -209,8 +209,8 @@ def f(a):
         self.nfnLayer.start_process()
         cid = 1
         name = Name("/func/f1")
-        name.components.append("_()")
-        name.components.append("NFN")
+        name += "_()"
+        name += "NFN"
         interest = Interest(name)
         self.nfnLayer.queue_from_lower.put([cid, interest])
         data = self.nfnLayer.queue_to_lower.get()
@@ -232,8 +232,8 @@ def f():
         self.nfnLayer.start_process()
         cid = 1
         name = Name("/test/data")
-        name.components.append("/func/f1(_)")
-        name.components.append("NFN")
+        name += "/func/f1(_)"
+        name += "NFN"
         interest = Interest(name)
         self.nfnLayer.queue_from_lower.put([cid, interest])
         fwded = self.nfnLayer.queue_to_lower.get()
@@ -257,8 +257,8 @@ def f():
         self.nfnLayer.start_process()
         cid = 1
         name = Name("/test/data")
-        name.components.append("/func/f1(_)")
-        name.components.append("NFN")
+        name += "/func/f1(_)"
+        name += "NFN"
         interest = Interest(name)
         self.nfnLayer.queue_from_lower.put([cid, interest])
         fwded = self.nfnLayer.queue_to_lower.get()
@@ -268,8 +268,8 @@ def f():
         self.nfnLayer.queue_from_lower.put([2, nack])
         data = self.nfnLayer.queue_to_lower.get()
         name2 = Name("/func/f1")
-        name2.components.append("_(/test/data)")
-        name2.components.append("NFN")
+        name2 += "_(/test/data)"
+        name2 += "NFN"
         self.assertEqual(name2, data[1].name)
         content = Content(name2, "Hello World")
         self.nfnLayer.queue_from_lower.put([2, content])

@@ -149,8 +149,8 @@ class test_DefaultNFNParser(unittest.TestCase):
         n = Name("/test/data")
         function_str = '/call/func(3,/lib/wcount(/call/libfun(_),"HelloWorld"))'
         cmp_str = '/call/func(3,/lib/wcount(/call/libfun(/test/data),"HelloWorld"))'
-        n.components.append(function_str)
-        n.components.append("NFN")
+        n += function_str
+        n += "NFN"
         res, prepended = self.parser.network_name_to_nfn_str(n)
         self.assertEqual(res, cmp_str)
         self.assertEqual(prepended, Name("/test/data"))
@@ -160,7 +160,7 @@ class test_DefaultNFNParser(unittest.TestCase):
         nfn_str = '/call/func(3,/lib/wcount(/call/libfun(%/test/data%),"HelloWorld"))'
         compname = Name("/test/data")
         function_str = '/call/func(3,/lib/wcount(/call/libfun(_),"HelloWorld"))'
-        compname.components.append(function_str)
-        compname.components.append("NFN")
+        compname += function_str
+        compname += "NFN"
         res = self.parser.nfn_str_to_network_name(nfn_str)
         self.assertEqual(res, compname)
