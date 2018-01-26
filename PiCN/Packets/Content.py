@@ -14,10 +14,7 @@ class Content(Packet):
     def content(self):
         if self._content == None:
             return None
-        if type(self._content) is str:
-            return self._content
-        else:
-            return self._content.decode('ascii')
+        return self._content
 
     @property
     def wire_data(self):
@@ -35,6 +32,7 @@ class Content(Packet):
 
     @content.setter
     def content(self, content):
+        assert (type(content) in [bytes, bytearray]), "MUST be raw bytes"
         self._content = content
 
     def __eq__(self, other):

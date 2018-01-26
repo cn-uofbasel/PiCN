@@ -8,6 +8,7 @@ from PiCN.Layers.RepositoryLayer import BasicRepositoryLayer
 
 from PiCN.Layers.ChunkLayer.Chunkifyer import SimpleContentChunkifyer
 from PiCN.Layers.LinkLayer import UDP4LinkLayer
+from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
 from PiCN.Layers.RepositoryLayer.Repository import SimpleFileSystemRepository
@@ -21,24 +22,32 @@ from PiCN.Mgmt import Mgmt
 class ICNDataRepository(object):
     """A ICN Forwarder using PiCN"""
 
-    def __init__(self, foldername: str,
-                       prefix: Name, port=9000, debug_level=255, encoder: BasicEncoder = None):
+    def __init__(self, repotype: str, foldername: str, prefix: Name,
+                 port=9000, debug_level=255, encoder: BasicEncoder = None):
 
         logger = Logger("ICNRepo", debug_level)
-        logger.info("Start PiCN Data Repository on port %d, prefix %s" % \
-                    (port, str(prefix)))
+        if not repotype or repotype != 'flic':
+            repotype = 'simple'
+        logger.info("Start PiCN Data Repository")
+        logger.info("  repotype=%s, port=%d, dir=%s, prefix=%s" % \
+                    (repotype, port, foldername, prefix.to_string()))
 
         #packet encoder
-        if encoder == None:
-            self.encoder = SimpleStringEncoder()
-        else:
+        if encoder:
             self.encoder = encoder
+        elif prefix.suite == 'ndn2013':
+            self.encoder = NdnTlvEncoder()
+        else:
+            self.encoder = SimpleStringEncoder()
 
         #chunkifyer
         self.chunkifyer = SimpleContentChunkifyer()
 
         #repo
-        self.repo = SimpleFileSystemRepository(foldername, prefix, logger)
+        if repotype == 'flic':
+            self.repo = FlicFileSystemRepository(foldername, prefix, logger)
+        else:
+            self.repo = SimpleFileSystemRepository(foldername, prefix, logger)
 
         #initialize layers
         self.linklayer = UDP4LinkLayer(port, debug_level=debug_level)
