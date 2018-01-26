@@ -1,34 +1,43 @@
-#!/usr/bin/env python3.6
+#!/usr/bin/env python3
 
 """ICN Data Repository executable"""
 
+import argparse
 import logging
 import sys
 sys.path.append('..')
 
-import PiCN.ProgramLibs.ICNDataRepository
+from PiCN.ProgramLibs.ICNDataRepository import ICNDataRepository
 from PiCN.Packets import Name
 
+# ----------------------------------------------------------------------
 
-def main(argv):
+def main(args):
 
-    if len(argv) != 4:
-        print("usage: ", argv[0], "datapath icnprefix port")
-        return
-
-    path = argv[1]
-    icnprefix = Name(argv[2])
-
-    port = 9000
-    try:
-        port = int(argv[3])
-    except Exception:
-        port = 9000
-
-    repo = PiCN.ProgramLibs.ICNDataRepository.ICNDataRepository(path, icnprefix, port, logging.DEBUG)
+    prefix = Name(args.icnprefix)
+    prefix.suite = args.suite
+    repo = ICNDataRepository(args.repotype, args.datapath, prefix,
+                             args.port, logging.DEBUG)
     repo.start_repo()
 
     repo.linklayer.process.join()
 
+# ----------------------------------------------------------------------
+
 if __name__ == "__main__":
-    main(sys.argv)
+
+    parser = argparse.ArgumentParser(description='ICN Data Repository')
+    parser.add_argument('--repotype', default='flic',
+                        choices=['simple', 'flic'])
+    parser.add_argument('--suite', default='ndn2013', type=str)
+    parser.add_argument('datapath', type=str,
+                        help='filesystem path where the repo stores its data')
+    parser.add_argument('icnprefix', type=str,
+                        help='prefix for all content stored in this repo')
+    parser.add_argument('port', type=int, default=9000,
+                        help="the repo's UDP and TCP port")
+
+    args = parser.parse_args()
+    main(args)
+
+# eof

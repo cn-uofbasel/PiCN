@@ -46,3 +46,13 @@ class SimpleFileSystemRepository(BaseRepository):
             return Content(icnname, content)
         except:
             return None
+
+    def set_content(self, icnname: Name, chunk: bytes):
+        try:
+            os.stat( self._foldername)
+        except:
+            os.mkdir( self._foldername)
+        with open( self._foldername + icnname.to_string(), 'w+') as f:
+            f.write(chunk)
+
+# eof

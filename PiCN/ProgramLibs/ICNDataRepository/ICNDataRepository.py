@@ -15,28 +15,35 @@ from PiCN.Logger import Logger
 from PiCN.Packets import Name
 from PiCN.Mgmt import Mgmt
 
+# ----------------------------------------------------------------------
 
 class ICNDataRepository(object):
     """A ICN Forwarder using PiCN"""
 
-    def __init__(self, foldername: str, icnprefix: Name, port=9000, debug_level=255):
-        if type(icnprefix) is str:
-            icnprefix = Name(icnprefix)
+    def __init__(self, repotype: str, foldername: str,
+                       prefix: Name, port=9000, debug_level=255):
 
-        #debug level
         logger = Logger("ICNRepo", debug_level)
         logger.info("Start PiCN FLIC Repository on port %d, prefix %s" % \
-                    (port, str(icnprefix)))
+                    (port, str(prefix)))
 
         #packet encoder
-        # self.encoder = SimpleStringEncoder()
-        self.encoder = NdnTlvEncoder()
+        if prefix.suite == 'ndn2013':
+            self.encoder = NdnTlvEncoder()
+        else:
+            self.encoder = SimpleStringEncoder()
 
         #chunkifyer
         self.chunkifyer = SimpleContentChunkifyer()
 
         #repo
-        self.repo = FlicFileSystemRepository(foldername, icnprefix, logger)
+        if repotype == 'simple':
+            self.repo = SimpleFileSystemRepository(foldername, prefix, logger)
+        elif repotype == 'flic':
+            self.repo = FlicFileSystemRepository(foldername, prefix, logger)
+        else:
+            print("ERROR: unknown repo type %s" % repotype)
+            return
 
         #initialize layers
         self.linklayer = UDP4LinkLayer(port, debug_level=debug_level)
@@ -75,8 +82,9 @@ class ICNDataRepository(object):
         self.repolayer.queue_to_lower = self.q_repo_to_chunk_down
 
         # mgmt
-        self.mgmt = Mgmt(None, None, None, self.linklayer, port, self.start_repo, repo_path=foldername,
-                         repo_prfx=icnprefix, debug_level=debug_level)
+        self.mgmt = Mgmt(None, None, None, self.linklayer, port,
+                         self.start_repo, repo_path=foldername,
+                         repo_prfx=prefix, debug_level=debug_level)
 
     def start_repo(self):
         # start processes
@@ -93,3 +101,5 @@ class ICNDataRepository(object):
         self.chunklayer.stop_process()
         self.repolayer.stop_process()
         self.mgmt.stop_process()
+
+# eof
