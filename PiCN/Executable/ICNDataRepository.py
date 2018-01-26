@@ -7,6 +7,8 @@ import logging
 
 from PiCN.ProgramLibs.ICNDataRepository import ICNDataRepository
 from PiCN.Packets import Name
+from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
+from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 
 # ----------------------------------------------------------------------
 
@@ -14,8 +16,14 @@ def main(args):
 
     prefix = Name(args.icnprefix)
     prefix.suite = args.suite
-    repo = ICNDataRepository(args.repotype, args.datapath, prefix,
-                             args.port, logging.DEBUG)
+
+    if args.suite == "ndn2013":
+        encoder = NdnTlvEncoder()
+    else:
+        encoder = SimpleStringEncoder()
+
+    repo = ICNDataRepository(args.datapath, prefix,
+                             args.port, logging.DEBUG, encoder=encoder)
     repo.start_repo()
 
     repo.linklayer.process.join()

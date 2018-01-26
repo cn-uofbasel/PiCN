@@ -7,6 +7,7 @@ import argparse
 from PiCN.Packets import Name
 from PiCN.ProgramLibs.Fetch import Fetch
 from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
+from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 
 # ---------------------------------------------------------------------------
 
@@ -15,7 +16,7 @@ def main(args):
     name = Name(args.name)
     name.suite = args.suite
 
-    encoder = NdnTlvEncoder() if args.suite == 'ndn2013' else None
+    encoder = NdnTlvEncoder() if args.suite == 'ndn2013' else SimpleStringEncoder
     fetchTool = Fetch(args.ip, args.port, encoder = encoder)
 
     content = fetchTool.fetch_data(name)

@@ -8,7 +8,6 @@ from PiCN.Layers.RepositoryLayer import BasicRepositoryLayer
 
 from PiCN.Layers.ChunkLayer.Chunkifyer import SimpleContentChunkifyer
 from PiCN.Layers.LinkLayer import UDP4LinkLayer
-from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
 from PiCN.Layers.RepositoryLayer.Repository import SimpleFileSystemRepository
@@ -25,28 +24,18 @@ class ICNDataRepository(object):
                  port=9000, debug_level=255, encoder: BasicEncoder = None):
 
         logger = Logger("ICNRepo", debug_level)
-        if not repotype or repotype != 'flic':
-            repotype = 'simple'
         logger.info("Start PiCN Data Repository")
-        logger.info("  repotype=%s, port=%d, dir=%s, prefix=%s" % \
-                    (repotype, port, foldername, prefix.to_string()))
 
         #packet encoder
-        if encoder:
-            self.encoder = encoder
-        elif prefix.suite == 'ndn2013':
-            self.encoder = NdnTlvEncoder()
-        else:
+        if encoder == None:
             self.encoder = SimpleStringEncoder()
-
+        else:
+            self.encoder = encoder
         #chunkifyer
         self.chunkifyer = SimpleContentChunkifyer()
 
         #repo
-        if repotype == 'flic':
-            self.repo = FlicFileSystemRepository(foldername, prefix, logger)
-        else:
-            self.repo = SimpleFileSystemRepository(foldername, prefix, logger)
+        self.repo = SimpleFileSystemRepository(foldername, prefix, logger)
 
         #initialize layers
         self.linklayer = UDP4LinkLayer(port, debug_level=debug_level)
