@@ -17,11 +17,10 @@ import sys
 sys.path.append('..')
 import time
 
-from PiCN                import client
-from PiCN.ProgramLibs    import flic
+from Layers.ChunkLayer.Chunkifyer import flic
 from PiCN.Packets        import Content, Name
 from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
-import PiCN.client           as client
+import ProgramLibs.Client.client           as client
 from PiCN.Layers.PacketEncodingLayer.Encoder.NdnTlvEncoder import TlvEncoder, TlvDecoder
 
 NFN_NDN_TYPE_RESULT_DIRECT        = 0x998

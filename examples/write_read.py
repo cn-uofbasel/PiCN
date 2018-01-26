@@ -11,8 +11,7 @@ import copy
 import sys
 sys.path.append('..')
 
-from PiCN.Packets.Name import Name
-import PiCN.client as client
+import ProgramLibs.Client.client as client
 import time
 
 # ---------------------------------------------------------------------------

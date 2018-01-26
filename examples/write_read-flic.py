@@ -13,11 +13,8 @@ import sys
 sys.path.append('..')
 import time
 
-from PiCN                import client
-from PiCN.ProgramLibs    import flic
-from PiCN.Packets.Name   import Name
-from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
-import PiCN.client           as client
+from Layers.ChunkLayer.Chunkifyer import flic
+import ProgramLibs.Client.client           as client
 
 # ---------------------------------------------------------------------------
 
