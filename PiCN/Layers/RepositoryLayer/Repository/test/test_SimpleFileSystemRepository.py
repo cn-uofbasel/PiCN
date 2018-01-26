@@ -35,6 +35,10 @@ class test_SimpleFileSystemRepository(unittest.TestCase):
 
     def test_content_available(self):
         """Test if the function is_content_available works correct"""
+        try:
+            os.remove("/tmp/repo_unit_test/f3") #ensure there is no f3
+        except:
+            pass
         self.assertTrue(self.repository.is_content_available(Name("/test/data/f1")))
         self.assertTrue(self.repository.is_content_available(Name("/test/data/f2")))
         self.assertFalse(self.repository.is_content_available(Name("/test/data/f3")))

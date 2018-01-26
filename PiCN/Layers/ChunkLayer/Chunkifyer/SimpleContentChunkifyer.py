@@ -56,7 +56,7 @@ class SimpleContentChunkifyer(BaseChunkifyer):
         if md_num > 0:
             md_name = md_name +  "/m" + str(md_num)
         md_name_obj = Name(md_name)
-        metadata_obj = Content(md_name_obj, metadata.decode('ascii'))
+        metadata_obj = Content(md_name_obj, metadata.encode('ascii'))
         return metadata_obj
 
     def parse_meta_data(self, data: str) -> (Name, List[Name]):

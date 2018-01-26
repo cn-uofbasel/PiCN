@@ -20,7 +20,7 @@ from PiCN.Mgmt import Mgmt
 class ICNDataRepository(object):
     """A ICN Forwarder using PiCN"""
 
-    def __init__(self, repotype: str, foldername: str, prefix: Name,
+    def __init__(self, foldername: str, prefix: Name,
                  port=9000, debug_level=255, encoder: BasicEncoder = None):
 
         logger = Logger("ICNRepo", debug_level)
