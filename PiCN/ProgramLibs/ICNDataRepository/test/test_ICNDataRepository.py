@@ -31,7 +31,7 @@ class test_ICNDataRepository(unittest.TestCase):
             content_file.write('B' * 20000)
 
         self.portoffset = randint(0,999)
-        self.ICNRepo: ICNDataRepository = ICNDataRepository("/tmp/repo_unit_test", "/test/data", 9000 + self.portoffset)
+        self.ICNRepo: ICNDataRepository = ICNDataRepository("/tmp/repo_unit_test", Name("/test/data"), 9000 + self.portoffset)
         self.fetch = Fetch("127.0.0.1", 9000 + self.portoffset)
 
     def tearDown(self):

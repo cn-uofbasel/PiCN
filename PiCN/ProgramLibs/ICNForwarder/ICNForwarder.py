@@ -10,7 +10,7 @@ from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
 
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
 from PiCN.Layers.LinkLayer import UDP4LinkLayer
-from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
+from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder, SimpleStringEncoder
 from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from PiCN.Logger import Logger
 from PiCN.Mgmt import Mgmt
@@ -19,18 +19,17 @@ from PiCN.Routing import BasicRouting
 class ICNForwarder(object):
     """A ICN Forwarder using PiCN"""
 
-    def __init__(self, port=9000, debug_level=255, encoder=None):
+    def __init__(self, port=9000, debug_level=255, encoder: BasicEncoder=None):
         # debug level
         logger = Logger("ICNForwarder", debug_level)
         logger.info("Start PiCN Forwarder on port " + str(port))
 
         # packet encoder
-        if encoder == "ndntlv":
-            self.encoder = NdnTlvEncoder()
-            logger.info("Wire format: ndntlv")
-        else:
+        if encoder == None:
             self.encoder = SimpleStringEncoder()
-            logger.info("Wire format: simple")
+        else:
+            self.encoder = encoder
+
 
         # initialize layers
         self.linklayer = UDP4LinkLayer(port, debug_level=debug_level)

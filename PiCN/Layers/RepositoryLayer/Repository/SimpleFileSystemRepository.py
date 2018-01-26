@@ -20,7 +20,7 @@ class SimpleFileSystemRepository(BaseRepository):
 
 
     def is_content_available(self, icnname: Name) -> bool:
-        if not icnname.to_string().startswith(self._prefix.to_string()):
+        if not icnname.components_to_string().startswith(self._prefix.components_to_string()):
             return False
         filename = icnname.string_components[-1]
         filename_abs = self._foldername + "/" + filename
@@ -33,7 +33,7 @@ class SimpleFileSystemRepository(BaseRepository):
 
 
     def get_content(self, icnname: Name) -> Content:
-        if not icnname.to_string().startswith(self._prefix.to_string()):
+        if not icnname.components_to_string().startswith(self._prefix.components_to_string()):
             return None
         try:
             filename = icnname.string_components[-1]

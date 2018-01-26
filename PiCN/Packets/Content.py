@@ -12,7 +12,12 @@ class Content(Packet):
 
     @property
     def content(self):
-        return self._content
+        if self._content == None:
+            return None
+        if type(self._content) is str:
+            return self._content
+        else:
+            return self._content.decode('ascii')
 
     @property
     def wire_data(self):
