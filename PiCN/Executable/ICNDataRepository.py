@@ -4,8 +4,6 @@
 
 import argparse
 import logging
-import sys
-sys.path.append('..')
 
 from PiCN.ProgramLibs.ICNDataRepository import ICNDataRepository
 from PiCN.Packets import Name
