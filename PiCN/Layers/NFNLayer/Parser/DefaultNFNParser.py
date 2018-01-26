@@ -80,12 +80,12 @@ class DefaultNFNParser(object):
 
     def network_name_to_nfn_str(self, name: Name) -> str:
         if len(name.components) == 2:
-            return name.components[1], None
-        if name.components [-1] != "NFN":
+            return name.string_components[1], None
+        if name.string_components [-1] != "NFN":
             return None, None
         prepended_name = Name()
-        prepended_name.components = name.components[:-2]
-        nfn_comp = name.components[-2].replace("_", prepended_name.to_string())
+        prepended_name.string_components = name.string_components[:-2]
+        nfn_comp = name.string_components[-2].replace("_", prepended_name.to_string())
         nfn_comp = nfn_comp.replace("\\", "/")
         return  nfn_comp, prepended_name
 
@@ -95,8 +95,8 @@ class DefaultNFNParser(object):
         comps = nfn_str.split(prependmarker)
         nfn_comp = comps[0] + "_" + comps[2]
         name = Name(comps[1])
-        name.components.append(nfn_comp)
-        name.components.append("NFN")
+        name = name + nfn_comp
+        name = name + "NFN"
         return name
 
 

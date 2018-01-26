@@ -24,6 +24,9 @@ class Name(object):
 
     def components_to_string(self) -> str:
         # FIXME: handle '/' as part of a component, and binary components
+        if type(self._components[0]) is str:
+            s =  '/' + '/'.join([c for c in self._components])
+            return s
         s = '/' + '/'.join([c.decode('ascii') for c in self._components])
         return s
 
@@ -57,10 +60,6 @@ class Name(object):
     def __str__(self) -> str:
         return self.to_string()
 
-    def __add__(self, other):
-        for o in other:
-            self._components.append(o)
-
     def __eq__(self, other) -> bool:
         if type(other) is not Name:
             return False
@@ -68,10 +67,15 @@ class Name(object):
             return False
         return self.to_string() == other.to_string()
 
-    def __add__(self, compList):
-        for c in compList:
-            self._components.append(c)
-        return self
+    def __add__(self, comp_s):
+        """Add Name components or a string component to the component list of the name"""
+        if type(comp_s) is list:
+            for c in comp_s:
+                self._components.append(c)
+            return self
+        elif type(comp_s) is str:
+            self._components.append(comp_s.encode('ascii'))
+            return self
 
     def __hash__(self) -> int:
         return self._components.__str__().__hash__()
@@ -92,3 +96,12 @@ class Name(object):
     @components.setter
     def components(self, components):
         self._components = components
+
+    @property
+    def string_components(self):
+        """Name components"""
+        return [c.decode('ascii') for c in self._components]
+
+    @string_components.setter
+    def string_components(self, string_components):
+        self._components = [c.encode('ascii') for c in string_components]

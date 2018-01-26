@@ -64,8 +64,8 @@ class testNFNEvaluator(unittest.TestCase):
         """Test executing a function with no parameter"""
         fname = Name("/func/f1")
         name = Name("/func/f1")
-        name.components.append("_()")
-        name.components.append("NFN")
+        name += "_()"
+        name += "NFN"
         interest = Interest(name)
 
         self.evaluator.interest = interest
@@ -90,8 +90,8 @@ def f():
 
         fname = Name("/func/f1")
         name = Name("/func/f1")
-        name.components.append("_(/test/data)")
-        name.components.append("NFN")
+        name += "_(/test/data)"
+        name += "NFN"
         interest = Interest(name)
         self.evaluator.interest = interest
         self.evaluator.start_process()
@@ -115,12 +115,12 @@ def f(a):
         """Test executing a function with data as parameter"""
         fname1 = Name("/func/f1")
         name1 = Name("/func/f1")
-        name1.components.append("_(/func/f2(/test/data))")
-        name1.components.append("NFN")
+        name1 += "_(/func/f2(/test/data))"
+        name1 += "NFN"
         interest = Interest(name1)
         name2 = Name("/func/f2")
-        name2.components.append("_(/test/data)")
-        name2.components.append("NFN")
+        name2 += "_(/test/data)"
+        name2 += "NFN"
         self.evaluator.interest = interest
         self.evaluator.start_process()
         request = self.evaluator.computation_out_queue.get()
@@ -149,8 +149,8 @@ def f(a):
 
         fname = Name("/func/f1")
         name = Name("/func/f1")
-        name.components.append("_(/test/data1,/test/data2)")
-        name.components.append("NFN")
+        name += "_(/test/data1,/test/data2)"
+        name += "NFN"
         interest = Interest(name)
         self.evaluator.interest = interest
         self.evaluator.start_process()
@@ -178,16 +178,16 @@ def f(a, b):
         """Test fwd a function with multiple data as parameter"""
         self.evaluator.fib.add_fib_entry(Name("/test"), 0, True)
         fwdname1 = Name("/test/data1")
-        fwdname1.components.append("/func/f1(_,/test/data2)")
-        fwdname1.components.append("NFN")
+        fwdname1 += "/func/f1(_,/test/data2)"
+        fwdname1 += "NFN"
 
         fwdname2 = Name("/test/data2")
-        fwdname2.components.append("/func/f1(/test/data1,_)")
-        fwdname2.components.append("NFN")
+        fwdname2 +="/func/f1(/test/data1,_)"
+        fwdname2 += "NFN"
 
         name = Name("/func/f1")
-        name.components.append("_(/test/data1,/test/data2)")
-        name.components.append("NFN")
+        name += "_(/test/data1,/test/data2)"
+        name += "NFN"
         interest = Interest(name)
 
         self.rewrite_table = self.manager.dict()
@@ -204,8 +204,8 @@ def f(a, b):
         """Test if a failed computation issues a nack"""
         fname = Name("/func/f1")
         name = Name("/func/f1")
-        name.components.append("_()")
-        name.components.append("NFN")
+        name += "_()"
+        name +="NFN"
         interest = Interest(name)
 
         self.evaluator.interest = interest

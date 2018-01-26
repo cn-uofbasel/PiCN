@@ -8,9 +8,9 @@ from PiCN.Layers.RepositoryLayer import BasicRepositoryLayer
 
 from PiCN.Layers.ChunkLayer.Chunkifyer import SimpleContentChunkifyer
 from PiCN.Layers.LinkLayer import UDP4LinkLayer
-# from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
-from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
-from PiCN.Layers.RepositoryLayer.Repository import FlicFileSystemRepository
+from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
+#from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
+from PiCN.Layers.RepositoryLayer.Repository import SimpleFileSystemRepository
 from PiCN.Logger import Logger
 from PiCN.Packets import Name
 from PiCN.Mgmt import Mgmt
