@@ -27,8 +27,8 @@ class NdnTlvPrinter(object):
     """
 
     __has_blob_value = {8, 1, 10, 13, 14, 17, 12, 24, 25, 21, 23, 27, 29}
-    __type_names = { 5: "Content Object Packet",
-                     6: "Interest Packet",
+    __type_names = { 5: "Interest Packet",
+                     6: "Content Object Packet",
                      7: "Name",
                      8: "GenericNameComponent",
                      1: "ImplicitSha256DigestComponent",
@@ -122,24 +122,24 @@ class NdnTlvPrinter(object):
 
 
     def __print_num(self) -> int:
-        if self.__wire_format[self.__position] < 253:
-            hex_value = self.__wire_format[self.__position]
-            offset = 1
-        elif self.__wire_format[self.__position] == 253:
-            offset =  2
-            raise NotImplementedError # TODO
-        elif self.__wire_format[self.__position] == 254:
-            offset =  4
-            raise NotImplementedError # TODO
-        elif self.__wire_format[self.__position] == 255:
-            offset = 8
-            raise NotImplementedError # TODO
-
-        self.__position += offset
         NdnTlvPrinter.print_without_newline(" ")
-        NdnTlvPrinter.print_without_newline(NdnTlvPrinter.byte_to_hex(hex_value))
-
-        return hex_value    # TODO - convert from array to int
+        current_hex = self.__wire_format[self.__position]
+        NdnTlvPrinter.print_without_newline(NdnTlvPrinter.byte_to_hex(current_hex))
+        if current_hex < 253:
+            value = current_hex
+            offset = 1
+        else:
+            if current_hex == 253: offset =  3
+            if current_hex == 254: offset =  5
+            if current_hex == 255: offset =  9
+            value = 0
+            for i in range(1, offset):
+                next_octet = self.__wire_format[self.__position + i]
+                NdnTlvPrinter.print_without_newline(" ")
+                NdnTlvPrinter.print_without_newline(NdnTlvPrinter.byte_to_hex(next_octet))
+                value += next_octet << (offset-1-i) * 8
+        self.__position += offset
+        return value
 
 
     def __print_blob(self, len) -> None:
@@ -156,6 +156,6 @@ class NdnTlvPrinter(object):
                 NdnTlvPrinter.print_without_newline(" ")
             else:
                 NdnTlvPrinter.print_without_newline(" ")
-            NdnTlvPrinter.print_without_newline(NdnTlvPrinter.byte_to_hex(e))
+            self.__position += 1
             idx += 1
-        self.__position += len
+            NdnTlvPrinter.print_without_newline(NdnTlvPrinter.byte_to_hex(e))
