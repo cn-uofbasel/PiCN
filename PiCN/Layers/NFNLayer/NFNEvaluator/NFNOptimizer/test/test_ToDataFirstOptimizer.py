@@ -37,8 +37,8 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
     def test_simple_call_no_params_fib(self):
         """Test, if ToDataFirstOptimizer works correctly with a single function call without parameter"""
         cmp_name = Name("/func/f1")
-        cmp_name._components.append("_()")
-        cmp_name._components.append("NFN")
+        cmp_name += "_()"
+        cmp_name += "NFN"
         workflow = "/func/f1()"
         self.optimizer.fib.add_fib_entry(Name("/func"), 1, False)
         ast = self.parser.parse(workflow)
@@ -56,8 +56,8 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
     def test_simple_call_params_to_function(self):
         """Test, if ToDataFirstOptimizer works correctly with a single function call with parameter, to function"""
         cmp_name = Name("/func/f1")
-        cmp_name._components.append("_(/test/data)")
-        cmp_name._components.append("NFN")
+        cmp_name += "_(/test/data)"
+        cmp_name += "NFN"
         workflow = "/func/f1(/test/data)"
         self.optimizer.fib.add_fib_entry(Name("/func"), 1, False)
         ast = self.parser.parse(workflow)
@@ -75,8 +75,8 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         """Test, if ToDataFirstOptimizer works correctly with a single function call with parameter, to function,
         compute local since prepended data are local"""
         cmp_name = Name("/func/f1")
-        cmp_name._components.append("_(/test/data)")
-        cmp_name._components.append("NFN")
+        cmp_name += "_(/test/data)"
+        cmp_name += "NFN"
         workflow = "/func/f1(/test/data)"
         self.optimizer.fib.add_fib_entry(Name("/func"), 1, False)
         self.optimizer.prefix = Name("/func/f1")
@@ -110,8 +110,8 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
     def test_simple_call_params_to_data(self):
         """Test, if ToDataFirstOptimizer works correctly with a single function call with parameter, to data"""
         cmp_name = Name("/test/data")
-        cmp_name._components.append("/func/f1(_)")
-        cmp_name._components.append("NFN")
+        cmp_name += "/func/f1(_)"
+        cmp_name += "NFN"
         workflow = "/func/f1(/test/data)"
         self.optimizer.fib.add_fib_entry(Name("/test"), 1, False)
         ast = self.parser.parse(workflow)
@@ -128,11 +128,11 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
     def test_simple_call_params(self):
         """Test, if ToDataFirstOptimizer works correctly with a single function call with parameter"""
         cmp_name1 = Name("/test/data")
-        cmp_name1._components.append("/func/f1(_)")
-        cmp_name1._components.append("NFN")
+        cmp_name1 += "/func/f1(_)"
+        cmp_name1 += "NFN"
         cmp_name2 = Name("/func/f1")
-        cmp_name2._components.append("_(/test/data)")
-        cmp_name2._components.append("NFN")
+        cmp_name2 += "_(/test/data)"
+        cmp_name2 += "NFN"
         workflow = "/func/f1(/test/data)"
         self.optimizer.fib.add_fib_entry(Name("/test"), 1, False)
         self.optimizer.fib.add_fib_entry(Name("/func"), 2, False)
@@ -156,11 +156,11 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
     def test_multiple_calls_params(self):
         """Test, if ToDataFirstOptimizer works correctly with multiple function calls with parameter"""
         cmp_name1 = Name("/test/data")
-        cmp_name1._components.append("/func/f1(_,/lib/f2(2,/data/test))")
-        cmp_name1._components.append("NFN")
+        cmp_name1 = cmp_name1 + "/func/f1(_,/lib/f2(2,/data/test))"
+        cmp_name1 = cmp_name1 + "NFN"
         cmp_name2 = Name("/lib/f2")
-        cmp_name2._components.append("/func/f1(/test/data,_(2,/data/test))")
-        cmp_name2._components.append("NFN")
+        cmp_name2 = cmp_name2 + "/func/f1(/test/data,_(2,/data/test))"
+        cmp_name2 = cmp_name2 + "NFN"
         workflow = "/func/f1(/test/data,/lib/f2(2,/data/test))"
         self.optimizer.fib.add_fib_entry(Name("/lib"), 1, False)
         self.optimizer.fib.add_fib_entry(Name("/test"), 2, False)

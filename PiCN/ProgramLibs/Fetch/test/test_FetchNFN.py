@@ -74,8 +74,8 @@ class test_Fetch(unittest.TestCase):
         self.mgmtClient1.add_new_content(Name("/test/data/d1"), self.data1)
         self.mgmtClient2.add_new_content(Name("/lib/func/f1"), "PYTHON\nf\ndef f(a):\n    return a.upper()")
         fetch_name = Name("/lib/func/f1")
-        fetch_name.components.append("_(/test/data/d1)")
-        fetch_name.components.append("NFN")
+        fetch_name += "_(/test/data/d1)"
+        fetch_name += "NFN"
         content = self.fetch.fetch_data(fetch_name)
         self.assertEqual(self.data1.upper(), content)
 
@@ -88,8 +88,8 @@ class test_Fetch(unittest.TestCase):
         self.add_face_and_forwadingrule()
         self.mgmtClient2.add_new_content(Name("/lib/func/f1"), "PYTHON\nf\ndef f(a):\n    return a.upper()")
         fetch_name = Name("/lib/func/f1")
-        fetch_name.components.append("_(/test/data/d1)")
-        fetch_name.components.append("NFN")
+        fetch_name += "_(/test/data/d1)"
+        fetch_name += "NFN"
         content = self.fetch.fetch_data(fetch_name)
         self.assertEqual(self.data1.upper(), content)
 
@@ -102,8 +102,8 @@ class test_Fetch(unittest.TestCase):
         self.add_face_and_forwadingrule()
         self.mgmtClient2.add_new_content(Name("/lib/func/f1"), "PYTHON\nf\ndef f(a):\n    return a.upper()")
         fetch_name = Name("/lib/func/f1")
-        fetch_name.components.append("_(/test/data/d3)")
-        fetch_name.components.append("NFN")
+        fetch_name += "_(/test/data/d3)"
+        fetch_name += "NFN"
         content = self.fetch.fetch_data(fetch_name)
         self.assertEqual(self.data3.upper(), content)
 
@@ -116,7 +116,7 @@ class test_Fetch(unittest.TestCase):
         self.add_face_and_forwadingrule()
         self.mgmtClient2.add_new_content(Name("/lib/func/f1"), "PYTHON\nf\ndef f(a):\n    return a.upper()")
         fetch_name = Name("/test/data/d3")
-        fetch_name.components.append("/lib/func/f1(_)")
-        fetch_name.components.append("NFN")
+        fetch_name += "/lib/func/f1(_)"
+        fetch_name +="NFN"
         content = self.fetch.fetch_data(fetch_name)
         self.assertEqual(self.data3.upper(), content)

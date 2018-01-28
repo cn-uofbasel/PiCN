@@ -14,3 +14,15 @@ class Logger(logging.Logger):
         ch = logging.StreamHandler()
         ch.setFormatter(formatter)
         self.addHandler(ch)
+
+
+class NullLogger(logging.Logger):
+
+    def __init__(self):
+        pass
+
+    def info(self, s):
+        pass
+
+    def warning(self, s):
+        pass

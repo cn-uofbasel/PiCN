@@ -36,7 +36,7 @@ class test_SimpleContentChunkifyer(unittest.TestCase):
         """Test generating a simple metadata object with two following"""
         name = Name("/test/data")
 
-        res = self.chunkifyer.generate_meta_data(2,4,1,2,name)
+        res = self.chunkifyer.generate_meta_data(2,4,1,2, name)
 
         self.assertEqual(res.name.to_string(), "/test/data/m1")
         self.assertEqual(res.content, "mdo:/test/data/c2;/test/data/c3:/test/data/m2")

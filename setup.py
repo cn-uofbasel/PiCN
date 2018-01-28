@@ -1,3 +1,5 @@
+#/usr/bin/env python3.6
+
 try:
     from setuptools import setup
 except ImportError:

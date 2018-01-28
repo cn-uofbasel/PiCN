@@ -8,16 +8,20 @@ from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
 from PiCN.Layers.ChunkLayer.Chunkifyer import SimpleContentChunkifyer
 from PiCN.Layers.LinkLayer import UDP4LinkLayer
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
+from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
 from PiCN.Packets import Content, Name, Interest, Nack
 
 
 class Fetch(object):
     """Fetch Tool for PiCN"""
 
-    def __init__(self, ip: str, port: int, debug_level = 255):
+    def __init__(self, ip: str, port: int, debug_level = 255, encoder: BasicEncoder=None):
 
         #create encoder and chunkifyer
-        self.encoder = SimpleStringEncoder()
+        if encoder == None:
+            self.encoder = SimpleStringEncoder()
+        else:
+            self.encoder = encoder
         self.chunkifyer = SimpleContentChunkifyer()
 
         #create layers

@@ -14,7 +14,7 @@ from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformation
 from PiCN.Layers.ICNLayer.PendingInterestTable import PendingInterstTableMemoryExact
 from PiCN.Layers.NFNLayer.NFNEvaluator.NFNExecutor import NFNPythonExecutor
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
-from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
+from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder, SimpleStringEncoder
 from PiCN.Logger import Logger
 from PiCN.Mgmt import Mgmt
 from PiCN.Routing import BasicRouting
@@ -22,13 +22,16 @@ from PiCN.Routing import BasicRouting
 class NFNForwarder(object):
     """NFN Forwarder for PICN"""
 #TODO add chunking layer
-    def __init__(self, port=9000, debug_level=255):
+    def __init__(self, port=9000, debug_level=255, encoder: BasicEncoder=None):
         # debug level
         logger = Logger("NFNForwarder", debug_level)
         logger.info("Start PiCN NFN Forwarder on port " + str(port))
 
         # packet encoder
-        self.encoder = SimpleStringEncoder()
+        if encoder == None:
+            self.encoder = SimpleStringEncoder()
+        else:
+            self.encoder = encoder
 
         # initialize layers
         self.linklayer = UDP4LinkLayer(port, debug_level=debug_level)
