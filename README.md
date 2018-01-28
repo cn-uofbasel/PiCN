@@ -27,7 +27,7 @@ of execution stack.
 % ./write_read-flic.py
 ...
 
-% ./write_read-flic-ndn.py
+% ./write_read-flic-nfn.py
 ...
 
 ```

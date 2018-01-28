@@ -11,6 +11,7 @@ class Content(Packet):
             self._content = content.encode()
         else:
             self._content = content
+        assert (type(self._content) in [bytes, bytearray, type(None)]), "MUST be raw bytes"
         self._wire_data = wire_data
 
     @property
@@ -36,4 +37,4 @@ class Content(Packet):
     def __eq__(self, other):
         if type(other) is not Content:
             return False
-        return self.name == other.name and self.content == other.content
+        return self.name == other.name and self._content == other._content
