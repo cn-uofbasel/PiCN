@@ -48,10 +48,10 @@ class NdnTlvEncoder(BasicEncoder):
         # print("got %d bytes to decode" % len(wire_data))
         if(self.is_content(wire_data)):
             (name, payload) = self.decode_data(wire_data)
-            return Content(name, payload)
+            return Content(name, payload, wire_data)
         if(self.is_interest(wire_data)):
             name = self.decode_interest(wire_data)
-            return Interest(name)
+            return Interest(name, wire_data)
         if(self.is_nack(wire_data)):
             return None # TODO: Put into NACK Packet
         return None

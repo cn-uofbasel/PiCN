@@ -6,6 +6,7 @@ from random import randint
 
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
+from PiCN.Layers.PacketEncodingLayer.Printer.NdnTlvPrinter import NdnTlvPrinter
 from PiCN.Packets import Content, Interest
 
 
@@ -38,10 +39,8 @@ def main(argv):
     encoded_content, addr = sock.recvfrom(8192)
     content: Content = encoder.decode(encoded_content)
 
-    print("-- Name:")
-    print(content.name)
-    print("-- Payload:")
-    print(content.content)
+    pt = NdnTlvPrinter(content.wire_data)
+    pt.formatted_print()
 
 
 if __name__ == "__main__":
