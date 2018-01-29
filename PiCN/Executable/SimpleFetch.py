@@ -13,7 +13,7 @@ from PiCN.Packets import Content, Interest
 def main(args):
 
     # Packet encoder
-    encoder = NdnTlvEncoder() if args.suite == 'ndn2013' else SimpleStringEncoder
+    encoder = NdnTlvEncoder() if args.suite == 'ndntlv' else SimpleStringEncoder
 
     # Generate interest packet
     interest: Interest = Interest(args.name)
@@ -45,7 +45,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Lookup a CCN Packet')
-    parser.add_argument('--suite', choices=['ndn2013',' simple'], type=str, default='ndn2013', help='default is: "ndn2013"')
+    parser.add_argument('--suite', choices=['ndntlv',' simple'], type=str, default='ndntlv', help='default is: "ndntlv"')
     parser.add_argument('ip',   type=str, help="IP addr of forwarder")
     parser.add_argument('port', type=int, help="UDP port of forwarder")
     parser.add_argument('name', type=str, help="ICN name of content to fetch")
