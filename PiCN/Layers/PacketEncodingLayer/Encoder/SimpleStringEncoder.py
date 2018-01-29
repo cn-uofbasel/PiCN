@@ -14,7 +14,8 @@ class SimpleStringEncoder(BasicEncoder):
         if(isinstance(packet, Interest)):
             res = "I:" + name.to_string() + ":"
         elif(isinstance(packet, Content)):
-            content = packet.content.replace(":", "%58")
+            content = packet.content
+            content = content.replace(":", "%58")
             res = "C:" + name.to_string() + ":" + ":" + content
         elif(isinstance(packet, Nack)):
             res = "N:" + name.to_string() + ":" + ":" + packet.reason
@@ -40,13 +41,13 @@ class SimpleStringEncoder(BasicEncoder):
     def escape_name(self, name: Name):
         """escape a name"""
         n2 = Name()
-        for c in name.components:
-            n2.components.append(c.replace("/", "%2F"))
+        for c in name.string_components:
+            n2 += c.replace("/", "%2F")
         return n2
 
     def unescape_name(self, name: Name):
         """unescape a name"""
         n2 = Name()
-        for c in name.components:
-            n2.components.append(c.replace("%2F", "/"))
+        for c in name.string_components:
+            n2 += c.replace("%2F", "/")
         return n2

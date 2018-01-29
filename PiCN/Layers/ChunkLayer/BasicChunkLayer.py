@@ -47,7 +47,8 @@ class BasicChunkLayer(LayerProcess):
             to_lower.put([faceid, packet])
             return
         if isinstance(packet, Content):
-            self.logger.info("Packet is Content " + str(packet.name) + "; " + str(packet.content))
+            self.logger.info("Packet is Content (name=%s, %d bytes)" % \
+                                      (str(packet.name), len(packet.content)))
             if len(packet.content) < self.chunk_size:
                 to_lower.put([faceid, packet])
             else:
@@ -86,12 +87,12 @@ class BasicChunkLayer(LayerProcess):
                 return
             self._request_table.remove(request_table_entry)
             if request_table_entry.chunked is False: #not chunked content
-                if not packet.content.startswith("mdo:"):
+                if not packet.get_bytes().startswith(b'mdo:'):
                     to_higher.put([faceid, packet])
                     return
                 else: # Received metadata data --> chunked content
                     request_table_entry.chunked = True
-            if packet.content.startswith("mdo:"): # request all frames from metadata
+            if packet.get_bytes().startswith(b'mdo:'): # request all frames from metadata
                 request_table_entry = self.handle_received_meta_data(faceid, packet, request_table_entry, to_lower)
             else:
                 request_table_entry = self.handle_received_chunk_data(faceid, packet, request_table_entry, to_higher)
