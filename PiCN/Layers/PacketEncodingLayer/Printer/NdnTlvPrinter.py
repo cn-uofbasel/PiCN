@@ -15,16 +15,16 @@ class NdnTlvPrinter(object):
         0000 |  06 20 -- <type='Interest Packet', length=32>
         0002 |     07 13 -- <type='Name', length=19>
         0004 |        08 04 -- <type='GenericNameComponent', length=4>
-        0006 |           74 68 69 73
+        0006 |           74 68 69 73                                               this
         0010 |        08 02 -- <type='GenericNameComponent', length=2>
-        0012 |           69 73
+        0012 |           69 73                                                     is
         0014 |        08 01 -- <type='GenericNameComponent', length=1>
-        0016 |           61
+        0016 |           61                                                        a
         0017 |        08 04 -- <type='GenericNameComponent', length=4>
-        0019 |           6E 61 6D 65
+        0019 |           6E 61 6D 65                                               name
         0023 |     14 00 -- <type='MetaInfo', length=0>
         0025 |     15 07 -- <type='Content', length=7>
-        0027 |        70 61 79 6C 6F 61 64
+        0027 |        70 61 79 6C 6F 61 64                                         payload
 
     """
 

@@ -1,8 +1,8 @@
-"""Tool to Fetch Content"""
+"""Lookup a content object"""
 
+import argparse
 import socket
 import sys
-from random import randint
 
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
@@ -10,38 +10,44 @@ from PiCN.Layers.PacketEncodingLayer.Printer.NdnTlvPrinter import NdnTlvPrinter
 from PiCN.Packets import Content, Interest
 
 
-def main(argv):
-    if len(argv) < 4 or len(argv) > 5:
-        print("usage: ", argv[0], "ip, port, name, [wireformat]")
-        print("  wire formats:  ndntlv")
-        return
+def main(args):
 
-    # parameter
-    ip = argv[1]
-    port = int(argv[2])
-    name = argv[3]
+    # Packet encoder
+    encoder = NdnTlvEncoder() if args.suite == 'ndn2013' else SimpleStringEncoder
 
-
-    if len(argv) == 5 and argv[4] == "ndntlv":
-        encoder = NdnTlvEncoder()
-    else:
-        encoder = SimpleStringEncoder()
-
-    # create interest
-    interest: Interest = Interest(name)
+    # Generate interest packet
+    interest: Interest = Interest(args.name)
     encoded_interest = encoder.encode(interest)
-    # send interest
+
+    # Send interest packet
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    send_port = randint(10000, 64000)
-    sock.bind(("0.0.0.0", send_port))
-    sock.sendto(encoded_interest, (ip, port))
+    sock.settimeout(5)
+    sock.bind(("0.0.0.0", 0))
+    sock.sendto(encoded_interest, (args.ip, args.port))
 
-    encoded_content, addr = sock.recvfrom(8192)
-    content: Content = encoder.decode(encoded_content)
+    # Receive content object
+    try:
+        encoded_content, addr = sock.recvfrom(8192)
+    except:
+        print("Timeout.")
+        sys.exit(-1)
 
-    pt = NdnTlvPrinter(content.wire_data)
-    pt.formatted_print()
+    # Print
+    try:
+        content: Content = encoder.decode(encoded_content)
+        printer = NdnTlvPrinter(content.wire_data)
+        printer.formatted_print()
+    except:
+        print("Received packet can not be parsed.")
+        sys.exit(-2)
+
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    parser = argparse.ArgumentParser(description='Lookup a CCN Packet')
+    parser.add_argument('--suite', choices=['ndn2013',' simple'], type=str, default='ndn2013', help='default is: "ndn2013"')
+    parser.add_argument('ip',   type=str, help="IP addr of forwarder")
+    parser.add_argument('port', type=int, help="UDP port of forwarder")
+    parser.add_argument('name', type=str, help="ICN name of content to fetch")
+    args = parser.parse_args()
+    main(args)
