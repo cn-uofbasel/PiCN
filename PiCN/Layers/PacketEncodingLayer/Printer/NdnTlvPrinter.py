@@ -1,3 +1,5 @@
+import re
+
 class NdnTlvPrinter(object):
 
     """
@@ -161,6 +163,6 @@ class NdnTlvPrinter(object):
             NdnTlvPrinter.print_without_newline(NdnTlvPrinter.byte_to_hex(e))
             if idx % 8 == 0:
                 NdnTlvPrinter.print_without_newline("\t".expandtabs(50 - 3 * self.__indention_level))
-                NdnTlvPrinter.print_without_newline(self.__wire_format[self.__position-8 : self.__position].decode('ascii', 'replace'))
+                NdnTlvPrinter.print_without_newline(re.sub(r'\s', '\xff', self.__wire_format[self.__position-8 : self.__position].decode('ascii', 'replace')))
         NdnTlvPrinter.print_without_newline("\t".expandtabs(50 + (8 - idx % 8) * 3 - 3 * self.__indention_level))
-        NdnTlvPrinter.print_without_newline(self.__wire_format[self.__position - (idx % 8): self.__position].decode('ascii', 'replace'))
+        NdnTlvPrinter.print_without_newline(re.sub(r'\s', '\x00', self.__wire_format[self.__position - (idx % 8): self.__position].decode('ascii', 'replace')))
