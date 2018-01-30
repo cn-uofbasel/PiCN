@@ -29,8 +29,8 @@ class Packet(object):
         return self._name
 
     @property
-    def wire_data(self):
-        return self._wire_data
+    def wire_format(self):
+        return self._wire_format
 
     @name.setter
     def name(self, name):

@@ -1,7 +1,7 @@
 """NDN TLV Encoder"""
 
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
-from PiCN.Packets import Packet, Content, Interest, Nack, Name
+from PiCN.Packets import Packet, Content, Interest, Nack, Name, UnknownPacket
 
 from PiCNExternal.pyndn.encoding.tlv.tlv.tlv_encoder import TlvEncoder
 from PiCNExternal.pyndn.encoding.tlv.tlv.tlv_decoder import TlvDecoder
@@ -24,20 +24,21 @@ class NdnTlvEncoder(BasicEncoder):
         """
         if isinstance(packet, Interest):
             if isinstance(packet, Content):
-                return packet.wire_data
+                return packet.wire_format
             else:
                 return self.encode_interest(packet.name)
 
         if isinstance(packet, Content):
-            if isinstance(packet.wire_data, bytes):
-                return packet.wire_data
+            if isinstance(packet.wire_format, bytes):
+                return packet.wire_format
             else:
                 return self.encode_data(packet.name, packet.get_bytes())
 
         if isinstance(packet, Nack):
             return None # TODO
 
-        return None
+        if isinstance(packet, UnknownPacket):
+            return packet.wire_format
 
     def decode(self, wire_data) -> Packet:
         """
@@ -54,7 +55,8 @@ class NdnTlvEncoder(BasicEncoder):
             return Interest(name, wire_data)
         if(self.is_nack(wire_data)):
             return None # TODO: Put into NACK Packet
-        return None
+        else:
+            return UnknownPacket(wire_data = wire_data)
 
 
     ### Helpers ###
