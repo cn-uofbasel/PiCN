@@ -23,7 +23,7 @@ class NdnTlvEncoder(BasicEncoder):
         :return: Packet in NDN TLV representation
         """
         if isinstance(packet, Interest):
-            if isinstance(packet, Content):
+            if isinstance(packet.wire_format, bytes):
                 return packet.wire_format
             else:
                 return self.encode_interest(packet.name)

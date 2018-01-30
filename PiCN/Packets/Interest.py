@@ -8,8 +8,7 @@ class Interest(Packet):
     """
 
     def __init__(self, name = None, wire_format = None):
-        Packet.__init__(self, name)
-        self._wire_format = wire_format
+        Packet.__init__(self, name, wire_format)
         assert (type(self._wire_format) in [bytes, bytearray, type(None)]), "MUST be raw bytes or None"
 
     def __eq__(self, other):
