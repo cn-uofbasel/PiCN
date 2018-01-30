@@ -33,7 +33,6 @@ class test_Fetch(unittest.TestCase):
         with open(self.path + "/f3", 'w+') as content_file:
             content_file.write('B' * 20000)
 
-        self.portoffset = randint(0,999)
         self.ICNRepo: ICNDataRepository = ICNDataRepository("/tmp/repo_unit_test", Name("/test/data"), port=0)
         self.forwarder: ICNForwarder = ICNForwarder(port=0)
 
@@ -91,14 +90,14 @@ class test_Fetch(unittest.TestCase):
 
     def test_fetching_content_from_second_repo_after_nack(self):
         """Test sending an interest to forwarder with no matching content, choose second route to fetch content"""
-        self.forwarder2: ICNForwarder = ICNForwarder(12000 + self.portoffset)
+        self.forwarder2: ICNForwarder = ICNForwarder(0)
         self.ICNRepo.start_repo()
         self.forwarder.start_forwarder()
         self.forwarder2.start_forwarder()
 
         #check for nack on first route
         self.mgmtClient = MgmtClient(self.forwarder_port)
-        self.mgmtClient.add_face("127.0.0.1", 12000 + self.portoffset)
+        self.mgmtClient.add_face("127.0.0.1", self.forwarder2.linklayer.get_port())
         data = self.mgmtClient.add_forwarding_rule(Name("/test/data"), 0)
         nack = self.fetch.fetch_data(Name("/test/data/f3"))
         self.assertEqual(nack, "Received Nack: No FIB Entry")
