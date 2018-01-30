@@ -48,7 +48,6 @@ class TestUDP4LinkLayer(unittest.TestCase):
         self.linklayer1.stop_process()
         self.linklayer2.stop_process()
         self.linklayer3.stop_process()
-        time.sleep(0.7)
 
     def test_create_new_fid(self):
         """Testing if max number of fid entries is considered"""

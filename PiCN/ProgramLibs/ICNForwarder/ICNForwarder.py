@@ -73,7 +73,7 @@ class ICNForwarder(object):
         self.routing = BasicRouting(self.icnlayer.pit, None, debug_level=debug_level) #TODO NOT IMPLEMENTED YET
 
         #mgmt
-        self.mgmt = Mgmt(self.cs, self.fib, self.pit, self.linklayer, port, self.stop_forwarder, debug_level=debug_level)
+        self.mgmt = Mgmt(self.cs, self.fib, self.pit, self.linklayer, self.linklayer.get_port(), self.stop_forwarder, debug_level=debug_level)
 
     def start_forwarder(self):
         # start processes

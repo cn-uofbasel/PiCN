@@ -34,15 +34,18 @@ class test_Fetch(unittest.TestCase):
             content_file.write('B' * 20000)
 
         self.portoffset = randint(0,999)
-        self.ICNRepo: ICNDataRepository = ICNDataRepository("/tmp/repo_unit_test", Name("/test/data"), 9000 + self.portoffset)
-        self.forwarder: ICNForwarder = ICNForwarder(8000 + self.portoffset)
-        self.fetch = Fetch("127.0.0.1", 8000 + self.portoffset)
+        self.ICNRepo: ICNDataRepository = ICNDataRepository("/tmp/repo_unit_test", Name("/test/data"), port=0)
+        self.forwarder: ICNForwarder = ICNForwarder(port=0)
 
+
+        self.repo_port = self.ICNRepo.linklayer.get_port()
+        self.forwarder_port = self.forwarder.linklayer.get_port()
+        self.fetch = Fetch("127.0.0.1", self.forwarder_port)
 
     def add_face_and_forwadingrule(self):
         #create new face
-        self.mgmtClient = MgmtClient(8000 + self.portoffset)
-        self.mgmtClient.add_face("127.0.0.1", 9000 + self.portoffset)
+        self.mgmtClient = MgmtClient(self.forwarder_port)
+        self.mgmtClient.add_face("127.0.0.1", self.repo_port)
         self.mgmtClient.add_forwarding_rule(Name("/test"), 0)
 
     def tearDown(self):
@@ -94,7 +97,7 @@ class test_Fetch(unittest.TestCase):
         self.forwarder2.start_forwarder()
 
         #check for nack on first route
-        self.mgmtClient = MgmtClient(8000 + self.portoffset)
+        self.mgmtClient = MgmtClient(self.forwarder_port)
         self.mgmtClient.add_face("127.0.0.1", 12000 + self.portoffset)
         data = self.mgmtClient.add_forwarding_rule(Name("/test/data"), 0)
         nack = self.fetch.fetch_data(Name("/test/data/f3"))
@@ -102,7 +105,7 @@ class test_Fetch(unittest.TestCase):
         time.sleep(0.1)
 
         #install second forwarding rule and check for result.
-        data = self.mgmtClient.add_face("127.0.0.1", 9000 + self.portoffset)
+        data = self.mgmtClient.add_face("127.0.0.1", self.repo_port)
         self.mgmtClient.add_forwarding_rule(Name("/test"), 2)
         time.sleep(0.1)
         #fetch2 = Fetch("127.0.0.1", 8000 + self.portoffset)
