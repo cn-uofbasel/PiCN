@@ -4,6 +4,7 @@ import logging
 import sys
 
 import PiCN.ProgramLibs.ICNForwarder
+from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
 
 
 def main(argv):
@@ -17,11 +18,11 @@ def main(argv):
 
     try:
         if argv[2] == "ndntlv":
-            encoder = argv[2]
+            encoder = NdnTlvEncoder()
         else:
-            encoder = None
+            encoder = SimpleStringEncoder()
     except:
-        encoder = None
+        encoder = SimpleStringEncoder()
 
     forwarder = PiCN.ProgramLibs.ICNForwarder.ICNForwarder(port, logging.DEBUG, encoder)
     forwarder.start_forwarder()
