@@ -63,7 +63,7 @@ class ICNFlicRepository(object):
         self.repolayer.queue_to_lower = self.q_repo_packet_down
 
         # mgmt
-        self.mgmt = Mgmt(None, None, None, self.linklayer, port,
+        self.mgmt = Mgmt(None, None, None, self.linklayer, self.linklayer.get_port(),
                          self.start_repo, repo_path=foldername,
                          repo_prfx=prefix, debug_level=debug_level)
 
