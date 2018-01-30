@@ -474,7 +474,7 @@ class test_BasicICNLayer(unittest.TestCase):
         """Test if ICN Layer issues Nack if no content and no fib entry is available from lower"""
         self.icn_layer.start_process()
         interest = Interest("/test/data")
-        nack = Nack(interest.name, "No FIB Entry")
+        nack = Nack(interest.name, reason="No FIB Entry")
         self.icn_layer.queue_from_lower.put([1, interest])
         data = self.icn_layer.queue_to_lower.get()
         fid = data[0]
@@ -490,7 +490,7 @@ class test_BasicICNLayer(unittest.TestCase):
         self.icn_layer.queue_from_higher = queue_from_higher
         self.icn_layer.start_process()
         interest = Interest("/test/data")
-        nack = Nack(interest.name, "No FIB Entry")
+        nack = Nack(interest.name, reason="No FIB Entry")
         self.icn_layer.queue_from_higher.put([1, interest])
         data = self.icn_layer.queue_to_higher.get()
         fid = data[0]
@@ -504,7 +504,7 @@ class test_BasicICNLayer(unittest.TestCase):
         n1 = Name("/test/data")
         i1 = Interest(n1)
         fid1 = 1
-        nack1 = Nack(n1, "No FIB Entry")
+        nack1 = Nack(n1, reason="No FIB Entry")
         self.pit.add_pit_entry(n1, fid1, i1)
         self.icn_layer.queue_from_lower.put([2, nack1])
         data = self.icn_layer.queue_to_lower.get()
@@ -520,7 +520,7 @@ class test_BasicICNLayer(unittest.TestCase):
         to_fib1 = 2
         to_fib2 = 3
         to_fib3 = 4
-        nack1 = Nack(n1, "No FIB Entry")
+        nack1 = Nack(n1, reason="No FIB Entry")
         self.pit.add_pit_entry(n1, from_fid, i1)
         self.fib.add_fib_entry(Name("/test"), to_fib2)
         self.fib.add_fib_entry(Name("/test/data"), to_fib3)

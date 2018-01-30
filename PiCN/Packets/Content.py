@@ -13,16 +13,13 @@ class Content(Packet):
             self._content = content
         assert (type(self._content) in [bytes, bytearray, type(None)]), "MUST be raw bytes"
         self._wire_data = wire_data
+        assert (type(self._wire_format) in [bytes, bytearray, type(None)]), "MUST be raw bytes"
 
     @property
     def content(self):
         if self._content == None:
             return None
         return self._content.decode()
-
-    @property
-    def wire_data(self):
-        return self._wire_data
 
     def get_bytes(self) -> bytearray:
         return self._content

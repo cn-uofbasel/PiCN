@@ -13,12 +13,12 @@ class TestNack(unittest.TestCase):
 
     def test_content_equal(self):
         """Test if two content objects are equal"""
-        nack1 = Nack("/test/data", "HelloWorld")
-        nack2 = Nack("/test/data", "HelloWorld")
+        nack1 = Nack("/test/data", reason="HelloWorld")
+        nack2 = Nack("/test/data", reason="HelloWorld")
         self.assertEqual(nack1, nack2)
 
     def test_content_not_equal(self):
         """Test if two content objects are not equal"""
-        nack1 = Nack("/test/data", "HelloWorld")
-        nack2 = Nack("/test/data", "HelloWorld2")
+        nack1 = Nack("/test/data", reason="HelloWorld")
+        nack2 = Nack("/test/data", reason="HelloWorld2")
         self.assertNotEqual(nack1, nack2)

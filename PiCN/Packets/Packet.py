@@ -1,15 +1,17 @@
-"""Packet data structure for PiCN"""
+"""Base class for internal representation of network packets"""
 
 from ..Packets.Name import Name
 
 class Packet(object):
-    """Packet data structure for PiCN"""
+    """Base class for internal representation of network packets"""
 
-    def __init__(self, name: Name=None):
+    def __init__(self, name: Name = None, wire_format = None):
         if type(name) == str:
             self._name = Name(name)
         else:
             self._name: Name = name
+        self._wire_format = wire_format
+        assert (type(self._wire_format) in [bytes, bytearray, type(None)]), "MUST be raw bytes"
 
     def __eq__(self, other):
         if type(other) is not Packet:
@@ -23,6 +25,10 @@ class Packet(object):
     def name(self):
         """name of the packet"""
         return self._name
+
+    @property
+    def wire_data(self):
+        return self._wire_data
 
     @name.setter
     def name(self, name):
