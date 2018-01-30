@@ -56,7 +56,7 @@ class NdnTlvEncoder(BasicEncoder):
         if(self.is_nack(wire_data)):
             return None # TODO: Put into NACK Packet
         else:
-            return UnknownPacket(wire_data = wire_data)
+            return UnknownPacket(wire_format = wire_data)
 
 
     ### Helpers ###

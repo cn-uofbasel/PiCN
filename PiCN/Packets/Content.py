@@ -8,14 +8,14 @@ class Content(Packet):
     """
 
 
-    def __init__(self, name = None, content = None, wire_data = None):
+    def __init__(self, name = None, content = None, wire_format = None):
         Packet.__init__(self, name)
         if type(content) == str:
             self._content = content.encode()
         else:
             self._content = content
         assert (type(self._content) in [bytes, bytearray, type(None)]), "MUST be raw bytes or None"
-        self._wire_data = wire_data
+        self._wire_format = wire_format
         assert (type(self._wire_format) in [bytes, bytearray, type(None)]), "MUST be raw bytes or None"
 
     @property
