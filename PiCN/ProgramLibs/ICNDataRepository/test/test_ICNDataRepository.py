@@ -30,9 +30,9 @@ class test_ICNDataRepository(unittest.TestCase):
         with open(self.path + "/f3", 'w+') as content_file:
             content_file.write('B' * 20000)
 
-        self.portoffset = randint(0,999)
-        self.ICNRepo: ICNDataRepository = ICNDataRepository("/tmp/repo_unit_test", Name("/test/data"), 9000 + self.portoffset)
-        self.fetch = Fetch("127.0.0.1", 9000 + self.portoffset)
+        self.ICNRepo: ICNDataRepository = ICNDataRepository("/tmp/repo_unit_test", Name("/test/data"), 0)
+        self.repo_port = self.ICNRepo.linklayer.get_port()
+        self.fetch = Fetch("127.0.0.1", self.repo_port)
 
     def tearDown(self):
         try:
