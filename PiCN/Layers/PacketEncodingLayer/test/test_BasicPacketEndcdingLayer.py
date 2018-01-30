@@ -116,7 +116,7 @@ class TestBasicPacketEncodingLayer(unittest.TestCase):
 
     def test_EncoderMock_encode_decode_nack(self):
         """Test the nack decoding of EncoderMock"""
-        n = Nack("/data/test", "reason1")
+        n = Nack("/data/test", reason="reason1")
         en = self.encoder1.encode(n)
         dn = self.encoder1.decode(en)
         self.assertTrue(n == dn)

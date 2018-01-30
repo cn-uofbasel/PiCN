@@ -35,7 +35,7 @@ class SimpleStringEncoder(BasicEncoder):
         elif data[0] == "N":
             name = data.split(":")[1]
             reason = data.split(":")[3]
-            return Nack(self.unescape_name(Name(name)), reason)
+            return Nack(self.unescape_name(Name(name)), reason=reason)
 
 
     def escape_name(self, name: Name):
