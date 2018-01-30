@@ -35,7 +35,10 @@ class NdnTlvEncoder(BasicEncoder):
                 return self.encode_data(packet.name, packet.get_bytes())
 
         if isinstance(packet, Nack):
-            return None # TODO
+            if isinstance(packet.wire_format, bytes):
+                return packet.wire_format
+            else:
+                return None # TODO
 
         if isinstance(packet, UnknownPacket):
             return packet.wire_format
@@ -43,7 +46,7 @@ class NdnTlvEncoder(BasicEncoder):
     def decode(self, wire_data) -> Packet:
         """
         NDN TLV wire format packet to python object
-        :param wire_data: Packet in wire formate (NDN TLV representation)
+        :param wire_data: Packet in wire format (NDN TLV representation)
         :return: Packet in PiCN's internal representation
         """
         # print("got %d bytes to decode" % len(wire_data))
@@ -54,7 +57,8 @@ class NdnTlvEncoder(BasicEncoder):
             name = self.decode_interest(wire_data)
             return Interest(name, wire_data)
         if(self.is_nack(wire_data)):
-            return None # TODO: Put into NACK Packet
+            name = self.decode_nack(wire_data)
+            return Nack(name=name, wire_format=wire_data)
         else:
             return UnknownPacket(wire_format = wire_data)
 
@@ -179,6 +183,14 @@ class NdnTlvEncoder(BasicEncoder):
         payload = decoder.readBlobTlv(Tlv.Content).tobytes()
         return (name, payload)
 
+    def decode_nack(self, input: bytearray) -> Name:
+        """
+        Decode NACK packet
+        :param input: Data packet in NDN-TLV wire format
+        :return: Name
+        """
+        return self.decode_interest(input[13:]) # TODO - decode reason
+
     def is_content(self, input: bytearray) -> bool:
         """
         Checks if content object packet
@@ -201,4 +213,4 @@ class NdnTlvEncoder(BasicEncoder):
         :param input:  Packet in NDN-TLV wire format
         :return: True if NACK
         """
-        return False # TODO
+        return input[0] == 0x64 & input[3] == 0x03 & input[4] == 0x20   # TODO
