@@ -18,7 +18,7 @@ from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
 from PiCN.Layers.NFNLayer.NFNEvaluator import NFNEvaluator
 from PiCN.Layers.NFNLayer.NFNEvaluator.NFNExecutor import BaseNFNExecutor
 
-class BasicNFNLayer(LayerProcess):d
+class BasicNFNLayer(LayerProcess):
     """NFN Layer Implementation"""
 
     def __init__(self, manager: multiprocessing.Manager, content_store: BaseContentStore,
