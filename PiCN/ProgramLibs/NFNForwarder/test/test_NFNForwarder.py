@@ -14,14 +14,14 @@ class test_NFNForwarder(unittest.TestCase):
     """Test the ICN Forwarder"""
 
     def setUp(self):
-        self.portoffset = randint(0,999)
-
-        self.forwarder1 = NFNForwarder(3000 + self.portoffset, debug_level=255)
-        self.forwarder2 = NFNForwarder(4000 + self.portoffset, debug_level=255)
+        self.forwarder1 = NFNForwarder(0, debug_level=255)
+        self.forwarder2 = NFNForwarder(0, debug_level=255)
+        self.forwarder1_port = self.forwarder1.linklayer.get_port()
+        self.forwarder2_port = self.forwarder2.linklayer.get_port()
         self.encoder = SimpleStringEncoder()
 
         self.testSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.testSock.bind(("0.0.0.0", 2000 + self.portoffset))
+        self.testSock.bind(("0.0.0.0", 0))
 
     def tearDown(self):
         self.forwarder1.stop_forwarder()
@@ -35,7 +35,7 @@ class test_NFNForwarder(unittest.TestCase):
 
         # new content
         testMgmtSock1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        testMgmtSock1.connect(("127.0.0.1", 3000 + self.portoffset))
+        testMgmtSock1.connect(("127.0.0.1", self.forwarder1_port))
         testMgmtSock1.send("GET /icnlayer/newcontent/%2Ftest%2Fdata%2Fobject:HelloWorld HTTP/1.1\r\n\r\n".encode())
         data = testMgmtSock1.recv(1024)
         testMgmtSock1.close()
@@ -53,7 +53,7 @@ class test_NFNForwarder(unittest.TestCase):
         interest = Interest("/test/data/object")
         encoded_interest = self.encoder.encode(interest)
         #send interest
-        self.testSock.sendto(encoded_interest, ("127.0.0.1", 3000 + self.portoffset))
+        self.testSock.sendto(encoded_interest, ("127.0.0.1", self.forwarder1_port))
         #receive content
         encoded_content, addr = self.testSock.recvfrom(8192)
         content = self.encoder.decode(encoded_content)
@@ -67,18 +67,18 @@ class test_NFNForwarder(unittest.TestCase):
 
         #create a face
         testMgmtSock1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        testMgmtSock1.connect(("127.0.0.1", 3000 + self.portoffset))
-        port_to = 4000 + self.portoffset
+        testMgmtSock1.connect(("127.0.0.1", self.forwarder1_port))
+        port_to = self.forwarder2_port
         testMgmtSock1.send(("GET /linklayer/newface/127.0.0.1:" + str(port_to) + " HTTP/1.1\r\n\r\n").encode())
         data = testMgmtSock1.recv(1024)
         testMgmtSock1.close()
         self.assertEqual(data.decode(),
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newface OK:0\r\n")
-        self.assertEqual(self.forwarder1.linklayer._ip_to_fid[("127.0.0.1", 4000 + self.portoffset)], 0)
+        self.assertEqual(self.forwarder1.linklayer._ip_to_fid[("127.0.0.1", self.forwarder2_port)], 0)
 
         #register a prefix
         testMgmtSock2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        testMgmtSock2.connect(("127.0.0.1", 3000 + self.portoffset))
+        testMgmtSock2.connect(("127.0.0.1", self.forwarder1_port))
         testMgmtSock2.send("GET /icnlayer/newforwardingrule/%2Ftest%2Fdata:0 HTTP/1.1\r\n\r\n".encode())
         data = testMgmtSock2.recv(1024)
         testMgmtSock2.close()
@@ -88,7 +88,7 @@ class test_NFNForwarder(unittest.TestCase):
 
         # new content
         testMgmtSock3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        testMgmtSock3.connect(("127.0.0.1", 4000 + self.portoffset))
+        testMgmtSock3.connect(("127.0.0.1", self.forwarder2_port))
         testMgmtSock3.send("GET /icnlayer/newcontent/%2Ftest%2Fdata%2Fobject:HelloWorld HTTP/1.1\r\n\r\n".encode())
         data = testMgmtSock3.recv(1024)
         testMgmtSock3.close()
@@ -104,7 +104,7 @@ class test_NFNForwarder(unittest.TestCase):
         interest = Interest("/test/data/object")
         encoded_interest = self.encoder.encode(interest)
         #send interest
-        self.testSock.sendto(encoded_interest, ("127.0.0.1", 3000 + self.portoffset))
+        self.testSock.sendto(encoded_interest, ("127.0.0.1", self.forwarder1_port))
 
         #receive content
         encoded_content, addr = self.testSock.recvfrom(8192)
@@ -121,18 +121,18 @@ class test_NFNForwarder(unittest.TestCase):
 
         # create a face
         testMgmtSock1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        testMgmtSock1.connect(("127.0.0.1", 3000 + self.portoffset))
-        port_to = 4000 + self.portoffset
+        testMgmtSock1.connect(("127.0.0.1", self.forwarder1_port))
+        port_to = self.forwarder2_port
         testMgmtSock1.send(("GET /linklayer/newface/127.0.0.1:" + str(port_to) + " HTTP/1.1\r\n\r\n").encode())
         data = testMgmtSock1.recv(1024)
         testMgmtSock1.close()
         self.assertEqual(data.decode(),
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newface OK:0\r\n")
-        self.assertEqual(self.forwarder1.linklayer._ip_to_fid[("127.0.0.1", 4000 + self.portoffset)], 0)
+        self.assertEqual(self.forwarder1.linklayer._ip_to_fid[("127.0.0.1", self.forwarder2_port)], 0)
 
         # register a prefix
         testMgmtSock2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        testMgmtSock2.connect(("127.0.0.1", 3000 + self.portoffset))
+        testMgmtSock2.connect(("127.0.0.1", self.forwarder1_port))
         testMgmtSock2.send("GET /icnlayer/newforwardingrule/%2Flib%2Ffunc:0 HTTP/1.1\r\n\r\n".encode())
         data = testMgmtSock2.recv(1024)
         testMgmtSock2.close()
@@ -142,7 +142,7 @@ class test_NFNForwarder(unittest.TestCase):
 
         #add function
         testMgmtSock3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        testMgmtSock3.connect(("127.0.0.1", 4000 + self.portoffset))
+        testMgmtSock3.connect(("127.0.0.1", self.forwarder2_port))
         testMgmtSock3.send("GET /icnlayer/newcontent/%2Flib%2Ffunc%2Ff1:PYTHON\nf\ndef f():\n    return 'Hello World' HTTP/1.1\r\n\r\n".encode())
         data = testMgmtSock3.recv(1024)
         testMgmtSock3.close()
@@ -155,7 +155,7 @@ class test_NFNForwarder(unittest.TestCase):
         name += "NFN"
         encoded_interest = self.encoder.encode(Interest(name))
         # send interest
-        self.testSock.sendto(encoded_interest, ("127.0.0.1", 3000 + self.portoffset))
+        self.testSock.sendto(encoded_interest, ("127.0.0.1", self.forwarder1_port))
         # receive content
         encoded_content, addr = self.testSock.recvfrom(8192)
         content: Content = self.encoder.decode(encoded_content)
@@ -171,8 +171,8 @@ class test_NFNForwarder(unittest.TestCase):
         # client <---> node1 <---> node2
 
         # create faces
-        fid1 = self.forwarder1.linklayer.get_or_create_fid(("127.0.0.1", 4000 + self.portoffset), True)
-        fid2 = self.forwarder2.linklayer.get_or_create_fid(("127.0.0.1", 3000 + self.portoffset), True)
+        fid1 = self.forwarder1.linklayer.get_or_create_fid(("127.0.0.1", self.forwarder2_port), True)
+        fid2 = self.forwarder2.linklayer.get_or_create_fid(("127.0.0.1", self.forwarder1_port), True)
 
         # register prefixes
         self.forwarder1.fib.add_fib_entry(Name("/lib/func"), fid1, True)
@@ -180,7 +180,7 @@ class test_NFNForwarder(unittest.TestCase):
 
         # add function
         testMgmtSock1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        testMgmtSock1.connect(("127.0.0.1", 4000 + self.portoffset))
+        testMgmtSock1.connect(("127.0.0.1", self.forwarder2_port))
         testMgmtSock1.send(
             "GET /icnlayer/newcontent/%2Flib%2Ffunc%2Ff1:PYTHON\nf\ndef f(a):\n    return a.upper() HTTP/1.1\r\n\r\n".encode())
         data = testMgmtSock1.recv(1024)
@@ -190,7 +190,7 @@ class test_NFNForwarder(unittest.TestCase):
 
         # add content
         testMgmtSock2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        testMgmtSock2.connect(("127.0.0.1", 3000 + self.portoffset))
+        testMgmtSock2.connect(("127.0.0.1", self.forwarder1_port))
         testMgmtSock2.send("GET /icnlayer/newcontent/%2Ftest%2Fdata%2Fobject:HelloWorld HTTP/1.1\r\n\r\n".encode())
         data = testMgmtSock2.recv(1024)
         testMgmtSock2.close()
@@ -203,7 +203,7 @@ class test_NFNForwarder(unittest.TestCase):
         name += "NFN"
         encoded_interest = self.encoder.encode(Interest(name))
         # send interest
-        self.testSock.sendto(encoded_interest, ("127.0.0.1", 3000 + self.portoffset))
+        self.testSock.sendto(encoded_interest, ("127.0.0.1", self.forwarder1_port))
         # receive content
         encoded_content, addr = self.testSock.recvfrom(8192)
         content: Content = self.encoder.decode(encoded_content)
@@ -219,8 +219,8 @@ class test_NFNForwarder(unittest.TestCase):
         # client <---> node1 <---> node2
 
         # create faces
-        fid1 = self.forwarder1.linklayer.get_or_create_fid(("127.0.0.1", 4000 + self.portoffset), True)
-        fid2 = self.forwarder2.linklayer.get_or_create_fid(("127.0.0.1", 3000 + self.portoffset), True)
+        fid1 = self.forwarder1.linklayer.get_or_create_fid(("127.0.0.1", self.forwarder2_port), True)
+        fid2 = self.forwarder2.linklayer.get_or_create_fid(("127.0.0.1", self.forwarder1_port), True)
 
         # register prefixes
         self.forwarder1.fib.add_fib_entry(Name("/lib/func"), fid1, True)
@@ -228,7 +228,7 @@ class test_NFNForwarder(unittest.TestCase):
 
         # add function
         testMgmtSock1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        testMgmtSock1.connect(("127.0.0.1", 4000 + self.portoffset))
+        testMgmtSock1.connect(("127.0.0.1", self.forwarder2_port))
         testMgmtSock1.send(
             "GET /icnlayer/newcontent/%2Flib%2Ffunc%2Ff1:PYTHON\nf\ndef f(a):\n    return a.upper() HTTP/1.1\r\n\r\n".encode())
         data = testMgmtSock1.recv(1024)
@@ -238,7 +238,7 @@ class test_NFNForwarder(unittest.TestCase):
 
         # add content
         testMgmtSock2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        testMgmtSock2.connect(("127.0.0.1", 3000 + self.portoffset))
+        testMgmtSock2.connect(("127.0.0.1", self.forwarder1_port))
         testMgmtSock2.send("GET /icnlayer/newcontent/%2Ftest%2Fdata%2Fobject:tluser HTTP/1.1\r\n\r\n".encode())
         data = testMgmtSock2.recv(1024)
         testMgmtSock2.close()
@@ -247,7 +247,7 @@ class test_NFNForwarder(unittest.TestCase):
 
         # add function 2
         testMgmtSock3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        testMgmtSock3.connect(("127.0.0.1", 3000 + self.portoffset))
+        testMgmtSock3.connect(("127.0.0.1", self.forwarder1_port))
         testMgmtSock3.send(
             "GET /icnlayer/newcontent/%2Flib%2Ffunc%2Ff2:PYTHON\nf\ndef f(a):\n    return a[::-1] HTTP/1.1\r\n\r\n".encode())
         data = testMgmtSock3.recv(1024)
@@ -261,7 +261,7 @@ class test_NFNForwarder(unittest.TestCase):
         name += "NFN"
         encoded_interest = self.encoder.encode(Interest(name))
         # send interest
-        self.testSock.sendto(encoded_interest, ("127.0.0.1", 3000 + self.portoffset))
+        self.testSock.sendto(encoded_interest, ("127.0.0.1", self.forwarder1_port))
         # receive content
         encoded_content, addr = self.testSock.recvfrom(8192)
         content: Content = self.encoder.decode(encoded_content)
@@ -278,8 +278,8 @@ class test_NFNForwarder(unittest.TestCase):
         # client <---> node1 <---> node2
 
         # create faces
-        fid1 = self.forwarder1.linklayer.get_or_create_fid(("127.0.0.1", 4000 + self.portoffset), True)
-        fid2 = self.forwarder2.linklayer.get_or_create_fid(("127.0.0.1", 3000 + self.portoffset), True)
+        fid1 = self.forwarder1.linklayer.get_or_create_fid(("127.0.0.1", self.forwarder2_port), True)
+        fid2 = self.forwarder2.linklayer.get_or_create_fid(("127.0.0.1", self.forwarder1_port), True)
 
         # register prefixes
         self.forwarder1.fib.add_fib_entry(Name("/lib/func"), fid1, True)
@@ -287,7 +287,7 @@ class test_NFNForwarder(unittest.TestCase):
 
         # add function
         testMgmtSock1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        testMgmtSock1.connect(("127.0.0.1", 4000 + self.portoffset))
+        testMgmtSock1.connect(("127.0.0.1", self.forwarder2_port))
         testMgmtSock1.send(
             "GET /icnlayer/newcontent/%2Flib%2Ffunc%2Ff1:PYTHON\nf\ndef f(a):\n    return a.upper() + str(20000*'a') HTTP/1.1\r\n\r\n".encode())
         data = testMgmtSock1.recv(1024)
@@ -297,7 +297,7 @@ class test_NFNForwarder(unittest.TestCase):
 
         # add content
         testMgmtSock2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        testMgmtSock2.connect(("127.0.0.1", 3000 + self.portoffset))
+        testMgmtSock2.connect(("127.0.0.1", self.forwarder1_port))
         testMgmtSock2.send("GET /icnlayer/newcontent/%2Ftest%2Fdata%2Fobject:tluser HTTP/1.1\r\n\r\n".encode())
         data = testMgmtSock2.recv(1024)
         testMgmtSock2.close()
@@ -306,7 +306,7 @@ class test_NFNForwarder(unittest.TestCase):
 
         # add function 2
         testMgmtSock3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        testMgmtSock3.connect(("127.0.0.1", 3000 + self.portoffset))
+        testMgmtSock3.connect(("127.0.0.1", self.forwarder1_port))
         testMgmtSock3.send(
             "GET /icnlayer/newcontent/%2Flib%2Ffunc%2Ff2:PYTHON\nf\ndef f(a):\n    return a[::-1] HTTP/1.1\r\n\r\n".encode())
         data = testMgmtSock3.recv(1024)
@@ -320,7 +320,7 @@ class test_NFNForwarder(unittest.TestCase):
         name += "NFN"
         encoded_interest = self.encoder.encode(Interest(name))
         # send interest
-        self.testSock.sendto(encoded_interest, ("127.0.0.1", 3000 + self.portoffset))
+        self.testSock.sendto(encoded_interest, ("127.0.0.1", self.forwarder1_port))
         # receive content
         encoded_content, addr = self.testSock.recvfrom(8192)
         content: Content = self.encoder.decode(encoded_content)

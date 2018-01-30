@@ -14,8 +14,6 @@ class test_ICNForwarder(unittest.TestCase):
     """Test the ICN Forwarder"""
 
     def setUp(self):
-        self.portoffset = randint(0,999)
-
         self.forwarder1 = ICNForwarder(0, debug_level=255)
         self.forwarder2 = ICNForwarder(0, debug_level=255)
         self.forwarder1_port = self.forwarder1.linklayer.get_port()
