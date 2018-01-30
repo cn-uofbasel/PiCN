@@ -36,7 +36,6 @@ class test_Fetch(unittest.TestCase):
         self.ICNRepo: ICNDataRepository = ICNDataRepository("/tmp/repo_unit_test", Name("/test/data"), port=0)
         self.forwarder: ICNForwarder = ICNForwarder(port=0)
 
-
         self.repo_port = self.ICNRepo.linklayer.get_port()
         self.forwarder_port = self.forwarder.linklayer.get_port()
         self.fetch = Fetch("127.0.0.1", self.forwarder_port)
@@ -45,7 +44,7 @@ class test_Fetch(unittest.TestCase):
         #create new face
         self.mgmtClient = MgmtClient(self.forwarder_port)
         self.mgmtClient.add_face("127.0.0.1", self.repo_port)
-        self.mgmtClient.add_forwarding_rule(Name("/test"), 0)
+        self.mgmtClient.add_forwarding_rule(Name("/test"), faceid=0)
 
     def tearDown(self):
         try:
