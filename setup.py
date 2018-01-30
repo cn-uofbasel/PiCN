@@ -1,9 +1,15 @@
 #/usr/bin/env python3.6
 
+import unittest
 try:
-    from setuptools import setup
+    from setuptools import setup, find_packages
 except ImportError:
     from distutils.core import setup
+
+def run_test_suite():
+    test_loader = unittest.TestLoader()
+    test_suite = test_loader.discover('PiCN', pattern='test_*.py')
+    return test_suite
 
 config_PiCN = {
     'description': 'extendable ICN implementation in python',
@@ -28,7 +34,7 @@ config_PiCN = {
                  'PiCN.Layers.NFNLayer.NFNEvaluator', 'PiCN.Layers.NFNLayer.NFNEvaluator.NFNOptimizer',
                  'PiCN.Layers.NFNLayer.NFNEvaluator.NFNExecutor', 'PiCN.ProgramLibs.NFNForwarder'],
     'scripts': [],
-    'test_suite': 'tests',
+    'test_suite': 'setup.run_test_suite',
     'tests_require': [],
     'name': 'PiCN'
 }
