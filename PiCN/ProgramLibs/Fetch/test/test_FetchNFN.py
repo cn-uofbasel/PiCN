@@ -33,22 +33,26 @@ class test_Fetch(unittest.TestCase):
         with open(self.path + "/d3", 'w+') as content_file:
             content_file.write('b' * 20000)
 
-        self.portoffset = randint(0,999)
-        self.ICNRepo: ICNDataRepository = ICNDataRepository("/tmp/repo_unit_test", Name("/test/data"), 10000 + self.portoffset)
-        self.forwarder1: NFNForwarder = NFNForwarder(8000 + self.portoffset, debug_level=255)
-        self.forwarder2: NFNForwarder = NFNForwarder(9000 + self.portoffset, debug_level=255)
-        self.fetch = Fetch("127.0.0.1", 8000 + self.portoffset)
+        self.ICNRepo: ICNDataRepository = ICNDataRepository("/tmp/repo_unit_test", Name("/test/data"), 0)
+        self.forwarder1: NFNForwarder = NFNForwarder(0, debug_level=255)
+        self.forwarder2: NFNForwarder = NFNForwarder(0, debug_level=255)
+
+        self.repo_port = self.ICNRepo.linklayer.get_port()
+        self.fwd_port1 = self.forwarder1.linklayer.get_port()
+        self.fwd_port2 = self.forwarder2.linklayer.get_port()
+
+        self.fetch = Fetch("127.0.0.1", self.fwd_port1)
 
     def add_face_and_forwadingrule(self):
         #create new face
-        self.mgmtClient1 = MgmtClient(8000 + self.portoffset)
-        self.mgmtClient1.add_face("127.0.0.1", 9000 + self.portoffset)
+        self.mgmtClient1 = MgmtClient(self.fwd_port1)
+        self.mgmtClient1.add_face("127.0.0.1", self.fwd_port2)
         self.mgmtClient1.add_forwarding_rule(Name("/lib"), 0)
-        self.mgmtClient1.add_face("127.0.0.1", 10000 + self.portoffset)
+        self.mgmtClient1.add_face("127.0.0.1", self.repo_port)
         self.mgmtClient1.add_forwarding_rule(Name("/test"), 0)
 
-        self.mgmtClient2 = MgmtClient(9000 + self.portoffset)
-        self.mgmtClient2.add_face("127.0.0.1", 10000 + self.portoffset)
+        self.mgmtClient2 = MgmtClient(self.fwd_port2)
+        self.mgmtClient2.add_face("127.0.0.1", self.repo_port)
         self.mgmtClient2.add_forwarding_rule(Name("/test"), 0)
 
     def tearDown(self):
