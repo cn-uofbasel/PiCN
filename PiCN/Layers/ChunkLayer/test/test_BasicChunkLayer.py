@@ -47,7 +47,7 @@ class test_BasicChunkLayer(unittest.TestCase):
         result1 = self.chunkLayer.get_requesttableentry(n1)
 
         self.assertEqual(result1.name, n1)
-        self.assertEqual(result2.name, n1)
+        self.assertEqual(result2.name, n2)
 
     def test_get_chunkname_list_from_chunk_table(self):
         """Test if the helper to get a list of chunknames works"""
