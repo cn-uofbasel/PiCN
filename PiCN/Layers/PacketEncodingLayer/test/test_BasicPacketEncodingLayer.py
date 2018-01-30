@@ -15,13 +15,15 @@ from PiCN.Packets import Packet, Content, Interest, Nack
 class TestBasicPacketEncodingLayer(unittest.TestCase):
 
     def setUp(self):
-        self.portoffset = randint(0,999)
         self.encoder1 = SimpleStringEncoder()
         self.packetEncodingLayer1 = BasicPacketEncodingLayer()
         self.packetEncodingLayer2 = BasicPacketEncodingLayer()
 
-        self.linkLayer1 = UDP4LinkLayer(2000+self.portoffset)
-        self.linkLayer2 = UDP4LinkLayer(3000+self.portoffset)
+        self.linkLayer1 = UDP4LinkLayer(0)
+        self.linkLayer2 = UDP4LinkLayer(0)
+        self.port1 = self.linkLayer1.get_port()
+        self.port2 = self.linkLayer2.get_port()
+
         self.encoder2 = SimpleStringEncoder()
 
         self.q1_fromLower = Queue()
@@ -58,7 +60,6 @@ class TestBasicPacketEncodingLayer(unittest.TestCase):
         self.packetEncodingLayer2.stop_process()
         self.linkLayer1.stop_process()
         self.linkLayer2.stop_process()
-        time.sleep(0.3)
 
     def test_EncoderMock_encode_interest_equal(self):
         """Test the interest encoding of EncoderMock: equal"""
@@ -183,7 +184,7 @@ class TestBasicPacketEncodingLayer(unittest.TestCase):
         self.linkLayer2.start_process()
         self.packetEncodingLayer1.start_process()
         self.packetEncodingLayer2.start_process()
-        fid = self.linkLayer1.create_new_fid(("127.0.0.1", 3000+self.portoffset))
+        fid = self.linkLayer1.create_new_fid(("127.0.0.1", self.port2))
         i = Interest("/test/data")
 
         #PUT interest in node 1 queues
@@ -201,7 +202,7 @@ class TestBasicPacketEncodingLayer(unittest.TestCase):
         self.linkLayer2.start_process()
         self.packetEncodingLayer1.start_process()
         self.packetEncodingLayer2.start_process()
-        fid = self.linkLayer1.create_new_fid(("127.0.0.1", 3000 + self.portoffset))
+        fid = self.linkLayer1.create_new_fid(("127.0.0.1", self.port2))
         c = Content("/test/data", "HelloWorld")
 
         # PUT interest in node 1 queues
