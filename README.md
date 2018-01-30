@@ -6,6 +6,8 @@
 
 [![Build Status](https://semaphoreci.com/api/v1/blacksheeep-36/picn/branches/master/badge.svg)](https://semaphoreci.com/blacksheeep-36/picn)
 
+(The CI system runs unit tests, that verify the functionality of PiCN, including network communication)
+
 # PiCN 
 PiCN is a modular ICN implementation designed to support NFN and
 other in network applications written in Python 3
