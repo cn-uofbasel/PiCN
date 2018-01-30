@@ -2,6 +2,11 @@
 
 **Requires Python  >=3.6** 
 
+# Status of Automatic Tests
+
+[![Status of Automatic Tests](https://semaphoreci.com/api/v1/unibas/picn/branches/master/badge.svg)](https://semaphoreci.com/unibas/picn)
+
+
 # PiCN 
 PiCN is a modular ICN implementation designed to support NFN and
 other in network applications written in Python 3
