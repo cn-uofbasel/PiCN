@@ -21,7 +21,8 @@ class test_Mgmt(unittest.TestCase):
     def setUp(self):
         self.portoffset = randint(0, 999)
         self.manager = multiprocessing.Manager()
-        self.linklayer = UDP4LinkLayer(9000+self.portoffset)
+        self.linklayer = UDP4LinkLayer(0)
+        self.linklayerport = self.linklayer.get_port()
         self.q1 = multiprocessing.Queue()
         self.linklayer.queue_from_higher = self.q1
 
@@ -29,11 +30,11 @@ class test_Mgmt(unittest.TestCase):
         self.fib = ForwardingInformationBaseMemoryPrefix(self.manager)
         self.pit = PendingInterstTableMemoryExact(self.manager)
 
-        self.mgmt = Mgmt(self.cs, self.fib, self.pit, self.linklayer, 9000+self.portoffset)
+        self.mgmt = Mgmt(self.cs, self.fib, self.pit, self.linklayer, self.linklayerport)
         self.testMgmtSock1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.testMgmtSock2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.testMgmtSock3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.mgmt_client = MgmtClient(9000+self.portoffset)
+        self.mgmt_client = MgmtClient(self.linklayerport)
 
 
     def tearDown(self):
@@ -48,7 +49,7 @@ class test_Mgmt(unittest.TestCase):
         self.linklayer.start_process()
         self.mgmt.start_process()
 
-        self.testMgmtSock1.connect(("127.0.0.1", 9000 + self.portoffset))
+        self.testMgmtSock1.connect(("127.0.0.1", self.linklayerport))
         self.testMgmtSock1.send("GET /linklayer/newface/127.0.0.1:9000 HTTP/1.1\r\n\r\n".encode())
         data = self.testMgmtSock1.recv(1024)
         self.testMgmtSock1.close()
@@ -67,7 +68,7 @@ class test_Mgmt(unittest.TestCase):
         self.linklayer.start_process()
         self.mgmt.start_process()
 
-        self.testMgmtSock1.connect(("127.0.0.1", 9000 + self.portoffset))
+        self.testMgmtSock1.connect(("127.0.0.1", self.linklayerport))
         self.testMgmtSock1.send("GET /linklayer/newface/127.0.0.1:9000 HTTP/1.1\r\n\r\n".encode())
         data = self.testMgmtSock1.recv(1024)
         self.testMgmtSock1.close()
@@ -75,7 +76,7 @@ class test_Mgmt(unittest.TestCase):
         self.assertEqual(data.decode(),
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newface OK:0\r\n")
 
-        self.testMgmtSock2.connect(("127.0.0.1", 9000 + self.portoffset))
+        self.testMgmtSock2.connect(("127.0.0.1",self.linklayerport))
         self.testMgmtSock2.send("GET /linklayer/newface/127.0.0.1:8000 HTTP/1.1\r\n\r\n".encode())
         data = self.testMgmtSock2.recv(1024)
         self.testMgmtSock2.close()
@@ -84,7 +85,7 @@ class test_Mgmt(unittest.TestCase):
         self.assertEqual(data.decode(),
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newface OK:1\r\n")
 
-        self.testMgmtSock3.connect(("127.0.0.1", 9000 + self.portoffset))
+        self.testMgmtSock3.connect(("127.0.0.1", self.linklayerport))
         self.testMgmtSock3.send("GET /linklayer/newface/127.0.0.1:9000 HTTP/1.1\r\n\r\n".encode())
         data = self.testMgmtSock3.recv(1024)
         self.testMgmtSock3.close()
@@ -105,7 +106,7 @@ class test_Mgmt(unittest.TestCase):
         self.linklayer.start_process()
         self.mgmt.start_process()
 
-        self.testMgmtSock1.connect(("127.0.0.1", 9000 + self.portoffset))
+        self.testMgmtSock1.connect(("127.0.0.1", self.linklayerport))
         self.testMgmtSock1.send("GET /icnlayer/newforwardingrule/%2Ftest%2Fdata:2 HTTP/1.1\r\n\r\n".encode())
         data = self.testMgmtSock1.recv(1024)
         self.testMgmtSock1.close()
@@ -114,7 +115,7 @@ class test_Mgmt(unittest.TestCase):
 
         time.sleep(1)
 
-        self.testMgmtSock2.connect(("127.0.0.1", 9000 + self.portoffset))
+        self.testMgmtSock2.connect(("127.0.0.1", self.linklayerport))
         self.testMgmtSock2.send("GET /icnlayer/newforwardingrule/%2Fdata%2Ftest:3 HTTP/1.1\r\n\r\n".encode())
         data = self.testMgmtSock2.recv(1024)
         self.testMgmtSock2.close()
@@ -130,7 +131,7 @@ class test_Mgmt(unittest.TestCase):
         self.linklayer.start_process()
         self.mgmt.start_process()
 
-        self.testMgmtSock1.connect(("127.0.0.1", 9000 + self.portoffset))
+        self.testMgmtSock1.connect(("127.0.0.1", self.linklayerport))
         self.testMgmtSock1.send("GET /icnlayer/newcontent/%2Ftest%2Fdata:HelloWorld HTTP/1.1\r\n\r\n".encode())
         data = self.testMgmtSock1.recv(1024)
         self.testMgmtSock1.close()
@@ -139,7 +140,7 @@ class test_Mgmt(unittest.TestCase):
 
         time.sleep(1)
 
-        self.testMgmtSock2.connect(("127.0.0.1", 9000 + self.portoffset))
+        self.testMgmtSock2.connect(("127.0.0.1", self.linklayerport))
         self.testMgmtSock2.send("GET /icnlayer/newcontent/%2Fdata%2Ftest:GoodBye HTTP/1.1\r\n\r\n".encode())
         data = self.testMgmtSock2.recv(1024)
         self.testMgmtSock2.close()
