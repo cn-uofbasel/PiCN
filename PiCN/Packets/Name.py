@@ -1,4 +1,4 @@
-"""Name data structure for PiCN"""
+"""Internal representation of network name"""
 
 import binascii
 import json
@@ -6,7 +6,9 @@ import os
 
 
 class Name(object):
-    """Name data structure for PiCN"""
+    """
+    Internal representation of network name
+    """
 
     def __init__(self, name: str = None, suite='ndn2013'):
         self.suite = suite
