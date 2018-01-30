@@ -19,7 +19,6 @@ from PiCN.Packets import Name
 class test_Mgmt(unittest.TestCase):
 
     def setUp(self):
-        self.portoffset = randint(0, 999)
         self.manager = multiprocessing.Manager()
         self.linklayer = UDP4LinkLayer(0)
         self.linklayerport = self.linklayer.get_port()
