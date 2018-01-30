@@ -25,7 +25,7 @@ class Fetch(object):
         self.chunkifyer = SimpleContentChunkifyer()
 
         #create layers
-        self.linklayer = UDP4LinkLayer(randint(10000, 64000), debug_level=debug_level)
+        self.linklayer = UDP4LinkLayer(0, debug_level=debug_level)
         self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, debug_level=debug_level)
         self.chunklayer = BasicChunkLayer(self.chunkifyer, debug_level=debug_level)
 
