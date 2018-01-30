@@ -24,6 +24,10 @@ class UDP4LinkLayer(LayerProcess):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(("0.0.0.0", self._port))
 
+    def get_port(self) -> int:
+        """Returns port on which the node is running"""
+        return int(self.sock.getsockname()[1])
+
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         raise Exception("Link Layer interacts with sockets. Send Data will handle data_from_higher!")
 

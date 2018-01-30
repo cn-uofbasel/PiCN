@@ -13,10 +13,13 @@ class TestUDP4LinkLayer(unittest.TestCase):
     """Test the UDP4LinkLayer"""
 
     def setUp(self):
-        self.portoffset = randint(0, 999)  # required for more stable testing if socket is still open for some reason
-        self.linklayer1 = UDP4LinkLayer(8000 + self.portoffset, max_fids_entries=int(1e2))
-        self.linklayer2 = UDP4LinkLayer(9000 + self.portoffset)
-        self.linklayer3 = UDP4LinkLayer(10000 + self.portoffset)
+        self.linklayer1 = UDP4LinkLayer(0, max_fids_entries=int(1e2))
+        self.linklayer2 = UDP4LinkLayer(0)
+        self.linklayer3 = UDP4LinkLayer(0)
+
+        self.port1 = self.linklayer1.get_port()
+        self.port2 = self.linklayer2.get_port()
+        self.port3 = self.linklayer3.get_port()
 
         self.q1_fromHigher = Queue()
         self.q1_toHiger = Queue()
@@ -35,7 +38,9 @@ class TestUDP4LinkLayer(unittest.TestCase):
         self.linklayer3.queue_to_higher = self.q3_toHiger
 
         self.testSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.testSock.bind(("0.0.0.0", 7000 + self.portoffset))
+        self.testSock.bind(("0.0.0.0", 0))
+
+        self.test_port = self.testSock.getsockname()[1]
 
 
     def tearDown(self):
@@ -81,7 +86,7 @@ class TestUDP4LinkLayer(unittest.TestCase):
     def test_receiving_a_packet(self):
         """Testing if a packet is received correctly"""
         self.linklayer1.start_process()
-        self.testSock.sendto("HelloWorld".encode(), ("127.0.0.1", 8000 + self.portoffset))
+        self.testSock.sendto("HelloWorld".encode(), ("127.0.0.1", self.port1))
 
         data = self.q1_toHiger.get()
         faceid = data[0]
@@ -90,14 +95,14 @@ class TestUDP4LinkLayer(unittest.TestCase):
         self.assertEqual(self.linklayer1._cur_fid.value, 1)
         self.assertEqual(len(self.linklayer1._fids_timestamps), 1)
         self.assertEqual(len(self.linklayer1._fids_to_ip), 1)
-        self.assertEqual(self.linklayer1._fids_to_ip[0], ("127.0.0.1", 7000 + self.portoffset))
+        self.assertEqual(self.linklayer1._fids_to_ip[0], ("127.0.0.1", self.test_port))
         self.assertEqual(len(self.linklayer1._fids_to_ip), 1)
 
     def test_sending_a_packet(self):
         """Testing if a packet is sent correctly"""
         self.linklayer1.start_process()
 
-        fid = self.linklayer1.create_new_fid(("127.0.0.1", 7000 + self.portoffset))
+        fid = self.linklayer1.create_new_fid(("127.0.0.1", self.test_port))
         self.q1_fromHigher.put([fid, "HelloWorld".encode()])
 
         data, addr = self.testSock.recvfrom(8192)
@@ -109,7 +114,7 @@ class TestUDP4LinkLayer(unittest.TestCase):
         self.linklayer1.start_process()
         self.linklayer2.start_process()
 
-        fid = self.linklayer1.create_new_fid(("127.0.0.1", 9000 + self.portoffset))
+        fid = self.linklayer1.create_new_fid(("127.0.0.1", self.port2))
         self.q1_fromHigher.put([fid, "HelloWorld".encode()])
 
         data = self.q2_toHiger.get()
@@ -123,8 +128,8 @@ class TestUDP4LinkLayer(unittest.TestCase):
         self.linklayer1.start_process()
         self.linklayer2.start_process()
 
-        fid1 = self.linklayer1.create_new_fid(("127.0.0.1", 9000 + self.portoffset), static=True)
-        fid2 = self.linklayer2.create_new_fid(("127.0.0.1", 8000 + self.portoffset), static=True)
+        fid1 = self.linklayer1.create_new_fid(("127.0.0.1", self.port2), static=True)
+        fid2 = self.linklayer2.create_new_fid(("127.0.0.1", self.port1), static=True)
 
         for i in range(1,1000):
             str1 = "HelloWorld" + str(i)
@@ -172,13 +177,13 @@ class TestUDP4LinkLayer(unittest.TestCase):
         self.linklayer2.start_process()
         self.linklayer3.start_process()
 
-        fid1_2 = self.linklayer1.create_new_fid(("127.0.0.1", 9000 + self.portoffset), static=True)
-        fid1_3 = self.linklayer1.create_new_fid(("127.0.0.1", 10000 + self.portoffset), static=True)
+        fid1_2 = self.linklayer1.create_new_fid(("127.0.0.1", self.port2), static=True)
+        fid1_3 = self.linklayer1.create_new_fid(("127.0.0.1", self.port3), static=True)
 
-        fid2_1 = self.linklayer2.create_new_fid(("127.0.0.1", 8000 + self.portoffset), static=True)
+        fid2_1 = self.linklayer2.create_new_fid(("127.0.0.1", self.port1), static=True)
 
-        fid3_1 = self.linklayer3.create_new_fid(("127.0.0.1", 8000 + self.portoffset), static=True)
-        fid3_2 = self.linklayer3.create_new_fid(("127.0.0.1", 9000 + self.portoffset), static=True)
+        fid3_1 = self.linklayer3.create_new_fid(("127.0.0.1", self.port1), static=True)
+        fid3_2 = self.linklayer3.create_new_fid(("127.0.0.1", self.port2), static=True)
 
         for i in range(1, 100):
             str1 = "Node1" + str(i)
