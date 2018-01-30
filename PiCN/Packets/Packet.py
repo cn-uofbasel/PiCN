@@ -3,7 +3,9 @@
 from ..Packets.Name import Name
 
 class Packet(object):
-    """Base class for internal representation of network packets"""
+    """
+    Base class for internal representation of network packets
+    """
 
     def __init__(self, name: Name = None, wire_format = None):
         if type(name) == str:
@@ -11,7 +13,7 @@ class Packet(object):
         else:
             self._name: Name = name
         self._wire_format = wire_format
-        assert (type(self._wire_format) in [bytes, bytearray, type(None)]), "MUST be raw bytes"
+        assert (type(self._wire_format) in [bytes, bytearray, type(None)]), "MUST be raw bytes or None"
 
     def __eq__(self, other):
         if type(other) is not Packet:

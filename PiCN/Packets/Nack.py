@@ -1,15 +1,17 @@
-"""Nack data structure for PiCN"""
+"""Internal representation of an NACK (negative acknowledgement) packet"""
 
 from .Packet import Packet
 
 class Nack(Packet):
-    """Nack data structure for PiCN"""
+    """
+    Internal representation of an NACK (negative acknowledgement) packet
+    """
 
     def __init__(self, name=None, wire_format=None, reason=None):
         Packet.__init__(self, name)
         self._reason = reason
         self._wire_format = wire_format
-        assert (type(self._wire_format) in [bytes, bytearray, type(None)]), "MUST be raw bytes"
+        assert (type(self._wire_format) in [bytes, bytearray, type(None)]), "MUST be raw bytes or None"
 
     @property
     def reason(self):

@@ -1,9 +1,12 @@
-"""Content data structure for PiCN"""
+"""Internal representation of a content object"""
 
 from .Packet import Packet
 
 class Content(Packet):
-    """Content data structure for PiCN"""
+    """
+    Internal representation of a content object
+    """
+
 
     def __init__(self, name = None, content = None, wire_data = None):
         Packet.__init__(self, name)
@@ -11,9 +14,9 @@ class Content(Packet):
             self._content = content.encode()
         else:
             self._content = content
-        assert (type(self._content) in [bytes, bytearray, type(None)]), "MUST be raw bytes"
+        assert (type(self._content) in [bytes, bytearray, type(None)]), "MUST be raw bytes or None"
         self._wire_data = wire_data
-        assert (type(self._wire_format) in [bytes, bytearray, type(None)]), "MUST be raw bytes"
+        assert (type(self._wire_format) in [bytes, bytearray, type(None)]), "MUST be raw bytes or None"
 
     @property
     def content(self):
