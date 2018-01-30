@@ -91,8 +91,6 @@ class ICNForwarder(object):
         self.packetencodinglayer.stop_process()
         self.icnlayer.stop_process()
 
-        time.sleep(0.3)
-
         #close queues file descriptors
         self.q_link_packet_up.close()
         self.q_packet_link_down.close()

@@ -125,8 +125,6 @@ class NFNForwarder(object):
         self.icnlayer.stop_process()
         self.nfnlayer.stop_process()
 
-        time.sleep(0.3)
-
         # close queues file descriptors
         self.q_link_packet_up.close()
         self.q_packet_link_down.close()
