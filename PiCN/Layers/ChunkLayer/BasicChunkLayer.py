@@ -4,7 +4,7 @@ import multiprocessing
 import time
 from typing import Dict, List
 
-from PiCN.Layers.ChunkLayer.Chunkifyer import BaseChunkifyer
+from PiCN.Layers.ChunkLayer.Chunkifyer import BaseChunkifyer, SimpleContentChunkifyer
 from PiCN.Packets import Content, Interest, Name, Nack
 from PiCN.Processes import LayerProcess
 
@@ -26,10 +26,13 @@ class RequestTableEntry(object):
 class BasicChunkLayer(LayerProcess):
     """"Basic Chunking Layer for PICN"""
 
-    def __init__(self, chunkifyer: BaseChunkifyer, chunk_size: int=4096, debug_level=255):
+    def __init__(self, chunkifyer: BaseChunkifyer=None, chunk_size: int=4096, debug_level=255):
         super().__init__("ChunkLayer", debug_level=debug_level)
         self.chunk_size = chunk_size
-        self.chunkifyer: BaseChunkifyer = chunkifyer
+        if chunkifyer == None:
+            self.chunkifyer = SimpleContentChunkifyer(chunk_size)
+        else:
+            self.chunkifyer: BaseChunkifyer = chunkifyer
         self.manager = multiprocessing.Manager()
         self._chunk_table: Dict[Name, (Content, float)] = self.manager.dict()
         self._request_table: List[RequestTableEntry] = self.manager.list()
