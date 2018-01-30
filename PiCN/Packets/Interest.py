@@ -7,9 +7,8 @@ class Interest(Packet):
     Internal representation of an interest packet
     """
 
-    def __init__(self, name = None, wire_data = None):
-        Packet.__init__(self, name)
-        self._wire_data = wire_data
+    def __init__(self, name = None, wire_format = None):
+        Packet.__init__(self, name, wire_format)
         assert (type(self._wire_format) in [bytes, bytearray, type(None)]), "MUST be raw bytes or None"
 
     def __eq__(self, other):
