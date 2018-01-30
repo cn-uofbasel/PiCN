@@ -29,34 +29,34 @@ class NdnTlvPrinter(object):
     """
 
     __has_blob_value = {8, 1, 10, 13, 14, 17, 12, 24, 25, 21, 23, 27, 29}
-    __type_names = { 5: "Interest Packet",
-                     6: "Content Object Packet",
-                     7: "Name",
-                     8: "GenericNameComponent",
-                     1: "ImplicitSha256DigestComponent",
-                     9: "Selectors",
-                     10: "Nonce",
-                     12: "InterestLifetime",
-                     30: "ForwardingHint / Preference",
-                     13: "MinSuffixComponents",
-                     14: "MaxSuffixComponents",
-                     15: "PublisherPublicKeyLocator",
-                     16: "Exclude",
-                     17: "ChildSelector",
-                     18: "MustBeFresh",
-                     19: "Any",
-                     20: "MetaInfo",
-                     21: "Content",
-                     22: "SignatureInfo",
-                     23: "SignatureValue",
-                     24: "ContentType",
-                     25: "FreshnessPeriod",
-                     26: "FinalBlockId",
-                     27: "SignatureType",
-                     28: "KeyLocator",
-                     29: "KeyDigest",
-                     31: "Delegation",
-                     }
+    __known_type_names = { 5: "Interest Packet",
+                           6: "Content Object Packet",
+                           7: "Name",
+                           8: "GenericNameComponent",
+                           1: "ImplicitSha256DigestComponent",
+                           9: "Selectors",
+                          10: "Nonce",
+                          12: "InterestLifetime",
+                          30: "ForwardingHint / Preference",
+                          13: "MinSuffixComponents",
+                          14: "MaxSuffixComponents",
+                          15: "PublisherPublicKeyLocator",
+                          16: "Exclude",
+                          17: "ChildSelector",
+                          18: "MustBeFresh",
+                          19: "Any",
+                          20: "MetaInfo",
+                          21: "Content",
+                          22: "SignatureInfo",
+                          23: "SignatureValue",
+                          24: "ContentType",
+                          25: "FreshnessPeriod",
+                          26: "FinalBlockId",
+                          27: "SignatureType",
+                          28: "KeyLocator",
+                          29: "KeyDigest",
+                          31: "Delegation",
+                         }
 
 
     def __init__(self, wire_format:bytearray) -> None:
@@ -73,6 +73,13 @@ class NdnTlvPrinter(object):
         print()
         self.__print_tlv()
         print()
+
+
+    def __get_type_name(self, n):
+        try:
+            return self.__known_type_names[n]
+        except:
+            return "UNKNOWN"
 
 
     def byte_to_hex(n) -> str:
@@ -111,16 +118,21 @@ class NdnTlvPrinter(object):
         self.__print_indention()
         type_value = self.__print_num()
         length = self.__print_num()
-        NdnTlvPrinter.print_without_newline(" -- <type='{}', length={}>".format(self.__type_names[type_value], length))
+        type_value_description = self.__get_type_name(type_value)
+        NdnTlvPrinter.print_without_newline(" -- <type='{}', length={}>".format(type_value_description, length))
+
 
         self.__indention_level += 1
-        if type_value in self.__has_blob_value:
-            self.__print_blob(length)
+        if type_value_description == "UNKNOWN":
+            NdnTlvPrinter.__print_blob(self, length)
         else:
-            next_tlv_start = self.__position + length
-            while(self.__position < next_tlv_start):
-                self.__print_tlv()
-        self.__indention_level -= 1
+            if type_value in self.__has_blob_value:
+                self.__print_blob(length)
+            else:
+                next_tlv_start = self.__position + length
+                while(self.__position < next_tlv_start):
+                    self.__print_tlv()
+            self.__indention_level -= 1
 
 
     def __print_num(self) -> int:

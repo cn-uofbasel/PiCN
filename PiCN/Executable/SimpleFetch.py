@@ -33,13 +33,8 @@ def main(args):
         sys.exit(-1)
 
     # Print
-    try:
-        content: Content = encoder.decode(encoded_content)
-        printer = NdnTlvPrinter(content.wire_format)
-        printer.formatted_print()
-    except:
-        print("Received packet can not be parsed.")
-        sys.exit(-2)
+    printer = NdnTlvPrinter(encoded_content)
+    printer.formatted_print()
 
 
 
