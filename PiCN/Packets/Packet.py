@@ -1,6 +1,6 @@
 """Base class for internal representation of network packets"""
 
-from ..Packets.Name import Name
+from PiCN.Packets.Name import Name
 
 class Packet(object):
     """
