@@ -6,10 +6,9 @@ try:
 except ImportError:
     from distutils.core import setup
 
-def run_test_suite():
-    test_loader = unittest.TestLoader()
-    test_suite = test_loader.discover('PiCN', pattern='test_*.py')
-    return test_suite
+class Loader(unittest.TestLoader):
+    def loadTestsFromNames(self, names, _=None):
+        return self.discover(names[0])
 
 config_PiCN = {
     'description': 'extendable ICN implementation in python',
@@ -34,7 +33,8 @@ config_PiCN = {
                  'PiCN.Layers.NFNLayer.NFNEvaluator', 'PiCN.Layers.NFNLayer.NFNEvaluator.NFNOptimizer',
                  'PiCN.Layers.NFNLayer.NFNEvaluator.NFNExecutor', 'PiCN.ProgramLibs.NFNForwarder'],
     'scripts': [],
-    'test_suite': 'setup.run_test_suite',
+    'test_loader': 'setup:Loader',
+    'test_suite': 'PiCN',
     'tests_require': [],
     'name': 'PiCN'
 }
