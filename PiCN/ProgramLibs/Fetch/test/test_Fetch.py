@@ -56,6 +56,7 @@ class test_Fetch(unittest.TestCase):
         self.ICNRepo.stop_repo()
         self.forwarder.stop_forwarder()
         self.fetch.stop_fetch()
+        time.sleep(0.5)
 
     def test_fetch_single_data_over_forwarder(self):
         """Test fetching a single data object over a forwarder without chunking"""
