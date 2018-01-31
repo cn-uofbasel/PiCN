@@ -132,8 +132,10 @@ class BasicNFNLayer(LayerProcess):
            """
         try:
             self.logger.debug("Ageing NFN")
+            self.ageing_lock.acquire()
             self.handle_computation_timeouts(running_computations)
             self.handle_pending_computation_queue(running_computations)
+            self.ageing_lock.release()
             t = threading.Timer(self._ageing_interval, self.ageing, args=[running_computations])
             t.setDaemon(True)
             t.start()
@@ -166,6 +168,7 @@ class BasicNFNLayer(LayerProcess):
                 comp = running_computations[cid]
                 poller.register(comp.computation_out_queue._reader, READ_ONLY)
             ready_vars = poller.poll(0.1)
+            self.ageing_lock.acquire()
             for filno, var in ready_vars:
                 new_comps = []
                 stop_comps = []
@@ -176,10 +179,12 @@ class BasicNFNLayer(LayerProcess):
                             packet = comp.computation_out_queue.get()
                             self.handle_packet_from_computation_queues(cid, packet, running_computations,
                                                                        new_comps, stop_comps)
+
                 for nc in new_comps:
                     self.add_computation(nc, running_computations)
                 for scid in stop_comps:
                     self.stop_computation(scid, running_computations)
+            self.ageing_lock.release()
 
     def handle_packet_from_computation_queues(self, cid: int, packet: Packet, running_computations: Dict,
                                               new_comps: List, stop_comps: List):
@@ -224,17 +229,14 @@ class BasicNFNLayer(LayerProcess):
 
     def handle_pending_computation_queue(self, running_computations: Dict):
         """execute a computation if there are capacities"""
-        self.ageing_lock.acquire()
         num_running_computations = len(running_computations.keys())
         if(num_running_computations > self._max_running_computations):
-            self.ageing_lock.release()
             return
         else:
             while((not self._pending_computations.empty())
                   and (len(running_computations.keys()) < self._max_running_computations)):
                 interest = self._pending_computations.get()
                 self.start_computation(interest[0], running_computations, interest[1])
-            self.ageing_lock.release()
 
     def start_computation(self, interest, running_computations, local: bool=False):
         evaluator = self.nfn_evaluator_type(interest, self.content_store, self.fib, self.pit,
