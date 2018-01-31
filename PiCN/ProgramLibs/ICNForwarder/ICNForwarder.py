@@ -1,7 +1,6 @@
 """A ICN Forwarder using PiCN"""
 
 import multiprocessing
-import time
 
 from PiCN.Layers.ICNLayer import BasicICNLayer
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseMemoryPrefix
@@ -11,7 +10,6 @@ from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
 from PiCN.Layers.LinkLayer import UDP4LinkLayer
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder, SimpleStringEncoder
-from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from PiCN.Logger import Logger
 from PiCN.Mgmt import Mgmt
 from PiCN.Routing import BasicRouting
@@ -19,10 +17,9 @@ from PiCN.Routing import BasicRouting
 class ICNForwarder(object):
     """A ICN Forwarder using PiCN"""
 
-    def __init__(self, port=9000, debug_level=255, encoder: BasicEncoder=None):
+    def __init__(self, port=9000, log_level=255, encoder: BasicEncoder=None):
         # debug level
-        logger = Logger("ICNForwarder", debug_level)
-        logger.info("Start PiCN Forwarder on port " + str(port))
+        logger = Logger("ICNForwarder", log_level)
 
         # packet encoder
         if encoder == None:
@@ -32,9 +29,9 @@ class ICNForwarder(object):
 
 
         # initialize layers
-        self.linklayer = UDP4LinkLayer(port, debug_level=debug_level)
-        self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, debug_level=debug_level)
-        self.icnlayer = BasicICNLayer(debug_level=debug_level)
+        self.linklayer = UDP4LinkLayer(port, debug_level=log_level)
+        self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, debug_level=log_level)
+        self.icnlayer = BasicICNLayer(debug_level=log_level)
 
         # setup communication queues
         self.q_link_packet_up = multiprocessing.Queue()
@@ -70,10 +67,10 @@ class ICNForwarder(object):
         self.icnlayer.pit = self.pit
 
         #routing
-        self.routing = BasicRouting(self.icnlayer.pit, None, debug_level=debug_level) #TODO NOT IMPLEMENTED YET
+        self.routing = BasicRouting(self.icnlayer.pit, None, debug_level=log_level) #TODO NOT IMPLEMENTED YET
 
         #mgmt
-        self.mgmt = Mgmt(self.cs, self.fib, self.pit, self.linklayer, self.linklayer.get_port(), self.stop_forwarder, debug_level=debug_level)
+        self.mgmt = Mgmt(self.cs, self.fib, self.pit, self.linklayer, self.linklayer.get_port(), self.stop_forwarder, debug_level=log_level)
 
     def start_forwarder(self):
         # start processes

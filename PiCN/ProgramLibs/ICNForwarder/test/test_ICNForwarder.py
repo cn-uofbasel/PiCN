@@ -14,8 +14,8 @@ class test_ICNForwarder(unittest.TestCase):
     """Test the ICN Forwarder"""
 
     def setUp(self):
-        self.forwarder1 = ICNForwarder(0, debug_level=255)
-        self.forwarder2 = ICNForwarder(0, debug_level=255)
+        self.forwarder1 = ICNForwarder(0, log_level=255)
+        self.forwarder2 = ICNForwarder(0, log_level=255)
         self.forwarder1_port = self.forwarder1.linklayer.get_port()
         self.forwarder2_port = self.forwarder2.linklayer.get_port()
         self.encoder = SimpleStringEncoder()
