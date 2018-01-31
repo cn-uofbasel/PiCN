@@ -24,7 +24,7 @@ def main(args):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.settimeout(5)
     sock.bind(("0.0.0.0", 0))
-    sock.sendto(encoded_interest, (args.ip, args.port))
+    sock.sendto(encoded_interest, (socket.gethostbyname(args.ip), args.port))
 
     # Receive content object
     try:
@@ -41,7 +41,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='PiCN Peek Tool')
-    parser.add_argument('-i', '--ip', type=str, default='127.0.0.1', help="IP address of forwarder (default: 127.0.0.1)")
+    parser.add_argument('-i', '--ip', type=str, default='127.0.0.1', help="IP address or hostname of forwarder (default: 127.0.0.1)")
     parser.add_argument('-p', '--port', type=int, default=9000, help="UDP port (default: 9000)")
     parser.add_argument('-f', '--format', choices=['ndntlv','simple'], type=str, default='ndntlv', help='Packet Format (default: ndntlv)')
     parser.add_argument('name', type=str, help="CCN name of the content object to fetch")

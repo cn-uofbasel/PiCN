@@ -36,7 +36,7 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -i IP, --ip IP        IP address of forwarder (default: 127.0.0.1)
+  -i IP, --ip IP        IP address or hostname of forwarder (default: 127.0.0.1)
   -p PORT, --port PORT  UDP port (default: 9000)
   -f {ndntlv,simple}, --format {ndntlv,simple}
                         Packet Format (default: ndntlv)
