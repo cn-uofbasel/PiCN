@@ -7,7 +7,8 @@ import sys
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from PiCN.Layers.PacketEncodingLayer.Printer.NdnTlvPrinter import NdnTlvPrinter
-from PiCN.Packets import Content, Interest
+from PiCN.Packets import Interest
+
 
 
 def main(args):
