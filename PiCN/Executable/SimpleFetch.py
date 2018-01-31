@@ -14,7 +14,7 @@ from PiCN.Packets import Interest
 def main(args):
 
     # Packet encoder
-    encoder = NdnTlvEncoder() if args.suite == 'ndntlv' else SimpleStringEncoder
+    encoder = NdnTlvEncoder() if args.format == 'ndntlv' else SimpleStringEncoder
 
     # Generate interest packet
     interest: Interest = Interest(args.name)
@@ -40,10 +40,10 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Lookup a CCN Packet')
-    parser.add_argument('--suite', choices=['ndntlv',' simple'], type=str, default='ndntlv', help='default is: "ndntlv"')
-    parser.add_argument('ip',   type=str, help="IP addr of forwarder")
-    parser.add_argument('port', type=int, help="UDP port of forwarder")
-    parser.add_argument('name', type=str, help="ICN name of content to fetch")
+    parser = argparse.ArgumentParser(description='PiCN Peek Tool')
+    parser.add_argument('-i', '--ip', type=str, default='127.0.0.1', help="IP address of forwarder (default: 127.0.0.1)")
+    parser.add_argument('-p', '--port', type=int, default=9000, help="UDP port (default: 9000)")
+    parser.add_argument('-f', '--format', choices=['ndntlv','simple'], type=str, default='ndntlv', help='Packet Format (default: ndntlv)')
+    parser.add_argument('name', type=str, help="CCN name of the content object to fetch")
     args = parser.parse_args()
     main(args)

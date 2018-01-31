@@ -29,17 +29,17 @@ optional arguments:
 > python3 PiCn/Executable/SimpleFetch.py
 
 ```
-usage: SimpleFetch.py [-h] [--suite {ndntlv, simple}] ip port name
+usage: SimpleFetch.py [-h] [-i IP] [-p PORT] [-f {ndntlv,simple}] name
 
 positional arguments:
-  ip                    IP addr of forwarder
-  port                  UDP port of forwarder
-  name                  ICN name of content to fetch
+  name                  CCN name of the content object to fetch
 
 optional arguments:
   -h, --help            show this help message and exit
-  --suite {ndntlv, simple}
-                        default is: "ndntlv"
+  -i IP, --ip IP        IP address of forwarder (default: 127.0.0.1)
+  -p PORT, --port PORT  UDP port (default: 9000)
+  -f {ndntlv,simple}, --format {ndntlv,simple}
+                        Packet Format (default: ndntlv)
 ```
 
 
