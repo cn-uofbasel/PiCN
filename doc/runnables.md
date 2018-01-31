@@ -1,11 +1,22 @@
 ## Runnables
 
 
-### Starting a Forwarder
+### PiCN Forwarder
 
-> python3 PiCn/Executable/ICNForwarder.py < listeningport > [< wireformat >]
+> python3 PiCn/Executable/ICNForwarder.py
 
+```
+usage: ICNForwarder.py [-h] [-p PORT] [-f {ndntlv,simple}]
+                       [-l {debug,info,warning,error,none}]
 
+optional arguments:
+  -h, --help            show this help message and exit
+  -p PORT, --port PORT  UDP port (default: 9000)
+  -f {ndntlv,simple}, --format {ndntlv,simple}
+                        Packet Format (default: ndntlv)
+  -l {debug,info,warning,error,none}, --logging {debug,info,warning,error,none}
+                        Logging Level (default: info)
+```
 
 ### Starting a Repository
 
@@ -15,8 +26,21 @@
 
 ### Fetching a single content object (without chunking)
 
-> python3 PiCn/Executable/SimpleFetch.py < ip > < port > < name > [< wireformat >]
+> python3 PiCn/Executable/SimpleFetch.py
 
+```
+usage: SimpleFetch.py [-h] [-i IP] [-p PORT] [-f {ndntlv,simple}] name
+
+positional arguments:
+  name                  CCN name of the content object to fetch
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i IP, --ip IP        IP address or hostname of forwarder (default: 127.0.0.1)
+  -p PORT, --port PORT  UDP port (default: 9000)
+  -f {ndntlv,simple}, --format {ndntlv,simple}
+                        Packet Format (default: ndntlv)
+```
 
 
 ### Fetch a high-level object (i.e. handle chunking)
