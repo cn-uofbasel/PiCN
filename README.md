@@ -4,7 +4,7 @@
 
 # Status of Automatic Tests
 
-[![Build Status](https://semaphoreci.com/api/v1/blacksheeep-36/picn/branches/master/badge.svg)](https://semaphoreci.com/blacksheeep-36/picn)
+[![Build Status](https://semaphoreci.com/api/v1/cn-unibas/picn/branches/master/badge.svg)](https://semaphoreci.com/cn-unibas/picn)
 
 (The CI system runs unit tests, that verify the functionality of PiCN, including network communication)
 
