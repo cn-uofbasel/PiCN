@@ -160,8 +160,8 @@ class test_NFNForwarder(unittest.TestCase):
         content: Content = self.encoder.decode(encoded_content)
         self.assertEqual("Hello World", content.content)
         self.assertEqual(name, content.name)
+        time.sleep(0.2)
         self.assertEqual(len(self.forwarder1.pit.container), 0)
-        time.sleep(0.5)
 
     def test_NFNForwarder_compute_param_two_nodes(self):
         """Test a simple forwarding scenario with one additional node forwarding the data"""
