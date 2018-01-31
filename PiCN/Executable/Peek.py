@@ -1,11 +1,11 @@
-"""Lookup a content object"""
+"""PiCN Peek: Tool to lookup a single content object"""
 
 import argparse
 import socket
 import sys
 
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
-from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
+from PiCN.Layers.PacketEncosdingLayer.Encoder import NdnTlvEncoder
 from PiCN.Layers.PacketEncodingLayer.Printer.NdnTlvPrinter import NdnTlvPrinter
 from PiCN.Packets import Interest
 
