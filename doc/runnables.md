@@ -9,8 +9,6 @@
 usage: ICNForwarder.py [-h] [-p PORT] [-f {ndntlv,simple}]
                        [-l {debug,info,warning,error,none}]
 
-PiCN Forwarder
-
 optional arguments:
   -h, --help            show this help message and exit
   -p PORT, --port PORT  UDP port (default: 9000)
@@ -28,8 +26,21 @@ optional arguments:
 
 ### Fetching a single content object (without chunking)
 
-> python3 PiCn/Executable/SimpleFetch.py < ip > < port > < name > [< wireformat >]
+> python3 PiCn/Executable/SimpleFetch.py
 
+```
+usage: SimpleFetch.py [-h] [--suite {ndntlv, simple}] ip port name
+
+positional arguments:
+  ip                    IP addr of forwarder
+  port                  UDP port of forwarder
+  name                  ICN name of content to fetch
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --suite {ndntlv, simple}
+                        default is: "ndntlv"
+```
 
 
 ### Fetch a high-level object (i.e. handle chunking)
