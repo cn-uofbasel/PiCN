@@ -24,7 +24,12 @@ def main(args):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.settimeout(5)
     sock.bind(("0.0.0.0", 0))
-    sock.sendto(encoded_interest, (socket.gethostbyname(args.ip), args.port))
+    try:
+        resolved_hostname = socket.gethostbyname(args.ip)
+    except:
+        print("Resolution of hostname failed.")
+        sys.exit(-2)
+    sock.sendto(encoded_interest, (resolved_hostname, args.port))
 
     # Receive content object
     try:
