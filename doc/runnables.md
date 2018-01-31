@@ -5,18 +5,20 @@
 
 > python3 PiCn/Executable/ICNForwarder.py
 
-> usage: ICNForwarder.py [-h] [-p PORT] [-f {ndntlv,simple}]
->                       [-l {debug,info,warning,error,none}]
->
-> optional arguments:
->   -h, --help            show this help message and exit
->   -p PORT, --port PORT  UDP port (default: 9000)
->   -f {ndntlv,simple}, --format {ndntlv,simple}
->                         Packet Format (default: ndntlv)
->   -l {debug,info,warning,error,none}, --logging {debug,info,warning,error,none}
->                         Logging Level (default: info)
+```
+usage: ICNForwarder.py [-h] [-p PORT] [-f {ndntlv,simple}]
+                       [-l {debug,info,warning,error,none}]
 
+PiCN Forwarder
 
+optional arguments:
+  -h, --help            show this help message and exit
+  -p PORT, --port PORT  UDP port (default: 9000)
+  -f {ndntlv,simple}, --format {ndntlv,simple}
+                        Packet Format (default: ndntlv)
+  -l {debug,info,warning,error,none}, --logging {debug,info,warning,error,none}
+                        Logging Level (default: info)
+```
 
 ### Starting a Repository
 
