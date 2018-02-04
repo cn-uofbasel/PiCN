@@ -1,58 +1,72 @@
-"""MGMT Tool for sending MGMT requests"""
+"""Management Tool for PiCN Forwarder and Repo"""
 
-import sys
+import argparse
 from PiCN.Mgmt import MgmtClient
 from PiCN.Packets import Name
 
-def main(argv):
+def main(args, help_string):
 
-    if len(argv) < 3:
-        error()
-        return
-    port = int(argv[1])
-    command = argv[2]
+    mgmt_client = MgmtClient(args.port)
 
-    mgmt_client = MgmtClient(port)
-    data = "error"
+    if args.command == "shutdown":
+        try:
+            mgmt_client.shutdown()
+            print("Shutdown command sent.")
+        except ConnectionRefusedError:
+            print("Connection Refused. Repo not running?")
 
-    if command == "shutdown":
-        mgmt_client.shutdown()
-        return
-    elif command == "getrepoprefix":
-        data = mgmt_client.get_repo_prefix()
-        print(data)
-        return
-    elif command == "getrepopath":
-        data = mgmt_client.get_repo_path()
-        print(data)
-        return
+    elif args.command == "getrepoprefix":
+        try:
+            data = mgmt_client.get_repo_prefix()
+            print(data)
+        except ConnectionRefusedError:
+            print("Connection Refused. Repo not running?")
 
-    if len(argv) != 4:
-        error()
-        return
+    elif args.command == "getrepopath":
+        try:
+            data = mgmt_client.get_repo_path()
+            print(data)
+        except ConnectionRefusedError:
+            print("Connection Refused. Repo not running?")
 
-    param: str = argv[3]
-    if command == "newface":
-        data = mgmt_client.add_face(param.split(":")[0], param.split(":")[1])
-    elif command == "newforwardingrule":
-        data = mgmt_client.add_forwarding_rule(Name(param.split(":")[0]), param.split(":")[1])
-    elif command == "newcontent":
-        data = mgmt_client.add_new_content(Name(param.split(":", 1)[0]), param.split(":", 1)[1])
-    if data == "error":
-        error()
-        return
+    elif args.command == "newface":
+        try:
+            data = mgmt_client.add_face(args.parameters.split(":")[0], args.parameters.split(":")[1])
+        except:
+            print(help_string)
 
-    print(data)
+    elif args.command == "newforwardingrule":
+        try:
+            data = mgmt_client.add_forwarding_rule(Name(args.parameters.split(":")[0]), args.parameters.split(":")[1])
+        except ConnectionRefusedError:
+            print("Connection Refused. Forwarder not running?")
+        except:
+            print(help_string)
 
-def error():
-    print("usage:", sys.argv[0], "port command [param]")
-    print("\tcommands:")
-    print("\t\tshutdown")
-    print("\t\tgetrepopath")
-    print("\t\tgetrepoprefix")
-    print("\t\tnewface ip:port")
-    print("\t\tnewforwardingrule prefix:face")
-    print("\t\tnewcontent name:content")
+    elif args.command == "newcontent" or args.command == 'addcontent':
+        try:
+            data = mgmt_client.add_new_content(Name(args.parameters.split(":", 1)[0]), args.parameters.split(":", 1)[1])
+        except ConnectionRefusedError:
+            print("Connection Refused. Forwarder not running?")
+        except:
+            print(help_string)
+
 
 if __name__ == "__main__":
-    main(sys.argv)
+    parser = argparse.ArgumentParser(description='Management Tool for PiCN Forwarder and Repo')
+    parser.add_argument('-i', '--ip', type=str, default='127.0.0.1',
+                            help="IP address or hostname of forwarder (default: 127.0.0.1)")
+    parser.add_argument('-p', '--port', type=int, default=9000, help="UDP port of forwarder(default: 9000)")
+    parser.add_argument('command', type=str, choices = ['shutdown', 'getrepoprefix', 'getrepopath', 'newface', 'newforwardingrule', 'newcontent'], help="Management Command")
+    parser.add_argument('parameters', type=str, nargs='?', help="Command Parameter")
+    args = parser.parse_args()
+    help_string = parser.format_help()
+    main(args, help_string)
+
+
+# print("\t\tshutdown")
+# print("\t\tgetrepopath")
+# print("\t\tgetrepoprefix")
+# print("\t\tnewface ip:port")
+# print("\t\tnewforwardingrule prefix:face")
+# print("\t\tnewcontent name:content")
