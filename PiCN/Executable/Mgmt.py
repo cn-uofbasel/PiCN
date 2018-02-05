@@ -1,6 +1,9 @@
 """Management Tool for PiCN Forwarder and Repo"""
 
+import sys
 import argparse
+import socket
+
 from PiCN.Mgmt import MgmtClient
 from PiCN.Packets import Name
 
@@ -31,7 +34,13 @@ def main(args, help_string):
 
     elif args.command == "newface":
         try:
-            data = mgmt_client.add_face(args.parameters.split(":")[0], args.parameters.split(":")[1])
+            resolved_hostname = socket.gethostbyname(args.parameters.split(":")[0])
+        except:
+            print("Resolution of hostname failed.")
+            sys.exit(-2)
+
+        try:
+            data = mgmt_client.add_face(resolved_hostname, args.parameters.split(":")[1])
         except:
             print(help_string)
 
