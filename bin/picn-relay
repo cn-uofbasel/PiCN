@@ -1,3 +1,0 @@
-#!/bin/bash
-export PYTHONPATH=..
-python3 ../PiCN/Executable/ICNForwarder.py "$@"
