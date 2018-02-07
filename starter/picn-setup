@@ -3,7 +3,7 @@
 
 INITPORT=${INITPORT:-9000}
 NDNTESTBED=${NDNTESTBED:-'dmi-ndn-testbed1.dmi.unibas.ch'}     # alternative: 'spurs.cs.ucla.edu' (UCLA)
-LOGLEVEL=${LOGLEVEL:-'debug'}                                  # options: debug, info, warning, error, none
+LOGLEVEL=${LOGLEVEL:-'info'}                                   # options: debug, info, warning, error, none
 SESSION=${SESSION:-'picn-setup'}
 
 

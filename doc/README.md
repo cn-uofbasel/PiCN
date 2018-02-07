@@ -10,7 +10,7 @@
 
 * [PiCN Toolbox](toolbox.md)
 * [Setting up a Network](network_setup.md)
-* Packet Formats(packet_formats.md)
+* [Packet Formats](packet_formats.md)
 
 ### Internals
 
