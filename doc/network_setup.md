@@ -32,7 +32,7 @@ management of tmux.  Each session has one or more windows linked to it.
 
 ## How to Install `picn-setup`?
 
-`picn-setup` is contained by the [PiCN toolbox](runnables.md).
+`picn-setup` is contained by the [PiCN toolbox](toolbox.md).
 
 
 ## Network Configurations
