@@ -1,0 +1,115 @@
+#!/bin/bash
+
+
+INITPORT=${INITPORT:-9000}
+NDNTESTBED=${NDNTESTBED:-'dmi-ndn-testbed1.dmi.unibas.ch'}     # alternative: 'spurs.cs.ucla.edu' (UCLA)
+LOGLEVEL=${LOGLEVEL:-'debug'}                                  # options: debug, info, warning, error, none
+SESSION=${SESSION:-'picn-setup'}
+
+
+########################################################################################################
+
+
+function print_usage {
+    echo "Usage: picn-setup SETUP"
+    echo "SETUP:"
+    echo "  fwd_to_testbed  --   Two hops to the NDN testbed"
+    echo "  more            --   Comming soon..."
+}
+
+
+function print_help {
+    echo "picn-setup: Tool to setup a local PiCN network within tmux."
+    echo ""
+    print_usage
+    echo ""
+    echo "Requires: tmux, picn-relay, picn-mgmt"
+}
+
+
+function main {
+    # usage
+    if [[ $1 == "-h" ]] || [[ $1 == "--help" ]] || [[ $# -eq "0" ]]
+    then
+        print_help
+        exit
+    fi
+
+    # tmux installed?
+    if [ -z "$(command -v tmux)" ]
+    then
+        echo "tmux not found... please install."
+        exit
+    fi
+
+    tmux kill-session -t $SESSION
+    tmux new -s $SESSION -d
+
+    if [[ $1 == "fwd_to_testbed" ]]
+    then
+        setup_fwd_to_testbed
+    else
+        echo "Setup not found."
+        echo ""
+        print_usage
+        exit
+    fi
+
+    tmux select-window -t $SESSION:0
+    tmux attach -t $SESSION
+}
+
+
+########################################################################################################
+
+
+# Setup 'fwd_to_testbed'
+#  - Forwarder listening on 9000
+#  - Forwarder listening on 9001
+#  - Content object in CS of 9001
+#  - Forwarding rule from 9000 to 9001 for prefix /ndn/ch/unibas
+#  - Forwardin rule from 9001 to NDN testbed for prefix /ndn/ch/unibas
+
+function setup_fwd_to_testbed {
+	# Relay on port 9001 (default)
+    tmux new-window -t $SESSION:1 -n 'Relay'
+    tmux send-keys -t $SESSION:1 'picn-relay -l ' $LOGLEVEL ' --port ' $(($INITPORT+1)) C-m
+
+    # Relay on port 9000 (default)
+    tmux new-window -t $SESSION:2 -n 'Entry'
+    tmux send-keys -t $SESSION:2 'picn-relay -l ' $LOGLEVEL ' --port ' $INITPORT C-m
+
+    sleep .5
+
+    # Content object to 9001 (default)
+    tmux send-keys -t $SESSION:0 'picn-mgmt --port ' $(($INITPORT+1)) ' newcontent /ndn/ch/unibas/test:TestTestTest!' C-m
+    sleep .1
+
+    # Face and fwd rule from 9000 to 9001  (default)
+    tmux send-keys -t $SESSION:0 'picn-mgmt --port ' $INITPORT ' newface 127.0.0.1:' $(($INITPORT+1)) C-m
+    sleep .1
+    tmux send-keys -t $SESSION:0 'picn-mgmt --port ' $INITPORT ' newforwardingrule /ndn/ch/unibas:0' C-m
+    sleep .1
+
+    # Face and fwd rule form 9001 to testbed (default)
+    tmux send-keys -t $SESSION:0 'picn-mgmt --port ' $(($INITPORT+1)) ' newface ' $NDNTESTBED ':6363' C-m
+    sleep .1
+    tmux send-keys -t $SESSION:0 'picn-mgmt --port ' $(($INITPORT+1)) ' newforwardingrule /ndn/ch/unibas:0' C-m
+    sleep .1
+    
+}
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+
+function setup_todo {
+    echo "todo"
+}
+
+
+########################################################################################################
+
+
+main "$@"
+
