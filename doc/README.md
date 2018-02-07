@@ -10,6 +10,7 @@
 
 * [Runnables](runnables.md)
 * [Management Interface](management_interface.md)
+* [Setting up a Network](network_setup.md)
 
 ### Internals
 
