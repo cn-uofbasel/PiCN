@@ -15,7 +15,11 @@ CONFIG:
 The manual page says:
 
 ```
-tmux is a terminal multiplexer: it enables a number of terminals to be created, accessed, and controlled from a single screen.  tmux may be detached from a screen and continue running in the background, then later reattached. A session is a single collection of pseudo terminals under the management of tmux.  Each session has one or more windows linked to it.
+tmux is a terminal multiplexer: it enables a number of terminals to be created, accessed,
+and controlled from a single screen.  tmux may be detached from a screen and continue
+running in the background, then later reattached. A session is a single collection of
+pseudo terminals under the management of tmux.  Each session has one or more windows
+linked to it.
 ```
 
 **Survival Kit:**
@@ -67,4 +71,4 @@ With environment variables the default behavior of `picn-setup` can be changed:
 
 ---
 
-Enhancements: See #10 
+**Enhancements:** See [issue #10](https://github.com/cn-uofbasel/PiCN/issues/10).
