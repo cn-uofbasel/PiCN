@@ -1,3 +1,4 @@
 #!/bin/bash
 export PYTHONPATH=$(dirname `pwd`)
+export PYTHONPATH="$( cd "$(dirname "$0")/.." ; pwd )"
 python3 $PYTHONPATH/PiCN/Executable/Mgmt.py "$@"
