@@ -8,13 +8,16 @@
 
 ### Operational Matters
 
-* [Runnables](runnables.md)
-* [Management Interface](management_interface.md)
+* [PiCN Toolbox](toolbox.md)
+* [Setting up a Network](network_setup.md)
+* [Packet Formats](packet_formats.md)
 
 ### Internals
 
 * [Architecture](architecture.md)
-* [Package Structure](package_structure.md)
+* [Project Structure](project_structure.md)
+* [Management Interface](management_interface.md)
+
 
 ### About
 

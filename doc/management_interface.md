@@ -1,6 +1,6 @@
 # Management Interface
 
-This page describes PiCN's HTTP-based management protocol. If your are interested in a command-line management tool, see in [runnables](runnables.md).
+This page describes PiCN's HTTP-based management protocol. If your are interested in a command-line management tool, see in [runnables](toolbox.md).
 
 
 
@@ -32,7 +32,7 @@ Instructs the [ICN layer](architecture.md) to generate a certain data packet and
 
 ### Shutdown
 
-Instructs the main process of a runnable to terminate all layers and exit. Applies to all [runnables](runnables.md).
+Instructs the main process of a runnable to terminate all layers and exit. Applies to all [runnables](toolbox.md).
 
 > `GET /shutdown HTTP/1.1\r\n\r\n`
 
