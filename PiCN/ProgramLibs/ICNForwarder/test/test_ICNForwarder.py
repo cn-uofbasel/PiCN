@@ -1,26 +1,29 @@
 """Test the ICN Forwarder"""
 
+import abc
 import socket
 import time
 import unittest
-from parameterized import parameterized
-from random import randint
 
-from PiCN.TestCase import ParametrizedTestCase
+
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
 from PiCN.Packets import Content, Interest, Name
 from PiCN.ProgramLibs.ICNForwarder import ICNForwarder
 
-
-class test_ICNForwarder(unittest.TestCase):
+class cases_ICNForwarder(object):
     """Test the ICN Forwarder"""
 
+    @abc.abstractclassmethod
+    def get_encoder(self):
+        """returns the encoder to be used """
+
     def setUp(self):
-        self.forwarder1 = ICNForwarder(0, log_level=255)
-        self.forwarder2 = ICNForwarder(0, log_level=255)
+        self.encoder = self.get_encoder()
+        self.forwarder1 = ICNForwarder(0, encoder=self.encoder, log_level=255)
+        self.forwarder2 = ICNForwarder(0, encoder=self.encoder, log_level=255)
         self.forwarder1_port = self.forwarder1.linklayer.get_port()
         self.forwarder2_port = self.forwarder2.linklayer.get_port()
-        self.encoder = SimpleStringEncoder()
+
         self.testSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.testSock.bind(("0.0.0.0", 0))
 
@@ -30,12 +33,9 @@ class test_ICNForwarder(unittest.TestCase):
         self.testSock.close()
         pass
 
-    @parameterized.expand([(SimpleStringEncoder,), (NdnTlvEncoder,)])
-    def test_ICNForwarder_simple_find_content_one_node(self, encoder_t):
+
+    def test_ICNForwarder_simple_find_content_one_node(self):
         """Test a simple forwarding scenario, getting content from a Node"""
-        self.forwarder1.packetencodinglayer.encoder = encoder_t()
-        self.forwarder2.packetencodinglayer.encoder = encoder_t()
-        self.encoder = encoder_t()
         self.forwarder1.start_forwarder()
 
         # new content
@@ -118,3 +118,13 @@ class test_ICNForwarder(unittest.TestCase):
         self.assertEqual(len(self.forwarder1.pit.container), 0)
         time.sleep(0.5)
 
+
+class test_ICNForwarder_SimplePacketEncoder(cases_ICNForwarder, unittest.TestCase):
+    """Runs tests with the SimplePacketEncoder"""
+    def get_encoder(self):
+        return SimpleStringEncoder()
+
+class test_ICNForwarder_NDNTLVPacketEncoder(cases_ICNForwarder, unittest.TestCase):
+    """Runs tests with the NDNTLVPacketEncoder"""
+    def get_encoder(self):
+        return SimpleStringEncoder()
