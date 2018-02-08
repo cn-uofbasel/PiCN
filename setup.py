@@ -30,7 +30,7 @@ config_PiCN = {
                  'PiCN.Layers.NFNLayer.NFNEvaluator.NFNExecutor', 'PiCN.ProgramLibs.NFNForwarder'],
     'scripts': [],
     'test_suite': 'nose2.collector.collector',
-    'tests_require': ['nose2', 'rednose'],
+    'tests_require': ['nose2', 'rednose', 'parameterized'],
     'name': 'PiCN'
 }
 classifiers_PiCN=[
