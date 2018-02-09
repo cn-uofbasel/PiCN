@@ -8,8 +8,8 @@ class UnknownPacket(Packet):
     """
 
     def __init__(self, name = None, wire_format = None):
-        assert (type(self._wire_format) in [bytes, bytearray]), "MUST be raw bytes ('None' is invalid)"
-        Packet.__init__(self, None, wire_format)
+        Packet.__init__(self, name=None, wire_format=wire_format)
+        assert (type(self.wire_format) in [bytes, bytearray]), "MUST be raw bytes ('None' is invalid)"
 
     def __eq__(self, other):
         if type(other) is not UnknownPacket:

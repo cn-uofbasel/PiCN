@@ -1,20 +1,24 @@
 """Test a fetch from a repo over an ICN forwarder"""
 
+import abc
 import os
 import shutil
 import time
 import unittest
-from random import randint
 
 from PiCN.ProgramLibs.Fetch import Fetch
 from PiCN.ProgramLibs.ICNForwarder import ICNForwarder
 
 from PiCN.Mgmt import MgmtClient
 from PiCN.Packets import Name
+from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
 from PiCN.ProgramLibs.ICNDataRepository import ICNDataRepository
 
+class cases_Fetch(object):
 
-class test_Fetch(unittest.TestCase):
+    @abc.abstractmethod
+    def get_encoder(self):
+        """get the packet encoder to be used"""
 
     def setUp(self):
         self.data1 = "data1"
@@ -33,12 +37,13 @@ class test_Fetch(unittest.TestCase):
         with open(self.path + "/f3", 'w+') as content_file:
             content_file.write('B' * 20000)
 
-        self.ICNRepo: ICNDataRepository = ICNDataRepository("/tmp/repo_unit_test", Name("/test/data"), port=0)
-        self.forwarder: ICNForwarder = ICNForwarder(port=0)
+        self.ICNRepo: ICNDataRepository = ICNDataRepository("/tmp/repo_unit_test", Name("/test/data"), port=0,
+                                                            encoder=self.get_encoder())
+        self.forwarder: ICNForwarder = ICNForwarder(port=0, encoder=self.get_encoder(), log_level=255)
 
         self.repo_port = self.ICNRepo.linklayer.get_port()
         self.forwarder_port = self.forwarder.linklayer.get_port()
-        self.fetch = Fetch("127.0.0.1", self.forwarder_port)
+        self.fetch = Fetch("127.0.0.1", self.forwarder_port, encoder=self.get_encoder())
 
     def add_face_and_forwadingrule(self):
         #create new face
@@ -90,7 +95,7 @@ class test_Fetch(unittest.TestCase):
 
     def test_fetching_content_from_second_repo_after_nack(self):
         """Test sending an interest to forwarder with no matching content, choose second route to fetch content"""
-        self.forwarder2: ICNForwarder = ICNForwarder(0)
+        self.forwarder2: ICNForwarder = ICNForwarder(0,  encoder=self.get_encoder())
         self.ICNRepo.start_repo()
         self.forwarder.start_forwarder()
         self.forwarder2.start_forwarder()
@@ -135,10 +140,18 @@ class test_Fetch(unittest.TestCase):
             self.assertEqual(content, self.data3)
 
 
+class test_Fetch_SimplePacketEncoder(cases_Fetch, unittest.TestCase):
+    """Runs tests with the SimplePacketEncoder"""
+    def get_encoder(self):
+        return SimpleStringEncoder()
 
+class test_Fetch_NDNTLVPacketEncoder(cases_Fetch, unittest.TestCase):
+    """Runs tests with the NDNTLVPacketEncoder"""
+    def get_encoder(self):
+        return NdnTlvEncoder()
 
-
-
-
+    @unittest.skip("No Nack Crafting for NDNTLV yet")
+    def test_fetching_content_from_second_repo_after_nack(self):
+        pass
 
 

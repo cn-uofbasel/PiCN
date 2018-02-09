@@ -128,4 +128,4 @@ class test_ICNForwarder_SimplePacketEncoder(cases_ICNForwarder, unittest.TestCas
 class test_ICNForwarder_NDNTLVPacketEncoder(cases_ICNForwarder, unittest.TestCase):
     """Runs tests with the NDNTLVPacketEncoder"""
     def get_encoder(self):
-        return SimpleStringEncoder()
+        return NdnTlvEncoder()

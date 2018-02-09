@@ -60,7 +60,7 @@ class NdnTlvEncoder(BasicEncoder):
             name = self.decode_nack(wire_data)
             return Nack(name=name, wire_format=wire_data)
         else:
-            return UnknownPacket(wire_format = wire_data)
+            return UnknownPacket(wire_format=wire_data)
 
 
     ### Helpers ###

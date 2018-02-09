@@ -1,30 +1,37 @@
 """Test the BasicPacketEncodingLayer"""
 
-import time
+
+import abc
 import unittest
+
 from multiprocessing import Queue
-from random import randint
+
 
 from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
-from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
+from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
 
 from PiCN.Layers.LinkLayer import UDP4LinkLayer
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
 from PiCN.Packets import Packet, Content, Interest, Nack
 
-class TestBasicPacketEncodingLayer(unittest.TestCase):
+class cases_BasicPacketEncodingLayer(object):
+
+    @abc.abstractmethod
+    def get_encoder(self):
+        """returns the encoder to be used"""
 
     def setUp(self):
-        self.encoder1 = SimpleStringEncoder()
-        self.packetEncodingLayer1 = BasicPacketEncodingLayer()
-        self.packetEncodingLayer2 = BasicPacketEncodingLayer()
+        self.encoder1 = self.get_encoder()
+        self.encoder2 = self.get_encoder()
+        self.packetEncodingLayer1 = BasicPacketEncodingLayer(encoder=self.encoder1)
+        self.packetEncodingLayer2 = BasicPacketEncodingLayer(encoder=self.encoder2)
 
         self.linkLayer1 = UDP4LinkLayer(0)
         self.linkLayer2 = UDP4LinkLayer(0)
         self.port1 = self.linkLayer1.get_port()
         self.port2 = self.linkLayer2.get_port()
 
-        self.encoder2 = SimpleStringEncoder()
+
 
         self.q1_fromLower = Queue()
         self.q1_fromHigher = Queue()
@@ -52,8 +59,6 @@ class TestBasicPacketEncodingLayer(unittest.TestCase):
         self.linkLayer2.queue_from_higher = self.q2_toLower  # from higher in Linklayer is to Lower from Encoding Layer
         self.linkLayer2.queue_to_higher = self.q2_fromLower  # to higher in Linklayer is from lower from Encoding Layer
 
-        self.packetEncodingLayer1.encoder = self.encoder1
-        self.packetEncodingLayer2.encoder = self.encoder2
 
     def tearDown(self):
         self.packetEncodingLayer1.stop_process()
@@ -61,62 +66,62 @@ class TestBasicPacketEncodingLayer(unittest.TestCase):
         self.linkLayer1.stop_process()
         self.linkLayer2.stop_process()
 
-    def test_EncoderMock_encode_interest_equal(self):
-        """Test the interest encoding of EncoderMock: equal"""
+    def test_Encoder_encode_interest_equal(self):
+        """Test the interest encoding of Encoder: equal"""
         i = Interest("/test/data")
         ei = self.encoder1.encode(i)
         self.assertEqual(ei.decode(), "I:/test/data:")
 
-    def test_EncoderMock_encode_interest_not_equal(self):
-        """Test the interest encoding of EncoderMock: not equal"""
+    def test_Encoder_encode_interest_not_equal(self):
+        """Test the interest encoding of Encoder: not equal"""
         i = Interest("/data/test")
         ei = self.encoder1.encode(i)
         self.assertNotEqual(ei.decode(), "I:/test/data:")
 
-    def test_EncoderMock_decode_interest_equal(self):
-        """Test the interest decoding of EncoderMock: equal"""
+    def test_Encoder_decode_interest_equal(self):
+        """Test the interest decoding of Encoder: equal"""
         data = "I:/test/data:".encode()
         di = self.encoder1.decode(data)
         cmp_interest = Interest("/test/data")
         self.assertTrue(di == cmp_interest)
 
-    def test_EncoderMock_decode_interest_equal(self):
-        """Test the interest decoding of EncoderMock: not equal"""
+    def test_Encoder_decode_interest_equal(self):
+        """Test the interest decoding of Encoder: not equal"""
         data = "I:/data/test:".encode()
         di = self.encoder1.decode(data)
         cmp_interest = Interest("/test/data")
         self.assertFalse(di == cmp_interest)
 
-    def test_EncoderMock_encode_decode_interest(self):
-        """Test the interest decoding of EncoderMock: equal"""
+    def test_Encoder_encode_decode_interest(self):
+        """Test the interest decoding of Encoder: equal"""
         i = Interest("/data/test")
         ei = self.encoder1.encode(i)
         di = self.encoder1.decode(ei)
         self.assertTrue(i == di)
 
-    def test_EncoderMock_decode_content_equal(self):
-        """Test the Content decoding of EncoderMock: equal"""
+    def test_Encoder_decode_content_equal(self):
+        """Test the Content decoding of Encoder: equal"""
         data = "C:/data/test::HelloWorld".encode()
         dc = self.encoder1.decode(data)
         cmp_interest = Content("/data/test", "HelloWorld")
         self.assertTrue(dc == cmp_interest)
 
-    def test_EncoderMock_decode_content_not_equal(self):
-        """Test the Content decoding of EncoderMock: not equal"""
+    def test_Encoder_decode_content_not_equal(self):
+        """Test the Content decoding of Encoder: not equal"""
         data = "C:/data/test::HelloWorld2".encode()
         dc = self.encoder1.decode(data)
         cmp_interest = Content("/data/test", "HelloWorld")
         self.assertFalse(dc == cmp_interest)
 
-    def test_EncoderMock_encode_decode_content(self):
-        """Test the content decoding of EncoderMock"""
+    def test_Encoder_encode_decode_content(self):
+        """Test the content decoding of Encoder"""
         c = Content("/data/test", "HelloWorld")
         ec = self.encoder1.encode(c)
         dc = self.encoder1.decode(ec)
         self.assertTrue(c == dc)
 
-    def test_EncoderMock_encode_decode_nack(self):
-        """Test the nack decoding of EncoderMock"""
+    def test_Encoder_encode_decode_nack(self):
+        """Test the nack decoding of Encoder"""
         n = Nack("/data/test", reason="reason1")
         en = self.encoder1.encode(n)
         dn = self.encoder1.decode(en)
@@ -215,5 +220,36 @@ class TestBasicPacketEncodingLayer(unittest.TestCase):
         self.assertEqual(rc, c)
 
 
+class test_BasicPacketEncodingLayer_SimplePacketEncoder(cases_BasicPacketEncodingLayer, unittest.TestCase):
+    """Runs tests with the SimplePacketEncoder"""
+    def get_encoder(self):
+        return SimpleStringEncoder()
 
+class test_BasicPacketEncodingLayer_NDNTLVPacketEncoder(cases_BasicPacketEncodingLayer, unittest.TestCase):
+    """Runs tests with the NDNTLVPacketEncoder"""
+    def get_encoder(self):
+        return NdnTlvEncoder()
 
+    @unittest.skip("example data to not match ndntlv, remove ndntlv here?")
+    def test_BasicPacketEncodingLayer_downwards(self):
+        pass
+
+    @unittest.skip("example data to not match ndntlv, remove ndntlv here?")
+    def test_BasicPacketEncodingLayer_upwards(self):
+        pass
+
+    @unittest.skip("example data to not match ndntlv, remove ndntlv here?")
+    def test_Encoder_decode_content_equal(self):
+        pass
+
+    @unittest.skip("example data to not match ndntlv, remove ndntlv here?")
+    def test_Encoder_encode_decode_nack(self):
+        pass
+
+    @unittest.skip("example data to not match ndntlv, remove ndntlv here?")
+    def test_Encoder_encode_interest_equal(self):
+        pass
+
+    @unittest.skip("example data to not match ndntlv, remove ndntlv here?")
+    def test_Encoder_encode_interest_not_equal(self):
+        pass

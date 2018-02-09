@@ -1,6 +1,6 @@
 """Base class for internal representation of network packets"""
 
-from PiCN.Packets.Name import Name
+from .Name import Name
 
 class Packet(object):
     """
@@ -28,10 +28,10 @@ class Packet(object):
         """name of the packet"""
         return self._name
 
-    @property
-    def wire_format(self):
-        return self._wire_format
-
     @name.setter
     def name(self, name):
         self._name = name
+
+    @property
+    def wire_format(self):
+        return self._wire_format

@@ -1,10 +1,10 @@
 """Test fetch together with NFN"""
 
+import abc
 import os
 import shutil
 import time
 import unittest
-from random import randint
 
 from PiCN.ProgramLibs.Fetch import Fetch
 from PiCN.ProgramLibs.NFNForwarder import NFNForwarder
@@ -12,9 +12,14 @@ from PiCN.ProgramLibs.NFNForwarder import NFNForwarder
 from PiCN.Mgmt import MgmtClient
 from PiCN.Packets import Name
 from PiCN.ProgramLibs.ICNDataRepository import ICNDataRepository
+from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
 
 
-class test_Fetch(unittest.TestCase):
+class cases_FetchNFN(object):
+
+    @abc.abstractmethod
+    def get_encoder(self):
+        """get the packet encoder to be used"""
 
     def setUp(self):
         self.data1 = "data1"
@@ -33,15 +38,16 @@ class test_Fetch(unittest.TestCase):
         with open(self.path + "/d3", 'w+') as content_file:
             content_file.write('b' * 20000)
 
-        self.ICNRepo: ICNDataRepository = ICNDataRepository("/tmp/repo_unit_test", Name("/test/data"), 0)
-        self.forwarder1: NFNForwarder = NFNForwarder(0, debug_level=255)
-        self.forwarder2: NFNForwarder = NFNForwarder(0, debug_level=255)
+        self.ICNRepo: ICNDataRepository = ICNDataRepository("/tmp/repo_unit_test", Name("/test/data"), 0,
+                                                            encoder=self.get_encoder(), debug_level=255)
+        self.forwarder1: NFNForwarder = NFNForwarder(0, debug_level=255, encoder=self.get_encoder())
+        self.forwarder2: NFNForwarder = NFNForwarder(0, debug_level=255, encoder=self.get_encoder())
 
         self.repo_port = self.ICNRepo.linklayer.get_port()
         self.fwd_port1 = self.forwarder1.linklayer.get_port()
         self.fwd_port2 = self.forwarder2.linklayer.get_port()
 
-        self.fetch = Fetch("127.0.0.1", self.fwd_port1)
+        self.fetch = Fetch("127.0.0.1", self.fwd_port1, encoder=self.get_encoder())
 
     def add_face_and_forwadingrule(self):
         #create new face
@@ -121,6 +127,23 @@ class test_Fetch(unittest.TestCase):
         self.mgmtClient2.add_new_content(Name("/lib/func/f1"), "PYTHON\nf\ndef f(a):\n    return a.upper()")
         fetch_name = Name("/test/data/d3")
         fetch_name += "/lib/func/f1(_)"
-        fetch_name +="NFN"
+        fetch_name += "NFN"
         content = self.fetch.fetch_data(fetch_name)
         self.assertEqual(self.data3.upper(), content)
+
+
+class test_FetchNFN_SimplePacketEncoder(cases_FetchNFN, unittest.TestCase):
+    """Runs tests with the SimplePacketEncoder"""
+    def get_encoder(self):
+        return SimpleStringEncoder()
+
+class test_FetchNFN_NDNTLVPacketEncoder(cases_FetchNFN, unittest.TestCase):
+    """Runs tests with the NDNTLVPacketEncoder"""
+    def get_encoder(self):
+        return NdnTlvEncoder()
+
+    @unittest.skip("No Nack Crafting for NDNTLV yet")
+    def test_compute_on_large_data_over_forwarder_data_from_repo_to_data_prefix(self):
+        pass
+
+
