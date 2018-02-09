@@ -1,24 +1,29 @@
 """Test the ICN Forwarder"""
 
+import abc
 import socket
 import time
 import unittest
 from random import randint
 
-from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
+from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
 from PiCN.Packets import Content, Interest, Name
 from PiCN.ProgramLibs.NFNForwarder import NFNForwarder
-from PiCN.Layers.NFNLayer.NFNEvaluator.NFNExecutor import NFNPythonExecutor
 
-class test_NFNForwarder(unittest.TestCase):
+class cases_NFNForwarder(object):
     """Test the ICN Forwarder"""
 
+    @abc.abstractclassmethod
+    def get_encoder(self):
+        """returns the encoder to be used """
+
     def setUp(self):
-        self.forwarder1 = NFNForwarder(0, debug_level=255)
-        self.forwarder2 = NFNForwarder(0, debug_level=255)
+        self.encoder = SimpleStringEncoder()
+        self.forwarder1 = NFNForwarder(0, encoder=self.encoder, debug_level=255)
+        self.forwarder2 = NFNForwarder(0, encoder=self.encoder, debug_level=255)
         self.forwarder1_port = self.forwarder1.linklayer.get_port()
         self.forwarder2_port = self.forwarder2.linklayer.get_port()
-        self.encoder = SimpleStringEncoder()
+
 
         self.testSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.testSock.bind(("0.0.0.0", 0))
@@ -324,3 +329,13 @@ class test_NFNForwarder(unittest.TestCase):
         self.assertEqual('mdo:/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/c0;/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/c1;/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/c2;/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/c3:/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/m1', content.content)
         self.assertEqual(name, content.name)
         self.assertEqual(len(self.forwarder1.pit.container), 0)
+
+class test_NFNForwarder_SimplePacketEncoder(cases_NFNForwarder, unittest.TestCase):
+    """Runs tests with the SimplePacketEncoder"""
+    def get_encoder(self):
+        return SimpleStringEncoder()
+
+class test_NFNForwarder_NDNTLVPacketEncoder(cases_NFNForwarder, unittest.TestCase):
+    """Runs tests with the NDNTLVPacketEncoder"""
+    def get_encoder(self):
+        return SimpleStringEncoder()
