@@ -165,7 +165,7 @@ class cases_NFNForwarder(object):
         content: Content = self.encoder.decode(encoded_content)
         self.assertEqual("Hello World", content.content)
         self.assertEqual(name, content.name)
-        time.sleep(0.2)
+        time.sleep(1)
         self.assertEqual(len(self.forwarder1.pit.container), 0)
 
     def test_NFNForwarder_compute_param_two_nodes(self):
