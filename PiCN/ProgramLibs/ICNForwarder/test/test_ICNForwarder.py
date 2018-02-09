@@ -19,8 +19,8 @@ class cases_ICNForwarder(object):
 
     def setUp(self):
         self.encoder = self.get_encoder()
-        self.forwarder1 = ICNForwarder(0, encoder=self.encoder, log_level=255)
-        self.forwarder2 = ICNForwarder(0, encoder=self.encoder, log_level=255)
+        self.forwarder1 = ICNForwarder(0, encoder=self.get_encoder(), log_level=255)
+        self.forwarder2 = ICNForwarder(0, encoder=self.get_encoder(), log_level=255)
         self.forwarder1_port = self.forwarder1.linklayer.get_port()
         self.forwarder2_port = self.forwarder2.linklayer.get_port()
 

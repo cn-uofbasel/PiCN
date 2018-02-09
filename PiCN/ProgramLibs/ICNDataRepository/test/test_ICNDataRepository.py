@@ -1,22 +1,31 @@
 """Test the ICN Data Repository using fetch"""
 
+import abc
 import os
 import shutil
 import unittest
-from random import randint
+
 
 from PiCN.ProgramLibs.Fetch import Fetch
 
 from PiCN.Packets import Name
 from PiCN.ProgramLibs.ICNDataRepository import ICNDataRepository
+from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
 
 
-class test_ICNDataRepository(unittest.TestCase):
+
+class cases_ICNDataRepository(object):
+    """Test the ICN Data Repository using fetch"""
+
+    @abc.abstractclassmethod
+    def get_encoder(self):
+        """returns the encoder to be used """
 
     def setUp(self):
         self.data1 = "data1"
         self.data2 = 'A' * 5000
         self.data3 = 'B' * 20000
+        self.encoder = self.get_encoder()
 
         self.path = "/tmp/repo_unit_test"
         try:
@@ -30,9 +39,10 @@ class test_ICNDataRepository(unittest.TestCase):
         with open(self.path + "/f3", 'w+') as content_file:
             content_file.write('B' * 20000)
 
-        self.ICNRepo: ICNDataRepository = ICNDataRepository("/tmp/repo_unit_test", Name("/test/data"), 0)
+        self.ICNRepo: ICNDataRepository = ICNDataRepository("/tmp/repo_unit_test", Name("/test/data"), 0,
+                                                            encoder=self.get_encoder(), debug_level=255)
         self.repo_port = self.ICNRepo.linklayer.get_port()
-        self.fetch = Fetch("127.0.0.1", self.repo_port)
+        self.fetch = Fetch("127.0.0.1", self.repo_port, encoder=self.get_encoder())
 
     def tearDown(self):
         try:
@@ -66,3 +76,17 @@ class test_ICNDataRepository(unittest.TestCase):
         self.ICNRepo.start_repo()
         content = self.fetch.fetch_data(Name("/test/data/f4"))
         self.assertEqual(content, "Received Nack: No Matching Content")
+
+class test_ICNDataRepository_SimplePacketEncoder(cases_ICNDataRepository, unittest.TestCase):
+    """Runs tests with the SimplePacketEncoder"""
+    def get_encoder(self):
+        return SimpleStringEncoder()
+
+class test_ICNDataRepository_NDNTLVPacketEncoder(cases_ICNDataRepository, unittest.TestCase):
+    """Runs tests with the NDNTLVPacketEncoder"""
+    def get_encoder(self):
+        return NdnTlvEncoder()
+
+    @unittest.skip("No Nack Crafting for NDNTLV yet")
+    def test_fetch_nack(self):
+        pass
