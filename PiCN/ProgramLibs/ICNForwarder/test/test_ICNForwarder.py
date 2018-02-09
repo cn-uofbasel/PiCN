@@ -115,8 +115,9 @@ class cases_ICNForwarder(object):
         encoded_content, addr = self.testSock.recvfrom(8192)
         content = self.encoder.decode(encoded_content)
         self.assertEqual(content, test_content)
-        self.assertEqual(len(self.forwarder1.pit.container), 0)
         time.sleep(0.5)
+        self.assertEqual(len(self.forwarder1.pit.container), 0)
+
 
 
 class test_ICNForwarder_SimplePacketEncoder(cases_ICNForwarder, unittest.TestCase):
