@@ -98,20 +98,6 @@ class LayerProcess(PiCNProcess):
                 elif from_higher and var == from_higher._reader and not from_higher.empty():
                     self.data_from_higher(to_lower, to_higher, from_higher.get())
 
-    def _run_sleep(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
-             to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):
-        """ Process loop, handle incomming packets, use round-robin """
-        while True:
-            dequeued: bool = False
-            if from_lower and not from_lower.empty():
-                self.data_from_lower(to_lower, to_higher, from_lower.get())
-                dequeued = True
-            if from_higher and not from_higher.empty():
-                self.data_from_higher(to_lower, to_higher, from_higher.get())
-            if not dequeued:
-                time.sleep(0.3)
-
-
     def _run(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
              to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):
         if self.in_unittest() is True:
