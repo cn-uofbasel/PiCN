@@ -165,7 +165,7 @@ class cases_NFNForwarder(object):
         content: Content = self.encoder.decode(encoded_content)
         self.assertEqual("Hello World", content.content)
         self.assertEqual(name, content.name)
-        time.sleep(1)
+        time.sleep(2)
         self.assertEqual(len(self.forwarder1.pit.container), 0)
 
     def test_NFNForwarder_compute_param_two_nodes(self):
@@ -328,6 +328,7 @@ class cases_NFNForwarder(object):
         content: Content = self.encoder.decode(encoded_content)
         self.assertEqual('mdo:/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/c0;/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/c1;/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/c2;/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/c3:/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/m1', content.content)
         self.assertEqual(name, content.name)
+        time.sleep(2)
         self.assertEqual(len(self.forwarder1.pit.container), 0)
 
 class test_NFNForwarder_SimplePacketEncoder(cases_NFNForwarder, unittest.TestCase):

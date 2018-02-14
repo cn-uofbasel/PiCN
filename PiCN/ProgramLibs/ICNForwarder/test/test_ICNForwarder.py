@@ -115,7 +115,7 @@ class cases_ICNForwarder(object):
         encoded_content, addr = self.testSock.recvfrom(8192)
         content = self.encoder.decode(encoded_content)
         self.assertEqual(content, test_content)
-        time.sleep(1)
+        time.sleep(2)
         self.assertEqual(len(self.forwarder1.pit.container), 0)
 
 
