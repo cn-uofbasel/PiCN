@@ -48,14 +48,14 @@ class NFNEvaluator(PiCNProcess):
         pass
 
     def start_process(self):
-        self.process = multiprocessing.Process(target=self._run, args=[self.interest.name])
+        self.process = multiprocessing.Process(target=self._run, args=[self.interest])
         self.process.start()
 
-    def _run(self, name: Name):
-        res = self.evaluate(name)
-        content = Content(name, res)
+    def _run(self, interest: Interest):
+        res = self.evaluate(interest.name)
+        content = Content(interest.name, res)
         if res == None:
-            nack = Nack(name, reason="Could not Compute")
+            nack = Nack(interest.name, reason="Could not Compute", interest=interest)
             self.computation_out_queue.put(nack)
         elif res != "did_fwd":
             self.computation_out_queue.put(content)

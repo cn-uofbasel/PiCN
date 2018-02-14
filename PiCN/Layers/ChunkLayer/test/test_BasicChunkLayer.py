@@ -366,7 +366,8 @@ class test_BasicChunkLayer(unittest.TestCase):
     def test_nack_from_higher(self):
         """Test nack from higher"""
         self.chunkLayer.start_process()
-        nack1 = Nack("/test/data", reason="No Matching Content")
+        interest = Interest("/test/data")
+        nack1 = Nack("/test/data", reason="No Matching Content", interest=interest)
         self.chunkLayer.queue_from_higher.put([1, nack1])
         data = self.chunkLayer.queue_to_lower.get()
         self.assertEqual(data[0], 1)
