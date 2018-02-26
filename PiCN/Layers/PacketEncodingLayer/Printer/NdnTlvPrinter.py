@@ -6,9 +6,13 @@ class NdnTlvPrinter(object):
     Formatted printing of a NDN TLV to stdout.
 
 
-    Specification:
-       NDN Packet Format Specification 0.2-2 documentation
-       http://named-data.net/doc/NDN-TLV/current/intro.html (January 2018)
+    Implemented Specifications:
+
+       - NDN Packet Format Specification 0.2-2 documentation
+         http://named-data.net/doc/NDN-TLV/current/intro.html (January 2018)
+
+       - NDNLPv2 (link protocol)
+         https://redmine.named-data.net/projects/nfd/wiki/NDNLPv2 (February 2018)
 
 
     Example:
@@ -28,8 +32,10 @@ class NdnTlvPrinter(object):
 
     """
 
-    __has_blob_value = {8, 1, 10, 13, 14, 17, 12, 24, 25, 21, 23, 27, 29}
-    __known_type_names = { 5: "Interest Packet",
+    __has_blob_value = {8, 1, 10, 13, 14, 17, 12, 24, 25, 21, 23, 27, 29, 801}
+
+    __known_type_names = {
+                           5: "Interest Packet",
                            6: "Content Object Packet",
                            7: "Name",
                            8: "GenericNameComponent",
@@ -56,7 +62,32 @@ class NdnTlvPrinter(object):
                           28: "KeyLocator",
                           29: "KeyDigest",
                           31: "Delegation",
+                          80: "Fragment (link protocol)",           # NDN Link Protocol v2
+                          81: "Sequence (link protocol)",           # NDN Link Protocol v2
+                          82: "FragIndex (link protocol)",          # NDN Link Protocol v2
+                          83: "FragCount (link protocol)",          # NDN Link Protocol v2
+                          84: "HopCount (link protocol)",           # NDN Link Protocol v2
+                          98: "PitToken (link protocol)",           # NDN Link Protocol v2
+                         100: "LpPacket (link protocol)",           # NDN Link Protocol v2
+                         800: "Nack (link protocol)",               # NDN Link Protocol v2
+                         801: "NackReason (link protocol)",         # NDN Link Protocol v2
+                         816: "NextHopFaceId (link protocol)",      # NDN Link Protocol v2
+                         817: "IncomingFaceId (link protocol)",     # NDN Link Protocol v2
+                         820: "CachePolicy (link protocol)",        # NDN Link Protocol v2
+                         821: "CachePolicyType (link protocol)",    # NDN Link Protocol v2
+                         832: "CongestionMark (link protocol)",     # NDN Link Protocol v2
+                         836: "Ack (link protocol)",                # NDN Link Protocol v2
+                         840: "TxSequence (link protocol)",         # NDN Link Protocol v2
+                         844: "NonDiscovery (link protocol)",       # NDN Link Protocol v2
+                         848: "PrefixAnnouncement (link protocol)"  # NDN Link Protocol v2
                          }
+
+    __nack_reason_names = {
+                            0: "None (reserved)",
+                           50: "Congestion",
+                          100: "Duplicate",
+                          150: "NoRoute"
+                          }
 
 
     def __init__(self, wire_format:bytearray) -> None:
