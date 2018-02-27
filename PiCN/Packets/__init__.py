@@ -6,3 +6,4 @@ from .Name import Name
 from .Nack import Nack
 from .Packet import Packet
 from .UnknownPacket import UnknownPacket
+from .NackReason import NackReason
