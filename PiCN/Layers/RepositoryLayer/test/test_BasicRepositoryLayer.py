@@ -8,7 +8,7 @@ import unittest
 from PiCN.Layers.RepositoryLayer import BasicRepositoryLayer
 
 from PiCN.Layers.RepositoryLayer.Repository import SimpleFileSystemRepository
-from PiCN.Packets import Content, Interest, Name, Nack
+from PiCN.Packets import Content, Interest, Name, Nack, NackReason
 
 
 class test_BasicRepositoryLayer(unittest.TestCase):
@@ -60,7 +60,7 @@ class test_BasicRepositoryLayer(unittest.TestCase):
         """Test if repo returns Nack if no matching content available"""
         self.repositoryLayer.start_process()
         i1 = Interest("/test/data/f3")
-        n1 = Nack(i1.name, reason="No Matching Content", interest=i1)
+        n1 = Nack(i1.name, reason=NackReason.NO_CONTENT, interest=i1)
         self.repositoryLayer.queue_from_lower.put([0, i1])
         data = self.repositoryLayer.queue_to_lower.get()
         self.assertEqual(n1, data[1])
@@ -69,7 +69,7 @@ class test_BasicRepositoryLayer(unittest.TestCase):
         """Test if repo returns Nack if nprefix not matching"""
         self.repositoryLayer.start_process()
         i1 = Interest("/data/test/f1")
-        n1 = Nack(i1.name, reason="No Matching Content", interest=i1)
+        n1 = Nack(i1.name, reason=NackReason.NO_CONTENT, interest=i1)
         self.repositoryLayer.queue_from_lower.put([0, i1])
         data = self.repositoryLayer.queue_to_lower.get()
         self.assertEqual(n1, data[1])

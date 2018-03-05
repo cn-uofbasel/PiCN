@@ -9,7 +9,7 @@ from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase, ForwardingInformationBaseEntry
 
 from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable, PendingInterestTableEntry
-from PiCN.Packets import Name, Content, Interest, Packet, Nack
+from PiCN.Packets import Name, Content, Interest, Packet, Nack, NackReason
 from PiCN.Processes import LayerProcess
 
 
@@ -45,7 +45,7 @@ class BasicICNLayer(LayerProcess):
                 to_lower.put([fib_entry.faceid, packet])
             else:
                 self.logger.info("No FIB entry, sending Nack")
-                nack = Nack(packet.name, reason="No FIB Entry", interest=packet)
+                nack = Nack(packet.name, reason=NackReason.NO_ROUTE, interest=packet)
                 if pit_entry is not None: #if pit entry is available, consider it, otherwise assume interest came from higher
                     for i in range(0, len(pit_entry.faceids)):
                         if pit_entry._local_app[i]:
@@ -109,7 +109,7 @@ class BasicICNLayer(LayerProcess):
             to_lower.put([newfaceid.faceid, interest])
             return
         self.logger.info("No FIB entry, sending Nack")
-        nack = Nack(interest.name, reason="No FIB Entry", interest=interest)
+        nack = Nack(interest.name, reason=NackReason.NO_ROUTE, interest=interest)
         if from_local:
             to_higher.put([faceid, nack])
         else:

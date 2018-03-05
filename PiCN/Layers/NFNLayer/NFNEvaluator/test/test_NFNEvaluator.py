@@ -4,7 +4,7 @@ import multiprocessing
 import unittest
 
 
-from PiCN.Packets import Interest, Content, Name, Nack
+from PiCN.Packets import Interest, Content, Name, Nack, NackReason
 from PiCN.Layers.NFNLayer.NFNEvaluator import NFNEvaluator
 from PiCN.Layers.NFNLayer.NFNEvaluator.NFNOptimizer import ToDataFirstOptimizer
 from PiCN.Layers.NFNLayer.NFNEvaluator.NFNExecutor import NFNPythonExecutor
@@ -220,4 +220,4 @@ def f():
         content = Content(fname, func1)
         self.evaluator.computation_in_queue.put(content)
         res = self.evaluator.computation_out_queue.get()
-        self.assertEqual(Nack(name, reason="Could not Compute", interest=interest), res)
+        self.assertEqual(Nack(name, reason=NackReason.COMP_EXCEPTION, interest=interest), res)

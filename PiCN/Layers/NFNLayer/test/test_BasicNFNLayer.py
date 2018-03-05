@@ -4,7 +4,7 @@ import multiprocessing
 import time
 import unittest
 
-from PiCN.Packets import Content, Interest, Name, Nack
+from PiCN.Packets import Content, Interest, Name, Nack, NackReason
 from PiCN.Layers.NFNLayer import BasicNFNLayer
 from PiCN.Layers.NFNLayer.NFNEvaluator.NFNExecutor import NFNPythonExecutor
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
@@ -224,7 +224,7 @@ def f():
         self.nfnLayer.queue_from_lower.put([cid, func_data])
         data = self.nfnLayer.queue_to_lower.get()
         self.assertEqual(name, data[1].name)
-        self.assertEqual(Nack(name, reason="Could not Compute", interest=interest), data[1])
+        self.assertEqual(Nack(name, reason=NackReason.COMP_EXCEPTION, interest=interest), data[1])
 
     def test_fwd_computation_nack_stop_fwd_nack(self):
         """Test forwarding of a computation and stop computation"""
@@ -239,7 +239,7 @@ def f():
         fwded = self.nfnLayer.queue_to_lower.get()
         self.assertEqual(name, fwded[1].name)
         #self.assertEqual(0, len(self.nfnLayer._running_computations)) #todo, remove comp if process dies
-        nack = Nack(name, reason="No PIT Entry found", interest=interest)
+        nack = Nack(name, reason="No PIT Entry found", interest=interest) # TODO: https://github.com/cn-uofbasel/PiCN/issues/14
         self.nfnLayer.queue_from_lower.put([2, nack])
         data = self.nfnLayer.queue_to_lower.get()
         self.assertTrue(isinstance(data[1], Interest))
@@ -264,7 +264,7 @@ def f():
         fwded = self.nfnLayer.queue_to_lower.get()
         self.assertEqual(name, fwded[1].name)
         #self.assertEqual(0, len(self.nfnLayer._running_computations)) #todo, remove comp if process dies
-        nack = Nack(name, reason="No PIT Entry found", interest=interest)
+        nack = Nack(name, reason="No PIT Entry found", interest=interest) # TODO: https://github.com/cn-uofbasel/PiCN/issues/14
         self.nfnLayer.queue_from_lower.put([2, nack])
         data = self.nfnLayer.queue_to_lower.get()
         name2 = Name("/func/f1")

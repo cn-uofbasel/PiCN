@@ -10,7 +10,7 @@ from PiCN.ProgramLibs.Fetch import Fetch
 from PiCN.ProgramLibs.ICNForwarder import ICNForwarder
 
 from PiCN.Mgmt import MgmtClient
-from PiCN.Packets import Name
+from PiCN.Packets import Name, NackReason
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
 from PiCN.ProgramLibs.ICNDataRepository import ICNDataRepository
 
@@ -105,7 +105,7 @@ class cases_Fetch(object):
         self.mgmtClient.add_face("127.0.0.1", self.forwarder2.linklayer.get_port())
         data = self.mgmtClient.add_forwarding_rule(Name("/test/data"), 0)
         nack = self.fetch.fetch_data(Name("/test/data/f3"))
-        self.assertEqual(nack, "Received Nack: No FIB Entry")
+        self.assertEqual(nack, "Received Nack: " + NackReason.NO_ROUTE.value)
         time.sleep(0.1)
 
         #install second forwarding rule and check for result.

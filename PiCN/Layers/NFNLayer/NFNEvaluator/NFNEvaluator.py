@@ -13,7 +13,7 @@ from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
 from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
 from PiCN.Processes import PiCNProcess
-from PiCN.Packets import Content, Interest, Name, Nack
+from PiCN.Packets import Content, Interest, Name, Nack, NackReason
 
 
 class NFNEvaluator(PiCNProcess):
@@ -55,7 +55,7 @@ class NFNEvaluator(PiCNProcess):
         res = self.evaluate(interest.name)
         content = Content(interest.name, res)
         if res == None:
-            nack = Nack(interest.name, reason="Could not Compute", interest=interest)
+            nack = Nack(interest.name, reason=NackReason.COMP_EXCEPTION, interest=interest)
             self.computation_out_queue.put(nack)
         elif res != "did_fwd":
             self.computation_out_queue.put(content)

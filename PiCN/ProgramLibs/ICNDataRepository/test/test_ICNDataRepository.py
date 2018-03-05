@@ -8,7 +8,7 @@ import unittest
 
 from PiCN.ProgramLibs.Fetch import Fetch
 
-from PiCN.Packets import Name
+from PiCN.Packets import Name, NackReason
 from PiCN.ProgramLibs.ICNDataRepository import ICNDataRepository
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
 
@@ -75,7 +75,7 @@ class cases_ICNDataRepository(object):
         """Test fetching content which is not available and get nack"""
         self.ICNRepo.start_repo()
         content = self.fetch.fetch_data(Name("/test/data/f4"))
-        self.assertEqual(content, "Received Nack: No Matching Content")
+        self.assertEqual(content, "Received Nack: " + NackReason.NO_CONTENT.value)
 
 class test_ICNDataRepository_SimplePacketEncoder(cases_ICNDataRepository, unittest.TestCase):
     """Runs tests with the SimplePacketEncoder"""

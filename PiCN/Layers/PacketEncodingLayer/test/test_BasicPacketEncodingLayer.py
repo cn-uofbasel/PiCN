@@ -12,7 +12,7 @@ from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvE
 
 from PiCN.Layers.LinkLayer import UDP4LinkLayer
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
-from PiCN.Packets import Packet, Content, Interest, Nack
+from PiCN.Packets import Packet, Content, Interest, Nack, NackReason
 
 class cases_BasicPacketEncodingLayer(object):
 
@@ -123,7 +123,7 @@ class cases_BasicPacketEncodingLayer(object):
     def test_Encoder_encode_decode_nack(self):
         """Test the nack decoding of Encoder"""
         interest = Interest("/data/test")
-        n = Nack("/data/test", reason="reason1", interest=interest)
+        n = Nack("/data/test", reason=NackReason.NO_CONTENT, interest=interest)
         en = self.encoder1.encode(n)
         dn = self.encoder1.decode(en)
         self.assertTrue(n == dn)

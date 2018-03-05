@@ -58,7 +58,8 @@ class NdnTlvEncoder(BasicEncoder):
             return Interest(name, wire_data)
         if(self.is_nack(wire_data)):
             name = self.decode_nack(wire_data)
-            return Nack(name=name, wire_format=wire_data)
+            reason = None # todo
+            return Nack(name=name, wire_format=wire_data, reason=reason)
         else:
             return UnknownPacket(wire_format=wire_data)
 

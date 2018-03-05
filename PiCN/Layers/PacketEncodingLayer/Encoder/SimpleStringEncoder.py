@@ -1,7 +1,7 @@
 """A extrem simple Packet Encoder for the BasicPacketEncodingLayer"""
 
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
-from PiCN.Packets import Packet, Content, Interest, Nack, Name
+from PiCN.Packets import Packet, Content, Interest, Name, Nack, NackReason
 
 class SimpleStringEncoder(BasicEncoder):
     """An extreme simple Packet Encoder for the BasicPacketEncodingLayer"""
@@ -18,7 +18,7 @@ class SimpleStringEncoder(BasicEncoder):
             content = content.replace(":", "%58")
             res = "C:" + name.to_string() + ":" + ":" + content
         elif(isinstance(packet, Nack)):
-            res = "N:" + name.to_string() + ":" + ":" + packet.reason
+            res = "N:" + name.to_string() + ":" + ":" + packet.reason.value
         if res is not None:
             return res.encode()
         return None
@@ -34,7 +34,7 @@ class SimpleStringEncoder(BasicEncoder):
             return Content(self.unescape_name(Name(name)), content)
         elif data[0] == "N":
             name = data.split(":")[1]
-            reason = data.split(":")[3]
+            reason = NackReason(data.split(":")[3])
             return Nack(self.unescape_name(Name(name)), reason=reason)
 
 

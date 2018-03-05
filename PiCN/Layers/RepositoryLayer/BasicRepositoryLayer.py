@@ -3,7 +3,7 @@
 import multiprocessing
 
 from PiCN.Layers.RepositoryLayer.Repository import BaseRepository
-from PiCN.Packets import Interest, Content, Packet, Nack
+from PiCN.Packets import Interest, Content, Packet, Nack, NackReason
 from PiCN.Processes import LayerProcess
 
 
@@ -36,7 +36,7 @@ class BasicRepositoryLayer(LayerProcess):
                 return
             else:
                 self.logger.info("No matching data, dropping interest, sending nack")
-                nack = Nack(packet.name, reason="No Matching Content", interest=packet)
+                nack = Nack(packet.name, reason=NackReason.NO_CONTENT, interest=packet)
                 to_lower.put([faceid, nack])
                 return
         if isinstance(packet, Content):

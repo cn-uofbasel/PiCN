@@ -66,11 +66,11 @@ class Fetch(object):
         # create interest
         interest: Interest = Interest(name)
         self.chunklayer.queue_from_higher.put([self.fid, interest])
-        content = self.chunklayer.queue_to_higher.get()[1]
-        if isinstance(content, Content):
-            return content.content
-        if isinstance(content, Nack):
-            return "Received Nack: " + content.reason
+        packet = self.chunklayer.queue_to_higher.get()[1]
+        if isinstance(packet, Content):
+            return packet.content
+        if isinstance(packet, Nack):
+            return "Received Nack: " + str(packet.reason.value)
         return None
 
     def stop_fetch(self):
