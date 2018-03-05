@@ -220,4 +220,4 @@ def f():
         content = Content(fname, func1)
         self.evaluator.computation_in_queue.put(content)
         res = self.evaluator.computation_out_queue.get()
-        self.assertEqual(Nack(name, reason=NackReason.COMP_EXCEPTION, interest=interest), res)
+        self.assertEqual(Nack(name, NackReason.COMP_EXCEPTION, interest=interest), res)

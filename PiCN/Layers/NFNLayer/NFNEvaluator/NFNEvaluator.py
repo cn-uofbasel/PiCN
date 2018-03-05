@@ -55,7 +55,7 @@ class NFNEvaluator(PiCNProcess):
         res = self.evaluate(interest.name)
         content = Content(interest.name, res)
         if res == None:
-            nack = Nack(interest.name, reason=NackReason.COMP_EXCEPTION, interest=interest)
+            nack = Nack(interest.name, NackReason.COMP_EXCEPTION, interest=interest)
             self.computation_out_queue.put(nack)
         elif res != "did_fwd":
             self.computation_out_queue.put(content)

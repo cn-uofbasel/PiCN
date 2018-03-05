@@ -2,13 +2,22 @@
 
 from .Packet import Packet
 from .Interest import Interest
+from .Name import Name
+from .NackReason import NackReason
 
 class Nack(Packet):
     """
     Internal representation of an NACK (negative acknowledgement) packet
     """
 
-    def __init__(self, name=None, wire_format=None, reason=None, interest=None):
+    def __init__(self, name: Name, reason: NackReason, wire_format=None, interest=None):
+        """
+        New negative acknowledgement (NACK) object
+        :param name: Name of interest for which this NACK is generated
+        :param reason: NACK Reason
+        :param wire_format: Wire format of network packet
+        :param interest: Interest for which this NACK is generated
+        """
         Packet.__init__(self, name)
         self._reason = reason
         self._wire_format = wire_format

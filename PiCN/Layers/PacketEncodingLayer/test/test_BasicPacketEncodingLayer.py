@@ -123,7 +123,7 @@ class cases_BasicPacketEncodingLayer(object):
     def test_Encoder_encode_decode_nack(self):
         """Test the nack decoding of Encoder"""
         interest = Interest("/data/test")
-        n = Nack("/data/test", reason=NackReason.NO_CONTENT, interest=interest)
+        n = Nack("/data/test", NackReason.NO_CONTENT, interest=interest)
         en = self.encoder1.encode(n)
         dn = self.encoder1.decode(en)
         self.assertTrue(n == dn)

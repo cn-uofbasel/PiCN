@@ -36,7 +36,7 @@ class BasicRepositoryLayer(LayerProcess):
                 return
             else:
                 self.logger.info("No matching data, dropping interest, sending nack")
-                nack = Nack(packet.name, reason=NackReason.NO_CONTENT, interest=packet)
+                nack = Nack(packet.name, NackReason.NO_CONTENT, interest=packet)
                 to_lower.put([faceid, nack])
                 return
         if isinstance(packet, Content):
