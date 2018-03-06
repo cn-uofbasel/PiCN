@@ -1,7 +1,7 @@
 """NDN TLV Encoder"""
 
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
-from PiCN.Packets import Packet, Content, Interest, Nack, Name, UnknownPacket
+from PiCN.Packets import Packet, Content, Interest, Nack, NackReason, Name, UnknownPacket
 
 from PiCNExternal.pyndn.encoding.tlv.tlv.tlv_encoder import TlvEncoder
 from PiCNExternal.pyndn.encoding.tlv.tlv.tlv_decoder import TlvDecoder
@@ -18,7 +18,7 @@ class NdnTlvEncoder(BasicEncoder):
 
     def encode(self, packet: Packet) -> bytearray:
         """
-        Python object to NDN TLV wire format
+        Python object (PiCN's internal representation) to NDN TLV wire format
         :param packet: Packet in PiCN's representation
         :return: Packet in NDN TLV representation
         """
@@ -38,14 +38,13 @@ class NdnTlvEncoder(BasicEncoder):
             if isinstance(packet.wire_format, bytes):
                 return packet.wire_format
             else:
-                return None # TODO
-
+                return self.encode_nack(packet.name, packet.reason, packet.interest)
         if isinstance(packet, UnknownPacket):
             return packet.wire_format
 
     def decode(self, wire_data) -> Packet:
         """
-        NDN TLV wire format packet to python object
+        NDN TLV wire format packet to python object (PiCN's internal representation)
         :param wire_data: Packet in wire format (NDN TLV representation)
         :return: Packet in PiCN's internal representation
         """
@@ -57,8 +56,7 @@ class NdnTlvEncoder(BasicEncoder):
             name = self.decode_interest(wire_data)
             return Interest(name, wire_data)
         if(self.is_nack(wire_data)):
-            name = self.decode_nack(wire_data)
-            reason = None # todo
+            (name, reason) = self.decode_nack(wire_data)
             return Nack(name, reason, wire_format=wire_data)
         else:
             return UnknownPacket(wire_format=wire_data)
@@ -120,6 +118,16 @@ class NdnTlvEncoder(BasicEncoder):
         # Add data type and len
         encoder.writeTypeAndLength(Tlv.Data, len(encoder))
         return encoder.getOutput().tobytes()
+
+    def encode_nack(self, name: Name, reason: NackReason, interest: Interest) -> bytearray:
+        """
+        Assembly a negative acknowledgement packet
+        :param name: Name carried by interest for which this NACK is generated
+        :param reason: Nack reason
+        :param interest: Interest for which this NACk is generated
+        :return:  NACK-TLV
+        """
+        return None # TODO
 
     def decode_name_component(self, decoder: TlvDecoder) -> bytearray:
         """
@@ -184,13 +192,15 @@ class NdnTlvEncoder(BasicEncoder):
         payload = decoder.readBlobTlv(Tlv.Content).tobytes()
         return (name, payload)
 
-    def decode_nack(self, input: bytearray) -> Name:
+    def decode_nack(self, input: bytearray) -> (Name, NackReason):
         """
         Decode NACK packet
         :param input: Data packet in NDN-TLV wire format
         :return: Name
         """
-        return self.decode_interest(input[13:]) # TODO - decode reason
+        name = self.decode_interest(input[13:])
+        reason = None  # TODO - decode reason
+        return (name, reason)
 
     def is_content(self, input: bytearray) -> bool:
         """
@@ -214,4 +224,4 @@ class NdnTlvEncoder(BasicEncoder):
         :param input:  Packet in NDN-TLV wire format
         :return: True if NACK
         """
-        return input[0] == 0x64 & input[3] == 0x03 & input[4] == 0x20   # TODO
+        return input[0] == 0x64 & input[3] == 0x03 & input[4] == 0x20
