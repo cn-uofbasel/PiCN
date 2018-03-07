@@ -38,7 +38,16 @@ class NdnTlvEncoder(BasicEncoder):
     }
     """Mapping of NackReason Enum to wire format values"""
 
-    #__nack_reason_enum = dict((v, k) for k, v in __nack_reason_values.iteritems())
+    __nack_reason_enum = {
+         50: NackReason.CONGESTION,                 # NDNLPv2 compatible
+        100: NackReason.DUPLICATE,                  # NDNLPv2 compatible
+        150: NackReason.NO_ROUTE,                   # NDNLPv2 compatible
+        160: NackReason.NO_CONTENT,                 # extension: does not exist in NDNLPv2
+        161: NackReason.COMP_QUEUE_FULL,            # extension: does not exist in NDNLPv2
+        162: NackReason.COMP_PARAM_UNAVAILABLE,     # extension: does not exist in NDNLPv2
+        163: NackReason.COMP_EXCEPTION,             # extension: does not exist in NDNLPv2
+        164: NackReason.COMP_TERMINATED             # extension: does not exist in NDNLPv2
+    }
     """Mapping of wire format nack reasons to NackReason Enum"""
 
     def __init__(self):
