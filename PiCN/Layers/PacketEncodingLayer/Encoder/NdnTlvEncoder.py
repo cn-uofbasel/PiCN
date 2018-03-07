@@ -13,6 +13,18 @@ from random import SystemRandom
 class NdnTlvEncoder(BasicEncoder):
     """Packet Encoder for NDN-TLV"""
 
+    __nack_reason_values = {
+        NackReason.CONGESTION: 50,                  # NDNLPv2 compatible
+        NackReason.DUPLICATE: 100,                  # NDNLPv2 compatible
+        NackReason.NO_ROUTE: 150,                   # NDNLPv2 compatible
+        NackReason.NO_CONTENT: 160,                 # extension: does not exist in NDNLPv2
+        NackReason.COMP_QUEUE_FULL: 161,            # extension: does not exist in NDNLPv2
+        NackReason.COMP_PARAM_UNAVAILABLE: 162,     # extension: does not exist in NDNLPv2
+        NackReason.COMP_EXCEPTION: 163,             # extension: does not exist in NDNLPv2
+        NackReason.COMP_TERMINATED: 164             # extension: does not exist in NDNLPv2
+    }
+    """Mapping of NackReason Enum to wire format values"""
+
     def __init__(self):
         BasicEncoder.__init__(self)
 
@@ -27,13 +39,11 @@ class NdnTlvEncoder(BasicEncoder):
                 return packet.wire_format
             else:
                 return self.encode_interest(packet.name)
-
         if isinstance(packet, Content):
             if isinstance(packet.wire_format, bytes):
                 return packet.wire_format
             else:
                 return self.encode_data(packet.name, packet.get_bytes())
-
         if isinstance(packet, Nack):
             if isinstance(packet.wire_format, bytes):
                 return packet.wire_format
@@ -127,7 +137,30 @@ class NdnTlvEncoder(BasicEncoder):
         :param interest: Interest for which this NACk is generated
         :return:  NACK-TLV
         """
-        return None # TODO
+        encoder = TlvEncoder()
+        # write fragment (interest packet)
+        encoder.writeBuffer(interest.wire_format)
+        encoder.writeTypeAndLength(Tlv.LpPacket_Fragment, len(encoder))
+        fragment_len = len(encoder)
+        # write nack reason
+        wire_reason = self.encode_nack_reason(reason)
+        encoder.writeBuffer(wire_reason)
+        encoder.writeTypeAndLength(Tlv.LpPacket_NackReason, len(wire_reason))
+        # write nack header
+        encoder.writeTypeAndLength(Tlv.LpPacket_Nack, len(encoder) - fragment_len)
+        # write link packet header
+        encoder.writeTypeAndLength(Tlv.LpPacket_LpPacket, len(encoder))
+        return encoder.getOutput().tobytes()
+
+    def encode_nack_reason(self, reason: NackReason) -> bytearray:
+        """
+        Encode a NackReason
+        :param reason: NackReason
+        :return: Nack reason in wire format
+        """
+        encoder = TlvEncoder()
+        encoder.writeVarNumber(self.__nack_reason_values(reason))
+        return encoder.getOutput().tobytes()
 
     def decode_name_component(self, decoder: TlvDecoder) -> bytearray:
         """
