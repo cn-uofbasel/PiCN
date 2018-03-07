@@ -6,6 +6,12 @@ class NackReason(Enum):
     Enumeration for NACK Reasons
     """
 
+    NOT_SET = "no reason specified"
+    """
+    Mapping to NACK reasons defined in packet formats:
+    - NDNLPv2: Should be chosen if no NACK reason is set
+    """
+
     CONGESTION = "network congestion"
     """
     Semantics: There is a congestion in the link between upstream and downstream, or on the best-known path
