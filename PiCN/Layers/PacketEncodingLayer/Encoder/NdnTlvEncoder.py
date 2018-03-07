@@ -38,7 +38,7 @@ class NdnTlvEncoder(BasicEncoder):
     }
     """Mapping of NackReason Enum to wire format values"""
 
-    __nack_reason_enum = dict((v, k) for k, v in __nack_reason_values.iteritems())
+    #__nack_reason_enum = dict((v, k) for k, v in __nack_reason_values.iteritems())
     """Mapping of wire format nack reasons to NackReason Enum"""
 
     def __init__(self):
