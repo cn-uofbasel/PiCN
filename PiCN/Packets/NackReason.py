@@ -8,6 +8,8 @@ class NackReason(Enum):
 
     NOT_SET = "no reason specified"
     """
+    Semantics: Not NACK reason is provided (only applies to packet formats where reason is optional)
+    
     Mapping to NACK reasons defined in packet formats:
     - NDNLPv2: Should be chosen if no NACK reason is set
     """
