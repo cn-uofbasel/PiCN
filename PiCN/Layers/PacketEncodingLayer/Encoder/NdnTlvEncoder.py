@@ -11,7 +11,20 @@ from random import SystemRandom
 
 
 class NdnTlvEncoder(BasicEncoder):
-    """Packet Encoder for NDN-TLV"""
+    """
+    Packet Encoder for NDN-TLV
+
+        Implemented Specifications:
+
+       - NDN Packet Format Specification 0.2-2 documentation (partially)
+         http://named-data.net/doc/NDN-TLV/current/intro.html (February 2018)
+
+       - NDNLPv2 / link protocol (partially)
+         https://redmine.named-data.net/projects/nfd/wiki/NDNLPv2 (February 2018)
+
+       - Additional in-network computation related NACK Reasons
+
+    """
 
     __nack_reason_values = {
         NackReason.CONGESTION: 50,                  # NDNLPv2 compatible
@@ -24,6 +37,9 @@ class NdnTlvEncoder(BasicEncoder):
         NackReason.COMP_TERMINATED: 164             # extension: does not exist in NDNLPv2
     }
     """Mapping of NackReason Enum to wire format values"""
+
+    __nack_reason_enum = dict((v, k) for k, v in __nack_reason_values.iteritems())
+    """Mapping of wire format nack reasons to NackReason Enum"""
 
     def __init__(self):
         BasicEncoder.__init__(self)
@@ -159,7 +175,7 @@ class NdnTlvEncoder(BasicEncoder):
         :return: Nack reason in wire format
         """
         encoder = TlvEncoder()
-        encoder.writeVarNumber(self.__nack_reason_values(reason))
+        encoder.writeVarNumber(self.__nack_reason_values[reason])
         return encoder.getOutput().tobytes()
 
     def decode_name_component(self, decoder: TlvDecoder) -> bytearray:
