@@ -167,10 +167,11 @@ class NdnTlvEncoder(BasicEncoder):
         encoder.writeBuffer(interest.wire_format)
         encoder.writeTypeAndLength(Tlv.LpPacket_Fragment, len(encoder))
         fragment_len = len(encoder)
-        # write nack reason
-        wire_reason = self.encode_nack_reason(reason)
-        encoder.writeBuffer(wire_reason)
-        encoder.writeTypeAndLength(Tlv.LpPacket_NackReason, len(wire_reason))
+        # write nack reason if needed
+        if reason is not NackReason.NOT_SET:
+            wire_reason = self.encode_nack_reason(reason)
+            encoder.writeBuffer(wire_reason)
+            encoder.writeTypeAndLength(Tlv.LpPacket_NackReason, len(wire_reason))
         # write nack header
         encoder.writeTypeAndLength(Tlv.LpPacket_Nack, len(encoder) - fragment_len)
         # write link packet header
