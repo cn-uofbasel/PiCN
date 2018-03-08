@@ -149,9 +149,3 @@ class test_Fetch_NDNTLVPacketEncoder(cases_Fetch, unittest.TestCase):
     """Runs tests with the NDNTLVPacketEncoder"""
     def get_encoder(self):
         return NdnTlvEncoder()
-
-    @unittest.skip("No Nack Crafting for NDNTLV yet")
-    def test_fetching_content_from_second_repo_after_nack(self):
-        pass
-
-

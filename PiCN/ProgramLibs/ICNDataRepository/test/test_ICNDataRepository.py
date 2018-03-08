@@ -86,7 +86,3 @@ class test_ICNDataRepository_NDNTLVPacketEncoder(cases_ICNDataRepository, unitte
     """Runs tests with the NDNTLVPacketEncoder"""
     def get_encoder(self):
         return NdnTlvEncoder()
-
-    @unittest.skip("No Nack Crafting for NDNTLV yet")
-    def test_fetch_nack(self):
-        pass
