@@ -271,6 +271,7 @@ class cases_NFNForwarder(object):
         content: Content = self.encoder.decode(encoded_content)
         self.assertEqual("RESULT", content.content)
         self.assertEqual(name, content.name)
+        time.sleep(4)
         self.assertEqual(len(self.forwarder1.pit.container), 0)
 
     def test_NFNForwarder_compute_subcomp_two_nodes_chunking_result(self):
