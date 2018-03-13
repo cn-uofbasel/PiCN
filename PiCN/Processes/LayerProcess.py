@@ -100,7 +100,7 @@ class LayerProcess(PiCNProcess):
 
     def _run(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
              to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):
-ss        self._run_poll(from_lower, from_higher, to_lower, to_higher)
+        self._run_poll(from_lower, from_higher, to_lower, to_higher)
 
     def start_process(self):
         """Start the Layerprocess"""
