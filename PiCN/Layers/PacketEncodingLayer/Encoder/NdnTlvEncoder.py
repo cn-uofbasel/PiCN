@@ -1,5 +1,6 @@
 """NDN TLV Encoder"""
 
+from PiCN.Logger import Logger
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
 from PiCN.Packets import Packet, Content, Interest, Nack, NackReason, Name, UnknownPacket
 
@@ -50,8 +51,9 @@ class NdnTlvEncoder(BasicEncoder):
     }
     """Mapping of wire format nack reasons to NackReason Enum"""
 
-    def __init__(self):
+    def __init__(self, debug_level = 255):
         BasicEncoder.__init__(self)
+        self.logger = Logger("NdnTlvEnc", debug_level)
 
     def encode(self, packet: Packet) -> bytearray:
         """
@@ -60,21 +62,25 @@ class NdnTlvEncoder(BasicEncoder):
         :return: Packet in NDN TLV representation
         """
         if isinstance(packet, Interest):
+            self.logger.info("Encode interest")
             if isinstance(packet.wire_format, bytes):
                 return packet.wire_format
             else:
                 return self.encode_interest(packet.name)
         if isinstance(packet, Content):
+            self.logger.info("Encode content object")
             if isinstance(packet.wire_format, bytes):
                 return packet.wire_format
             else:
                 return self.encode_data(packet.name, packet.get_bytes())
         if isinstance(packet, Nack):
+            self.logger.info("Encode NACK")
             if isinstance(packet.wire_format, bytes):
                 return packet.wire_format
             else:
                 return self.encode_nack(packet.name, packet.reason, packet.interest)
         if isinstance(packet, UnknownPacket):
+            self.logger.info("Encode UnknownPacket")
             return packet.wire_format
 
     def decode(self, wire_data) -> Packet:
@@ -85,15 +91,19 @@ class NdnTlvEncoder(BasicEncoder):
         """
         # print("got %d bytes to decode" % len(wire_data))
         if(self.is_content(wire_data)):
+            self.logger.info("Decode content object")
             (name, payload) = self.decode_data(wire_data)
             return Content(name, payload, wire_data)
         if(self.is_interest(wire_data)):
+            self.logger.info("Decode interest")
             name = self.decode_interest(wire_data)
             return Interest(name, wire_data)
         if(self.is_nack(wire_data)):
+            self.logger.info("Decode NACK")
             (name, reason) = self.decode_nack(wire_data)
             return Nack(name, reason, wire_format=wire_data)
         else:
+            self.logger.info("Decode failed (unknown packet type)")
             return UnknownPacket(wire_format=wire_data)
 
 

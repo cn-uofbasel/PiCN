@@ -30,7 +30,7 @@ def main(args):
     logger.info("Packet Format:  " + args.format)
 
     # Packet encoder
-    encoder = NdnTlvEncoder() if args.format == 'ndntlv' else SimpleStringEncoder
+    encoder = NdnTlvEncoder(log_level) if args.format == 'ndntlv' else SimpleStringEncoder
 
     # Start
     forwarder = PiCN.ProgramLibs.ICNForwarder.ICNForwarder(args.port, log_level, encoder)
