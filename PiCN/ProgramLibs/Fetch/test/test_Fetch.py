@@ -38,7 +38,7 @@ class cases_Fetch(object):
             content_file.write('B' * 20000)
 
         self.ICNRepo: ICNDataRepository = ICNDataRepository("/tmp/repo_unit_test", Name("/test/data"), port=0,
-                                                            encoder=self.get_encoder())
+                                                            encoder=self.get_encoder(), debug_level=255)
         self.forwarder: ICNForwarder = ICNForwarder(port=0, encoder=self.get_encoder(), log_level=255)
 
         self.repo_port = self.ICNRepo.linklayer.get_port()
@@ -95,7 +95,7 @@ class cases_Fetch(object):
 
     def test_fetching_content_from_second_repo_after_nack(self):
         """Test sending an interest to forwarder with no matching content, choose second route to fetch content"""
-        self.forwarder2: ICNForwarder = ICNForwarder(0,  encoder=self.get_encoder())
+        self.forwarder2: ICNForwarder = ICNForwarder(0,  encoder=self.get_encoder(), log_level=255)
         self.ICNRepo.start_repo()
         self.forwarder.start_forwarder()
         self.forwarder2.start_forwarder()

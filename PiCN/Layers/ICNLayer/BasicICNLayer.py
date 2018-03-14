@@ -121,7 +121,7 @@ class BasicICNLayer(LayerProcess):
         pit_entry = self.check_pit(content.name)
         if pit_entry is None:
             self.logger.info("No PIT entry for content object available, dropping")
-            #todo NACK
+            #todo NACK??
             return
         else:
             for i in range(0, len(pit_entry.faceids)):

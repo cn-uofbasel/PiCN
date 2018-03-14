@@ -1,7 +1,6 @@
 """ De- and Encoding Layer, using a predefined Encoder """
 
 import multiprocessing
-
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
 from PiCN.Processes import LayerProcess
 
@@ -42,11 +41,9 @@ class BasicPacketEncodingLayer(LayerProcess):
         to_higher.put([faceid, decoded_packet])
 
     def encode(self, data):
-        self.logger.info("Encoding data")
         return self._encoder.encode(data)
 
     def decode(self, data):
-        self.logger.info("Decoding data")
         return self._encoder.decode(data)
 
     def check_data(self, data):
