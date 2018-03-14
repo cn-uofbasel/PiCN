@@ -280,7 +280,7 @@ class NdnTlvEncoder(BasicEncoder):
         try:
             decoder.readNestedTlvsStart(Tlv.LpPacket_NackReason)
             wire_reason = decoder.readVarNumber()
-            reason = self.__nack_reason_enum(wire_reason)
+            reason = self.__nack_reason_enum[wire_reason]
         except ValueError:
             # happens when nack reason is not specified
             reason = NackReason.NOT_SET
@@ -308,4 +308,4 @@ class NdnTlvEncoder(BasicEncoder):
         :param input:  Packet in NDN-TLV wire format
         :return: True if NACK
         """
-        return input[0] == 0x64 and input[3] == 0x03  and input[4] == 0x20
+        return input[0] == 0x64 and input[3] == 0x03 and input[4] == 0x20
