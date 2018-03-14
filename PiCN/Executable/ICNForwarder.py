@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """ICN Forwarder executable"""
 
 import argparse
@@ -6,7 +8,6 @@ import logging
 import PiCN.ProgramLibs.ICNForwarder
 from PiCN.Logger import Logger
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
-
 
 def main(args):
 

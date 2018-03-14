@@ -18,4 +18,18 @@ Each Module increases the abstraction, they are chained to a kind
 of execution stack.
 
 # Quick start
-TODO
+```
+% git clone https://github.com/cn-uofbasel/PiCN.git
+% cd PiCN
+% export PYTHONPATH=`pwd`
+...
+% mkdir /tmp/repo
+% touch /tmp/repo/example && echo "HELLO WORLD" > /tmp/repo/example
+...
+% python3 ./PiCN/Executable/ICNDataRepository.py --format ndntlv /tmp/repo /the/prefix 10000 &
+% python3 ./PiCN/Executable/ICNForwarder.py --format ndntlv --port 9000 & 
+% 
+...
+...
+...
+```

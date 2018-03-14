@@ -15,9 +15,9 @@ from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 def main(args):
 
     prefix = Name(args.icnprefix)
-    prefix.suite = args.suite
+    prefix.format = args.format
 
-    if args.suite == "ndn2013":
+    if args.format == "ndntlv":
         encoder = NdnTlvEncoder()
     else:
         encoder = SimpleStringEncoder()
@@ -33,9 +33,7 @@ def main(args):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='ICN Data Repository')
-    parser.add_argument('--repotype', default='flic',
-                        choices=['simple', 'flic'])
-    parser.add_argument('--suite', default='ndn2013', type=str)
+    parser.add_argument('--format', default='ndntlv', type=str)
     parser.add_argument('datapath', type=str,
                         help='filesystem path where the repo stores its data')
     parser.add_argument('icnprefix', type=str,

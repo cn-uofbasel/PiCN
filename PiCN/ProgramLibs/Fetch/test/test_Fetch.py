@@ -38,7 +38,7 @@ class cases_Fetch(object):
             content_file.write('B' * 20000)
 
         self.ICNRepo: ICNDataRepository = ICNDataRepository("/tmp/repo_unit_test", Name("/test/data"), port=0,
-                                                            encoder=self.get_encoder(), debug_level=255)
+                                                            encoder=self.get_encoder(), log_level=255)
         self.forwarder: ICNForwarder = ICNForwarder(port=0, encoder=self.get_encoder(), log_level=255)
 
         self.repo_port = self.ICNRepo.linklayer.get_port()

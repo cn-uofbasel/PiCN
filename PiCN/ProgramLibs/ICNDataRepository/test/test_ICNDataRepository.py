@@ -40,7 +40,7 @@ class cases_ICNDataRepository(object):
             content_file.write('B' * 20000)
 
         self.ICNRepo: ICNDataRepository = ICNDataRepository("/tmp/repo_unit_test", Name("/test/data"), 0,
-                                                            encoder=self.get_encoder(), debug_level=255)
+                                                            encoder=self.get_encoder(), log_level=255)
         self.repo_port = self.ICNRepo.linklayer.get_port()
         self.fetch = Fetch("127.0.0.1", self.repo_port, encoder=self.get_encoder())
 

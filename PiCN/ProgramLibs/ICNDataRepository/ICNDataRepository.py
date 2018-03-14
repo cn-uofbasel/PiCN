@@ -21,9 +21,9 @@ class ICNDataRepository(object):
     """A ICN Forwarder using PiCN"""
 
     def __init__(self, foldername: str, prefix: Name,
-                 port=9000, debug_level=255, encoder: BasicEncoder = None):
+                 port=9000, log_level=255, encoder: BasicEncoder = None):
 
-        logger = Logger("ICNRepo", debug_level)
+        logger = Logger("ICNRepo", log_level)
         logger.info("Start PiCN Data Repository")
 
         #packet encoder
@@ -38,10 +38,10 @@ class ICNDataRepository(object):
         self.repo = SimpleFileSystemRepository(foldername, prefix, logger)
 
         #initialize layers
-        self.linklayer = UDP4LinkLayer(port, debug_level=debug_level)
-        self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, debug_level=debug_level)
-        self.chunklayer = BasicChunkLayer(self.chunkifyer, debug_level=debug_level)
-        self.repolayer = BasicRepositoryLayer(self.repo, debug_level=debug_level)
+        self.linklayer = UDP4LinkLayer(port, debug_level=log_level)
+        self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, debug_level=log_level)
+        self.chunklayer = BasicChunkLayer(self.chunkifyer, debug_level=log_level)
+        self.repolayer = BasicRepositoryLayer(self.repo, debug_level=log_level)
 
         #setup communication queues
         self.q_link_packet_up = multiprocessing.Queue()
@@ -76,7 +76,7 @@ class ICNDataRepository(object):
         # mgmt
         self.mgmt = Mgmt(None, None, None, self.linklayer, self.linklayer.get_port(),
                          self.start_repo, repo_path=foldername,
-                         repo_prfx=prefix, debug_level=debug_level)
+                         repo_prfx=prefix, debug_level=log_level)
 
     def start_repo(self):
         # start processes
