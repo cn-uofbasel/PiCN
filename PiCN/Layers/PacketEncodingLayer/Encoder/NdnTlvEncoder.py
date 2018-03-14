@@ -174,10 +174,8 @@ class NdnTlvEncoder(BasicEncoder):
         """
         encoder = TlvEncoder()
         # write fragment (interest packet)
-#        if interest.wire_format is None:
-#            interest_encoder = NdnTlvEncoder()
-#            interest_encoder.encode_interest(interest)
-#            interest.wire_format = interest_encoder.getOutput().tobytes()
+        if interest.wire_format is None:
+            interest._wire_format = self.encode(interest)
         encoder.writeBuffer(interest.wire_format)
         encoder.writeTypeAndLength(Tlv.LpPacket_Fragment, len(encoder))
         fragment_len = len(encoder)
