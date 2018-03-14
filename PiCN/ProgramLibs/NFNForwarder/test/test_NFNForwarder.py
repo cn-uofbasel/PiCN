@@ -115,6 +115,7 @@ class cases_NFNForwarder(object):
         encoded_content, addr = self.testSock.recvfrom(8192)
         content = self.encoder.decode(encoded_content)
         self.assertEqual(content, test_content)
+        time.sleep(4)
         self.assertEqual(len(self.forwarder1.pit.container), 0)
 
     def test_NFNForwarder_simple_compute_two_nodes(self):
