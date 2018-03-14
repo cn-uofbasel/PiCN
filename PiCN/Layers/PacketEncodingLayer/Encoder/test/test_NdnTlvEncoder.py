@@ -42,9 +42,9 @@ class test_NdnTlvEncoder(unittest.TestCase):
         """Test the creation of a nack object message with no wireformat given"""
         name: Name = Name("/test/data")
         i1: Interest = Interest(name)
+        i1._wire_format = self.encoder.encode(i1)
         n1: Nack = Nack(name, NackReason.NO_ROUTE, interest=i1)
         enc_n1 = self.encoder.encode(n1)
-        print(enc_n1)
         self.assertEqual(enc_n1[0], 0x64)
         self.assertEqual(enc_n1[3], 0x03)
         self.assertEqual(enc_n1[4], 0x20)

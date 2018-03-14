@@ -276,7 +276,7 @@ class NdnTlvEncoder(BasicEncoder):
         try:
             decoder.readNestedTlvsStart(Tlv.LpPacket_NackReason)
             wire_reason = decoder.readVarNumber()
-            reason = self.__nack_reason_enum(wire_reason)
+            reason = self.__nack_reason_enum[wire_reason]
         except ValueError:
             # happens when nack reason is not specified
             reason = NackReason.NOT_SET
