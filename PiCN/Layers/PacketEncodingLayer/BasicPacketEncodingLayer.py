@@ -41,9 +41,11 @@ class BasicPacketEncodingLayer(LayerProcess):
         to_higher.put([faceid, decoded_packet])
 
     def encode(self, data):
+        self.logger.info("Encode packet")
         return self._encoder.encode(data)
 
     def decode(self, data):
+        self.logger.info("Decode packet")
         return self._encoder.decode(data)
 
     def check_data(self, data):
