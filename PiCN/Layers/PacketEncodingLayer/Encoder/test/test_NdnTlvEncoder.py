@@ -47,6 +47,8 @@ class test_NdnTlvEncoder(unittest.TestCase):
         enc_n1 = self.encoder.encode(n1)
         print(enc_n1)
         self.assertEqual(enc_n1[0], 0x64)
+        self.assertEqual(enc_n1[3], 0x03)
+        self.assertEqual(enc_n1[4], 0x20)
         self.assertFalse(self.encoder.is_interest(enc_n1))
         self.assertFalse(self.encoder.is_content(enc_n1))
         self.assertTrue(self.encoder.is_nack(enc_n1))
