@@ -66,7 +66,7 @@ The following name scheme is used:
 
   mdo: < name first chunk name> : < name second chunk name> : < name third chunk name> : < name fourth chunk name>  : < next meta data object >
   
-  * The content is complete if there is no new meta data object.
+  * The content is complete if there is no further Metadata-Object.
   
 * Chunk Naming: 
   * First Chunk < original file name >/c0
