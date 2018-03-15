@@ -82,7 +82,7 @@ if __name__ == "__main__":
                             help="IP address or hostname of forwarder (default: 127.0.0.1)")
     parser.add_argument('-p', '--port', type=int, default=9000, help="UDP port of forwarder(default: 9000)")
     parser.add_argument('command', type=str, choices = ['shutdown', 'getrepoprefix', 'getrepopath', 'newface', 'newforwardingrule', 'newcontent'], help="Management Command")
-    parser.add_argument('parameters', type=str, nargs='+', help="Command Parameter")
+    parser.add_argument('parameters', type=str, nargs='?', help="Command Parameter")
     args = parser.parse_args()
     help_string = parser.format_help()
     main(args, help_string)
