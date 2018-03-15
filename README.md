@@ -2,6 +2,11 @@
 
 **Requires Python  >=3.6** 
 
+
+Compatible with
+
+[![Named Data Networking (NDN) packet format](https://named-data.net/wp-content/uploads/cropped-20130722_Logo2.png)](https://named-data.net).
+
 # Status of Automatic Tests
 
 [![Build Status](https://semaphoreci.com/api/v1/cn-unibas/picn/branches/master/badge.svg)](https://semaphoreci.com/cn-unibas/picn)
