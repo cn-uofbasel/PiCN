@@ -16,6 +16,11 @@ Currently, PiCN is compatible with the [Named Data Networking (NDN) packet forma
 
 
 # Quick start
+This is a simple example that shows how to start a Repository and a Forwarder and how to fetch Content from the Repo.
+The following topology is used:
+
+Client(Fetch Tool) ---- Forwarder ---- Repo
+             
 ```
 #Download PiCN
 % git clone https://github.com/cn-uofbasel/PiCN.git
@@ -31,11 +36,11 @@ Currently, PiCN is compatible with the [Named Data Networking (NDN) packet forma
 % python3 ./PiCN/Executable/ICNForwarder.py --format ndntlv --port 9000 & 
 % 
 ...
-#Setup forwarding rule
+#Setup forwarding rule from the Forwarder to the Repo
 % python3 ./PiCN/Executable/Mgmt.py -i 127.0.0.1 -p 9000 newface 127.0.0.1 10000
 % python3 ./PiCN/Executable/Mgmt.py -i 127.0.0.1 -p 9000 newforwardingrule /the 0
 ...
-#Fetch content from the Repo 
+#Fetch content from the Repo via the Forwarder 
 % python3 ./PiCN/Executable/Fetch.py --format ndntlv 127.0.0.1 9000 /the/prefix/example 
 ```
 
