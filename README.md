@@ -3,7 +3,8 @@
 **Requires Python  >=3.6** 
 
 
-Compatible with
+
+**Compatible with**
 
 [![Named Data Networking (NDN)](https://named-data.net/wp-content/uploads/cropped-20130722_Logo2.png)](https://named-data.net).
 
