@@ -11,6 +11,8 @@ class SimpleStringEncoder(BasicEncoder):
         BasicEncoder.__init__(self)
         self.logger = Logger("SimpleEnc", log_level)
 
+    def set_log_level(self, log_level):
+        self.logger.setLevel(log_level)
 
     def encode(self, packet: Packet):
         res = None

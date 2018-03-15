@@ -25,9 +25,8 @@ class ICNForwarder(object):
         if encoder == None:
             self.encoder = SimpleStringEncoder
         else:
+            encoder.set_log_level(log_level)
             self.encoder = encoder
-            # TODO: set log_level of encoder
-
 
         # initialize layers
         self.linklayer = UDP4LinkLayer(port, log_level=log_level)

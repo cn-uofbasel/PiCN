@@ -29,8 +29,9 @@ class NFNForwarder(object):
 
         # packet encoder
         if encoder == None:
-            self.encoder = SimpleStringEncoder
+            self.encoder = SimpleStringEncoder(log_level=log_level)
         else:
+            encoder.set_log_level(log_level)
             self.encoder = encoder
 
         # initialize layers

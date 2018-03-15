@@ -21,8 +21,8 @@ class Fetch(object):
         if encoder == None:
             self.encoder = SimpleStringEncoder(log_level = log_level)
         else:
+            encoder.set_log_level(log_level)
             self.encoder = encoder
-            # TODO: set log_level of encoder
         self.chunkifyer = SimpleContentChunkifyer()
 
         #create layers

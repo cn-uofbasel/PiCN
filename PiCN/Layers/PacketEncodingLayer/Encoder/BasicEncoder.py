@@ -14,6 +14,10 @@ class BasicEncoder(object):
         def logger(self):
             pass
 
+    @abc.abstractmethod
+    def set_log_level(self, log_level):
+        pass
+
     @abc.abstractclassmethod
     def encode(self, packet: Packet):
         """encode a packet to wireformat"""
