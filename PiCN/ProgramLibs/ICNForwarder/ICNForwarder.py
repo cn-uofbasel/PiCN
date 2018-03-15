@@ -26,6 +26,7 @@ class ICNForwarder(object):
             self.encoder = SimpleStringEncoder
         else:
             self.encoder = encoder
+            # TODO: set log_level of encoder
 
 
         # initialize layers

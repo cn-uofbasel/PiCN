@@ -31,6 +31,7 @@ class ICNDataRepository(object):
             self.encoder = SimpleStringEncoder(log_level = log_level)
         else:
             self.encoder = encoder
+            # TODO: set log_level of encoder
         #chunkifyer
         self.chunkifyer = SimpleContentChunkifyer()
 
