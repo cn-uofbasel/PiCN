@@ -13,8 +13,8 @@ class BasicRouting(PiCNProcess):
     Tickers sending packets to the neigbours."""
 
 
-    def __init__(self, pit: BasePendingInterestTable, faces: List[str], debug_level: int=255):
-        self._logger = Logger("Routing", debug_level)
+    def __init__(self, pit: BasePendingInterestTable, faces: List[str], log_level: int=255):
+        self._logger = Logger("Routing", log_level)
         self.pit = pit
         self.faces = faces
 

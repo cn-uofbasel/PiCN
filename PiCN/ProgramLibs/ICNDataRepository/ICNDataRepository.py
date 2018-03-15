@@ -28,9 +28,10 @@ class ICNDataRepository(object):
 
         #packet encoder
         if encoder == None:
-            self.encoder = SimpleStringEncoder()
+            self.encoder = SimpleStringEncoder(log_level = log_level)
         else:
             self.encoder = encoder
+            # TODO: set log_level of encoder
         #chunkifyer
         self.chunkifyer = SimpleContentChunkifyer()
 
@@ -38,10 +39,10 @@ class ICNDataRepository(object):
         self.repo = SimpleFileSystemRepository(foldername, prefix, logger)
 
         #initialize layers
-        self.linklayer = UDP4LinkLayer(port, debug_level=log_level)
-        self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, debug_level=log_level)
-        self.chunklayer = BasicChunkLayer(self.chunkifyer, debug_level=log_level)
-        self.repolayer = BasicRepositoryLayer(self.repo, debug_level=log_level)
+        self.linklayer = UDP4LinkLayer(port, log_level=log_level)
+        self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
+        self.chunklayer = BasicChunkLayer(self.chunkifyer, log_level=log_level)
+        self.repolayer = BasicRepositoryLayer(self.repo, log_level=log_level)
 
         #setup communication queues
         self.q_link_packet_up = multiprocessing.Queue()
@@ -76,7 +77,7 @@ class ICNDataRepository(object):
         # mgmt
         self.mgmt = Mgmt(None, None, None, self.linklayer, self.linklayer.get_port(),
                          self.start_repo, repo_path=foldername,
-                         repo_prfx=prefix, debug_level=log_level)
+                         repo_prfx=prefix, log_level=log_level)
 
     def start_repo(self):
         # start processes

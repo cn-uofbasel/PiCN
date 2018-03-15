@@ -23,15 +23,16 @@ class ICNForwarder(object):
 
         # packet encoder
         if encoder == None:
-            self.encoder = SimpleStringEncoder()
+            self.encoder = SimpleStringEncoder
         else:
             self.encoder = encoder
+            # TODO: set log_level of encoder
 
 
         # initialize layers
-        self.linklayer = UDP4LinkLayer(port, debug_level=log_level)
-        self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, debug_level=log_level)
-        self.icnlayer = BasicICNLayer(debug_level=log_level)
+        self.linklayer = UDP4LinkLayer(port, log_level=log_level)
+        self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
+        self.icnlayer = BasicICNLayer(log_level=log_level)
 
         # setup communication queues
         self.q_link_packet_up = multiprocessing.Queue()
@@ -67,10 +68,10 @@ class ICNForwarder(object):
         self.icnlayer.pit = self.pit
 
         #routing
-        self.routing = BasicRouting(self.icnlayer.pit, None, debug_level=log_level) #TODO NOT IMPLEMENTED YET
+        self.routing = BasicRouting(self.icnlayer.pit, None, log_level=log_level) #TODO NOT IMPLEMENTED YET
 
         #mgmt
-        self.mgmt = Mgmt(self.cs, self.fib, self.pit, self.linklayer, self.linklayer.get_port(), self.stop_forwarder, debug_level=log_level)
+        self.mgmt = Mgmt(self.cs, self.fib, self.pit, self.linklayer, self.linklayer.get_port(), self.stop_forwarder, log_level=log_level)
 
     def start_forwarder(self):
         # start processes

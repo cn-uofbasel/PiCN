@@ -2,9 +2,17 @@
 
 import abc
 from PiCN.Packets import Packet
+from PiCN.Logger import Logger
 
 class BasicEncoder(object):
     """Abstract Encoder for the BasicPacketEncoding Layer"""
+
+    @abc.abstractmethod
+    def __init__(self, log_level = 255):
+        @property
+        @abc.abstractmethod
+        def logger(self):
+            pass
 
     @abc.abstractclassmethod
     def encode(self, packet: Packet):

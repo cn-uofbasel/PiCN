@@ -17,8 +17,8 @@ class BasicICNLayer(LayerProcess):
     """ICN Forwarding Plane. Maintains data structures for ICN Forwarding"""
 
     def __init__(self, cs: BaseContentStore=None, pit: BasePendingInterestTable =None,
-                 fib: BaseForwardingInformationBase=None, debug_level=255):
-        super().__init__(logger_name="ICNLayer", debug_level=debug_level)
+                 fib: BaseForwardingInformationBase=None, log_level=255):
+        super().__init__(logger_name="ICNLayer", log_level=log_level)
         self._manager = multiprocessing.Manager()
         self._cs: BaseContentStore = cs
         self._pit: BasePendingInterestTable = pit

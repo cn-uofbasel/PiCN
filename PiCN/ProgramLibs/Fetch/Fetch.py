@@ -15,19 +15,20 @@ from PiCN.Packets import Content, Name, Interest, Nack
 class Fetch(object):
     """Fetch Tool for PiCN"""
 
-    def __init__(self, ip: str, port: int, debug_level = 255, encoder: BasicEncoder=None):
+    def __init__(self, ip: str, port: int, log_level = 255, encoder: BasicEncoder=None):
 
         #create encoder and chunkifyer
         if encoder == None:
-            self.encoder = SimpleStringEncoder()
+            self.encoder = SimpleStringEncoder(log_level = log_level)
         else:
             self.encoder = encoder
+            # TODO: set log_level of encoder
         self.chunkifyer = SimpleContentChunkifyer()
 
         #create layers
-        self.linklayer = UDP4LinkLayer(0, debug_level=debug_level)
-        self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, debug_level=debug_level)
-        self.chunklayer = BasicChunkLayer(self.chunkifyer, debug_level=debug_level)
+        self.linklayer = UDP4LinkLayer(0, log_level=log_level)
+        self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
+        self.chunklayer = BasicChunkLayer(self.chunkifyer, log_level=log_level)
 
         # setup communication queues
         self.q_link_packet_up = multiprocessing.Queue()

@@ -23,8 +23,8 @@ class BasicNFNLayer(LayerProcess):
 
     def __init__(self, manager: multiprocessing.Manager, content_store: BaseContentStore,
                  fib: BaseForwardingInformationBase, pit: BasePendingInterestTable,
-                 executor: Dict[str, type(BaseNFNExecutor)], logger_name="NFN Layer", debug_level=255):
-        super().__init__(logger_name, debug_level)
+                 executor: Dict[str, type(BaseNFNExecutor)], logger_name="NFN Layer", log_level=255):
+        super().__init__(logger_name, log_level)
         self.manager = manager
         self.content_store = content_store
         self.fib = fib

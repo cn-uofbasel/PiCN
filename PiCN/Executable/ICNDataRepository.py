@@ -15,15 +15,16 @@ from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 def main(args):
 
     prefix = Name(args.icnprefix)
-    prefix.format = args.format
+
+    log_level = logging.DEBUG
 
     if args.format == "ndntlv":
         encoder = NdnTlvEncoder()
     else:
-        encoder = SimpleStringEncoder()
+        encoder = SimpleStringEncoder(log_level=log_level)
 
     repo = ICNDataRepository(args.datapath, prefix,
-                             args.port, logging.DEBUG, encoder=encoder)
+                             args.port, log_level, encoder=encoder)
     repo.start_repo()
 
     repo.linklayer.process.join()
@@ -39,7 +40,7 @@ if __name__ == "__main__":
     parser.add_argument('icnprefix', type=str,
                         help='prefix for all content stored in this repo')
     parser.add_argument('port', type=int, default=9000,
-                        help="the repo's UDP and TCP port")
+                        help="the repo's UDP and TCP port (TCP only for MGMT)")
 
     args = parser.parse_args()
     main(args)
