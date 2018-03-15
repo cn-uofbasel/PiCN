@@ -22,21 +22,21 @@ from PiCN.Routing import BasicRouting
 class NFNForwarder(object):
     """NFN Forwarder for PICN"""
 #TODO add chunking layer
-    def __init__(self, port=9000, debug_level=255, encoder: BasicEncoder=None):
+    def __init__(self, port=9000, log_level=255, encoder: BasicEncoder=None):
         # debug level
-        logger = Logger("NFNForwarder", debug_level)
+        logger = Logger("NFNForwarder", log_level)
         logger.info("Start PiCN NFN Forwarder on port " + str(port))
 
         # packet encoder
         if encoder == None:
-            self.encoder = SimpleStringEncoder()
+            self.encoder = SimpleStringEncoder
         else:
             self.encoder = encoder
 
         # initialize layers
-        self.linklayer = UDP4LinkLayer(port, debug_level=debug_level)
-        self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, debug_level=debug_level)
-        self.icnlayer = BasicICNLayer(debug_level=debug_level)
+        self.linklayer = UDP4LinkLayer(port, log_level=log_level)
+        self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
+        self.icnlayer = BasicICNLayer(log_level=log_level)
 
         # setup data structures
         self.cs = ContentStoreMemoryExact(self.icnlayer.manager)
@@ -50,13 +50,13 @@ class NFNForwarder(object):
         self.chunkifier = SimpleContentChunkifyer()
 
         # setup chunklayer
-        self.chunklayer = BasicChunkLayer(self.chunkifier, debug_level=debug_level)
+        self.chunklayer = BasicChunkLayer(self.chunkifier, log_level=log_level)
 
         # setup nfn
         self.icnlayer._interest_to_app = True
         self.executors = {"PYTHON": NFNPythonExecutor}
         self.nfnlayer = BasicNFNLayer(self.icnlayer.manager, self.cs, self.fib, self.pit, self.executors,
-                                      debug_level=debug_level)
+                                      log_level=log_level)
 
         # setup communication queues
         self.q_link_packet_up = multiprocessing.Queue()
@@ -101,11 +101,11 @@ class NFNForwarder(object):
         self.nfnlayer.queue_from_lower = self.q_chunk_to_nfn
 
         # routing
-        self.routing = BasicRouting(self.icnlayer.pit, None, debug_level=debug_level)  # TODO NOT IMPLEMENTED YET
+        self.routing = BasicRouting(self.icnlayer.pit, None, log_level=log_level)  # TODO NOT IMPLEMENTED YET
 
         # mgmt
         self.mgmt = Mgmt(self.cs, self.fib, self.pit, self.linklayer, self.linklayer.get_port(), self.stop_forwarder,
-                         debug_level=debug_level)
+                         log_level=log_level)
 
     def start_forwarder(self):
         # start processes

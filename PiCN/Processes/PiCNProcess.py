@@ -8,9 +8,9 @@ from PiCN.Logger import Logger
 class PiCNProcess(object):
     """Abstract Process for PiCN"""
 
-    def __init__(self, logger_name="PiCNProcess", debug_level=255):
+    def __init__(self, logger_name="PiCNProcess", log_level=255):
         self._process: multiprocessing.Process = None
-        self.logger = Logger(logger_name, debug_level)
+        self.logger = Logger(logger_name, log_level)
 
     @abc.abstractclassmethod
     def start_process(self):

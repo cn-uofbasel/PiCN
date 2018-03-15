@@ -8,8 +8,8 @@ from PiCN.Processes import LayerProcess
 class BasicPacketEncodingLayer(LayerProcess):
     """ De- and Encoding Layer, using a predefined Encoder """
 
-    def __init__(self, encoder: BasicEncoder=None, debug_level=255):
-        LayerProcess.__init__(self, logger_name="PktEncLayer", debug_level=debug_level)
+    def __init__(self, encoder: BasicEncoder=None, log_level=255):
+        LayerProcess.__init__(self, logger_name="PktEncLayer", log_level=log_level)
         self._encoder: BasicEncoder = encoder
 
     @property

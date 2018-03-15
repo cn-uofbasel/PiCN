@@ -17,13 +17,15 @@ def main(args):
     prefix = Name(args.icnprefix)
     prefix.suite = args.suite
 
+    log_level = logging.DEBUG
+
     if args.suite == "ndn2013":
         encoder = NdnTlvEncoder()
     else:
-        encoder = SimpleStringEncoder()
+        encoder = SimpleStringEncoder(log_level=log_level)
 
     repo = ICNDataRepository(args.datapath, prefix,
-                             args.port, logging.DEBUG, encoder=encoder)
+                             args.port, log_level, encoder=encoder)
     repo.start_repo()
 
     repo.linklayer.process.join()

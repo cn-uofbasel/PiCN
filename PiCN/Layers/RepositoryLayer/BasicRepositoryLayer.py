@@ -10,8 +10,8 @@ from PiCN.Processes import LayerProcess
 class BasicRepositoryLayer(LayerProcess):
     """Basic implementation of the repository layer"""
 
-    def __init__(self, repository: BaseRepository, propagate_interest: bool=False, logger_name="RepoLayer", debug_level=255):
-        super().__init__(logger_name, debug_level)
+    def __init__(self, repository: BaseRepository, propagate_interest: bool=False, logger_name="RepoLayer", log_level=255):
+        super().__init__(logger_name, log_level)
 
         self._repository: BaseRepository = repository
         self._proagate_interest: bool = propagate_interest

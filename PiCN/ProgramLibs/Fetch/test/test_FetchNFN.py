@@ -39,9 +39,9 @@ class cases_FetchNFN(object):
             content_file.write('b' * 20000)
 
         self.ICNRepo: ICNDataRepository = ICNDataRepository("/tmp/repo_unit_test", Name("/test/data"), 0,
-                                                            encoder=self.get_encoder(), debug_level=255)
-        self.forwarder1: NFNForwarder = NFNForwarder(0, debug_level=255, encoder=self.get_encoder())
-        self.forwarder2: NFNForwarder = NFNForwarder(0, debug_level=255, encoder=self.get_encoder())
+                                                            encoder=self.get_encoder(), log_level=255)
+        self.forwarder1: NFNForwarder = NFNForwarder(0, log_level=255, encoder=self.get_encoder())
+        self.forwarder2: NFNForwarder = NFNForwarder(0, log_level=255, encoder=self.get_encoder())
 
         self.repo_port = self.ICNRepo.linklayer.get_port()
         self.fwd_port1 = self.forwarder1.linklayer.get_port()

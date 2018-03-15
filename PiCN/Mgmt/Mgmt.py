@@ -19,8 +19,8 @@ class Mgmt(PiCNProcess):
     """Mgmt System for PiCN"""
 
     def __init__(self, cs: BaseContentStore, fib: BaseForwardingInformationBase, pit: BasePendingInterestTable,
-                 linklayer: LayerProcess, port: int, shutdown = None, repo_prfx: str=None, repo_path: str=None,  debug_level=255):
-        super().__init__("MgmtSys", debug_level)
+                 linklayer: LayerProcess, port: int, shutdown = None, repo_prfx: str=None, repo_path: str=None, log_level=255):
+        super().__init__("MgmtSys", log_level)
         self._cs: BaseContentStore = cs
         self._fib: BaseForwardingInformationBase = fib
         self._pit: BasePendingInterestTable = pit

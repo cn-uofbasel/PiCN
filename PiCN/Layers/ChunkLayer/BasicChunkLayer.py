@@ -26,8 +26,8 @@ class RequestTableEntry(object):
 class BasicChunkLayer(LayerProcess):
     """"Basic Chunking Layer for PICN"""
 
-    def __init__(self, chunkifyer: BaseChunkifyer=None, chunk_size: int=4096, debug_level=255):
-        super().__init__("ChunkLayer", debug_level=debug_level)
+    def __init__(self, chunkifyer: BaseChunkifyer=None, chunk_size: int=4096, log_level=255):
+        super().__init__("ChunkLayer", log_level=log_level)
         self.chunk_size = chunk_size
         if chunkifyer == None:
             self.chunkifyer = SimpleContentChunkifyer(chunk_size)

@@ -6,8 +6,8 @@ import multiprocessing, select, socket, time
 class UDP4LinkLayer(LayerProcess):
     """ Link Layer Inferface using UDP Sockets for Communication """
 
-    def __init__(self, port: int = 9000, debug_level=255, buffersize: int = 8192, max_fids_entries: int = int(1e6)):
-        LayerProcess.__init__(self, logger_name="LinkLayer", debug_level=debug_level)
+    def __init__(self, port: int = 9000, log_level=255, buffersize: int = 8192, max_fids_entries: int = int(1e6)):
+        LayerProcess.__init__(self, logger_name="LinkLayer", log_level=log_level)
         #static unsync data
         self._port: int = port
         self._buffersize: int = buffersize

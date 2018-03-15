@@ -21,8 +21,8 @@ class NFNEvaluator(PiCNProcess):
 
     def __init__(self, interest: Interest, cs: BaseContentStore, fib: BaseForwardingInformationBase,
                  pit: BasePendingInterestTable, rewrite_table: Dict[Interest, List[Interest]],
-                 executor: Dict[str, type(BaseNFNExecutor)] = {}, local: bool=False ,debug_level: int = 255):
-        super().__init__("NFNEvaluator", debug_level)
+                 executor: Dict[str, type(BaseNFNExecutor)] = {}, local: bool=False, log_level: int = 255):
+        super().__init__("NFNEvaluator", log_level)
         self.interest: Interest = interest
         self.computation_in_queue: multiprocessing.Queue = multiprocessing.Queue()  # data to computation
         self.computation_out_queue: multiprocessing.Queue = multiprocessing.Queue()  # data from computation

@@ -11,8 +11,8 @@ from PiCN.Processes import PiCNProcess
 class LayerProcess(PiCNProcess):
     """ Abstract Class defining a Process running on a layer"""
 
-    def __init__(self, logger_name="PiCNProcess", debug_level=255):
-        super().__init__(logger_name, debug_level)
+    def __init__(self, logger_name="PiCNProcess", log_level=255):
+        super().__init__(logger_name, log_level)
         self._queue_from_lower: multiprocessing.Queue = None
         self._queue_from_higher: multiprocessing.Queue = None
         self._queue_to_lower: multiprocessing.Queue = None
