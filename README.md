@@ -9,13 +9,11 @@
 (The CI system runs unit tests, that verify the functionality of PiCN, including network communication)
 
 # PiCN 
-PiCN is a modular ICN implementation designed to support NFN and
-other in network applications written in Python 3
+PiCN is a modular implementation of Information Centric Networking (ICN) designed to support Named Function Networking (NFN)
+and other in network applications written in Python 3.
 
-## Modularization
-PiCN consists of several Modules which run in separated processes. 
-Each Module increases the abstraction, they are chained to a kind 
-of execution stack.
+Currently, PiCN is compatible with the [Named Data Networking (NDN) packet format](named-data.net).
+
 
 # Quick start
 ```
@@ -40,3 +38,20 @@ of execution stack.
 #Fetch content from the Repo 
 % python3 ./PiCN/Executable/Fetch.py --format ndntlv 127.0.0.1 9000 /the/prefix/example 
 ```
+
+# Named Function Networking
+%TODO
+
+# Developer guide
+
+## Modularization
+PiCN consists of several Modules which run in separated processes. 
+Each Module increases the abstraction, they are chained to a kind 
+of execution stack.
+
+### Layers
+%TODO
+
+### ProgramLibs
+%TODO
+
