@@ -7,9 +7,6 @@
 
 (The CI system runs unit tests, that verify the functionality of PiCN, including network communication)
 
-# Features
-### Supports:
-[![Named Data Networking (NDN)](https://named-data.net/wp-content/uploads/cropped-20130722_Logo2.png)(https://named-data.net)
 
 # PiCN 
 PiCN is a modular implementation of Information Centric Networking (ICN) designed to support Named Function Networking (NFN)
@@ -95,6 +92,9 @@ of execution stack.
 ## ProgramLibs
 %TODO
 
+# Features
+### Supports:
+[![Named Data Networking (NDN)](https://named-data.net/wp-content/uploads/cropped-20130722_Logo2.png)](https://named-data.net)
 
 
 
