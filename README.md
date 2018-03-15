@@ -12,7 +12,7 @@
 PiCN is a modular implementation of Information Centric Networking (ICN) designed to support Named Function Networking (NFN)
 and other in network applications written in Python 3.
 
-Currently, PiCN is compatible with the [Named Data Networking (NDN) packet format](named-data.net).
+Currently, PiCN is compatible with the [Named Data Networking (NDN) packet format](https://named-data.net).
 
 
 # Quick start
