@@ -14,9 +14,9 @@ from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 def main(args):
 
     name = Name(args.name)
-    name.suite = args.suite
+    name.format = args.format
 
-    encoder = NdnTlvEncoder() if args.suite == 'ndn2013' else SimpleStringEncoder
+    encoder = NdnTlvEncoder() if args.format == 'ndntlv' else SimpleStringEncoder
     fetchTool = Fetch(args.ip, args.port, encoder = encoder)
 
     content = fetchTool.fetch_data(name)
@@ -29,8 +29,8 @@ def main(args):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='ICN Fetch Tool')
-    parser.add_argument('--suite', choices=['ndn2013',' simple'], type=str,
-                        default='ndn2013', help='default is: "ndn2013"')
+    parser.add_argument('--format', choices=['ndntlv',' simple'], type=str,
+                        default='ndntlv', help='default is: "ndntlv"')
     parser.add_argument('ip',   type=str,
                         help="IP addr of forwarder")
     parser.add_argument('port', type=int,
