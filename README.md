@@ -2,14 +2,14 @@
 
 **Requires Python  >=3.6** 
 
-
-### Supports:
-[![Named Data Networking (NDN)](https://named-data.net/wp-content/uploads/cropped-20130722_Logo2.png)](https://named-data.net)
 # Status of Automatic Tests
-
 [![Build Status](https://semaphoreci.com/api/v1/cn-unibas/picn/branches/master/badge.svg)](https://semaphoreci.com/cn-unibas/picn)
 
 (The CI system runs unit tests, that verify the functionality of PiCN, including network communication)
+
+#Features
+### Supports:
+[![Named Data Networking (NDN)](https://named-data.net/wp-content/uploads/cropped-20130722_Logo2.png)(https://named-data.net)
 
 # PiCN 
 PiCN is a modular implementation of Information Centric Networking (ICN) designed to support Named Function Networking (NFN)
