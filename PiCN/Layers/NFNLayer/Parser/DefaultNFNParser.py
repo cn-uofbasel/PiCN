@@ -15,14 +15,14 @@ class DefaultNFNParser(object):
 
     def __init__(self):
         """Default Parser for NFN"""
-        self.stringToken = Token(TokenType.STRING, '"', "[A-Za-z0-9]", '"')
-        self.intToken = Token(TokenType.INT, '[0-9\+\-]', "[0-9]", '[0-9]')
-        self.floatToken = Token(TokenType.FLOAT, '[0-9\+\-]', "[0-9.Ee]", '[0-9]')
-        self.nameToken = Token(TokenType.NAME, "/", "[A-Za-z0-9/]", "[A-Za-z0-9]")
-        self.varToken = Token(TokenType.VAR, "[A-Za-z0-9]", "[A-Za-z0-9]", "[A-Za-z0-9]")
-        self.funcToken = Token(TokenType.FUNCCALL, "/", "[A-Za-z0-9/]", "\(")
-        self.endFuncToken = Token(TokenType.ENDFUNCCALL, "\)", "", "")
-        self.paramSeparator = Token(TokenType.PARAMSEPARATOR, ",", "", "")
+        self.stringToken = Token(TokenType.STRING, r'"', r'[A-Za-z0-9]', r'"')
+        self.intToken = Token(TokenType.INT, r'[0-9\+\-]', r'[0-9]', r'[0-9]')
+        self.floatToken = Token(TokenType.FLOAT, r'[0-9\+\-]', r'[0-9.Ee]', r'[0-9]')
+        self.nameToken = Token(TokenType.NAME, r'/', r'[A-Za-z0-9/]', r'[A-Za-z0-9]')
+        self.varToken = Token(TokenType.VAR, r'[A-Za-z0-9]', r'[A-Za-z0-9]', r'[A-Za-z0-9]')
+        self.funcToken = Token(TokenType.FUNCCALL, r'/', r'[A-Za-z0-9/]', r'\(')
+        self.endFuncToken = Token(TokenType.ENDFUNCCALL, r'\)', r'', r'')
+        self.paramSeparator = Token(TokenType.PARAMSEPARATOR, r',', r'', r'')
 
         self.tokenizer = DefaultNFNTokenizer()
         self.tokenizer.add_token(self.stringToken)

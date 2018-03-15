@@ -65,7 +65,7 @@ class DefaultNFNTokenizer(object):
 
     def __init__(self):
         self._tokens: List[Token] = []
-        self.empty_tokens = re.compile("[\(\"]")
+        self.empty_tokens = re.compile(r"[\(\"]")
 
     def add_token(self, token: Token):
         """Add a Token to the Token-List"""
