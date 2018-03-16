@@ -1,1 +1,1 @@
-from .Logger import Logger, NullLogger
+from .Logger import Logger
