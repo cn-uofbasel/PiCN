@@ -59,6 +59,8 @@ def main(args, help_string):
             print("Connection Refused. Forwarder not running?")
         except:
             print(help_string)
+    if data:
+        print(data)
 
 
 if __name__ == "__main__":

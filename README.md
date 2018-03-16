@@ -37,8 +37,8 @@ Client(Fetch Tool) ---- Forwarder ---- Repo
 % 
 ...
 #Setup forwarding rule from the Forwarder to the Repo
-% python3 ./PiCN/Executable/Mgmt.py -i 127.0.0.1 -p 9000 newface 127.0.0.1 10000
-% python3 ./PiCN/Executable/Mgmt.py -i 127.0.0.1 -p 9000 newforwardingrule /the 0
+% python3 ./PiCN/Executable/Mgmt.py -i 127.0.0.1 -p 9000 newface 127.0.0.1:10000
+% python3 ./PiCN/Executable/Mgmt.py -i 127.0.0.1 -p 9000 newforwardingrule /the:0
 ...
 #Fetch content from the Repo via the Forwarder 
 % python3 ./PiCN/Executable/Fetch.py --format ndntlv 127.0.0.1 9000 /the/prefix/example 
@@ -93,7 +93,7 @@ of execution stack.
 %TODO
 
 # Features
-### Supports:
+### Compatible with:
 [![Named Data Networking (NDN)](https://named-data.net/wp-content/uploads/cropped-20130722_Logo2.png)](https://named-data.net)
 
 
