@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 """ICN Data Repository executable"""
 
 import argparse
@@ -10,7 +8,6 @@ from PiCN.Packets import Name
 from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 
-# ----------------------------------------------------------------------
 
 def main(args):
 
@@ -29,7 +26,6 @@ def main(args):
 
     repo.linklayer.process.join()
 
-# ----------------------------------------------------------------------
 
 if __name__ == "__main__":
 
@@ -44,5 +40,3 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     main(args)
-
-# eof
