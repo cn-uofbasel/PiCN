@@ -1,5 +1,7 @@
-"""Basic Routing System, dispatching Interest Content and Routing Packets.
-Tickers sending packets to the neigbours."""
+"""
+Basic Routing System, dispatching Interest Content and Routing Packets.
+Tickers sending packets to the neighbors.
+"""
 
 from typing import List
 
@@ -9,15 +11,15 @@ from PiCN.Processes import PiCNProcess
 
 
 class BasicRouting(PiCNProcess):
-    """Basic Routing System, dispatching Interest Content and Routing Packets.
-    Tickers sending packets to the neigbours."""
-
+    """
+    Basic Routing System, dispatching Interest Content and Routing Packets.
+    Tickers sending packets to the neighbors.
+    """
 
     def __init__(self, pit: BasePendingInterestTable, faces: List[str], log_level: int=255):
         self._logger = Logger("Routing", log_level)
         self.pit = pit
         self.faces = faces
-
 
     def start_process(self):
         #TODO
