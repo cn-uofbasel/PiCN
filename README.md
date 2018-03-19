@@ -18,27 +18,43 @@ The following topology is used:
 
 Client(Fetch Tool) ---- Forwarder ---- Repo
              
+### Download PiCN
 ```console
-# Download PiCN
 you@notebook:~$ git clone https://github.com/cn-uofbasel/PiCN.git
+```
 
-# Add to PATH (bash)
+### Add to PATH (bash)
+```console
 you@notebook:~$ PATH=$PATH:`pwd`/PiCN/starter
-...
-#Setup folder for the repo
+```
+
+### Setup folder for the repo
+```console
 you@notebook:~$ mkdir /tmp/repo
 you@notebook:~$ touch /tmp/repo/example && echo "HELLO WORLD" > /tmp/repo/example
 ...
-#Start Repo and Forwarder
+```
+
+
+### Start Repo and Forwarder
+```console
 you@notebook:~$ picn-repo --format ndntlv /tmp/repo /the/prefix 10000 &
 you@notebook:~$ picn-relay --format ndntlv --port 9000 &  
 ...
-#Setup forwarding rule from the Forwarder to the Repo
+```
+
+
+### Setup forwarding rule from the Forwarder to the Repo
+```console
 you@notebook:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newface 127.0.0.1:10000
 you@notebook:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newforwardingrule /the:0
 ...
-#Fetch content from the Repo via the Forwarder 
+```
+
+### Fetch content from the Repo via the Forwarder 
+```console
 $ picn-fetch --format ndntlv 127.0.0.1 9000 /the/prefix/example 
+... todo ...
 ```
 
 ## Named Function Networking
