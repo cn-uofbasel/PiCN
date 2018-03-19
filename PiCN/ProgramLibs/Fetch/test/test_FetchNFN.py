@@ -74,6 +74,28 @@ class cases_FetchNFN(object):
         self.forwarder2.stop_forwarder()
         self.fetch.stop_fetch()
 
+    def test_fetch_single_data_from_repo_over_forwarder(self):
+        """Test fetch data from repo over forwarder"""
+        self.ICNRepo.start_repo()
+        self.forwarder1.start_forwarder()
+        self.forwarder2.start_forwarder()
+        time.sleep(0.1)
+        self.add_face_and_forwadingrule()
+        fetch_name = "/test/data/d1"
+        content = self.fetch.fetch_data(fetch_name)
+        self.assertEqual(self.data1, content)
+
+    def test_fetch_chunked_data_from_repo_over_forwarder(self):
+        """Test fetch chunked data from repo over forwarder"""
+        self.ICNRepo.start_repo()
+        self.forwarder1.start_forwarder()
+        self.forwarder2.start_forwarder()
+        time.sleep(0.1)
+        self.add_face_and_forwadingrule()
+        fetch_name = "/test/data/d3"
+        content = self.fetch.fetch_data(fetch_name)
+        self.assertEqual(self.data3, content)
+
     def test_compute_on_single_data_over_forwarder(self):
         """Test fetch result with single input data"""
         self.ICNRepo.start_repo()
