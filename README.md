@@ -7,7 +7,7 @@
 PiCN is a...
 * prototyping-friendly, modular and extensible library for content-centric networkig (CCN).
 * a set of tools and network nodes.
-* our platform to build the next generation of NFN (named function networking)
+* our platform to build the next generation of NFN.
 
 PiCN is written in Python 3.6+
 
@@ -20,26 +20,26 @@ Client(Fetch Tool) ---- Forwarder ---- Repo
              
 ```console
 # Download PiCN
-% git clone https://github.com/cn-uofbasel/PiCN.git
+$ git clone https://github.com/cn-uofbasel/PiCN.git
 
 # Add to PATH (bash)
-% PATH=$PATH:`pwd`/PiCN/starter
+$ PATH=$PATH:`pwd`/PiCN/starter
 ...
 #Setup folder for the repo
-% mkdir /tmp/repo
-% touch /tmp/repo/example && echo "HELLO WORLD" > /tmp/repo/example
+$ mkdir /tmp/repo
+$ touch /tmp/repo/example && echo "HELLO WORLD" > /tmp/repo/example
 ...
 #Start Repo and Forwarder
-% picn-repo --format ndntlv /tmp/repo /the/prefix 10000 &
-% picn-relay --format ndntlv --port 9000 & 
-% 
+$ picn-repo --format ndntlv /tmp/repo /the/prefix 10000 &
+$ picn-relay --format ndntlv --port 9000 & 
+ 
 ...
 #Setup forwarding rule from the Forwarder to the Repo
-% picn-mgmt --ip 127.0.0.1 --port 9000 newface 127.0.0.1:10000
-% picn-mgmt --ip 127.0.0.1 --port 9000 newforwardingrule /the:0
+$ picn-mgmt --ip 127.0.0.1 --port 9000 newface 127.0.0.1:10000
+$ picn-mgmt --ip 127.0.0.1 --port 9000 newforwardingrule /the:0
 ...
 #Fetch content from the Repo via the Forwarder 
-% picn-fetch --format ndntlv 127.0.0.1 9000 /the/prefix/example 
+$ picn-fetch --format ndntlv 127.0.0.1 9000 /the/prefix/example 
 ```
 
 ## Named Function Networking
