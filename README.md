@@ -11,11 +11,14 @@ PiCN is a...
 
 PiCN is written in Python 3.6+
 
+## Features
+
+tbd
 
 ## Hands On!
-Let us setup a simple network which of a data repository and a forwarding node:
+Let us setup a simple network which consists of a data repository and a forwarding node:
 
-**Repository (```picn-repo```) <----> Forwarder (```picn-relay```) <----> Client (```picn-fetch```)**
+**Repository (```picn-repo```) ---- Forwarder (```picn-relay```) ---- Client (```picn-fetch```)**
              
 Clone PiCN from github:
 ```console
@@ -54,9 +57,26 @@ you@notebook:~$ picn-fetch --format ndntlv 127.0.0.1 9000 /the/prefix/example
 ... todo ...
 ```
 
-## Named Function Networking
-%TODO
+## More about...
 
+### Operational Matters
+
+* [PiCN Toolbox](doc/toolbox.md)
+* [Setting up a Network](doc/network_setup.md)
+* [Packet Formats](doc/packet_formats.md)
+
+### Internals
+
+* [Architecture](doc/architecture.md)
+* [Project Structure](doc/project_structure.md)
+* [Management Interface](doc/management_interface.md)
+
+
+### The Project
+
+* [Licensing](licensing.md)
+
+<!---
 ## Chunking
 PiCN ships with a build in Chunking Tool. If the data do not fit a packet, the ChunkLayer will autmatically split the
 content into Chunks (NDN Terminology: Segments). 
@@ -88,29 +108,4 @@ The Fetch-Tool will automatically reassable the chunks and return the complete c
 
 Warning: Currently, the chunking is done using the main memory. Therefore the maximal file size is limited.
 This will be improved soon.
-
-## Layers
-%TODO
-
-### ICN Layer
-%TODO
-
-#### Forwarder app, to app forwarding
-%TODO
-
-## Developer guide
-
-### Modularization
-PiCN consists of several Modules which run in separated processes. 
-Each Module increases the abstraction, they are chained to a kind 
-of execution stack.
-
-### ProgramLibs
-%TODO
-
-
-## Compatible with:
-[![Named Data Networking (NDN)](https://named-data.net/wp-content/uploads/cropped-20130722_Logo2.png)](https://named-data.net)
-
-
-
+-->
