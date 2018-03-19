@@ -12,11 +12,10 @@ PiCN is a...
 PiCN is written in Python 3.6+
 
 
-## Quick start
-This is a simple example that shows how to start a Repository and a Forwarder and how to fetch Content from the Repo.
-The following topology is used:
+## Hands On!
+Let us setup a simple network which of a data repository and a forwarding node:
 
-**Client(Fetch Tool) ---- Forwarder ---- Repo**
+**Repository (```picn-repo```) <----> Forwarder (```picn-relay```) <----> Client (```picn-fetch```)**
              
 Clone PiCN from github:
 ```console
