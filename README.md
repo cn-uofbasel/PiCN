@@ -74,7 +74,7 @@ you@notebook:~$ picn-fetch --format ndntlv 127.0.0.1 9000 /the/prefix/example
 
 ### The Project
 
-* [Licensing](licensing.md)
+* [Licensing](doc/licensing.md)
 
 <!---
 ## Chunking
