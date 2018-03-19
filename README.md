@@ -1,27 +1,24 @@
 *This is work in progress! Everything can change at any moment! :-)*
 
-**Requires Python  >=3.6** 
+# PiCN 
 
-# Status of Automatic Tests
 [![Build Status](https://semaphoreci.com/api/v1/cn-unibas/picn/branches/master/badge.svg)](https://semaphoreci.com/cn-unibas/picn)
 
-(The CI system runs unit tests, that verify the functionality of PiCN, including network communication)
+PiCN is a...
+* prototyping-friendly, modular and extensible library for content-centric networkig (CCN).
+* a set of tools and network nodes.
+* our platform to build the next generation of NFN (named function networking)
+
+PiCN is written in Python 3.6+
 
 
-# PiCN 
-PiCN is a modular implementation of Information Centric Networking (ICN) designed to support Named Function Networking (NFN)
-and other in network applications written in Python 3.
-
-Currently, PiCN is compatible with the [Named Data Networking (NDN) packet format](https://named-data.net).
-
-
-# Quick start
+## Quick start
 This is a simple example that shows how to start a Repository and a Forwarder and how to fetch Content from the Repo.
 The following topology is used:
 
 Client(Fetch Tool) ---- Forwarder ---- Repo
              
-```
+```console
 # Download PiCN
 % git clone https://github.com/cn-uofbasel/PiCN.git
 
@@ -45,10 +42,10 @@ Client(Fetch Tool) ---- Forwarder ---- Repo
 % picn-fetch --format ndntlv 127.0.0.1 9000 /the/prefix/example 
 ```
 
-# Named Function Networking
+## Named Function Networking
 %TODO
 
-# Chunking
+## Chunking
 PiCN ships with a build in Chunking Tool. If the data do not fit a packet, the ChunkLayer will autmatically split the
 content into Chunks (NDN Terminology: Segments). 
 We use a on-demand chunking process
@@ -80,27 +77,27 @@ The Fetch-Tool will automatically reassable the chunks and return the complete c
 Warning: Currently, the chunking is done using the main memory. Therefore the maximal file size is limited.
 This will be improved soon.
 
-# Layers
+## Layers
 %TODO
 
-## ICN Layer
+### ICN Layer
 %TODO
 
-### Forwarder app, to app forwarding
+#### Forwarder app, to app forwarding
 %TODO
 
-# Developer guide
+## Developer guide
 
-## Modularization
+### Modularization
 PiCN consists of several Modules which run in separated processes. 
 Each Module increases the abstraction, they are chained to a kind 
 of execution stack.
 
-## ProgramLibs
+### ProgramLibs
 %TODO
 
-# Features
-### Compatible with:
+
+## Compatible with:
 [![Named Data Networking (NDN)](https://named-data.net/wp-content/uploads/cropped-20130722_Logo2.png)](https://named-data.net)
 
 
