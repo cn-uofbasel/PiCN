@@ -18,39 +18,38 @@ The following topology is used:
 
 **Client(Fetch Tool) ---- Forwarder ---- Repo**
              
-Download PiCN
+Clone PiCN from github:
 ```console
 you@machine:~$ git clone https://github.com/cn-uofbasel/PiCN.git
 ```
 
-Add to PATH (bash)
+Add the PiCN-tools to your PATH (bash):
 ```console
 you@machine:~$ PATH=$PATH:`pwd`/PiCN/starter
 ```
 
-Setup folder for the repo
+Prepare content for a repository:
 ```console
 you@machine:~$ mkdir /tmp/repo
 you@machine:~$ touch /tmp/repo/example && echo "HELLO WORLD" > /tmp/repo/example
 ...
 ```
 
-
-Start repo and a forwarder
+Start a repository node and a forwarder:
 ```console
 you@machine:~$ picn-repo --format ndntlv /tmp/repo /the/prefix 10000 &
 you@machine:~$ picn-relay --format ndntlv --port 9000 &  
 ...
 ```
 
-Setup forwarding rule from the forwarder to the repo
+Configure a forwarding rule from the forwarder to the repository:
 ```console
 you@machine:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newface 127.0.0.1:10000
 you@machine:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newforwardingrule /the:0
 ...
 ```
 
-Fetch content from the repo via forwarder
+Fetch content from the repository via the forwarding node:
 ```console
 you@notebook:~$ picn-fetch --format ndntlv 127.0.0.1 9000 /the/prefix/example 
 ... todo ...
