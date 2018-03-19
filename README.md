@@ -16,44 +16,43 @@ PiCN is written in Python 3.6+
 This is a simple example that shows how to start a Repository and a Forwarder and how to fetch Content from the Repo.
 The following topology is used:
 
-Client(Fetch Tool) ---- Forwarder ---- Repo
+**Client(Fetch Tool) ---- Forwarder ---- Repo**
              
-### Download PiCN
+Download PiCN
 ```console
-you@notebook:~$ git clone https://github.com/cn-uofbasel/PiCN.git
+you@machine:~$ git clone https://github.com/cn-uofbasel/PiCN.git
 ```
 
-### Add to PATH (bash)
+Add to PATH (bash)
 ```console
-you@notebook:~$ PATH=$PATH:`pwd`/PiCN/starter
+you@machine:~$ PATH=$PATH:`pwd`/PiCN/starter
 ```
 
-### Setup folder for the repo
+Setup folder for the repo
 ```console
-you@notebook:~$ mkdir /tmp/repo
-you@notebook:~$ touch /tmp/repo/example && echo "HELLO WORLD" > /tmp/repo/example
+you@machine:~$ mkdir /tmp/repo
+you@machine:~$ touch /tmp/repo/example && echo "HELLO WORLD" > /tmp/repo/example
 ...
 ```
 
 
-### Start Repo and Forwarder
+Start repo and a forwarder
 ```console
-you@notebook:~$ picn-repo --format ndntlv /tmp/repo /the/prefix 10000 &
-you@notebook:~$ picn-relay --format ndntlv --port 9000 &  
+you@machine:~$ picn-repo --format ndntlv /tmp/repo /the/prefix 10000 &
+you@machine:~$ picn-relay --format ndntlv --port 9000 &  
 ...
 ```
 
-
-### Setup forwarding rule from the Forwarder to the Repo
+Setup forwarding rule from the forwarder to the repo
 ```console
-you@notebook:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newface 127.0.0.1:10000
-you@notebook:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newforwardingrule /the:0
+you@machine:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newface 127.0.0.1:10000
+you@machine:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newforwardingrule /the:0
 ...
 ```
 
-### Fetch content from the Repo via the Forwarder 
+Fetch content from the repo via forwarder
 ```console
-$ picn-fetch --format ndntlv 127.0.0.1 9000 /the/prefix/example 
+you@notebook:~$ picn-fetch --format ndntlv 127.0.0.1 9000 /the/prefix/example 
 ... todo ...
 ```
 
