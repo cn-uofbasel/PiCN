@@ -14,7 +14,7 @@ PiCN tools and nodes can operate with different packet formats. At the moment, t
 
 #### Implementation Status
 
-tbd
+Partial
 
 ### Simple (`simple`)
 
