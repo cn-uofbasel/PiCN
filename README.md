@@ -18,7 +18,7 @@ tbd
 ## Hands On!
 Let us setup a simple network which consists of a data repository and a forwarding node:
 
-**Repository (```picn-repo```) ---- Forwarder (```picn-relay```) ---- Client (```picn-fetch```)**
+![Hands On: Topology](https://raw.githubusercontent.com/cn-uofbasel/PiCN/master/doc/img/initial-hands-on.png "Hands On: Topology")
              
 Clone PiCN from github:
 ```console
