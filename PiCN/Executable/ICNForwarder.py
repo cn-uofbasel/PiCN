@@ -33,7 +33,7 @@ def main(args):
     encoder = NdnTlvEncoder(log_level) if args.format == 'ndntlv' else SimpleStringEncoder
 
     # Start
-    forwarder = PiCN.ProgramLibs.ICNForwarder.ICNForwarder(args.port, log_level, encoder)
+    forwarder = PiCN.ProgramLibs.ICNForwarder.ICNForwarder(args.port, log_level, encoder, autoconfig=args.autoconfig)
     forwarder.start_forwarder()
     forwarder.linklayer.process.join()
 
@@ -42,6 +42,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='PiCN Forwarder')
     parser.add_argument('-p', '--port', type=int, default=9000, help="UDP port (default: 9000)")
     parser.add_argument('-f', '--format', choices=['ndntlv','simple'], type=str, default='ndntlv', help='Packet Format (default: ndntlv)')
+    parser.add_argument('-a', '--autoconfig', action='store_true', help='Enable autoconfig server')
     parser.add_argument('-l', '--logging', choices=['debug','info', 'warning', 'error', 'none'], type=str, default='info', help='Logging Level (default: info)')
     args = parser.parse_args()
     main(args)

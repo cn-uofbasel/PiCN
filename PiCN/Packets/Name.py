@@ -3,6 +3,7 @@
 import binascii
 import json
 import os
+from typing import List, Union
 
 
 class Name(object):
@@ -10,10 +11,12 @@ class Name(object):
     Internal representation of network name
     """
 
-    def __init__(self, name: str = None, suite='ndn2013'):
+    def __init__(self, name: Union[List[bytes], str] = None, suite='ndn2013'):
         self.suite = suite
         self.digest = None
-        if name:
+        if isinstance(name, list):
+            self._components = name
+        elif isinstance(name, str):
             self.from_string(name)
         else:
             self._components = []
@@ -81,6 +84,12 @@ class Name(object):
 
     def __hash__(self) -> int:
         return self._components.__str__().__hash__()
+
+    def __getitem__(self, item):
+        return self._components[item]
+
+    def __len__(self):
+        return len(self._components)
 
     def is_prefix_of(self, name):
         # if type(name) is not Name:
