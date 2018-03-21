@@ -54,8 +54,7 @@ class ICNForwarder(object):
                                                                                 address='127.0.0.1',
                                                                                 broadcast='127.255.255.255',
                                                                                 registration_prefixes=
-                                                                                    [Name('/testnetwork/repos')],
-                                                                                interest_to_app=False,
+                                                                                [Name('/testnetwork/repos')],
                                                                                 log_level=log_level)
             self.lstack.insert(self.autoconfiglayer, below_of=self.icnlayer)
 
@@ -64,7 +63,7 @@ class ICNForwarder(object):
         self.icnlayer.pit = self.pit
 
         # routing
-        self.routing = BasicRouting(self.icnlayer.pit, None, log_level=log_level) #TODO NOT IMPLEMENTED YET
+        self.routing = BasicRouting(self.icnlayer.pit, None, log_level=log_level)  # TODO NOT IMPLEMENTED YET
 
         # mgmt
         self.mgmt = Mgmt(self.cs, self.fib, self.pit, self.linklayer, self.linklayer.get_port(), self.stop_forwarder,

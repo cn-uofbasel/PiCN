@@ -19,13 +19,12 @@ class AutoconfigServerLayer(LayerProcess):
 
     def __init__(self, linklayer: UDP4LinkLayer = None, fib: BaseForwardingInformationBase = None,
                  address: str = '127.0.0.1', broadcast: str = '127.255.255.255',
-                 registration_prefixes: List[Name] = list(), interest_to_app: bool = False, log_level: int = 255):
+                 registration_prefixes: List[Name] = list(), log_level: int = 255):
         """
         :param linklayer:
         :param fib:
         :param address:
         :param broadcast:
-        :param interest_to_app:
         :param log_level:
         """
         super().__init__(logger_name='AutoconfigLayer', log_level=log_level)
@@ -34,7 +33,6 @@ class AutoconfigServerLayer(LayerProcess):
         self._fib: BaseForwardingInformationBase = fib
         self._announce_addr: str = address
         self._broadcast_addr: str = broadcast
-        self._interest_to_app: bool = interest_to_app
         self._known_services: List[Tuple[Name, Tuple[str, int], datetime]] = []
         self._service_registration_prefixes: List[Name] = registration_prefixes
         self._service_registration_timeout = timedelta(hours=1)
@@ -53,12 +51,9 @@ class AutoconfigServerLayer(LayerProcess):
             return
         fid: int = data[0]
         packet: Packet = data[1]
-        # Check whether data is autoconfig-related. If not, pass upwards or back down.
+        # Check whether data is autoconfig-related. If not, pass to ICN Layer.
         if not _AUTOCONFIG_PREFIX.is_prefix_of(packet.name):
-            if self._interest_to_app:
-                to_higher.put(data)
-            else:
-                to_lower.put(data)
+            to_higher.put(data)
         if isinstance(packet, Interest):
             if _AUTOCONFIG_PREFIX == packet.name:
                 reply: Packet = self._handle_autoconfig(packet)
@@ -71,7 +66,7 @@ class AutoconfigServerLayer(LayerProcess):
                 to_lower.put([fid, reply])
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
-        # Simply pass all data from application layer down to ICN layer.
+        # Simply pass all data from ICN layer down to Packet Encoding layer.
         to_lower.put(data)
 
     def _handle_autoconfig(self, interest: Interest) -> Packet:
