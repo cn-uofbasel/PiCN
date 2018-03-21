@@ -16,6 +16,18 @@ PiCN tools and nodes can operate with different packet formats. At the moment, t
 
 Partial
 
+#### Extensions
+
+Additional NACK reasons (link protocol):
+
+| Value | Reason                   | Description                                |
+|-------|--------------------------|--------------------------------------------|
+| 160   | `NO_CONTENT`             | No content available                       |
+| 161   | `COMP_QUEUE_FULL`        | No resources to perform computation        |
+| 162   | `COMP_PARAM_UNAVAILABLE` | One or many input data is unavailable      |
+| 163   | `COMP_EXCEPTION`         | An excpetion occured during computation    |
+| 164   | `COMP_TERMINATED`        | computation terminated by computing entity |
+
 ### Simple (`simple`)
 
 String-based and human-readable packet format. For debug-purposes only.
