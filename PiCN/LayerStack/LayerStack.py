@@ -18,9 +18,13 @@ class LayerStack(object):
         """
         self.layers: List[LayerProcess] = []
         self.queues: List[multiprocessing.Queue] = []
+        self._queue_to_higher = multiprocessing.Queue()
+        self._queue_from_higher = multiprocessing.Queue()
+        self._queue_to_lower = multiprocessing.Queue()
+        self._queue_from_lower = multiprocessing.Queue()
         self.__started = False
         if len(layers) == 0:
-            return
+            raise ValueError('Can\'t have an empty LayerStack')
         # Setup queues for each pair of layers
         for i in range(len(layers) - 1):
             upper = layers[i]
@@ -38,11 +42,15 @@ class LayerStack(object):
             self.queues.append(q_to_lower)
         # Append last layer to resource list
         self.layers.append(layers[len(layers)-1])
+        self.layers[0].queue_to_higher = self.queue_to_higher
+        self.layers[0].queue_from_higher = self.queue_from_higher
+        self.layers[len(self.layers)-1].queue_to_lower = self.queue_to_lower
+        self.layers[len(self.layers)-1].queue_from_lower = self.queue_from_lower
 
     def insert(self, layer: LayerProcess, on_top_of: LayerProcess = None, below_of: LayerProcess = None):
         """
         Insert a layer into the layer stack, placing it on top of or beneath another layer. Either on_top_of or below_of
-        must be provided unless the LayerStack is empty.
+        must be provided.
         :param layer: The layer to insert.
         :param on_top_of: The layer on top of which the new layer should be inserted. Must not be used together with
                           below_of.
@@ -56,10 +64,6 @@ class LayerStack(object):
             raise multiprocessing.ProcessError('LayerStack should not be changed after its processes were started.')
         if layer is None:
             raise TypeError('Layer is None.')
-        # Simply insert if the layer stack is empty
-        if len(self.layers) == 0:
-            self.layers.append(layer)
-            return
         # Make sure that exactly one out of on_top_of, below_of is provided.
         if (on_top_of is None) == (below_of is None):
             raise TypeError('Needs either on_top_of xor below_of')
@@ -83,6 +87,10 @@ class LayerStack(object):
         Utility function to close all queues managed by the LayerStack.
         """
         [q.close() for q in self.queues]
+        self._queue_to_higher.close()
+        self._queue_from_higher.close()
+        self._queue_to_lower.close()
+        self._queue_from_lower.close()
 
     def start_all(self):
         """
@@ -96,6 +104,50 @@ class LayerStack(object):
         Utility function to stop all LayerProcesses managed by the LayerStack.
         """
         [l.stop_process() for l in self.layers]
+
+    @property
+    def queue_to_higher(self):
+        return self._queue_to_higher
+
+    @queue_to_higher.setter
+    def queue_to_higher(self, queue: multiprocessing.Queue):
+        if self.__started:
+            raise multiprocessing.ProcessError('LayerStack should not be changed after its processes were started.')
+        self.queue_to_higher = queue
+        self.layers[0].queue_to_higher = queue
+
+    @property
+    def queue_from_higher(self):
+        return self._queue_from_higher
+
+    @queue_from_higher.setter
+    def queue_from_higher(self, queue: multiprocessing.Queue):
+        if self.__started:
+            raise multiprocessing.ProcessError('LayerStack should not be changed after its processes were started.')
+        self.queue_from_higher = queue
+        self.layers[0].queue_from_higher = queue
+
+    @property
+    def queue_to_lower(self):
+        return self._queue_to_lower
+
+    @queue_to_lower.setter
+    def queue_to_lower(self, queue: multiprocessing.Queue):
+        if self.__started:
+            raise multiprocessing.ProcessError('LayerStack should not be changed after its processes were started.')
+        self.queue_to_lower = queue
+        self.layers[len(self.layers)-1].queue_to_lower = queue
+
+    @property
+    def queue_from_lower(self):
+        return self._queue_from_lower
+
+    @queue_from_lower.setter
+    def queue_from_lower(self, queue: multiprocessing.Queue):
+        if self.__started:
+            raise multiprocessing.ProcessError('LayerStack should not be changed after its processes were started.')
+        self.queue_from_lower = queue
+        self.layers[len(self.layers)-1].queue_from_lower = queue
 
     def __insert(self, layer: LayerProcess, at: int):
         # Get the layers between which to insert the new layer
@@ -129,3 +181,7 @@ class LayerStack(object):
             layer_below.queue_from_higher = q_down
         # Insert the new layer at the wanted position
         self.layers.insert(at, layer)
+        self.layers[0].queue_to_higher = self.queue_to_higher
+        self.layers[0].queue_from_higher = self.queue_from_higher
+        self.layers[len(self.layers)-1].queue_to_lower = self.queue_to_lower
+        self.layers[len(self.layers)-1].queue_from_lower = self.queue_from_lower

@@ -44,8 +44,8 @@ class Fetch(object):
         """Fetch data from the server"""
         # create interest
         interest: Interest = Interest(name)
-        self.chunklayer.queue_from_higher.put([self.fid, interest])
-        packet = self.chunklayer.queue_to_higher.get()[1]
+        self.lstack.queue_from_higher.put([self.fid, interest])
+        packet = self.lstack.queue_to_higher.get()[1]
         if isinstance(packet, Content):
             return packet.content
         if isinstance(packet, Nack):
