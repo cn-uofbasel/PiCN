@@ -2,6 +2,7 @@
 
 import multiprocessing
 
+from PiCN.LayerStack.LayerStack import LayerStack
 from PiCN.Layers.ChunkLayer import BasicChunkLayer
 from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
 from PiCN.Layers.RepositoryLayer import BasicRepositoryLayer
@@ -44,35 +45,12 @@ class ICNDataRepository(object):
         self.chunklayer = BasicChunkLayer(self.chunkifyer, log_level=log_level)
         self.repolayer = BasicRepositoryLayer(self.repo, log_level=log_level)
 
-        #setup communication queues
-        self.q_link_packet_up = multiprocessing.Queue()
-        self.q_packet_link_down = multiprocessing.Queue()
-
-        self.q_packet_chunk_up = multiprocessing.Queue()
-        self.q_chunk_packet_down = multiprocessing.Queue()
-
-        self.q_chunk_to_repo_up = multiprocessing.Queue()
-        self.q_repo_to_chunk_down = multiprocessing.Queue()
-
-        #set link layer queues
-        self.linklayer.queue_to_higher = self.q_link_packet_up
-        self.linklayer.queue_from_higher = self.q_packet_link_down
-
-        #set packet encoding layer queues
-        self.packetencodinglayer.queue_to_lower = self.q_packet_link_down
-        self.packetencodinglayer.queue_from_lower = self.q_link_packet_up
-        self.packetencodinglayer.queue_to_higher = self.q_packet_chunk_up
-        self.packetencodinglayer.queue_from_higher = self.q_chunk_packet_down
-
-        #set chunk layer queues
-        self.chunklayer.queue_to_lower = self.q_chunk_packet_down
-        self.chunklayer.queue_from_lower = self.q_packet_chunk_up
-        self.chunklayer.queue_to_higher = self.q_chunk_to_repo_up
-        self.chunklayer.queue_from_higher = self.q_repo_to_chunk_down
-
-        #set repo layer queues
-        self.repolayer.queue_from_lower = self.q_chunk_to_repo_up
-        self.repolayer.queue_to_lower = self.q_repo_to_chunk_down
+        self.lstack: LayerStack = LayerStack([
+            self.repolayer,
+            self.chunklayer,
+            self.packetencodinglayer,
+            self.linklayer
+        ])
 
         # mgmt
         self.mgmt = Mgmt(None, None, None, self.linklayer, self.linklayer.get_port(),
@@ -81,18 +59,13 @@ class ICNDataRepository(object):
 
     def start_repo(self):
         # start processes
-        self.linklayer.start_process()
-        self.packetencodinglayer.start_process()
-        self.chunklayer.start_process()
-        self.repolayer.start_process()
+        self.lstack.stop_all()
         self.mgmt.start_process()
 
     def stop_repo(self):
         #Stop processes
-        self.linklayer.stop_process()
-        self.packetencodinglayer.stop_process()
-        self.chunklayer.stop_process()
-        self.repolayer.stop_process()
+        self.lstack.stop_all()
+        self.lstack.close_all()
         self.mgmt.stop_process()
 
 # eof
