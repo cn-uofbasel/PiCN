@@ -26,7 +26,7 @@ Additional NACK reasons (link protocol):
 | 161   | `COMP_QUEUE_FULL`        | No resources to perform computation        |
 | 162   | `COMP_PARAM_UNAVAILABLE` | One or many input data is unavailable      |
 | 163   | `COMP_EXCEPTION`         | An excpetion occured during computation    |
-| 164   | `COMP_TERMINATED`        | computation terminated by computing entity |
+| 164   | `COMP_TERMINATED`        | Computation terminated by computing entity |
 
 Detailed desciption in [PiCN.Packets.NackReason.py](https://github.com/cn-uofbasel/PiCN/blob/master/PiCN/Packets/NackReason.py)
 
