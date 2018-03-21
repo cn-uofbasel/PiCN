@@ -28,6 +28,8 @@ Additional NACK reasons (link protocol):
 | 163   | `COMP_EXCEPTION`         | An excpetion occured during computation    |
 | 164   | `COMP_TERMINATED`        | computation terminated by computing entity |
 
+Detailed desciption in [PiCN.Packets.NackReason.py](https://github.com/cn-uofbasel/PiCN/blob/master/PiCN/Packets/NackReason.py)
+
 ### Simple (`simple`)
 
 String-based and human-readable packet format. For debug-purposes only.
