@@ -1,4 +1,4 @@
-""" A in memory Content Store using exact Prefix Matching"""
+""" An in-memory content store with exact matching"""
 
 import multiprocessing, time, sys
 
@@ -7,7 +7,7 @@ from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore, ContentStoreEntr
 
 
 class ContentStoreMemoryExact(BaseContentStore):
-    """ A in memory Content Store using Lognest Prefix Matching"""
+    """ A in memory Content Store using exact matching"""
 
     def __init__(self, manager: multiprocessing.Manager):
         BaseContentStore.__init__(self, manager)
