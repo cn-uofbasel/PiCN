@@ -116,6 +116,8 @@ class test_BasicICNLayer(unittest.TestCase):
         self.queue1_icn_routing_up.put([from_faceid2, interest2], block=True)
         self.assertTrue(self.queue1_icn_routing_down.empty())
 
+        time.sleep(3)
+
         # check output
         self.assertEqual(faceid, to_faceid)
         self.assertEqual(data, interest1)

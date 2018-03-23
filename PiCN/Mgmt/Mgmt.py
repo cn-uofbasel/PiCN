@@ -37,6 +37,8 @@ class Mgmt(PiCNProcess):
         self._buffersize = 8192
         if os.name is not 'nt':
             self.shutdown = shutdown #function pointer
+        else:
+            self.logger.critical("Shutdown not available on NT platform")
 
     def mgmt(self, mgmt_sock):
         """parse mgmt message"""
