@@ -87,7 +87,7 @@ class UDP4LinkLayer(LayerProcess):
         """ Process loop, handle incomming packets, use round-robin, required for NT since MS POSIX api do not support
          select on file descriptors nor polling"""
         while True:
-            ready_vars = select.select([self.sock], timeout=0.3)
+            ready_vars = select.select([self.sock], [], [], 0.3)
             for var in ready_vars:
                 if var == self.sock:
                     self.receive_data(self.sock, to_higher)
