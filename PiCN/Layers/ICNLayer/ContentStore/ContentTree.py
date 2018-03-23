@@ -1,3 +1,7 @@
+""" Data structure to organize content objects in a tree reflecting their namespace hierarchy """
+
+from PiCN.Packets import Content, Name
+
 from functools import reduce
 from collections import defaultdict
 import operator
@@ -33,31 +37,33 @@ class ContentTree():
         assert(len(path)>0)
         return reduce(lambda subtree, key: operator.getitem(subtree["subtree"], key), path, self.__tree)["subtree"]
 
-    def insert(self, path: List[str], value) -> None:
+    def insert(self, content: Content) -> None:
         """
-        Insert a leaf at a given position
-        :param path: position where to insert value
-        :param value: value to insert in specified leaf
+        Insert a content object
+        :param content: Content object to insert
         :return: None
         """
-        assert(len(path)>0)
-        (self.__get_subtree(path[:-1])[path[-1]])["leaf"] = value
+        path = content.name.components
+        (self.__get_subtree(path[:-1])[path[-1]])["leaf"] = content
 
-    def remove(self, path: List[str]) -> None:
+    def remove(self, name: Name) -> None:
         """
-        Remove a leaf from the tree
-        :param path: path of value to remove
+        Remove a content object
+        :param name: Name of content object to remove
         :return: None
         """
-        assert(len(path)>0)
         # TODO: this only removes the leaf (=value) but not nodes (=nested dicts) which are no longer used (if any).
+        path = name.components
         del ((self.__get_subtree(path[:-1]))[path[-1]])["leaf"]
 
-    def exact_lookup(self, path: List[str]):
+    def exact_lookup(self, name: Name):
         """
-        Return leaf
-        :param path:
-        :return:
+        Lookup (only exact matches are returned)
+        :param name: Name to lookup
+        :return: Content Object or None
         """
-        assert(len(path)>0)
-        return ((self.__get_subtree(path[:-1]))[path[-1]])["leaf"]
+        path = name.components
+        try:
+            return ((self.__get_subtree(path[:-1]))[path[-1]])["leaf"]
+        except KeyError:
+            return None
