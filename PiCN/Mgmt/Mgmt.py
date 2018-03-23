@@ -24,17 +24,19 @@ class Mgmt(PiCNProcess):
         self._cs: BaseContentStore = cs
         self._fib: BaseForwardingInformationBase = fib
         self._pit: BasePendingInterestTable = pit
-        self._linklayer_create_fib: LayerProcess = linklayer
+        self._linklayer = linklayer
         self._repo_prfx = repo_prfx
         self._repo_path = repo_path
         self._port: int = port
 
         # init MGMT
         self.mgmt_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.mgmt_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.mgmt_sock.bind(("127.0.0.1", self._port))
         self.mgmt_sock.listen(5)
         self._buffersize = 8192
-        self.shutdown = shutdown #function pointer
+        if os.name is not 'nt':
+            self.shutdown = shutdown #function pointer
 
     def mgmt(self, mgmt_sock):
         """parse mgmt message"""
@@ -148,13 +150,19 @@ class Mgmt(PiCNProcess):
             ready_vars, _, _ = select.select(socks, [], [])
             self.mgmt(mgmt_sock)
 
-    def _run(self, mgmt_sock):
+    def _run_poll(self, mgmt_sock):
         poller = select.poll()
         READ_ONLY = select.POLLIN | select.POLLPRI | select.POLLHUP | select.POLLERR
         poller.register(mgmt_sock, READ_ONLY)
         while True:
             ready_vars = poller.poll()
             self.mgmt(mgmt_sock)
+
+    def _run(self, mgmt_sock):
+        if os.name is 'nt':
+            self._run_select(mgmt_sock)
+        else:
+            self._run_poll(mgmt_sock)
 
     def start_process(self):
         self.process = multiprocessing.Process(target=self._run, args=[self.mgmt_sock])

@@ -57,7 +57,7 @@ class NFNForwarder(object):
         # setup nfn
         self.icnlayer._interest_to_app = True
         self.executors = {"PYTHON": NFNPythonExecutor}
-        self.nfnlayer = BasicNFNLayer(self.icnlayer.manager, self.cs, self.fib, self.pit, self.executors,
+        self.nfnlayer = BasicNFNLayer(manager, self.cs, self.fib, self.pit, self.executors,
                                       log_level=log_level)
 
         # setup communication queues
