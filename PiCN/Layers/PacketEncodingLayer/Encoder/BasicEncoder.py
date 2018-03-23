@@ -25,3 +25,13 @@ class BasicEncoder(object):
     @abc.abstractclassmethod
     def decode(self, wire_data) -> Packet:
         """decode a packet to Packet data structure"""
+
+    def __getstate__(self):
+        d = dict(self.__dict__)
+        if 'logger' in d:
+            del d['logger']
+        return d
+
+    def __setstate__(self, d):
+        self.__dict__.update(d) #need to store logger parameter and recreate logger here, since it cannot be pickled
+        self.logger = Logger(self.__logger_name, self.__log_level)
