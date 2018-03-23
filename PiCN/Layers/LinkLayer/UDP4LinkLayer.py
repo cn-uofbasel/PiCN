@@ -82,6 +82,17 @@ class UDP4LinkLayer(LayerProcess):
                 else:
                     pass
 
+    def _run_sleep(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
+                   to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):
+        """ Process loop, handle incomming packets, use round-robin, required for NT since MS POSIX api do not support
+         select on file descriptors nor polling"""
+        while True:
+            ready_vars = select.select([self.sock], timeout=0.3)
+            for var in ready_vars:
+                if var == self.sock:
+                    self.receive_data(self.sock, to_higher)
+            if from_higher and not from_higher.empty():
+                self.send_data(self.sock, from_higher)
 
     def send_data(self, sock: socket.socket, from_higher: multiprocessing.Queue):
         """Gets data from the higher layer and forwards them to the network"""
