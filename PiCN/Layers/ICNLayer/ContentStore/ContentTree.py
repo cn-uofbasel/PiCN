@@ -1,3 +1,5 @@
+from PiCN.Packets import Content, Name
+
 from functools import reduce
 from collections import defaultdict
 import operator
@@ -33,15 +35,14 @@ class ContentTree():
         assert(len(path)>0)
         return reduce(lambda subtree, key: operator.getitem(subtree["subtree"], key), path, self.__tree)["subtree"]
 
-    def insert(self, path: List[str], value) -> None:
+    def insert(self, content: Content) -> None:
         """
-        Insert a leaf at a given position
-        :param path: position where to insert value
-        :param value: value to insert in specified leaf
+        Insert a content object
+        :param content: Content object to insert
         :return: None
         """
-        assert(len(path)>0)
-        (self.__get_subtree(path[:-1])[path[-1]])["leaf"] = value
+        path = content.name.components
+        (self.__get_subtree(path[:-1])[path[-1]])["leaf"] = content
 
     def remove(self, path: List[str]) -> None:
         """
