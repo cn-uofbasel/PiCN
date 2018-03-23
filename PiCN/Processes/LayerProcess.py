@@ -3,6 +3,7 @@
 import abc
 import inspect
 import multiprocessing
+import os
 import select
 import time
 
@@ -98,9 +99,28 @@ class LayerProcess(PiCNProcess):
                 elif from_higher and var == from_higher._reader and not from_higher.empty():
                     self.data_from_higher(to_lower, to_higher, from_higher.get())
 
+    def _run_sleep(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
+                   to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):
+        """ Process loop, handle incomming packets, use round-robin, required for NT since MS POSIX api do not support
+         select on file descriptors nor polling"""
+        while True:
+            dequeued: bool = False
+            if from_lower and not from_lower.empty():
+                self.data_from_lower(to_lower, to_higher, from_lower.get())
+                dequeued = True
+            if from_higher and not from_higher.empty():
+                self.data_from_higher(to_lower, to_higher, from_higher.get())
+            if not dequeued:
+                time.sleep(0.3)
+
     def _run(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
              to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):
-        self._run_poll(from_lower, from_higher, to_lower, to_higher)
+        if os.name == 'nt': # Exception for windows since MS POSIX api do not support select on File Descriptors
+            self._run_sleep(from_lower, from_higher, to_lower, to_higher)
+        elif self.in_unittest():
+            self._run_poll(from_lower, from_higher, to_lower, to_higher)
+        else:
+            self._run_select(from_lower, from_higher, to_lower, to_higher)
 
     def start_process(self):
         """Start the Layerprocess"""
@@ -133,9 +153,14 @@ class LayerProcess(PiCNProcess):
 
     def in_unittest(self):
         """Check if unittest is running for using poller instead of select, to enable more file descriptor"""
-        current_stack = inspect.stack()
-        for stack_frame in current_stack:
-            for program_line in stack_frame[4]:
-                if "unittest" in program_line:
-                    return True
-        return False
+        try:
+            current_stack = inspect.stack()
+            for stack_frame in current_stack:
+                for program_line in stack_frame[4]:
+                    if "unittest" in program_line:
+                        return True
+                    if "nose" in program_line:
+                        return True
+            return False
+        except:
+            return True
