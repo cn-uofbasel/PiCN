@@ -45,8 +45,7 @@ class ContentStoreEntry(object):
 class BaseContentStore(object):
     """Abstract BaseContentStore for usage in BasicICNLayer"""
     def __init__(self, manager: multiprocessing.Manager):
-        self._manager = manager
-        self._container: List[ContentStoreEntry] = self._manager.list()
+        self._container: List[ContentStoreEntry] = manager.list()
 
     @abc.abstractclassmethod
     def add_content_object(self, content: Content, static: bool=False):
@@ -71,11 +70,3 @@ class BaseContentStore(object):
     @container.setter
     def container(self, container):
         self._container = container
-
-    @property
-    def manager(self):
-        return self._manager
-
-    @manager.setter
-    def manager(self, manager: multiprocessing.Manager):
-        self._manager = manager

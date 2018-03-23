@@ -58,9 +58,10 @@ class ICNForwarder(object):
         self.icnlayer.queue_from_lower = self.q_packet_icn_up
 
         #setup data structures
-        self.cs = ContentStoreMemoryExact(self.icnlayer.manager)
-        self.fib = ForwardingInformationBaseMemoryPrefix(self.icnlayer.manager)
-        self.pit = PendingInterstTableMemoryExact(self.icnlayer.manager)
+        manager = multiprocessing.Manager()
+        self.cs = ContentStoreMemoryExact(manager)
+        self.fib = ForwardingInformationBaseMemoryPrefix(manager)
+        self.pit = PendingInterstTableMemoryExact(manager)
 
         self.icnlayer.cs = self.cs
         self.icnlayer.fib = self.fib

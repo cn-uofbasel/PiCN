@@ -19,7 +19,6 @@ class BasicICNLayer(LayerProcess):
     def __init__(self, cs: BaseContentStore=None, pit: BasePendingInterestTable =None,
                  fib: BaseForwardingInformationBase=None, log_level=255):
         super().__init__(logger_name="ICNLayer", log_level=log_level)
-        self._manager = multiprocessing.Manager()
         self._cs: BaseContentStore = cs
         self._pit: BasePendingInterestTable = pit
         self._fib: BaseContentStore = fib
@@ -245,12 +244,3 @@ class BasicICNLayer(LayerProcess):
     @pit.setter
     def pit(self, pit):
         self._pit = pit
-
-    @property
-    def manager(self):
-        """the manager"""
-        return self._manager
-
-    @manager.setter
-    def manager(self, manager):
-        self._manager = manager
