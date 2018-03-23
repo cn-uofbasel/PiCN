@@ -1,3 +1,5 @@
+""" Data structure to organize content objects in a tree reflecting their namespace hierarchy """
+
 from PiCN.Packets import Content, Name
 
 from functools import reduce
@@ -44,21 +46,29 @@ class ContentTree():
         path = content.name.components
         (self.__get_subtree(path[:-1])[path[-1]])["leaf"] = content
 
-    def remove(self, path: List[str]) -> None:
+    def remove(self, name: Name) -> None:
         """
-        Remove a leaf from the tree
-        :param path: path of value to remove
+        Remove a content object
+        :param name: Name of content object to remove
         :return: None
         """
-        assert(len(path)>0)
         # TODO: this only removes the leaf (=value) but not nodes (=nested dicts) which are no longer used (if any).
+        path = name.components
         del ((self.__get_subtree(path[:-1]))[path[-1]])["leaf"]
 
-    def exact_lookup(self, path: List[str]):
+    def exact_lookup(self, name: Name):
+        """
+        Lookup (only exact matches are returned)
+        :param name: Name to lookup
+        :return: Content Object or None
+        """
         """
         Return leaf
-        :param path:
+        :param path: path
         :return:
         """
-        assert(len(path)>0)
-        return ((self.__get_subtree(path[:-1]))[path[-1]])["leaf"]
+        path = name.components
+        try:
+            return ((self.__get_subtree(path[:-1]))[path[-1]])["leaf"]
+        except KeyError:
+            return None
