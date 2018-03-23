@@ -18,9 +18,10 @@ class test_BasicICNLayer(unittest.TestCase):
 
         #setup icn_layer
         self.icn_layer = BasicICNLayer()
-        self.cs = ContentStoreMemoryExact(self.icn_layer.manager)
-        self.fib = ForwardingInformationBaseMemoryPrefix(self.icn_layer.manager)
-        self.pit = PendingInterstTableMemoryExact(self.icn_layer.manager)
+        self.manager = multiprocessing.Manager()
+        self.cs = ContentStoreMemoryExact(self.manager)
+        self.fib = ForwardingInformationBaseMemoryPrefix(self.manager)
+        self.pit = PendingInterstTableMemoryExact(self.manager)
         self.icn_layer.cs = self.cs
         self.icn_layer.fib = self.fib
         self.icn_layer.pit = self.pit
