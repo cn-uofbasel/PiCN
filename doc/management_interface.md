@@ -1,8 +1,8 @@
 # Management Interface
 
-This page describes PiCN's HTTP-based management protocol. If your are interested in a command-line management tool, see in [runnables](toolbox.md).
+This page describes the HTTP-based management protocol as implemented by PiCN-nodes like `picn-relay` or `picn-repo`. If your are interested in a command-line management tool, check `picn-mgmt` in [runnables](toolbox.md).
 
-
+Nodes listen for commands on the port (TCP) specified on the command line (`--port`).
 
 ### Add a Face
 
