@@ -8,15 +8,13 @@ class BasicEncoder(object):
     """Abstract Encoder for the BasicPacketEncoding Layer"""
 
     @abc.abstractmethod
-    def __init__(self, log_level = 255):
-        @property
-        @abc.abstractmethod
-        def logger(self):
-            pass
+    def __init__(self, logger_name = "BasicEncoder", log_level = 255):
+        self.__logger_name = logger_name
+        self.__log_level = log_level
+        self.logger = Logger(self.__log_level, self.__log_level)
 
-    @abc.abstractmethod
     def set_log_level(self, log_level):
-        pass
+        self.logger.setLevel(log_level)
 
     @abc.abstractclassmethod
     def encode(self, packet: Packet):

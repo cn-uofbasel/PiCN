@@ -14,11 +14,11 @@ class UDP4LinkLayer(LayerProcess):
         self._fids_max_entries: int = max_fids_entries
 
         #Sync data
-        self.manager = multiprocessing.Manager()
-        self._cur_fid = self.manager.Value('i', 0)
-        self._fids_to_ip = self.manager.dict()  #faceid --> (IP,Port)
-        self._ip_to_fid = self.manager.dict() #(IP,Port) --> faceid
-        self._fids_timestamps = self.manager.dict() #faceid --> timestamp, static
+        manager = multiprocessing.Manager()
+        self._cur_fid = manager.Value('i', 0)
+        self._fids_to_ip = manager.dict()  #faceid --> (IP,Port)
+        self._ip_to_fid = manager.dict() #(IP,Port) --> faceid
+        self._fids_timestamps = manager.dict() #faceid --> timestamp, static
 
         #Network data, used with a reference
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -87,7 +87,7 @@ class UDP4LinkLayer(LayerProcess):
         """ Process loop, handle incomming packets, use round-robin, required for NT since MS POSIX api do not support
          select on file descriptors nor polling"""
         while True:
-            ready_vars = select.select([self.sock], timeout=0.3)
+            ready_vars = select.select([self.sock], [], [], 0.3)
             for var in ready_vars:
                 if var == self.sock:
                     self.receive_data(self.sock, to_higher)
