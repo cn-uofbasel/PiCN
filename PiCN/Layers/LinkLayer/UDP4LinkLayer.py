@@ -6,7 +6,8 @@ import multiprocessing, select, socket, time
 class UDP4LinkLayer(LayerProcess):
     """ Link Layer Inferface using UDP Sockets for Communication """
 
-    def __init__(self, port: int = 9000, log_level=255, buffersize: int = 8192, max_fids_entries: int = int(1e6)):
+    def __init__(self, port: int = 9000, buffersize: int = 8192, max_fids_entries: int = int(1e6),
+                 manager: multiprocessing.Manager=None, log_level=255):
         LayerProcess.__init__(self, logger_name="LinkLayer", log_level=log_level)
         #static unsync data
         self._port: int = port
@@ -14,7 +15,8 @@ class UDP4LinkLayer(LayerProcess):
         self._fids_max_entries: int = max_fids_entries
 
         #Sync data
-        manager = multiprocessing.Manager()
+        if manager is None:
+            manager = multiprocessing.Manager()
         self._cur_fid = manager.Value('i', 0)
         self._fids_to_ip = manager.dict()  #faceid --> (IP,Port)
         self._ip_to_fid = manager.dict() #(IP,Port) --> faceid

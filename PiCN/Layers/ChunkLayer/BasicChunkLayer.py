@@ -26,16 +26,18 @@ class RequestTableEntry(object):
 class BasicChunkLayer(LayerProcess):
     """"Basic Chunking Layer for PICN"""
 
-    def __init__(self, chunkifyer: BaseChunkifyer=None, chunk_size: int=4096, log_level=255):
+    def __init__(self, chunkifyer: BaseChunkifyer=None, chunk_size: int=4096, manager: multiprocessing.Manager=None,
+                 log_level=255):
         super().__init__("ChunkLayer", log_level=log_level)
         self.chunk_size = chunk_size
         if chunkifyer == None:
             self.chunkifyer = SimpleContentChunkifyer(chunk_size)
         else:
             self.chunkifyer: BaseChunkifyer = chunkifyer
-        self.manager = multiprocessing.Manager()
-        self._chunk_table: Dict[Name, (Content, float)] = self.manager.dict()
-        self._request_table: List[RequestTableEntry] = self.manager.list()
+        if manager is None:
+            manager = multiprocessing.Manager()
+        self._chunk_table: Dict[Name, (Content, float)] = manager.dict()
+        self._request_table: List[RequestTableEntry] = manager.list()
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         self.logger.info("Got Data from higher")
