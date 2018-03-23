@@ -62,11 +62,6 @@ class ContentTree():
         :param name: Name to lookup
         :return: Content Object or None
         """
-        """
-        Return leaf
-        :param path: path
-        :return:
-        """
         path = name.components
         try:
             return ((self.__get_subtree(path[:-1]))[path[-1]])["leaf"]

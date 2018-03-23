@@ -3,7 +3,7 @@
 import unittest
 
 from PiCN.Layers.ICNLayer.ContentStore.ContentTree import ContentTree
-from PiCN.Packets import Content
+from PiCN.Packets import Content, Name
 
 
 class test_ContentTree(unittest.TestCase):
@@ -13,6 +13,11 @@ class test_ContentTree(unittest.TestCase):
 
     def tearDown(self):
         pass
+
+    def test_empty_tree(self):
+        n = Name("/does/not/exist")
+        self.tree.exact_lookup(n)
+        self.tree.remove(n)
 
     def test_insert_and_lookup(self):
         # create content objects
@@ -76,4 +81,5 @@ class test_ContentTree(unittest.TestCase):
         self.assertEqual(self.tree.exact_lookup(c2.name), c2)
         self.assertEqual(self.tree.exact_lookup(c5.name), c5)
         self.assertEqual(self.tree.exact_lookup(c7.name), c7)
-        
+        # lookup non-existing content object
+        self.tree.exact_lookup(Name("/does/not/exist"))
