@@ -40,9 +40,10 @@ class NFNForwarder(object):
         self.icnlayer = BasicICNLayer(log_level=log_level)
 
         # setup data structures
-        self.cs = ContentStoreMemoryExact(self.icnlayer.manager)
-        self.fib = ForwardingInformationBaseMemoryPrefix(self.icnlayer.manager)
-        self.pit = PendingInterstTableMemoryExact(self.icnlayer.manager)
+        manager = multiprocessing.Manager()
+        self.cs = ContentStoreMemoryExact(manager)
+        self.fib = ForwardingInformationBaseMemoryPrefix(manager)
+        self.pit = PendingInterstTableMemoryExact(manager)
 
         self.icnlayer.cs = self.cs
         self.icnlayer.fib = self.fib

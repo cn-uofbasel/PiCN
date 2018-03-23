@@ -24,7 +24,7 @@ class Mgmt(PiCNProcess):
         self._cs: BaseContentStore = cs
         self._fib: BaseForwardingInformationBase = fib
         self._pit: BasePendingInterestTable = pit
-        self._linklayer: LayerProcess = linklayer
+        self._linklayer_create_fib: LayerProcess = linklayer
         self._repo_prfx = repo_prfx
         self._repo_path = repo_path
         self._port: int = port
