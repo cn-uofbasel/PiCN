@@ -9,7 +9,7 @@ PiCN is a...
 * a set of tools and network nodes.
 * our platform to build the next generation of NFN.
 
-PiCN is written in Python 3.6+
+PiCN is written in Python 3.6+ and tested on Linux, Mac OS X and Windows.
 
 ## Features
 

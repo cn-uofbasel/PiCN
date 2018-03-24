@@ -1,4 +1,4 @@
-""" An in-memory content store with cprefix matching"""
+""" An in-memory content store with prefix matching"""
 
 import multiprocessing, time, sys
 
