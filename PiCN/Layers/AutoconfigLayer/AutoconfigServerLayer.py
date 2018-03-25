@@ -11,6 +11,7 @@ from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformation
 
 
 _AUTOCONFIG_PREFIX: Name = Name('/autoconfig')
+_AUTOCONFIG_FORWARDERS_PREFIX: Name = Name('/autoconfig/forwarders')
 _AUTOCONFIG_SERVICE_LIST_PREFIX: Name = Name('/autoconfig/services')
 _AUTOCONFIG_SERVICE_REGISTRATION_PREFIX: Name = Name('/autoconfig/service')
 
@@ -55,7 +56,7 @@ class AutoconfigServerLayer(LayerProcess):
         if not _AUTOCONFIG_PREFIX.is_prefix_of(packet.name):
             to_higher.put(data)
         if isinstance(packet, Interest):
-            if _AUTOCONFIG_PREFIX == packet.name:
+            if _AUTOCONFIG_FORWARDERS_PREFIX == packet.name:
                 reply: Packet = self._handle_autoconfig(packet)
                 to_lower.put([fid, reply])
             if _AUTOCONFIG_SERVICE_LIST_PREFIX.is_prefix_of(packet.name):
