@@ -4,7 +4,6 @@ import binascii
 import json
 import os
 
-
 class Name(object):
     """
     Internal representation of network name
@@ -83,12 +82,21 @@ class Name(object):
         return self._components.__str__().__hash__()
 
     def is_prefix_of(self, name):
-        # if type(name) is not Name:
-        #    raise XXX
-        if  self.suite != name.suite:
-            return False
+        """
+        Checks if self is prefix of a given name
+        :param name: name
+        :return: true if self is prefix of given name, false otherwise
+        """
         pfx = os.path.commonprefix([self._components, name._components])
         return len(pfx) == len(self._components)
+
+    def has_prefix(self, name):
+        """
+        Checks if self has a certain prefix
+        :param name: prefix
+        :return: true if self has given prefix, false otherwi
+        """
+        return name.is_prefix_of(self)
 
     @property
     def components(self):
