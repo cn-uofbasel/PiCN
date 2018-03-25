@@ -72,7 +72,7 @@ class ContentTree():
 
     def prefix_lookup(self, name: Name) -> Content:
         """
-        Find any content object with has a given prefix (or exact)
+        Find any content object which has a given prefix (or exact match)
         :param name: name/prefix
         :return: Content Object or None
         """

@@ -19,6 +19,10 @@ class ContentStoreEntry(object):
     def content(self):
         return self._content
 
+    @property
+    def name(self):
+        return self._content.name
+
     @content.setter
     def content(self, content):
         self._content = content
