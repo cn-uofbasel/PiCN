@@ -21,21 +21,22 @@ class ContentTree():
             return {"subtree": defaultdict(Tree), "leaf": content_object}
         self.__tree = Tree()
 
-    def as_json(self) -> str:
-        """
-        tree as JSON
-        :return: tree as json
-        """
-        return json.dumps(self.__tree)
-
     def __get_subtree(self, path: List[str]):
         """
         Get subtree of a certain path
         :param path: path of subtree to return
         :return: subtree of given path
         """
-        assert(len(path)>0)
+        if len(path) == 0:
+            return self.__tree["subtree"]
         return reduce(lambda subtree, key: operator.getitem(subtree["subtree"], key), path, self.__tree)["subtree"]
+
+    def as_json(self) -> str:
+        """
+        tree as JSON
+        :return: tree as json
+        """
+        return json.dumps(self.__tree)
 
     def insert(self, content: Content) -> None:
         """
@@ -67,3 +68,21 @@ class ContentTree():
             return ((self.__get_subtree(path[:-1]))[path[-1]])["leaf"]
         except KeyError:
             return None
+
+    def prefix_lookup(self, name: Name) -> Content:
+        """
+        Find any content object with a given prefix
+        :param name: name/prefix
+        :return: Content Object or None
+        """
+        def traverse(tree):
+            if tree["leaf"] is not None:
+                return tree["leaf"]
+            else:
+                for key in tree["subtree"]:
+                    return traverse(tree["subtree"][key])
+            return None
+
+        path = name.components
+        start = (self.__get_subtree(path[:-1]))[path[-1]]
+        return traverse(start)
