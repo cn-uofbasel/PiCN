@@ -4,16 +4,17 @@ import multiprocessing, time, sys
 
 from PiCN.Packets import Content, Name
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore, ContentStoreEntry
-
+from PiCN.Layers.ICNLayer.ContentStore import ContentTree
 
 class ContentStorePrefixMatch(BaseContentStore):
     """ An in-memory content store with prefix matching"""
 
-    def __init__(self, manager: multiprocessing.Manager):
-        BaseContentStore.__init__(self, manager)
+    def __init__(self, manager: multiprocessing.Manager = None):
+        self._container = ContentTree()
 
     def find_content_object(self, name: Name) -> ContentStoreEntry:
         return None
+        return
         # for c in self._container:
         #     if c.content.name == name: #and c.content.name_payload == name_payload:
         #         return c

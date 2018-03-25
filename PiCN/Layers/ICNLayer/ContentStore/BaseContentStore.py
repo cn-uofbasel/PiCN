@@ -44,12 +44,13 @@ class ContentStoreEntry(object):
 
 class BaseContentStore(object):
     """Abstract BaseContentStore for usage in BasicICNLayer"""
+
     def __init__(self, manager: multiprocessing.Manager):
         self._container: List[ContentStoreEntry] = manager.list()
 
     @abc.abstractclassmethod
     def add_content_object(self, content: Content, static: bool=False):
-        """check if there is already a content object stored, otherewise store it in the container"""
+        """check if there is already a content object stored, otherwise store it in the container"""
 
     @abc.abstractclassmethod
     def find_content_object(self, name: Name) -> ContentStoreEntry:

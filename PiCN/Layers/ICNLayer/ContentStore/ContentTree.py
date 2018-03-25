@@ -1,6 +1,7 @@
 """ Data structure to organize content objects in a tree reflecting their namespace hierarchy """
 
 from PiCN.Packets import Content, Name
+from PiCN.Layers.ICNLayer.ContentStore import ContentStoreEntry
 
 from functools import reduce
 from collections import defaultdict
@@ -71,7 +72,7 @@ class ContentTree():
 
     def prefix_lookup(self, name: Name) -> Content:
         """
-        Find any content object with a given prefix
+        Find any content object with has a given prefix (or exact)
         :param name: name/prefix
         :return: Content Object or None
         """
