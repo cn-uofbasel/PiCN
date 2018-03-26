@@ -12,7 +12,7 @@ def run_apidoc(_):
     cur_dir = os.path.abspath(os.path.dirname(__file__))
     sys.path.append(parentFolder)
     # change "backend" to your module name
-    module = os.path.join(parentFolder,'backend')
+    module = os.path.join(parentFolder,'PiCN')
     output_path = os.path.join(cur_dir, 'api')
     main(['-e','-f','-o', output_path, module])
 
