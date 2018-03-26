@@ -1,10 +1,3 @@
-# from recommonmark.parser import CommonMarkParser
-
-# source_parsers = {
-    # '.md': CommonMarkParser,
-# }
-
-# source_suffix = ['.md']
 
 def run_apidoc(_):
 	from sphinx.apidoc import main
@@ -16,4 +9,10 @@ def run_apidoc(_):
 	main(['-e', '-o', cur_dir, module, '--force'])
 
 def setup(app):
+        from recommonmark.parser import CommonMarkParser
+        source_parsers = {
+            '.md': CommonMarkParser,
+        }
+        source_suffix = ['.md', '.rst']
+
 	app.connect('builder-inited', run_apidoc)
