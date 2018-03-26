@@ -18,7 +18,7 @@ tbd
 ## Hands On!
 Let us setup a simple network which consists of a data repository and a forwarding node:
 
-![Hands On: Topology](https://raw.githubusercontent.com/cn-uofbasel/PiCN/master/doc/img/initial-hands-on.png "Hands On: Topology")
+![Hands On: Topology](https://raw.githubusercontent.com/cn-uofbasel/PiCN/master/docs/img/initial-hands-on.png "Hands On: Topology")
              
 Clone PiCN from github:
 ```console
