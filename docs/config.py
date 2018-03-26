@@ -1,9 +1,9 @@
 # markup parser
-from recommonmark.parser import CommonMarkParser
-source_parsers = {
-    '.md': CommonMarkParser,
-}
-source_suffix = ['.md', '.rst']
+# from recommonmark.parser import CommonMarkParser
+# source_parsers = {
+    # '.md': CommonMarkParser,
+# }
+# source_suffix = ['.md', '.rst']
 
 # apidoc
 from sphinx.apidoc import main
