@@ -13,7 +13,21 @@ PiCN is written in Python 3.6+ and tested on Linux, Mac OS X and Windows.
 
 ## Features
 
-tbd
+#### Library
+
+* Link Layer (UDP faces)
+* Packet Encoding Layer (NDN packet format + link protocol)
+* CCN Layer (basic forwarding logic, data structs)
+* Chunking Layer
+* Computation Layer (next-gen NFN implementation)
+* Management interface to each layer
+
+#### Tools
+
+* Forwarder
+* Setup Tool to start, connect, configure and inspect multiple nodes (with NDN testbed access)
+* Peek Tool
+* Management Tool
 
 ## Hands On!
 Let us setup a simple network which consists of a data repository and a forwarding node:
