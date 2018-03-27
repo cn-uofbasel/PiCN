@@ -10,31 +10,18 @@ class ContentStorePrefixMatch(BaseContentStore):
     """ An in-memory content store with prefix matching"""
 
     def __init__(self, manager: multiprocessing.Manager = None):
-        self._container = ContentTree()
+        self._container:ContentTree = ContentTree() # TODO - this is not yet multiprocessing capable!
 
     def find_content_object(self, name: Name) -> ContentStoreEntry:
+        # todo
         return None
-        return
-        # for c in self._container:
-        #     if c.content.name == name: #and c.content.name_payload == name_payload:
-        #         return c
-        # return None
 
     def add_content_object(self, content: Content, static: bool=False):
-        return None
-        # for c in self._container:
-        #     if content == c.content:
-        #         return
-        # self._container.append(ContentStoreEntry(content, static=static))
+        self._container.insert(content)
 
     def remove_content_object(self, name: Name):
-        return None
-        # rem = self.find_content_object(name)
-        # if rem is not None:
-        #     self._container.remove(rem)
+        self._container.remove(name)
 
     def update_timestamp(self, cs_entry: ContentStoreEntry):
+        # TODO
         return None
-        # self._container.remove(cs_entry)
-        # cs_entry.timestamp = time.time()
-        # self._container.append(cs_entry)
