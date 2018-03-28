@@ -8,7 +8,7 @@ class BasicEncoder(object):
     """Abstract Encoder for the BasicPacketEncoding Layer"""
 
     @abc.abstractmethod
-    def __init__(self, logger_name = "BasicEncoder", log_level = 255):
+    def __init__(self, logger_name="BasicEncoder", log_level = 255):
         self.__logger_name = logger_name
         self.__log_level = log_level
         self.logger = Logger(self.__log_level, self.__log_level)
