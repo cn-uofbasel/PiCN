@@ -1,5 +1,7 @@
 """NFN Forwarder for PICN"""
 
+import multiprocessing
+
 from PiCN.LayerStack import LayerStack
 from PiCN.Layers.NFNLayer import BasicNFNLayer
 from PiCN.Layers.ChunkLayer import BasicChunkLayer
@@ -16,7 +18,6 @@ from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder, SimpleStringEn
 from PiCN.Logger import Logger
 from PiCN.Mgmt import Mgmt
 from PiCN.Routing import BasicRouting
-
 
 class NFNForwarder(object):
     """NFN Forwarder for PICN"""
@@ -39,9 +40,10 @@ class NFNForwarder(object):
         self.icnlayer = BasicICNLayer(log_level=log_level)
 
         # setup data structures
-        self.cs = ContentStoreMemoryExact(self.icnlayer.manager)
-        self.fib = ForwardingInformationBaseMemoryPrefix(self.icnlayer.manager)
-        self.pit = PendingInterstTableMemoryExact(self.icnlayer.manager)
+        manager = multiprocessing.Manager()
+        self.cs = ContentStoreMemoryExact(manager)
+        self.fib = ForwardingInformationBaseMemoryPrefix(manager)
+        self.pit = PendingInterstTableMemoryExact(manager)
 
         self.icnlayer.cs = self.cs
         self.icnlayer.fib = self.fib
@@ -55,7 +57,7 @@ class NFNForwarder(object):
         # setup nfn
         self.icnlayer._interest_to_app = True
         self.executors = {"PYTHON": NFNPythonExecutor}
-        self.nfnlayer = BasicNFNLayer(self.icnlayer.manager, self.cs, self.fib, self.pit, self.executors,
+        self.nfnlayer = BasicNFNLayer(manager, self.cs, self.fib, self.pit, self.executors,
                                       log_level=log_level)
 
         self.lstack: LayerStack = LayerStack([

@@ -89,8 +89,7 @@ class BasePendingInterestTable(object):
     """Abstract BasePendingInterestaTable for usage in BasicICNLayer"""
 
     def __init__(self, manager: multiprocessing.Manager):
-        self._manager = manager
-        self._container: List[PendingInterestTableEntry] = self._manager.list()
+        self._container: List[PendingInterestTableEntry] = manager.list()
 
     @abc.abstractclassmethod
     def add_pit_entry(self, name: Name, faceid: int, interest: Interest = None, local_app: bool = False):

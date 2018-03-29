@@ -1,5 +1,7 @@
 """A ICN Forwarder using PiCN"""
 
+import multiprocessing
+
 from PiCN.LayerStack.LayerStack import LayerStack
 from PiCN.Layers.ICNLayer import BasicICNLayer
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseMemoryPrefix
@@ -38,6 +40,7 @@ class ICNForwarder(object):
         self.icnlayer = BasicICNLayer(log_level=log_level)
 
         # setup data structures
+        manager = multiprocessing.Manager()
         self.cs = ContentStoreMemoryExact(self.icnlayer.manager)
         self.fib = ForwardingInformationBaseMemoryPrefix(self.icnlayer.manager)
         self.pit = PendingInterstTableMemoryExact(self.icnlayer.manager)

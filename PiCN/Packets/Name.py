@@ -1,23 +1,25 @@
 """Internal representation of network name"""
 
+from typing import List, Union
+
 import binascii
 import json
 import os
 from typing import List, Union
-
 
 class Name(object):
     """
     Internal representation of network name
     """
 
-    def __init__(self, name: Union[List[bytes], str] = None, suite='ndn2013'):
+    def __init__(self, name: Union[str, List[bytes]] = None, suite='ndn2013'):
         self.suite = suite
         self.digest = None
-        if isinstance(name, list):
-            self._components = name
-        elif isinstance(name, str):
-            self.from_string(name)
+        if name:
+            if isinstance(name, str):
+                self.from_string(name)
+            else:
+                self._components = name
         else:
             self._components = []
 
@@ -72,15 +74,28 @@ class Name(object):
             return False
         return self.to_string() == other.to_string()
 
-    def __add__(self, comp_s):
-        """Add Name components or a string component to the component list of the name"""
-        if type(comp_s) is list:
-            for c in comp_s:
-                self._components.append(c)
-            return self
-        elif type(comp_s) is str:
-            self._components.append(comp_s.encode('ascii'))
-            return self
+    def __add__(self, other) -> 'Name':
+        components: List[bytes] = []
+        for c in self._components:
+            components.append(c)
+        if type(other) is list:
+            for comp in other:
+                if type(comp) is str:
+                    components.append(comp.encode('ascii'))
+                elif type(comp) is bytes:
+                    components.append(comp)
+                else:
+                    raise TypeError('Not a Name, str, List[str] or List[bytes]')
+        elif type(other) is str:
+            o = Name(other)
+            for comp in o._components:
+                components.append(comp)
+        elif isinstance(other, Name):
+            for comp in other._components:
+                components.append(comp)
+        else:
+            raise TypeError('Not a Name, str, List[str] or List[bytes]')
+        return Name(components)
 
     def __hash__(self) -> int:
         return self._components.__str__().__hash__()
@@ -92,12 +107,21 @@ class Name(object):
         return len(self._components)
 
     def is_prefix_of(self, name):
-        # if type(name) is not Name:
-        #    raise XXX
-        if  self.suite != name.suite:
-            return False
+        """
+        Checks if self is prefix of a given name
+        :param name: name
+        :return: true if self is prefix of given name, false otherwise
+        """
         pfx = os.path.commonprefix([self._components, name._components])
         return len(pfx) == len(self._components)
+
+    def has_prefix(self, name):
+        """
+        Checks if self has a certain prefix
+        :param name: prefix
+        :return: true if self has given prefix, false otherwi
+        """
+        return name.is_prefix_of(self)
 
     @property
     def components(self):

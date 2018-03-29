@@ -11,6 +11,8 @@ class PiCNProcess(object):
     def __init__(self, logger_name="PiCNProcess", log_level=255):
         self._process: multiprocessing.Process = None
         self.logger = Logger(logger_name, log_level)
+        self.__logger_name = logger_name
+        self.__log_level = log_level
 
     @abc.abstractclassmethod
     def start_process(self):
@@ -28,3 +30,13 @@ class PiCNProcess(object):
     @process.setter
     def process(self, process):
         self._process = process
+
+    def __getstate__(self):
+        d = dict(self.__dict__)
+        if 'logger' in d:
+            del d['logger']
+        return d
+
+    def __setstate__(self, d):
+        self.__dict__.update(d) #need to store logger parameter and recreate logger here, since it cannot be pickled
+        self.logger = Logger(self.__logger_name, self.__log_level)

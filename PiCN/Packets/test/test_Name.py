@@ -3,6 +3,7 @@ import unittest
 
 from PiCN.Packets import Name
 
+
 class TestContent(unittest.TestCase):
 
     def setUp(self):
@@ -22,3 +23,42 @@ class TestContent(unittest.TestCase):
         n1 = Name("/test/data")
         n2 = Name("/test/data1")
         self.assertNotEqual(n1, n2)
+
+    def test_constructor_str(self):
+        n = Name('/test/data')
+        self.assertEqual([b'test', b'data'], n._components)
+
+    def test_constructor_byteslist(self):
+        n = Name([b'test', b'data'])
+        self.assertEqual([b'test', b'data'], n._components)
+        self.assertEqual('/test/data', n.components_to_string())
+
+    def test_add_names(self):
+        n1 = Name('/test')
+        n2 = Name('/data')
+        n = n1 + n2
+        self.assertEqual([b'test', b'data'], n._components)
+        self.assertEqual('/test/data', n.components_to_string())
+
+    def test_add_str(self):
+        n1 = Name('/test')
+        n = n1 + '/data'
+        self.assertEqual([b'test', b'data'], n._components)
+        self.assertEqual('/test/data', n.components_to_string())
+
+    def test_add_list(self):
+        n1 = Name('/test')
+        n = n1 + [b'data']
+        self.assertEqual([b'test', b'data'], n._components)
+        self.assertEqual('/test/data', n.components_to_string())
+
+    def test_add_type_error(self):
+        n1 = Name('/test')
+        with self.assertRaises(TypeError):
+            n1 + 42
+
+    def test_add_inplace(self):
+        n = Name('/test')
+        n += '/data'
+        self.assertEqual([b'test', b'data'], n._components)
+        self.assertEqual('/test/data', n.components_to_string())

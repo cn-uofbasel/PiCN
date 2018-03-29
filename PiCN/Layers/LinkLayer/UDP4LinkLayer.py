@@ -6,7 +6,8 @@ import multiprocessing, select, socket, time
 class UDP4LinkLayer(LayerProcess):
     """ Link Layer Inferface using UDP Sockets for Communication """
 
-    def __init__(self, port: int = 9000, log_level=255, buffersize: int = 8192, max_fids_entries: int = int(1e6)):
+    def __init__(self, port: int = 9000, buffersize: int = 8192, max_fids_entries: int = int(1e6),
+                 manager: multiprocessing.Manager=None, log_level=255):
         LayerProcess.__init__(self, logger_name="LinkLayer", log_level=log_level)
         #static unsync data
         self._port: int = port
@@ -14,11 +15,12 @@ class UDP4LinkLayer(LayerProcess):
         self._fids_max_entries: int = max_fids_entries
 
         #Sync data
-        self.manager = multiprocessing.Manager()
-        self._cur_fid = self.manager.Value('i', 0)
-        self._fids_to_ip = self.manager.dict()  #faceid --> (IP,Port)
-        self._ip_to_fid = self.manager.dict() #(IP,Port) --> faceid
-        self._fids_timestamps = self.manager.dict() #faceid --> timestamp, static
+        if manager is None:
+            manager = multiprocessing.Manager()
+        self._cur_fid = manager.Value('i', 0)
+        self._fids_to_ip = manager.dict()  #faceid --> (IP,Port)
+        self._ip_to_fid = manager.dict() #(IP,Port) --> faceid
+        self._fids_timestamps = manager.dict() #faceid --> timestamp, static
 
         #Network data, used with a reference
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -83,6 +85,17 @@ class UDP4LinkLayer(LayerProcess):
                 else:
                     pass
 
+    def _run_sleep(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
+                   to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):
+        """ Process loop, handle incomming packets, use round-robin, required for NT since MS POSIX api do not support
+         select on file descriptors nor polling"""
+        while True:
+            ready_vars = select.select([self.sock], [], [], 0.3)
+            for var in ready_vars:
+                if var == self.sock:
+                    self.receive_data(self.sock, to_higher)
+            if from_higher and not from_higher.empty():
+                self.send_data(self.sock, from_higher)
 
     def send_data(self, sock: socket.socket, from_higher: multiprocessing.Queue):
         """Gets data from the higher layer and forwards them to the network"""

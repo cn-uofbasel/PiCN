@@ -9,16 +9,30 @@ PiCN is a...
 * a set of tools and network nodes.
 * our platform to build the next generation of NFN.
 
-PiCN is written in Python 3.6+
+PiCN is written in Python 3.6+ and tested on Linux, Mac OS X and Windows. More than 200 unit tests are included.
 
 ## Features
 
-tbd
+#### Library
+
+* Link Layer (UDP faces)
+* Packet Encoding Layer (NDN packet format + link protocol)
+* CCN Layer (basic forwarding logic, data structs)
+* Chunking Layer
+* Computation Layer (next-gen NFN implementation)
+* Management interface to each layer
+
+#### Tools
+
+* Forwarder
+* Setup Tool to start, connect, configure and inspect multiple nodes (with NDN testbed access)
+* Peek Tool
+* Management Tool
 
 ## Hands On!
 Let us setup a simple network which consists of a data repository and a forwarding node:
 
-![Hands On: Topology](https://raw.githubusercontent.com/cn-uofbasel/PiCN/master/doc/img/initial-hands-on.png "Hands On: Topology")
+![Hands On: Topology](https://raw.githubusercontent.com/cn-uofbasel/PiCN/master/docs/img/initial-hands-on.png "Hands On: Topology")
              
 Clone PiCN from github:
 ```console
@@ -54,7 +68,7 @@ you@machine:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newforwardingrule /the:0
 Fetch content from the repository via the forwarding node:
 ```console
 you@notebook:~$ picn-fetch --format ndntlv 127.0.0.1 9000 /the/prefix/example 
-... todo ...
+HELLO WORLD
 ```
 
 ## More about...
