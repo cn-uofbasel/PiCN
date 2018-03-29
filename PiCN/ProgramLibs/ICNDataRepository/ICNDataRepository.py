@@ -59,7 +59,7 @@ class ICNDataRepository(object):
 
     def start_repo(self):
         # start processes
-        self.lstack.stop_all()
+        self.lstack.start_all()
         self.mgmt.start_process()
 
     def stop_repo(self):
