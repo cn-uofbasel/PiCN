@@ -4,8 +4,6 @@ Make sure that you have Python 3.6+ installed on your machine. In case case of d
 
 > `python -V`
 
-Also note that we currently develop and test PiCN on Linux and Mac OS X machines. Since Windows handles inter-process communication differently, it is currently not supported.
-
 
 
 ## Getting Started as a User

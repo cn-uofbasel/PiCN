@@ -4,6 +4,7 @@
 """
 
 import multiprocessing
+import os
 import select
 import threading
 import time
@@ -25,22 +26,25 @@ class BasicNFNLayer(LayerProcess):
                  fib: BaseForwardingInformationBase, pit: BasePendingInterestTable,
                  executor: Dict[str, type(BaseNFNExecutor)], logger_name="NFN Layer", log_level=255):
         super().__init__(logger_name, log_level)
-        self.manager = manager
         self.content_store = content_store
         self.fib = fib
         self.pit = pit
         self._running_computations: Dict[int, NFNEvaluator] = {} # {} #computation id -> computation
-        self._computation_request_table: Dict[Name, List[int]] = self.manager.dict()  # request(name) -> [computation id]
+        self._computation_request_table: Dict[Name, List[int]] = manager.dict()  # request(name) -> [computation id]
         self._pending_computations: multiprocessing.Queue[(Interest, bool)] = multiprocessing.Queue() # computations not started yet
-        self._further_rewirtes_table: Dict[Name, List[Name]] = self.manager.dict() #current rewrite --> next rewrites
-        self.rewrite_table: Dict[Name, List[Name]] = self.manager.dict() #rewritten name -> original name
+        self._further_rewirtes_table: Dict[Name, List[Name]] = manager.dict() #current rewrite --> next rewrites
+        self.rewrite_table: Dict[Name, List[Name]] = manager.dict() #rewritten name -> original name
         self.executor: Dict[str, type(BaseNFNExecutor)] = executor
 
         self._max_running_computations: int = 50
         self._next_computation_id: int = 0
         self._ageing_interval: int = 3
         self._timeout_interal: int = 20
-        self.ageing_lock: threading.Lock = threading.Lock()
+        if os.name is 'nt':
+            self.ageing_lock = None
+        else:
+            self.ageing_lock: threading.Lock = threading.Lock()
+
 
         self.nfn_evaluator_type = NFNEvaluator
 
@@ -282,6 +286,8 @@ class BasicNFNLayer(LayerProcess):
     def _run_nfn_layer(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
                   to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, running_computations: Dict):
         """ Process loop, handle incomming packets, use poll if many file descripors are required"""
+        if self.ageing_lock is None:
+           self.ageing_lock = threading.Lock()
         self.start_computation_queue_handler(running_computations)
         self.ageing(running_computations)
         poller = select.poll()

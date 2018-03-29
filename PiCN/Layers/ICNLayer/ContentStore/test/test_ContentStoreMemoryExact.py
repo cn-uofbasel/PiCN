@@ -65,8 +65,6 @@ class test_ContentStoreMemoryExact(unittest.TestCase):
         fc2 = self.cs.find_content_object(c2.name)
         self.assertEqual(fc2.content, c2)
 
-
-
     def test_find_content_to_cs_no_match(self):
         """Test adding and searching data to CS"""
         c1 = Content("/test/data", "Hello World")

@@ -46,8 +46,7 @@ class BaseForwardingInformationBase(object):
     """Abstract BaseForwardingInformationBase for usage in BasicICNLayer"""
 
     def __init__(self, manager: multiprocessing.Manager):
-        self._manager =  manager
-        self._container: List[ForwardingInformationBaseEntry] = self._manager.list()
+        self._container: List[ForwardingInformationBaseEntry] = manager.list()
 
     @abc.abstractclassmethod
     def add_fib_entry(self, name: Name, fid: int, static: bool):

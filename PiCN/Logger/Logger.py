@@ -14,3 +14,4 @@ class Logger(logging.Logger):
         ch = logging.StreamHandler()
         ch.setFormatter(formatter)
         self.addHandler(ch)
+
