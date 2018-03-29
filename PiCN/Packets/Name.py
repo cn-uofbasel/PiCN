@@ -96,27 +96,6 @@ class Name(object):
             raise TypeError('Not a Name, str, List[str] or List[bytes]')
         return Name(components)
 
-    def __iadd__(self, comp_s) -> 'Name':
-        """Add Name components or a string component to the component list of the name"""
-        if type(comp_s) is list:
-            for c in comp_s:
-                if type(c) is str:
-                    self._components.append(c.encode('ascii'))
-                elif type(c) is bytes:
-                    self._components.append(c)
-                else:
-                    raise TypeError('Not a Name, str, List[str] or List[bytes]')
-        elif type(comp_s) is str:
-            o = Name(comp_s)
-            for c in o._components:
-                self._components.append(c)
-        elif isinstance(comp_s, Name):
-            for c in comp_s._components:
-                self._components.append(c)
-        else:
-            raise TypeError('Not a Name, str, List[str] or List[bytes]')
-        return self
-
     def __hash__(self) -> int:
         return self._components.__str__().__hash__()
 
