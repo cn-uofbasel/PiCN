@@ -108,6 +108,7 @@ class AutoconfigServerLayer(LayerProcess):
     def _handle_service_registration(self, interest: Interest) -> Packet:
         self.logger.info('Service Registration requested')
         remote: str = interest.name[len(_AUTOCONFIG_SERVICE_REGISTRATION_PREFIX)].decode('ascii')
+        self.logger.info(f'Remote service: {remote}')
         host, port = remote.split(':')
         srvaddr = (host, int(port))
         srvname = Name(interest.name[len(_AUTOCONFIG_SERVICE_REGISTRATION_PREFIX)+1:])

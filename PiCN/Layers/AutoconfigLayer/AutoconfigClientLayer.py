@@ -39,21 +39,8 @@ class AutoconfigClientLayer(LayerProcess):
         if not _AUTOCONFIG_PREFIX.is_prefix_of(packet.name):
             to_higher.put(data)
             return
-        if isinstance(packet, Content):
-            if packet.name == _AUTOCONFIG_FORWARDERS_PREFIX:
-                lines: List[str] = packet.content.split('\n')
-                host, port = lines[0].split(':')
-                fwd_fid = self._linklayer.get_or_create_fid((host, int(port)), static=True)
-                for line in lines[1:]:
-                    if len(line.strip()) == 0:
-                        continue
-                    t, n = line.split(':')
-                    if t == 'r':
-                        name: Name = Name(n)
-                        for interest in self._held_interests:
-                            if name.is_prefix_of(interest.name):
-                                to_lower.put([fwd_fid, interest])
-                        self._held_interests = [i for i in self._held_interests if not name.is_prefix_of(i.name)]
+        if packet.name == _AUTOCONFIG_FORWARDERS_PREFIX:
+            self._handle_forwarders(packet)
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         self.logger.info(f'Got data from higher: {data}')
@@ -66,10 +53,27 @@ class AutoconfigClientLayer(LayerProcess):
         fid: int = data[0]
         packet: Packet = data[1]
         if fid is not None:
-            self.queue_to_lower.put(data)
+            to_lower.put(data)
             return
         if isinstance(packet, Interest):
             self._held_interests.append(packet)
             autoconf: Interest = Interest(_AUTOCONFIG_FORWARDERS_PREFIX)
             autoconf_fid = self._linklayer.get_or_create_fid((self._broadcast_addr, self._broadcast_port), static=True)
             to_lower.put([autoconf_fid, autoconf])
+
+    def _handle_forwarders(self, packet: Packet):
+        if not isinstance(packet, Content):
+            return
+        lines: List[str] = packet.content.split('\n')
+        host, port = lines[0].split(':')
+        fwd_fid = self._linklayer.get_or_create_fid((host, int(port)), static=True)
+        for line in lines[1:]:
+            if len(line.strip()) == 0:
+                continue
+            t, n = line.split(':')
+            if t == 'r':
+                name: Name = Name(n)
+                for interest in self._held_interests:
+                    if name.is_prefix_of(interest.name):
+                        self.queue_to_lower.put([fwd_fid, interest])
+                self._held_interests = [i for i in self._held_interests if not name.is_prefix_of(i.name)]

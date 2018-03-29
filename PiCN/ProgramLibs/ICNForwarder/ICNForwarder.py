@@ -41,9 +41,9 @@ class ICNForwarder(object):
 
         # setup data structures
         manager = multiprocessing.Manager()
-        self.cs = ContentStoreMemoryExact(self.icnlayer.manager)
-        self.fib = ForwardingInformationBaseMemoryPrefix(self.icnlayer.manager)
-        self.pit = PendingInterstTableMemoryExact(self.icnlayer.manager)
+        self.cs = ContentStoreMemoryExact(manager)
+        self.fib = ForwardingInformationBaseMemoryPrefix(manager)
+        self.pit = PendingInterstTableMemoryExact(manager)
 
         self.lstack: LayerStack = LayerStack([
             self.icnlayer,

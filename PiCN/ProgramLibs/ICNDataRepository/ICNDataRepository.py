@@ -6,6 +6,7 @@ from PiCN.LayerStack.LayerStack import LayerStack
 from PiCN.Layers.ChunkLayer import BasicChunkLayer
 from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
 from PiCN.Layers.RepositoryLayer import BasicRepositoryLayer
+from PiCN.Layers.AutoconfigLayer import AutoconfigRepoLayer
 
 from PiCN.Layers.ChunkLayer.Chunkifyer import SimpleContentChunkifyer
 from PiCN.Layers.LinkLayer import UDP4LinkLayer
@@ -22,7 +23,7 @@ class ICNDataRepository(object):
     """A ICN Forwarder using PiCN"""
 
     def __init__(self, foldername: str, prefix: Name,
-                 port=9000, log_level=255, encoder: BasicEncoder = None):
+                 port=9000, log_level=255, encoder: BasicEncoder = None, autoconfig: bool = False):
 
         logger = Logger("ICNRepo", log_level)
         logger.info("Start PiCN Data Repository")
@@ -37,7 +38,8 @@ class ICNDataRepository(object):
         self.chunkifyer = SimpleContentChunkifyer()
 
         #repo
-        self.repo = SimpleFileSystemRepository(foldername, prefix, logger)
+        self.manager = multiprocessing.Manager()
+        self.repo = SimpleFileSystemRepository(foldername, prefix, self.manager, logger)
 
         #initialize layers
         self.linklayer = UDP4LinkLayer(port, log_level=log_level)
@@ -51,6 +53,14 @@ class ICNDataRepository(object):
             self.packetencodinglayer,
             self.linklayer
         ])
+
+        if autoconfig:
+            self.autoconfiglayer = AutoconfigRepoLayer(name=prefix.string_components[-1],
+                                                       addr='127.0.0.1', port=port,
+                                                       bcaddr='127.255.255.255', bcport=6363,
+                                                       linklayer=self.linklayer, repo=self.repo, log_level=log_level)
+            self.lstack.insert(self.autoconfiglayer, below_of=self.chunklayer)
+
 
         # mgmt
         self.mgmt = Mgmt(None, None, None, self.linklayer, self.linklayer.get_port(),
