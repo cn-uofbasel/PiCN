@@ -42,7 +42,7 @@ class TestContent(unittest.TestCase):
 
     def test_add_str(self):
         n1 = Name('/test')
-        n = n1 + '/data'
+        n = n1 + 'data'
         self.assertEqual([b'test', b'data'], n._components)
         self.assertEqual('/test/data', n.components_to_string())
 
@@ -59,6 +59,6 @@ class TestContent(unittest.TestCase):
 
     def test_add_inplace(self):
         n = Name('/test')
-        n += '/data'
+        n += 'data'
         self.assertEqual([b'test', b'data'], n._components)
         self.assertEqual('/test/data', n.components_to_string())
