@@ -77,9 +77,9 @@ class AutoconfigRepoLayer(LayerProcess):
                 prefix = Name(n)
                 self.logger.info(f'Got prefix {prefix}')
                 registration_name: Name = _AUTOCONFIG_SERVICE_REGISTRATION_PREFIX
-                registration_name += f'/{self._addr}:{self._port}'
+                registration_name += f'{self._addr}:{self._port}'
                 registration_name += prefix
-                registration_name += f'/{self._service_name}'
+                registration_name += f'{self._service_name}'
                 self.logger.info(f'Registering service {registration_name}')
                 registration_interest = Interest(registration_name)
                 self.logger.info('Sending service registration')

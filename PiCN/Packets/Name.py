@@ -87,9 +87,7 @@ class Name(object):
                 else:
                     raise TypeError('Not a Name, str, List[str] or List[bytes]')
         elif type(other) is str:
-            o = Name(other)
-            for comp in o._components:
-                components.append(comp)
+                components.append(other.encode('ascii'))
         elif isinstance(other, Name):
             for comp in other._components:
                 components.append(comp)
