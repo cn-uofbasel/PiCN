@@ -3,6 +3,7 @@
 import os
 import shutil
 import unittest
+import multiprocessing
 
 from PiCN.Layers.RepositoryLayer.Repository import SimpleFileSystemRepository
 from PiCN.Packets import Content, Name
@@ -23,7 +24,8 @@ class test_SimpleFileSystemRepository(unittest.TestCase):
             content_file.write("data2")
         with open("/tmp/f3", 'w+') as content_file:
             content_file.write("data3")
-        self.repository = SimpleFileSystemRepository( self.path, Name("/test/data"))
+        self.manager = multiprocessing.Manager()
+        self.repository = SimpleFileSystemRepository(self.path, Name("/test/data"), manager=self.manager)
 
     def tearDown(self):
         try:
