@@ -35,6 +35,7 @@ class Fetch(object):
             self.linklayer
         ])
 
+        self.autoconfig = autoconfig
         if autoconfig:
             self.autoconfiglayer: AutoconfigClientLayer = AutoconfigClientLayer(self.linklayer,
                                                                                 broadcast='127.255.255.255', port=6363)
@@ -50,7 +51,10 @@ class Fetch(object):
         """Fetch data from the server"""
         # create interest
         interest: Interest = Interest(name)
-        self.lstack.queue_from_higher.put([None, interest])
+        if self.autoconfig:
+            self.lstack.queue_from_higher.put([None, interest])
+        else:
+            self.lstack.queue_from_higher.put([self.fid, interest])
         packet = self.lstack.queue_to_higher.get()[1]
         if isinstance(packet, Content):
             return packet.content
