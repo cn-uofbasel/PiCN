@@ -24,8 +24,8 @@ class test_BasicRepositoryLayer(unittest.TestCase):
             content_file.write("data1")
         with open( self.path + "/f2", 'w+') as content_file:
             content_file.write("data2")
-        self.manager = multiprocessing.Manager()
-        self.repository = SimpleFileSystemRepository(self.path, Name("/test/data"), manager=self.manager)
+        manager = multiprocessing.Manager()
+        self.repository = SimpleFileSystemRepository(self.path, Name("/test/data"), manager=manager)
         self.repositoryLayer = BasicRepositoryLayer(self.repository)
 
         self.q1_from_lower = multiprocessing.Queue()

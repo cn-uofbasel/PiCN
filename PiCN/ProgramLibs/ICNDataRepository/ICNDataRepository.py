@@ -38,8 +38,8 @@ class ICNDataRepository(object):
         self.chunkifyer = SimpleContentChunkifyer()
 
         #repo
-        self.manager = multiprocessing.Manager()
-        self.repo = SimpleFileSystemRepository(foldername, prefix, self.manager, logger)
+        manager = multiprocessing.Manager()
+        self.repo = SimpleFileSystemRepository(foldername, prefix, manager, logger)
 
         #initialize layers
         self.linklayer = UDP4LinkLayer(port, log_level=log_level)

@@ -24,8 +24,8 @@ class test_SimpleFileSystemRepository(unittest.TestCase):
             content_file.write("data2")
         with open("/tmp/f3", 'w+') as content_file:
             content_file.write("data3")
-        self.manager = multiprocessing.Manager()
-        self.repository = SimpleFileSystemRepository(self.path, Name("/test/data"), manager=self.manager)
+        manager = multiprocessing.Manager()
+        self.repository = SimpleFileSystemRepository(self.path, Name("/test/data"), manager=manager)
 
     def tearDown(self):
         try:
