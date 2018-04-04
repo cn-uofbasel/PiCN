@@ -12,7 +12,7 @@ from PiCN.Packets import Name, Content, Nack
 class MockSocket(object):
 
     def __init__(self):
-        self.setsockopt = unittest.mock.MagicMock()
+        self.setsockopt = unittest.mock.Mock()
 
 
 class MockLinkLayer(UDP4LinkLayer):
