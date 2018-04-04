@@ -18,8 +18,10 @@ class test_AutoconfigServerLayer(unittest.TestCase):
         self.manager = multiprocessing.Manager()
         self.linklayer_mock = MockLinkLayer(port=1337)
         self.fib = ForwardingInformationBaseMemoryPrefix(self.manager)
+        # Create a face and an example route
         outfid = self.linklayer_mock._get_or_create_fid(('127.13.37.42', 4242))
         self.fib.add_fib_entry(Name('/global'), outfid)
+        # List of advertised prefixes
         self.prefixes: List[Name] = [Name('/test/repos'), Name('/home')]
         self.autoconflayer = AutoconfigServerLayer(linklayer=self.linklayer_mock, fib=self.fib, address='127.0.1.1',
                                                    broadcast='127.255.255.255',
@@ -44,12 +46,14 @@ class test_AutoconfigServerLayer(unittest.TestCase):
     def test_pass_through(self):
         """Test that autoconfig-unrelated content is passed through unchanged"""
         self.autoconflayer.start_process()
+        # Pass an interest object from below
         interest = Interest(Name('/foo/bar'))
         self.queue_from_lower.put([42, interest])
         data = self.queue_to_higher.get()
         self.assertEqual(2, len(data))
         self.assertEqual(42, data[0])
         self.assertEqual(interest, data[1])
+        # Pass a content object from above
         content = Content(Name('/foo/bar'), 'foo bar')
         self.queue_from_higher.put([1337, content])
         data = self.queue_to_lower.get()
@@ -57,12 +61,14 @@ class test_AutoconfigServerLayer(unittest.TestCase):
         self.assertEqual(1337, data[0])
         self.assertEqual(content, data[1])
 
-    def test_get_forwarder_info(self):
-        """Test simple retrieval of the forwarder info"""
+    def test_get_forwarder_advertisement(self):
+        """Test simple retrieval of the forwarder advertisement"""
         self.autoconflayer.start_process()
+        # Send forwarder solicitation
         name = Name('/autoconfig/forwarders')
         interest = Interest(name)
         self.queue_from_lower.put([42, interest])
+        # Receive forwarder advertisement
         fid, packet = self.queue_to_lower.get()
         self.assertEqual(42, fid)
         self.assertIsInstance(packet, Content)
@@ -77,16 +83,20 @@ class test_AutoconfigServerLayer(unittest.TestCase):
     def test_register_service(self):
         """Test service registration and subsequent retrieval of the service list"""
         self.autoconflayer.start_process()
+        # Send service registration
         rname = Name('/autoconfig/service/127.42.42.42:1337/test/repos/testrepo')
         rinterest = Interest(rname)
         self.queue_from_lower.put([42, rinterest])
+        # Receive service registration ACK
         fid, packet = self.queue_to_lower.get()
         self.assertEqual(42, fid)
         self.assertIsInstance(packet, Content)
         self.assertEqual(rname, packet.name)
+        # Request known services list
         lname = Name('/autoconfig/services')
         linterest = Interest(lname)
         self.queue_from_lower.put([42, linterest])
+        # Receive known services list
         fid, packet = self.queue_to_lower.get()
         self.assertEqual(42, fid)
         self.assertIsInstance(packet, Content)
@@ -100,7 +110,9 @@ class test_AutoconfigServerLayer(unittest.TestCase):
         rname = Name('/autoconfig/service/127.42.42.42:1337/test/repos/testrepo')
         rinterest = Interest(rname)
         for i in range(2):
+            # Send service registration
             self.queue_from_lower.put([42, rinterest])
+            # Receive service registration, should be ACK both times
             fid, packet = self.queue_to_lower.get()
             self.assertEqual(42, fid)
             self.assertIsInstance(packet, Content)
@@ -109,16 +121,20 @@ class test_AutoconfigServerLayer(unittest.TestCase):
     def test_register_service_twice_different_addr_nack(self):
         """Test registration of a second service with a different address under the same name; should be refused"""
         self.autoconflayer.start_process()
+        # Send first service registration
         rname = Name('/autoconfig/service/127.42.42.42:1337/test/repos/testrepo')
         rinterest = Interest(rname)
         self.queue_from_lower.put([42, rinterest])
+        # Receive first service registration reply, should be ACK
         fid, packet = self.queue_to_lower.get()
         self.assertEqual(42, fid)
         self.assertIsInstance(packet, Content)
         self.assertEqual(rname, packet.name)
+        # Send second service registration with different address
         fname = Name('/autoconfig/service/127.0.0.42:1337/test/repos/testrepo')
         finterest = Interest(fname)
         self.queue_from_lower.put([42, finterest])
+        # Receive second service registration reply, should be NACK
         fid, packet = self.queue_to_lower.get()
         self.assertEqual(42, fid)
         self.assertIsInstance(packet, Nack)
@@ -128,10 +144,11 @@ class test_AutoconfigServerLayer(unittest.TestCase):
     def test_register_service_unavailable_prefix_nack(self):
         """Test registration of a service under a prefix that is not advertised by the forwarder; should be refused"""
         self.autoconflayer.start_process()
-        self.autoconflayer.start_process()
+        # Send service registration with non-advertised name
         rname = Name('/autoconfig/service/127.42.42.42:1337/otherprefix/testrepo')
         rinterest = Interest(rname)
         self.queue_from_lower.put([42, rinterest])
+        # Receive service registration reply, should be NACK
         fid, packet = self.queue_to_lower.get()
         self.assertEqual(42, fid)
         self.assertIsInstance(packet, Nack)
