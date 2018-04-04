@@ -24,7 +24,6 @@ class UDP4LinkLayer(LayerProcess):
 
         #Network data, used with a reference
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.sock.bind(("0.0.0.0", self._port))
 
     def get_port(self) -> int:
