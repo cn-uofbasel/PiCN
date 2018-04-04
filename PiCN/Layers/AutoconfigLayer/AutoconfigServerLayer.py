@@ -85,7 +85,7 @@ class AutoconfigServerLayer(LayerProcess):
 
     def _handle_service_list(self, interest: Interest) -> Packet:
         self.logger.info('Service List requested')
-        srvprefix = Name(interest.name[len(_AUTOCONFIG_SERVICE_LIST_PREFIX):])
+        srvprefix = Name(interest.name.components[len(_AUTOCONFIG_SERVICE_LIST_PREFIX):])
         content = ''
         now: datetime = datetime.now()
         for service, _, timeout in self._known_services:
@@ -107,11 +107,11 @@ class AutoconfigServerLayer(LayerProcess):
 
     def _handle_service_registration(self, interest: Interest) -> Packet:
         self.logger.info('Service Registration requested')
-        remote: str = interest.name[len(_AUTOCONFIG_SERVICE_REGISTRATION_PREFIX)].decode('ascii')
+        remote: str = interest.name.components[len(_AUTOCONFIG_SERVICE_REGISTRATION_PREFIX)].decode('ascii')
         self.logger.info(f'Remote service: {remote}')
         host, port = remote.split(':')
         srvaddr = (host, int(port))
-        srvname = Name(interest.name[len(_AUTOCONFIG_SERVICE_REGISTRATION_PREFIX)+1:])
+        srvname = Name(interest.name.components[len(_AUTOCONFIG_SERVICE_REGISTRATION_PREFIX)+1:])
         if len([prefix for prefix in self._service_registration_prefixes
                 if len(prefix) == 0 or prefix.is_prefix_of(srvname)]) == 0:
             nack: Nack = Nack(interest.name, NackReason.NO_ROUTE)
@@ -126,8 +126,10 @@ class AutoconfigServerLayer(LayerProcess):
                     return nack
                 else:
                     self._known_services[i] = (service, addr, datetime.now() + self._service_registration_timeout)
-                    break
+                    ack: Content = Content(interest.name)
+                    return ack
         srvfid: int = self._linklayer.get_or_create_fid(srvaddr, static=True)
         self._fib.add_fib_entry(srvname, srvfid, static=True)
+        self._known_services.append((srvname, srvaddr, datetime.now() + self._service_registration_timeout))
         ack: Content = Content(interest.name)
         return ack

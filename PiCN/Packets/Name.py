@@ -31,6 +31,8 @@ class Name(object):
 
     def components_to_string(self) -> str:
         # FIXME: handle '/' as part of a component, and binary components
+        if len(self._components) == 0:
+            return '/'
         if type(self._components[0]) is str:
             s =  '/' + '/'.join([c for c in self._components])
             return s
@@ -97,9 +99,6 @@ class Name(object):
 
     def __hash__(self) -> int:
         return self._components.__str__().__hash__()
-
-    def __getitem__(self, item):
-        return self._components[item]
 
     def __len__(self):
         return len(self._components)
