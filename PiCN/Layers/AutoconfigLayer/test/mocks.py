@@ -1,9 +1,12 @@
 
 import unittest.mock
+import multiprocessing
 
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Union
 
 from PiCN.Layers.LinkLayer import UDP4LinkLayer
+from PiCN.Layers.RepositoryLayer.Repository import BaseRepository
+from PiCN.Packets import Name, Content, Nack
 
 
 class MockSocket(object):
@@ -34,3 +37,20 @@ class MockLinkLayer(UDP4LinkLayer):
         self._id_gen += 1
         self._ip_to_fid[addr] = fid
         return fid
+
+
+class MockRepository(BaseRepository):
+
+    def __init__(self, prefix: Name):
+        manager = multiprocessing.Manager()
+        self.prefix: multiprocessing.Value = manager.Value(Name, prefix)
+        super().__init__()
+
+    def is_content_available(self, icnname: Name) -> bool:
+        return True
+
+    def get_content(self, icnname: Name) -> Union[Content, Nack]:
+        return Content(icnname, '')
+
+    def set_prefix(self, prefix: Name):
+        self.prefix.value = prefix
