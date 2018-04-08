@@ -89,37 +89,4 @@ HELLO WORLD
 ### The Project
 
 * [Licensing](doc/licensing.md)
-
-<!---
-## Chunking
-PiCN ships with a build in Chunking Tool. If the data do not fit a packet, the ChunkLayer will autmatically split the
-content into Chunks (NDN Terminology: Segments). 
-We use a on-demand chunking process
-
-If a data object has to be chunked, the Repo will return a Metadata-Object.
- 
-A Metadata-Object contains the names of up to 4 chunks and a pointer to the next Metadata-Object.
-The following name scheme is used:
-
-* Metadata-Object naming:
-  * First Metadata-Object: < original file name > 
-  * Second Metadata-Object: < original file name  >/m1
-  * n-th Metadata-Object: < original file name>/mn
-  
-* Metadata object content: 
-
-  mdo: < name first chunk name> : < name second chunk name> : < name third chunk name> : < name fourth chunk name>  : < next meta data object >
-  
-  * The content is complete if there is no further Metadata-Object.
-  
-* Chunk Naming: 
-  * First Chunk < original file name >/c0
-  * Second Chunk < original file name >/c1
-  * n-th Chunk < original file name >/cn
-
-The Fetch-Tool will automatically reassable the chunks and return the complete content object. 
-
-
-Warning: Currently, the chunking is done using the main memory. Therefore the maximal file size is limited.
-This will be improved soon.
--->
+* [Mailinglist](https://www.maillist.unibas.ch/mailman/listinfo/picn)
