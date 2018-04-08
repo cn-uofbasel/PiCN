@@ -1,10 +1,10 @@
-
 import multiprocessing
 import socket
+import threading
 from typing import List
 
 from PiCN.Layers.LinkLayer import UDP4LinkLayer
-from PiCN.Packets import Name, Packet, Interest, Content
+from PiCN.Packets import Name, Packet, Interest, Content, Nack, NackReason
 from PiCN.Processes import LayerProcess
 
 _AUTOCONFIG_PREFIX: Name = Name('/autoconfig')
@@ -15,13 +15,28 @@ _AUTOCONFIG_SERVICE_REGISTRATION_PREFIX: Name = Name('/autoconfig/service')
 
 class AutoconfigClientLayer(LayerProcess):
 
-    def __init__(self, linklayer: UDP4LinkLayer = None, broadcast: str = '127.255.255.255', port: int = 9000,
-                 log_level: int = 255):
+    def __init__(self, linklayer: UDP4LinkLayer = None, broadcast: str = '255.255.255.255', port: int = 9000,
+                 solicitation_timeout: float = None, solicitation_max_retry: int = 3, log_level: int = 255):
+        """
+        Create a new AutoconfigClientLayer.
+        :param linklayer: The linklayer below, only needed to enable broadcasting on the UDP socket.
+        :param broadcast: The address to broadcast on, defaults to the local network special broadcast address
+                          (255.255.255.255).
+        :param port: The UDP port to broadcast on.
+        :param solicitation_timeout: The timeout in seconds before a forwarder solicitation is resent. If this is None,
+                                     a forwarder solicitation never times out, thus only a single one will be sent and
+                                     no Nack will be generated if it remains unanswered.
+        :param solicitation_max_retry: The maximum number of forwarder solicitations to send before sending a
+                                       Nack NO_ROUTE upwards.
+        """
         super().__init__('AutoconfigClientLayer', log_level=log_level)
         self._held_interests: List[Interest] = []
         self._linklayer: UDP4LinkLayer = linklayer
         self._broadcast_addr: str = broadcast
         self._broadcast_port: int = port
+        self._solicitation_timeout: float = solicitation_timeout
+        self._solicitation_max_retry: int = solicitation_max_retry
+        self._solicitation_timer: threading.Timer = None
 
         # Enable broadcasting on the link layer's socket.
         if self._linklayer is not None:
@@ -57,16 +72,21 @@ class AutoconfigClientLayer(LayerProcess):
             return
         if isinstance(packet, Interest):
             self._held_interests.append(packet)
-            autoconf: Interest = Interest(_AUTOCONFIG_FORWARDERS_PREFIX)
-            autoconf_fid = self._linklayer.get_or_create_fid((self._broadcast_addr, self._broadcast_port), static=True)
-            to_lower.put([autoconf_fid, autoconf])
+            self._send_forwarder_solicitation(self._solicitation_max_retry)
 
     def _handle_forwarders(self, packet: Packet):
         if not isinstance(packet, Content):
             return
+        # Cancel the forwarder solicitation retry timer, if it exists.
+        if self._solicitation_timer is not None:
+            self._solicitation_timer.cancel()
+            self._solicitation_timer = None
+        # Parse the received packet:
+        # Parse the first line containing the forwarder's ip:port.
         lines: List[str] = packet.content.split('\n')
         host, port = lines[0].split(':')
         fwd_fid = self._linklayer.get_or_create_fid((host, int(port)), static=True)
+        # Parse the following lines of type:value pairs, only process routes.
         for line in lines[1:]:
             if len(line.strip()) == 0:
                 continue
@@ -77,3 +97,19 @@ class AutoconfigClientLayer(LayerProcess):
                     if name.is_prefix_of(interest.name):
                         self.queue_to_lower.put([fwd_fid, interest])
                 self._held_interests = [i for i in self._held_interests if not name.is_prefix_of(i.name)]
+
+    def _send_forwarder_solicitation(self, retry: int):
+        autoconf: Interest = Interest(_AUTOCONFIG_FORWARDERS_PREFIX)
+        autoconf_fid = self._linklayer.get_or_create_fid((self._broadcast_addr, self._broadcast_port), static=True)
+        self.queue_to_lower.put([autoconf_fid, autoconf])
+        # Schedule re-broadcast of the forwarder solicitation interest, which will recursively call this function.
+        if self._solicitation_timeout is not None and retry > 1:
+            self._solicitation_timer = threading.Timer(self._solicitation_timeout, self._send_forwarder_solicitation,
+                                                       kwargs={'retry': retry - 1})
+            self._solicitation_timer.start()
+        elif retry <= 1:
+            # If all forwarder solicitations timed out, send a Nack packet upwards for each held interest.
+            for interest in self._held_interests:
+                nack = Nack(interest.name, NackReason.NO_ROUTE)
+                self.queue_to_higher.put([None, nack])
+            self._held_interests = []
