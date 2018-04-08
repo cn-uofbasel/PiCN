@@ -51,7 +51,7 @@ class MockRepository(BaseRepository):
         return True
 
     def get_content(self, icnname: Name) -> Union[Content, Nack]:
-        return Content(icnname, '')
+        return Content(icnname, 'testcontent')
 
     def set_prefix(self, prefix: Name):
         self.prefix.value = prefix
