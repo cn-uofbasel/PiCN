@@ -19,13 +19,13 @@ _AUTOCONFIG_SERVICE_REGISTRATION_PREFIX: Name = Name('/autoconfig/service')
 class AutoconfigServerLayer(LayerProcess):
 
     def __init__(self, linklayer: UDP4LinkLayer = None, fib: BaseForwardingInformationBase = None,
-                 address: str = '127.0.0.1', broadcast: str = '127.255.255.255',
+                 address: str = '127.0.0.1', bcaddr: str = '255.255.255.255',
                  registration_prefixes: List[Name] = list(), log_level: int = 255):
         """
         :param linklayer:
         :param fib:
         :param address:
-        :param broadcast:
+        :param bcaddr:
         :param log_level:
         """
         super().__init__(logger_name='AutoconfigLayer', log_level=log_level)
@@ -33,7 +33,7 @@ class AutoconfigServerLayer(LayerProcess):
         self._linklayer: UDP4LinkLayer = linklayer
         self._fib: BaseForwardingInformationBase = fib
         self._announce_addr: str = address
-        self._broadcast_addr: str = broadcast
+        self._broadcast_addr: str = bcaddr
         self._known_services: List[Tuple[Name, Tuple[str, int], datetime]] = []
         self._service_registration_prefixes: List[Name] = registration_prefixes
         self._service_registration_timeout = timedelta(hours=1)

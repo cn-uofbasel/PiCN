@@ -36,7 +36,7 @@ class test_AutoconfigFullStack(unittest.TestCase):
         self.forwarder = LayerStack([
             BasicICNLayer(cs, pit, fib),
             AutoconfigServerLayer(forwarder_linklayer, fib,
-                                  registration_prefixes=prefixes, broadcast='127.255.255.255'),
+                                  registration_prefixes=prefixes, bcaddr='127.255.255.255'),
             BasicPacketEncodingLayer(forwarder_encoder),
             forwarder_linklayer
         ])
@@ -62,7 +62,7 @@ class test_AutoconfigFullStack(unittest.TestCase):
         client_linklayer = UDP4LinkLayer(port=9002, manager=manager)
         self.client = LayerStack([
             client_chunklayer,
-            AutoconfigClientLayer(client_linklayer, broadcast='127.255.255.255'),
+            AutoconfigClientLayer(client_linklayer, bcaddr='127.255.255.255'),
             BasicPacketEncodingLayer(client_encoder),
             client_linklayer
         ])

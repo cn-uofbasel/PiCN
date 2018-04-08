@@ -15,14 +15,14 @@ _AUTOCONFIG_SERVICE_REGISTRATION_PREFIX: Name = Name('/autoconfig/service')
 
 class AutoconfigClientLayer(LayerProcess):
 
-    def __init__(self, linklayer: UDP4LinkLayer = None, broadcast: str = '255.255.255.255', port: int = 9000,
+    def __init__(self, linklayer: UDP4LinkLayer = None, bcaddr: str = '255.255.255.255', bcport: int = 9000,
                  solicitation_timeout: float = None, solicitation_max_retry: int = 3, log_level: int = 255):
         """
         Create a new AutoconfigClientLayer.
         :param linklayer: The linklayer below, only needed to enable broadcasting on the UDP socket.
-        :param broadcast: The address to broadcast on, defaults to the local network special broadcast address
-                          (255.255.255.255).
-        :param port: The UDP port to broadcast on.
+        :param bcaddr: The address to broadcast on, defaults to the local network special broadcast address
+                       (255.255.255.255).
+        :param bcport: The UDP port to broadcast on.
         :param solicitation_timeout: The timeout in seconds before a forwarder solicitation is resent. If this is None,
                                      a forwarder solicitation never times out, thus only a single one will be sent and
                                      no Nack will be generated if it remains unanswered.
@@ -32,8 +32,8 @@ class AutoconfigClientLayer(LayerProcess):
         super().__init__('AutoconfigClientLayer', log_level=log_level)
         self._held_interests: List[Interest] = []
         self._linklayer: UDP4LinkLayer = linklayer
-        self._broadcast_addr: str = broadcast
-        self._broadcast_port: int = port
+        self._broadcast_addr: str = bcaddr
+        self._broadcast_port: int = bcport
         self._solicitation_timeout: float = solicitation_timeout
         self._solicitation_max_retry: int = solicitation_max_retry
         self._solicitation_timer: threading.Timer = None

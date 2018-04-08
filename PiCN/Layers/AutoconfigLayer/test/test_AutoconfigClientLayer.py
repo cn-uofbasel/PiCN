@@ -18,7 +18,7 @@ class test_AutoconfigClientLayer(unittest.TestCase):
         self.manager = multiprocessing.Manager()
         self.linklayer_mock = MockLinkLayer(port=1337)
         self.autoconflayer = AutoconfigClientLayer(linklayer=self.linklayer_mock,
-                                                   broadcast='127.255.255.255', port=4242,
+                                                   bcaddr='127.255.255.255', bcport=4242,
                                                    solicitation_timeout=3.0)
         self.autoconflayer.queue_to_higher = self.queue_to_higher = multiprocessing.Queue()
         self.autoconflayer.queue_from_higher = self.queue_from_higher = multiprocessing.Queue()

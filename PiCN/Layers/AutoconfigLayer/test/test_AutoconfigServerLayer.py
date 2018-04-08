@@ -24,8 +24,7 @@ class test_AutoconfigServerLayer(unittest.TestCase):
         # List of advertised prefixes
         self.prefixes: List[Name] = [Name('/test/repos'), Name('/home')]
         self.autoconflayer = AutoconfigServerLayer(linklayer=self.linklayer_mock, fib=self.fib, address='127.0.1.1',
-                                                   broadcast='127.255.255.255',
-                                                   registration_prefixes=self.prefixes)
+                                                   bcaddr='127.255.255.255', registration_prefixes=self.prefixes)
         self.autoconflayer.queue_to_higher = self.queue_to_higher = multiprocessing.Queue()
         self.autoconflayer.queue_from_higher = self.queue_from_higher = multiprocessing.Queue()
         self.autoconflayer.queue_to_lower = self.queue_to_lower = multiprocessing.Queue()
