@@ -77,10 +77,6 @@ class AutoconfigClientLayer(LayerProcess):
     def _handle_forwarders(self, packet: Packet):
         if not isinstance(packet, Content):
             return
-        # Cancel the forwarder solicitation retry timer, if it exists.
-        if self._solicitation_timer is not None:
-            self._solicitation_timer.cancel()
-            self._solicitation_timer = None
         # Parse the received packet:
         # Parse the first line containing the forwarder's ip:port.
         lines: List[str] = packet.content.split('\n')
@@ -97,6 +93,10 @@ class AutoconfigClientLayer(LayerProcess):
                     if name.is_prefix_of(interest.name):
                         self.queue_to_lower.put([fwd_fid, interest])
                 self._held_interests = [i for i in self._held_interests if not name.is_prefix_of(i.name)]
+        # Only cancel the forwarder solicitation timer if there are not held interests left.
+        if self._solicitation_timer is not None and len(self._held_interests) == 0:
+            self._solicitation_timer.cancel()
+            self._solicitation_timer = None
 
     def _send_forwarder_solicitation(self, retry: int):
         autoconf: Interest = Interest(_AUTOCONFIG_FORWARDERS_PREFIX)
