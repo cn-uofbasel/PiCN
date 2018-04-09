@@ -2,6 +2,7 @@
 import unittest
 import multiprocessing
 import time
+import queue
 
 from PiCN.LayerStack import LayerStack
 from PiCN.Layers.ICNLayer import BasicICNLayer
@@ -74,17 +75,20 @@ class test_AutoconfigFullStack(unittest.TestCase):
 
     def test_repo_forwarder_client_fetch_fixed_name(self):
         self.forwarder.start_all()
-        time.sleep(2.0)
+        time.sleep(1.0)
         self.repo.start_all()
-        time.sleep(2.0)
+        time.sleep(1.0)
         self.client.start_all()
-        time.sleep(2.0)
+        time.sleep(1.0)
 
-        # Send an interest with a fixed name, let autoconfig figure out where to get the data from
+        # Send an interest with a fixed name, let autoconfig figure out where to get the da10.0ta from
         name = Name('/test/prefix/repos/testrepo/testcontent')
         interest = Interest(name)
         self.client.queue_from_higher.put([None, interest])
-        data = self.client.queue_to_higher.get(timeout=10.0)
+        try:
+            data = self.client.queue_to_higher.get(timeout=2.0)
+        except queue.Empty:
+            self.fail()
         self.assertIsInstance(data[1], Content)
         self.assertEqual(data[1].name, name)
         self.assertEqual(data[1].content, 'testcontent')
