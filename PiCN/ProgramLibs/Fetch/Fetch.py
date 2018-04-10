@@ -48,10 +48,10 @@ class Fetch(object):
         # create interest
         interest: Interest = Interest(name)
         self.lstack.queue_from_higher.put([self.fid, interest])
-        if timeout != 0:
-            packet = self.lstack.queue_to_higher.get(timeout=timeout)[1]
-        else:
+        if timeout == 0:
             packet = self.lstack.queue_to_higher.get()[1]
+        else:
+            packet = self.lstack.queue_to_higher.get(timeout=timeout)[1]
         if isinstance(packet, Content):
             return packet.content
         if isinstance(packet, Nack):
