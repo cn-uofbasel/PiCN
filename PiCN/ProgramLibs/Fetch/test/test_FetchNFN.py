@@ -82,7 +82,10 @@ class cases_FetchNFN(object):
         time.sleep(0.1)
         self.add_face_and_forwadingrule()
         fetch_name = "/test/data/d1"
-        content = self.fetch.fetch_data(fetch_name, timeout=10)
+        try:
+            content = self.fetch.fetch_data(fetch_name, timeout=10.0)
+        except:
+            self.fail
         self.assertEqual(self.data1, content)
 
     def test_fetch_chunked_data_from_repo_over_forwarder(self):
@@ -108,7 +111,10 @@ class cases_FetchNFN(object):
         fetch_name = Name("/lib/func/f1")
         fetch_name += "_(/test/data/d1)"
         fetch_name += "NFN"
-        content = self.fetch.fetch_data(fetch_name, timeout=10.0)
+        try:
+            content = self.fetch.fetch_data(fetch_name, timeout=10.0)
+        except:
+            self.fail()
         self.assertEqual(self.data1.upper(), content)
 
     def test_compute_on_single_data_over_forwarder_data_from_repo(self):
@@ -122,7 +128,10 @@ class cases_FetchNFN(object):
         fetch_name = Name("/lib/func/f1")
         fetch_name += "_(/test/data/d1)"
         fetch_name += "NFN"
-        content = self.fetch.fetch_data(fetch_name, timeout=10.0)
+        try:
+            content = self.fetch.fetch_data(fetch_name, timeout=10.0)
+        except:
+            self.fail()
         self.assertEqual(self.data1.upper(), content)
 
     def test_compute_on_large_data_over_forwarder_data_from_repo(self):
@@ -136,7 +145,10 @@ class cases_FetchNFN(object):
         fetch_name = Name("/lib/func/f1")
         fetch_name += "_(/test/data/d3)"
         fetch_name += "NFN"
-        content = self.fetch.fetch_data(fetch_name, timeout=10.0)
+        try:
+            content = self.fetch.fetch_data(fetch_name, timeout=10.0)
+        except:
+            self.fail()
         self.assertEqual(self.data3.upper(), content)
 
     def test_compute_on_large_data_over_forwarder_data_from_repo_to_data_prefix(self):
@@ -150,7 +162,10 @@ class cases_FetchNFN(object):
         fetch_name = Name("/test/data/d3")
         fetch_name += "/lib/func/f1(_)"
         fetch_name += "NFN"
-        content = self.fetch.fetch_data(fetch_name, timeout=10.0)
+        try:
+            content = self.fetch.fetch_data(fetch_name, timeout=10.0)
+        except:
+            self.fail()
         self.assertEqual(self.data3.upper(), content)
 
 
