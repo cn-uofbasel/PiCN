@@ -37,7 +37,10 @@ class test_BasicNFNLayer(unittest.TestCase):
         for i in range(0,self.nfnLayer._max_running_computations + 1):
             running_comps[i] = i
         self.nfnLayer.add_computation(interest, running_comps)
-        self.assertEqual(interest, self.nfnLayer._pending_computations.get()[0])
+        try:
+            self.assertEqual(interest, self.nfnLayer._pending_computations.get(timeout=2.0)[0])
+        except:
+            self.fail()
 
     def test_data_from_lower_interest(self):
         """Test interest from lower"""
@@ -49,7 +52,10 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.assertEqual([1, interest], data)
         content = Content(interest.name, "Result")
         self.nfnLayer.queue_from_lower.put([3, content])
-        data = self.nfnLayer.queue_to_lower.get()
+        try:
+            data = self.nfnLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual([3, content], data)
 
     def test_fwd_computation(self):
@@ -62,7 +68,10 @@ class test_BasicNFNLayer(unittest.TestCase):
         name += "NFN"
         interest = Interest(name)
         self.nfnLayer.queue_from_lower.put([cid, interest])
-        fwded = self.nfnLayer.queue_to_lower.get()
+        try:
+            fwded = self.nfnLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(name, fwded[1].name)
         #self.assertEqual(0, len(self.nfnLayer._running_computations)) #todo, remove comp if process dies
 
@@ -81,7 +90,10 @@ class test_BasicNFNLayer(unittest.TestCase):
         #self.assertEqual(0, len(self.nfnLayer._running_computations)) #todo, remove comp if process dies
         content = Content(name, "Result")
         self.nfnLayer.queue_from_lower.put([2, content])
-        data = self.nfnLayer.queue_to_lower.get()
+        try:
+            data = self.nfnLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual([0, content], data)
 
     def test_fwd_computation_change_name(self):
@@ -97,7 +109,10 @@ class test_BasicNFNLayer(unittest.TestCase):
         name_cmp += "NFN"
         interest = Interest(name)
         self.nfnLayer.queue_from_lower.put([cid, interest])
-        rewritten = self.nfnLayer.queue_to_lower.get()
+        try:
+            rewritten = self.nfnLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(name_cmp, rewritten[1].name)
 
     def test_fwd_computation_change_name_map_back(self):
@@ -117,7 +132,10 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.assertEqual(name_cmp, rewritten[1].name)
         content = Content(name_cmp, "Result")
         self.nfnLayer.queue_from_lower.put([cid, content])
-        mapped_back = self.nfnLayer.queue_to_lower.get()
+        try:
+            mapped_back = self.nfnLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(name, mapped_back[1].name)
         self.assertEqual("Result", mapped_back[1].content)
 
@@ -130,7 +148,10 @@ class test_BasicNFNLayer(unittest.TestCase):
         name += "NFN"
         interest = Interest(name)
         self.nfnLayer.queue_from_lower.put([cid, interest])
-        data = self.nfnLayer.queue_to_lower.get()
+        try:
+            data = self.nfnLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(data[1].name, Name("/func/f1"))
         func1 = """PYTHON
 f
@@ -139,7 +160,10 @@ def f():
         """
         func_data = Content(Name("/func/f1"), func1)
         self.nfnLayer.queue_from_lower.put([cid, func_data])
-        data = self.nfnLayer.queue_to_lower.get()
+        try:
+            data = self.nfnLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(name, data[1].name)
         self.assertEqual("Hello World", data[1].content)
 
@@ -156,7 +180,10 @@ def f():
         self.assertEqual(data[1].name, Name("/test/data"))
         content = Content("/test/data", "result")
         self.nfnLayer.queue_from_lower.put([data[0], content])
-        data = self.nfnLayer.queue_to_lower.get()
+        try:
+            data = self.nfnLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(data[1].name, Name("/func/f1"))
         func1 = """PYTHON
 f
@@ -165,7 +192,10 @@ def f(a):
         """
         func_data = Content(Name("/func/f1"), func1)
         self.nfnLayer.queue_from_lower.put([cid, func_data])
-        data = self.nfnLayer.queue_to_lower.get()
+        try:
+            data = self.nfnLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(name, data[1].name)
         self.assertEqual("RESULT", data[1].content)
 
@@ -178,11 +208,17 @@ def f(a):
         name += "NFN"
         interest = Interest(name)
         self.nfnLayer.queue_from_lower.put([cid, interest])
-        data = self.nfnLayer.queue_to_lower.get()
+        try:
+            data = self.nfnLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(data[1].name, Name("/test/data"))
         content = Content("/test/data", "tluser")
         self.nfnLayer.queue_from_lower.put([data[0], content])
-        data = self.nfnLayer.queue_to_lower.get()
+        try:
+            data = self.nfnLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(data[1].name, Name("/func/f2"))
         func2 = """PYTHON
 f
@@ -191,7 +227,10 @@ def f(a):
         """
         func_data = Content(Name("/func/f2"), func2)
         self.nfnLayer.queue_from_lower.put([cid, func_data])
-        data = self.nfnLayer.queue_to_lower.get()
+        try:
+            data = self.nfnLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(data[1].name, Name("/func/f1"))
         func1 = """PYTHON
 f
@@ -200,7 +239,10 @@ def f(a):
                 """
         func_data = Content(Name("/func/f1"), func1)
         self.nfnLayer.queue_from_lower.put([cid, func_data])
-        data = self.nfnLayer.queue_to_lower.get()
+        try:
+            data = self.nfnLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(name.to_string(), data[1].name.to_string())
         self.assertEqual("RESULT", data[1].content)
 
@@ -213,7 +255,10 @@ def f(a):
         name += "NFN"
         interest = Interest(name)
         self.nfnLayer.queue_from_lower.put([cid, interest])
-        data = self.nfnLayer.queue_to_lower.get()
+        try:
+            data = self.nfnLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(data[1].name, Name("/func/f1"))
         func1 = """PYTHON
 f
@@ -222,7 +267,10 @@ def f():
             """
         func_data = Content(Name("/func/f1"), func1)
         self.nfnLayer.queue_from_lower.put([cid, func_data])
-        data = self.nfnLayer.queue_to_lower.get()
+        try:
+            data = self.nfnLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(name, data[1].name)
         self.assertEqual(Nack(name, NackReason.COMP_EXCEPTION, interest=interest), data[1])
 
@@ -236,12 +284,18 @@ def f():
         name += "NFN"
         interest = Interest(name)
         self.nfnLayer.queue_from_lower.put([cid, interest])
-        fwded = self.nfnLayer.queue_to_lower.get()
+        try:
+            fwded = self.nfnLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(name, fwded[1].name)
         #self.assertEqual(0, len(self.nfnLayer._running_computations)) #todo, remove comp if process dies
         nack = Nack(name, "No PIT Entry found", interest=interest)  # TODO: https://github.com/cn-uofbasel/PiCN/issues/14
         self.nfnLayer.queue_from_lower.put([2, nack])
-        data = self.nfnLayer.queue_to_lower.get()
+        try:
+            data = self.nfnLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertTrue(isinstance(data[1], Interest))
         self.assertEqual( Name("/test/data"), data[1].name)
         self.nfnLayer.queue_from_lower.put([data[0], nack])
@@ -261,18 +315,27 @@ def f():
         name += "NFN"
         interest = Interest(name)
         self.nfnLayer.queue_from_lower.put([cid, interest])
-        fwded = self.nfnLayer.queue_to_lower.get()
+        try:
+            fwded = self.nfnLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(name, fwded[1].name)
         #self.assertEqual(0, len(self.nfnLayer._running_computations)) #todo, remove comp if process dies
         nack = Nack(name, reason="No PIT Entry found", interest=interest)  # TODO: https://github.com/cn-uofbasel/PiCN/issues/14
         self.nfnLayer.queue_from_lower.put([2, nack])
-        data = self.nfnLayer.queue_to_lower.get()
+        try:
+            data = self.nfnLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         name2 = Name("/func/f1")
         name2 += "_(/test/data)"
         name2 += "NFN"
         self.assertEqual(name2, data[1].name)
         content = Content(name2, "Hello World")
         self.nfnLayer.queue_from_lower.put([2, content])
-        data = self.nfnLayer.queue_to_lower.get()
+        try:
+            data = self.nfnLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(name, data[1].name)
         self.assertEqual("Hello World", data[1].content)

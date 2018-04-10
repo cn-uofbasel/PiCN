@@ -72,7 +72,10 @@ class cases_BasicPacketEncodingLayer(object):
         #test interest
         i = [2, Interest("/test/data")]
         self.q1_fromHigher.put(i)
-        ei = self.q1_toLower.get()
+        try:
+            ei = self.q1_toLower.get(timeout=2.0)
+        except:
+            self.fail()
         self.q1_fromLower.put(ei)
         di = self.q1_toHigher.get()
         self.assertEqual(i, di)
@@ -80,9 +83,15 @@ class cases_BasicPacketEncodingLayer(object):
         #test content
         c = [2, Content("/test/data", "HelloWorld")]
         self.q1_fromHigher.put(c)
-        ec = self.q1_toLower.get()
+        try:
+            ec = self.q1_toLower.get(timeout=2.0)
+        except:
+            self.fail()
         self.q1_fromLower.put(ec)
-        dc = self.q1_toHigher.get()
+        try:
+            dc = self.q1_toHigher.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(c, dc)
 
     def test_BasicPacketEncodingLayer_interest_transfer_udp4(self):
@@ -97,7 +106,10 @@ class cases_BasicPacketEncodingLayer(object):
         #PUT interest in node 1 queues
         self.packetEncodingLayer1.queue_from_higher.put([fid, i])
         #GET interest from node 2 queues
-        data = self.packetEncodingLayer2.queue_to_higher.get()
+        try:
+            data = self.packetEncodingLayer2.queue_to_higher.get(timeout=2.0)
+        except:
+            self.fail()
 
         #Check Packet
         ri = data[1]
@@ -115,7 +127,10 @@ class cases_BasicPacketEncodingLayer(object):
         # PUT interest in node 1 queues
         self.packetEncodingLayer1.queue_from_higher.put([fid, c])
         # GET interest from node 2 queues
-        data = self.packetEncodingLayer2.queue_to_higher.get()
+        try:
+            data = self.packetEncodingLayer2.queue_to_higher.get(timeout=2.0)
+        except:
+            self.fail()
 
         # Check Packet
         rc = data[1]
