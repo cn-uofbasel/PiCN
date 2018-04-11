@@ -4,6 +4,8 @@ import multiprocessing
 import time
 import unittest
 
+from queue import Queue
+
 from PiCN.Layers.ChunkLayer import BasicChunkLayer
 from PiCN.Layers.ChunkLayer import RequestTableEntry
 
@@ -185,7 +187,10 @@ class test_BasicChunkLayer(unittest.TestCase):
         self.assertEqual(len(request_table_entry.requested_md), 0)
         self.assertEqual(len(request_table_entry.requested_chunks), 5)
         self.assertEqual(request_table_entry.requested_chunks, chunknames)
-        d3 = self.q1_to_lower.get()[1]
+        try:
+            d3 = self.q1_to_lower.get(timeout=2.0)[1]
+        except:
+            self.fail()
         self.assertEqual(d3.name, Name("/test/data/c4"))
 
 
@@ -211,9 +216,10 @@ class test_BasicChunkLayer(unittest.TestCase):
 
         request_table_entry = self.chunkLayer.handle_received_chunk_data(0, chunk2, request_table_entry, self.q1_to_higher)
         self.assertEqual(request_table_entry, None)
-
-        data = self.q1_to_higher.get()[1]
-
+        try:
+            data = self.q1_to_higher.get(timeout=2.0)[1]
+        except:
+            self.fail()
         self.assertEqual(data.name, n1)
         self.assertEqual(data.content, "chunk1chunk2")
         self.assertEqual(len(self.chunkLayer._request_table), 0)
@@ -224,7 +230,10 @@ class test_BasicChunkLayer(unittest.TestCase):
         self.chunkLayer.start_process()
         i = Interest("/test/data")
         self.chunkLayer.queue_from_lower.put([0, i])
-        data = self.chunkLayer.queue_to_higher.get()
+        try:
+            data = self.chunkLayer.queue_to_higher.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(i, data[1])
 
     def test_interest_from_lower_match(self):
@@ -235,7 +244,10 @@ class test_BasicChunkLayer(unittest.TestCase):
         c = Content(n, "dataobject")
         self.chunkLayer._chunk_table[c.name] = (c, time.time())
         self.chunkLayer.queue_from_lower.put([0, i])
-        data = self.chunkLayer.queue_to_lower.get()
+        try:
+            data = self.chunkLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(c, data[1])
 
     def test_interest_from_higher_no_entry(self):
@@ -243,7 +255,10 @@ class test_BasicChunkLayer(unittest.TestCase):
         self.chunkLayer.start_process()
         i = Interest("/test/data")
         self.chunkLayer.queue_from_higher.put([0, i])
-        data = self.chunkLayer.queue_to_lower.get()
+        try:
+            data = self.chunkLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(i, data[1])
         self.assertEqual(self.chunkLayer._request_table[0], RequestTableEntry(i.name))
 
@@ -262,7 +277,10 @@ class test_BasicChunkLayer(unittest.TestCase):
         self.chunkLayer.start_process()
         c = Content("/test/data", "content")
         self.chunkLayer.queue_from_higher.put([0, c])
-        data = self.chunkLayer.queue_to_lower.get()
+        try:
+            data = self.chunkLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(data[1], c)
 
     def test_content_from_higher_chunk(self):
@@ -271,7 +289,10 @@ class test_BasicChunkLayer(unittest.TestCase):
         data = "A" * 4096 + "B" * 200
         c = Content("/test/data", data)
         self.chunkLayer.queue_from_higher.put([0, c])
-        data = self.chunkLayer.queue_to_lower.get()
+        try:
+            data = self.chunkLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         md = Content("/test/data", "mdo:/test/data/c0;/test/data/c1:")
         self.assertEqual(data[1], md)
 
@@ -289,7 +310,10 @@ class test_BasicChunkLayer(unittest.TestCase):
         self.chunkLayer._request_table.append(RequestTableEntry(n1))
         c1 = Content(n1, "data")
         self.chunkLayer.queue_from_lower.put([0, c1])
-        data = self.chunkLayer.queue_to_higher.get()
+        try:
+            data = self.chunkLayer.queue_to_higher.get()
+        except:
+            self.fail()
         self.assertEqual(data[1], c1)
 
 
@@ -322,7 +346,10 @@ class test_BasicChunkLayer(unittest.TestCase):
         self.assertEqual(request.requested_md[0], md2_n)
 
         self.chunkLayer.queue_from_lower.put([0, md2])
-        data = self.chunkLayer.queue_to_lower.get()
+        try:
+            data = self.chunkLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(data[1], Interest(chunknames[4]))
         self.assertTrue(self.chunkLayer.queue_to_lower.empty())
 
@@ -359,7 +386,10 @@ class test_BasicChunkLayer(unittest.TestCase):
 
         self.chunkLayer.queue_from_lower.put([0, chunk1])
 
-        data = self.chunkLayer.queue_to_higher.get()
+        try:
+            data = self.chunkLayer.queue_to_higher.get(timeout=2.0)
+        except:
+            self.fail()
 
         self.assertEqual(data[1].content, "chunk1chunk2")
 
@@ -369,7 +399,10 @@ class test_BasicChunkLayer(unittest.TestCase):
         interest = Interest("/test/data")
         nack1 = Nack("/test/data", NackReason.NO_CONTENT, interest=interest)
         self.chunkLayer.queue_from_higher.put([1, nack1])
-        data = self.chunkLayer.queue_to_lower.get()
+        try:
+            data = self.chunkLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(data[0], 1)
         self.assertEqual(data[1], nack1)
 
@@ -378,6 +411,9 @@ class test_BasicChunkLayer(unittest.TestCase):
         self.chunkLayer.start_process()
         nack1 = Nack("/test/data", NackReason.NO_CONTENT)
         self.chunkLayer.queue_from_lower.put([1, nack1])
-        data = self.chunkLayer.queue_to_higher.get()
+        try:
+            data = self.chunkLayer.queue_to_higher.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(data[0], 1)
         self.assertEqual(data[1], nack1)

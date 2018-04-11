@@ -40,12 +40,18 @@ class Fetch(object):
         # send packet
         self.lstack.start_all()
 
-    def fetch_data(self, name: Name) -> str:
-        """Fetch data from the server"""
+    def fetch_data(self, name: Name, timeout=4.0) -> str:
+        """Fetch data from the server
+        :param name Name to be fetched
+        :param timeout Timeout to wait for a response. Use 0 for infinity
+        """
         # create interest
         interest: Interest = Interest(name)
         self.lstack.queue_from_higher.put([self.fid, interest])
-        packet = self.lstack.queue_to_higher.get()[1]
+        if timeout == 0:
+            packet = self.lstack.queue_to_higher.get()[1]
+        else:
+            packet = self.lstack.queue_to_higher.get(timeout=timeout)[1]
         if isinstance(packet, Content):
             return packet.content
         if isinstance(packet, Nack):

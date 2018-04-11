@@ -112,7 +112,7 @@ class cases_Fetch(object):
         data = self.mgmtClient.add_face("127.0.0.1", self.repo_port)
         self.mgmtClient.add_forwarding_rule(Name("/test"), 2)
         time.sleep(0.1)
-        #fetch2 = Fetch("127.0.0.1", 8000 + self.portoffset)
+        fetch2 = Fetch("127.0.0.1", self.forwarder_port)
         content = self.fetch.fetch_data(Name("/test/data/f3"))
         self.assertEqual(content, self.data3)
         self.forwarder2.stop_forwarder()

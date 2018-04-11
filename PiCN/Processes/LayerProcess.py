@@ -66,7 +66,12 @@ class LayerProcess(PiCNProcess):
 
     def _run_poll(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
             to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):
-        """ Process loop, handle incomming packets, use poll if many file descripors are required"""
+        """ Process loop, handle incomming packets, use poll if many file descripors are required
+            :param from_lower: Queue to receive data from lower Layer
+            :param from_higher: Queue to receive data from higher Layer
+            :param to_lower: Queue to send data to lower Layer
+            :param to_higher: Queue to send data to higher Layer
+        """
         poller = select.poll()
         READ_ONLY = select.POLLIN | select.POLLPRI | select.POLLHUP | select.POLLERR
         if from_lower:
@@ -83,7 +88,12 @@ class LayerProcess(PiCNProcess):
 
     def _run_select(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
              to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):
-        """ Process loop, handle incomming packets, use select if few file descriptors are required"""
+        """ Process loop, handle incomming packets, use select if few file descriptors are required
+            :param from_lower: Queue to receive data from lower Layer
+            :param from_higher: Queue to receive data from higher Layer
+            :param to_lower: Queue to send data to lower Layer
+            :param to_higher: Queue to send data to higher Layer
+        """
         in_queues = []
         if from_lower:
             in_queues.append(from_lower._reader)
@@ -102,7 +112,12 @@ class LayerProcess(PiCNProcess):
     def _run_sleep(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
                    to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):
         """ Process loop, handle incomming packets, use round-robin, required for NT since MS POSIX api do not support
-         select on file descriptors nor polling"""
+            select on file descriptors nor polling
+            :param from_lower: Queue to receive data from lower Layer
+            :param from_higher: Queue to receive data from higher Layer
+            :param to_lower: Queue to send data to lower Layer
+            :param to_higher: Queue to send data to higher Layer
+         """
         while True:
             dequeued: bool = False
             if from_lower and not from_lower.empty():
@@ -115,6 +130,14 @@ class LayerProcess(PiCNProcess):
 
     def _run(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
              to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):
+        """
+        Initalize the execution loop. Switch between NT, Unix and Unittest. Use select for Unix, Use poll for
+        unittest, since select cannot handle more than 1024 File Descriptors.
+        :param from_lower: Queue to receive data from lower Layer
+        :param from_higher: Queue to receive data from higher Layer
+        :param to_lower: Queue to send data to lower Layer
+        :param to_higher: Queue to send data to higher Layer
+        """
         if os.name == 'nt': # Exception for windows since MS POSIX api do not support select on File Descriptors
             self._run_sleep(from_lower, from_higher, to_lower, to_higher)
         elif self.in_unittest():
