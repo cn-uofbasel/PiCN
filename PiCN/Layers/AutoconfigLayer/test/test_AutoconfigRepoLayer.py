@@ -3,6 +3,8 @@ import unittest
 import multiprocessing
 import socket
 import time
+import queue
+from datetime import datetime, timedelta
 
 from PiCN.Layers.AutoconfigLayer import AutoconfigRepoLayer
 from PiCN.Packets import Name, Interest, Content, Nack, NackReason
@@ -126,3 +128,33 @@ class test_AutoconfigRepoLayer(unittest.TestCase):
         time.sleep(1)
         # Make sure the repo prefix was NOT changed
         self.assertEqual(Name('/unconfigured'), self.repo.prefix.value)
+
+    def test_service_registration_timeout_renewal(self):
+        """Test that the service registration is renewed before the timeout"""
+        waittime = 5
+        self.autoconflayer.start_process()
+        # Receive forwarder solicitation
+        bface, _ = self.queue_to_lower.get()
+        # Send forwarder advertisement
+        forwarders = Content(Name('/autoconfig/forwarders'), 'udp4://127.42.42.42:9000\nr:/global\npl:/test\n')
+        self.queue_from_lower.put([42, forwarders])
+        # Receive service registration
+        fid, data = self.queue_to_lower.get()
+        registration_name = Name('/autoconfig/service')
+        registration_name += 'udp4://127.0.1.1:4242'
+        registration_name += 'test'
+        registration_name += 'testrepo'
+        self.assertEqual(registration_name, data.name)
+        # Send service registration ACK with a ridiculously short timeout
+        content = Content(registration_name, f'{waittime}\n')
+        self.queue_from_lower.put([42, content])
+        # Catch all data the autoconfig layer sends downwards for 5 seconds
+        data = []
+        timeout = datetime.utcnow() + timedelta(seconds=waittime)
+        while datetime.utcnow() < timeout:
+            try:
+                data.append(self.queue_to_lower.get(timeout=waittime/10))
+            except queue.Empty:
+                pass
+        registration_interest = Interest(registration_name)
+        self.assertIn([bface, registration_interest], data)

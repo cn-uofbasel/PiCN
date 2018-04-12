@@ -1,7 +1,9 @@
+
 import multiprocessing
+import threading
 import socket
 
-from typing import List
+from typing import List, Dict
 
 from PiCN.Packets import Name, Packet, Content, Interest, Nack
 from PiCN.Processes import LayerProcess
@@ -27,6 +29,8 @@ class AutoconfigRepoLayer(LayerProcess):
         self._broadcast_addr: str = bcaddr
         self._broadcast_port: int = bcport
         self._service_name: str = name
+        self._prefix_timers: Dict[Name, threading.Timer] = dict()
+        self._fwd_fid: int = None
 
         # Enable broadcasting on the link layer's socket.
         if self._linklayer is not None:
@@ -38,6 +42,12 @@ class AutoconfigRepoLayer(LayerProcess):
         forwarders_interest = Interest(_AUTOCONFIG_FORWARDERS_PREFIX)
         autoconf_fid = self._linklayer.get_or_create_fid((self._broadcast_addr, self._broadcast_port), static=True)
         self.queue_to_lower.put([autoconf_fid, forwarders_interest])
+
+    def stop_process(self):
+        super().stop_process()
+        for timer in self._prefix_timers.values():
+            timer.cancel()
+        self._prefix_timers.clear()
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         self.logger.info(f'Got data from lower: {data}')
@@ -75,7 +85,7 @@ class AutoconfigRepoLayer(LayerProcess):
             return
         host, port = addr.split(':')
         self.logger.info(f'forwarder: {host}:{port}')
-        fwd_fid = self._linklayer.get_or_create_fid((host, int(port)), static=True)
+        self._fwd_fid = self._linklayer.get_or_create_fid((host, int(port)), static=True)
         for line in lines[1:]:
             if len(line.strip()) == 0:
                 continue
@@ -83,14 +93,7 @@ class AutoconfigRepoLayer(LayerProcess):
             if t == 'pl':
                 prefix = Name(n)
                 self.logger.info(f'Got prefix {prefix}')
-                registration_name: Name = _AUTOCONFIG_SERVICE_REGISTRATION_PREFIX
-                registration_name += f'udp4://{self._addr}:{self._port}'
-                registration_name += prefix
-                registration_name += f'{self._service_name}'
-                self.logger.info(f'Registering service {registration_name}')
-                registration_interest = Interest(registration_name)
-                self.logger.info('Sending service registration')
-                self.queue_to_lower.put([fwd_fid, registration_interest])
+                self._send_service_registration(prefix + self._service_name)
 
     def _handle_service_registration(self, packet: Packet):
         if isinstance(packet, Nack):
@@ -104,12 +107,24 @@ class AutoconfigRepoLayer(LayerProcess):
             if len(packet.content) > 0 and packet.content[0] == 137:
                 self.logger.error('This implementation cannot handle the autoconfig binary wire format.')
                 return
-            regname = packet.name.components[3:]
+            regname = Name(packet.name.components[3:])
             try:
                 timeout = int(packet.content)
+                timer = threading.Timer(timeout / 2.0, self._send_service_registration, [regname])
+                self._prefix_timers[regname] = timer
+                timer.start()
             except ValueError:
                 self.logger.error('Service Registration ACK without timeout')
                 return
             self.logger.info(f'Service registration accepted: {regname}')
-            self._repository.set_prefix(Name(packet.name.components[3:]))
+            self._repository.set_prefix(regname)
             return
+
+    def _send_service_registration(self, name: Name):
+        registration_name: Name = _AUTOCONFIG_SERVICE_REGISTRATION_PREFIX
+        registration_name += f'udp4://{self._addr}:{self._port}'
+        registration_name += name
+        self.logger.info(f'Registering service {registration_name}')
+        registration_interest = Interest(registration_name)
+        self.logger.info('Sending service registration')
+        self.queue_to_lower.put([self._fwd_fid, registration_interest])
