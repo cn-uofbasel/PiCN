@@ -20,7 +20,7 @@ class AutoconfigServerLayer(LayerProcess):
 
     def __init__(self, linklayer: UDP4LinkLayer = None, fib: BaseForwardingInformationBase = None,
                  address: str = '127.0.0.1', bcaddr: str = '255.255.255.255',
-                 registration_prefixes: List[Name] = list(), log_level: int = 255):
+                 registration_prefixes: List[Tuple[Name, bool]] = list(), log_level: int = 255):
         """
         :param linklayer:
         :param fib:
@@ -35,7 +35,7 @@ class AutoconfigServerLayer(LayerProcess):
         self._announce_addr: str = address
         self._broadcast_addr: str = bcaddr
         self._known_services: List[Tuple[Name, Tuple[str, int], datetime]] = []
-        self._service_registration_prefixes: List[Name] = registration_prefixes
+        self._service_registration_prefixes: List[Tuple[Name, bool]] = registration_prefixes
         self._service_registration_timeout = timedelta(hours=1)
 
         # Enable broadcasting on the link layer's socket.
@@ -73,12 +73,15 @@ class AutoconfigServerLayer(LayerProcess):
     def _handle_autoconfig(self, interest: Interest) -> Packet:
         self.logger.info('Autoconfig information requested')
         port: int = self._linklayer.get_port()
-        content: str = f'{self._announce_addr}:{port}\n'
+        content: str = f'udp4://{self._announce_addr}:{port}\n'
         for entry in self._fib.container:
             entry: ForwardingInformationBaseEntry = entry
             content += f'r:{entry.name.to_string()}\n'
-        for prefix in self._service_registration_prefixes:
-            content += f'p:{prefix.to_string()}\n'
+        for prefix, local in self._service_registration_prefixes:
+            if local:
+                content += f'pl:{prefix.to_string()}\n'
+            else:
+                content += f'pg:{prefix.to_string()}\n'
         reply: Content = Content(interest.name)
         reply.content = content.encode('utf-8')
         return reply
@@ -109,11 +112,16 @@ class AutoconfigServerLayer(LayerProcess):
         self.logger.info('Service Registration requested')
         remote: str = interest.name.components[len(_AUTOCONFIG_SERVICE_REGISTRATION_PREFIX)].decode('ascii')
         self.logger.info(f'Remote service: {remote}')
-        host, port = remote.split(':')
+        scheme, addr = remote.split('://', 1)
+        if scheme != 'udp4':
+            self.logger.error(f'Don\'t know how to handle scheme {scheme} in service registration.')
+            nack: Nack = Nack(interest.name, NackReason.COMP_EXCEPTION)
+            return nack
+        host, port = addr.split(':')
         srvaddr = (host, int(port))
         srvname = Name(interest.name.components[len(_AUTOCONFIG_SERVICE_REGISTRATION_PREFIX)+1:])
-        if len([prefix for prefix in self._service_registration_prefixes
-                if len(prefix) == 0 or prefix.is_prefix_of(srvname)]) == 0:
+        if len([prefix[0] for prefix in self._service_registration_prefixes
+                if len(prefix[0]) == 0 or prefix[0].is_prefix_of(srvname)]) == 0:
             nack: Nack = Nack(interest.name, NackReason.NO_ROUTE)
             nack.interest = interest
             return nack
@@ -126,10 +134,11 @@ class AutoconfigServerLayer(LayerProcess):
                     return nack
                 else:
                     self._known_services[i] = (service, addr, datetime.now() + self._service_registration_timeout)
-                    ack: Content = Content(interest.name)
+                    ack: Content = Content(interest.name,
+                                           str(int(self._service_registration_timeout.total_seconds())) + '\n')
                     return ack
         srvfid: int = self._linklayer.get_or_create_fid(srvaddr, static=True)
         self._fib.add_fib_entry(srvname, srvfid, static=True)
         self._known_services.append((srvname, srvaddr, datetime.now() + self._service_registration_timeout))
-        ack: Content = Content(interest.name)
+        ack: Content = Content(interest.name, str(int(self._service_registration_timeout.total_seconds())) + '\n')
         return ack

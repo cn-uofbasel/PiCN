@@ -65,19 +65,26 @@ class AutoconfigRepoLayer(LayerProcess):
         if not isinstance(packet, Content):
             return
         self.logger.info('Received forwarder info')
+        if len(packet.content) > 0 and packet.content[0] == 128:
+            self.logger.error(f'This implementation cannot handle the autoconfig binary wire format.')
+            return
         lines: List[str] = packet.content.split('\n')
-        host, port = lines[0].split(':')
+        scheme, addr = lines[0].split('://', 1)
+        if scheme != 'udp4':
+            self.logger.error(f'Don\'t know how to handle scheme {scheme} in forwarder advertisement.')
+            return
+        host, port = addr.split(':')
         self.logger.info(f'forwarder: {host}:{port}')
         fwd_fid = self._linklayer.get_or_create_fid((host, int(port)), static=True)
         for line in lines[1:]:
             if len(line.strip()) == 0:
                 continue
             t, n = line.split(':')
-            if t == 'p':
+            if t == 'pl':
                 prefix = Name(n)
                 self.logger.info(f'Got prefix {prefix}')
                 registration_name: Name = _AUTOCONFIG_SERVICE_REGISTRATION_PREFIX
-                registration_name += f'{self._addr}:{self._port}'
+                registration_name += f'udp4://{self._addr}:{self._port}'
                 registration_name += prefix
                 registration_name += f'{self._service_name}'
                 self.logger.info(f'Registering service {registration_name}')
@@ -91,6 +98,18 @@ class AutoconfigRepoLayer(LayerProcess):
             self.logger.error(f'Service registration declined: {nack.reason}')
             return
         if isinstance(packet, Content):
-            self.logger.info(f'Service registration accepted: {packet.name.components[3:]}')
+            if packet.content is None:
+                self.logger.error('Service Registration ACK without timeout')
+                return
+            if len(packet.content) > 0 and packet.content[0] == 137:
+                self.logger.error('This implementation cannot handle the autoconfig binary wire format.')
+                return
+            regname = packet.name.components[3:]
+            try:
+                timeout = int(packet.content)
+            except ValueError:
+                self.logger.error('Service Registration ACK without timeout')
+                return
+            self.logger.info(f'Service registration accepted: {regname}')
             self._repository.set_prefix(Name(packet.name.components[3:]))
             return

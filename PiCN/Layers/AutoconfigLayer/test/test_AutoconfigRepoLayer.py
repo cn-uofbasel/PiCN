@@ -71,13 +71,17 @@ class test_AutoconfigRepoLayer(unittest.TestCase):
         # Receive forwarder solicitation
         bface, _ = self.queue_to_lower.get()
         # Send forwarder advertisement
-        forwarders = Content(Name('/autoconfig/forwarders'), '127.42.42.42:9000\nr:/global\np:/test\n')
+        forwarders = Content(Name('/autoconfig/forwarders'), 'udp4://127.42.42.42:9000\nr:/global\npl:/test\n')
         self.queue_from_lower.put([42, forwarders])
         # Receive service registration
         fid, data = self.queue_to_lower.get()
         self.assertEqual(bface, fid)
         self.assertIsInstance(data, Interest)
-        self.assertEqual(Name('/autoconfig/service/127.0.1.1:4242/test/testrepo'), data.name)
+        registration_name = Name('/autoconfig/service')
+        registration_name += 'udp4://127.0.1.1:4242'
+        registration_name += 'test'
+        registration_name += 'testrepo'
+        self.assertEqual(registration_name, data.name)
 
     def test_service_registration_prefix_changed(self):
         """Test that a service registration interest is sent"""
@@ -85,13 +89,17 @@ class test_AutoconfigRepoLayer(unittest.TestCase):
         # Receive forwarder solicitation
         bface, _ = self.queue_to_lower.get()
         # Send forwarder advertisement
-        forwarders = Content(Name('/autoconfig/forwarders'), '127.42.42.42:9000\nr:/global\np:/test\n')
+        forwarders = Content(Name('/autoconfig/forwarders'), 'udp4://127.42.42.42:9000\nr:/global\npl:/test\n')
         self.queue_from_lower.put([42, forwarders])
         # Receive service registration
         fid, data = self.queue_to_lower.get()
-        self.assertEqual(Name('/autoconfig/service/127.0.1.1:4242/test/testrepo'), data.name)
+        registration_name = Name('/autoconfig/service')
+        registration_name += 'udp4://127.0.1.1:4242'
+        registration_name += 'test'
+        registration_name += 'testrepo'
+        self.assertEqual(registration_name, data.name)
         # Send service registration ACK
-        content = Content(Name('/autoconfig/service/127.0.1.1:4242/test/testrepo'))
+        content = Content(registration_name, '3600\n')
         self.queue_from_lower.put([42, content])
         time.sleep(1)
         # Make sure the repo prefix was changed
@@ -103,13 +111,17 @@ class test_AutoconfigRepoLayer(unittest.TestCase):
         # Receive forwarder solicitation
         bface, _ = self.queue_to_lower.get()
         # Send forwarder advertisement
-        forwarders = Content(Name('/autoconfig/forwarders'), '127.42.42.42:9000\nr:/global\np:/test\n')
+        forwarders = Content(Name('/autoconfig/forwarders'), 'udp4://127.42.42.42:9000\nr:/global\npl:/test\n')
         self.queue_from_lower.put([42, forwarders])
         # Receive service registration
         fid, data = self.queue_to_lower.get()
-        self.assertEqual(Name('/autoconfig/service/127.0.1.1:4242/test/testrepo'), data.name)
+        registration_name = Name('/autoconfig/service')
+        registration_name += 'udp4://127.0.1.1:4242'
+        registration_name += 'test'
+        registration_name += 'testrepo'
+        self.assertEqual(registration_name, data.name)
         # Send service registration NACK
-        nack = Nack(Name('/autoconfig/service/127.0.1.1:4242/test/testrepo'), NackReason.NO_ROUTE)
+        nack = Nack(registration_name, NackReason.NO_ROUTE)
         self.queue_from_lower.put([42, nack])
         time.sleep(1)
         # Make sure the repo prefix was NOT changed

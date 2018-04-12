@@ -55,9 +55,9 @@ class ICNForwarder(object):
             self.autoconfiglayer: AutoconfigServerLayer = AutoconfigServerLayer(linklayer=self.linklayer,
                                                                                 fib=self.fib,
                                                                                 address='127.0.0.1',
-                                                                                broadcast='127.255.255.255',
+                                                                                bcaddr='127.255.255.255',
                                                                                 registration_prefixes=
-                                                                                [Name('/testnetwork/repos')],
+                                                                                [(Name('/testnetwork/repos'), True)],
                                                                                 log_level=log_level)
             self.lstack.insert(self.autoconfiglayer, below_of=self.icnlayer)
 

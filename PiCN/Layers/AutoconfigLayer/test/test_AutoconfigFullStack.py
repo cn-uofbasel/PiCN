@@ -31,7 +31,7 @@ class test_AutoconfigFullStack(unittest.TestCase):
         cs = ContentStoreMemoryExact(manager)
         pit = PendingInterstTableMemoryExact(manager)
         fib = ForwardingInformationBaseMemoryPrefix(manager)
-        prefixes = [Name('/test/prefix/repos')]
+        prefixes = [(Name('/test/prefix/repos'), True)]
         forwarder_linklayer = UDP4LinkLayer(port=9000, manager=manager)
         forwarder_encoder = NdnTlvEncoder()
         self.forwarder = LayerStack([

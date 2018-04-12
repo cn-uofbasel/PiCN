@@ -38,7 +38,7 @@ class Fetch(object):
         self.autoconfig = autoconfig
         if autoconfig:
             self.autoconfiglayer: AutoconfigClientLayer = AutoconfigClientLayer(self.linklayer,
-                                                                                broadcast='127.255.255.255', port=6363)
+                                                                                bcaddr='127.255.255.255', bcport=6363)
             self.lstack.insert(self.autoconfiglayer, on_top_of=self.packetencodinglayer)
 
         # setup communication

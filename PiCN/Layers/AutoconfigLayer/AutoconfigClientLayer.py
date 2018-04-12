@@ -77,10 +77,17 @@ class AutoconfigClientLayer(LayerProcess):
     def _handle_forwarders(self, packet: Packet):
         if not isinstance(packet, Content):
             return
+        if len(packet.content) > 0 and packet.content[0] == 128:
+            self.logger.error(f'This implementation cannot handle the autoconfig binary wire format.')
+            return
         # Parse the received packet:
         # Parse the first line containing the forwarder's ip:port.
         lines: List[str] = packet.content.split('\n')
-        host, port = lines[0].split(':')
+        scheme, addr = lines[0].split('://', 1)
+        if scheme != 'udp4':
+            self.logger.error(f'Don\'t know how to handle scheme {scheme} in forwarder advertisement.')
+            return
+        host, port = addr.split(':')
         fwd_fid = self._linklayer.get_or_create_fid((host, int(port)), static=True)
         # Parse the following lines of type:value pairs, only process routes.
         for line in lines[1:]:
