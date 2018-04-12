@@ -87,7 +87,10 @@ class TestUDP4LinkLayer(unittest.TestCase):
         self.linklayer1.start_process()
         self.testSock.sendto("HelloWorld".encode(), ("127.0.0.1", self.port1))
 
-        data = self.q1_toHiger.get()
+        try:
+            data = self.q1_toHiger.get(timeout=2.0)
+        except:
+            self.fail()
         faceid = data[0]
         content = data[1].decode()
         self.assertEqual(content, "HelloWorld")
@@ -116,7 +119,10 @@ class TestUDP4LinkLayer(unittest.TestCase):
         fid = self.linklayer1.create_new_fid(("127.0.0.1", self.port2))
         self.q1_fromHigher.put([fid, "HelloWorld".encode()])
 
-        data = self.q2_toHiger.get()
+        try:
+            data = self.q2_toHiger.get(timeout=2.0)
+        except:
+            self.fail()
         faceid = data[0]
         packet = data[1]
 
@@ -136,9 +142,14 @@ class TestUDP4LinkLayer(unittest.TestCase):
             self.q1_fromHigher.put([fid1, str1.encode()])
             self.q2_fromHigher.put([fid2, str2.encode()])
 
-            d2 = self.q2_toHiger.get()
-            d1 = self.q1_toHiger.get()
-
+            try:
+                d2 = self.q2_toHiger.get(timeout=2.0)
+            except:
+                self.fail()
+            try:
+                d1 = self.q1_toHiger.get(timeout=2.0)
+            except:
+                self.fail()
             # This is correct, packets must be exchanged, since they where sent to the other node
             packet2 = d1[1].decode()
             packet1 = d2[1].decode()
@@ -157,8 +168,14 @@ class TestUDP4LinkLayer(unittest.TestCase):
             self.q2_fromHigher.put([fid2, str2.encode()])
             self.q1_fromHigher.put([fid1, str1.encode()])
 
-            d2 = self.q2_toHiger.get()
-            d1 = self.q1_toHiger.get()
+            try:
+                d2 = self.q2_toHiger.get(timeout=2.0)
+            except:
+                self.fail()
+            try:
+                d1 = self.q1_toHiger.get(timeout=2.0)
+            except:
+                self.fail()
 
             # This is correct, packets must be exchanged, since they where sent to the other node
             packet2 = d1[1].decode()
@@ -191,19 +208,34 @@ class TestUDP4LinkLayer(unittest.TestCase):
 
             # Node 1 ---> Node 2
             self.q1_fromHigher.put([fid1_2, str1.encode()])
-            data1_2 = self.q2_toHiger.get()
+            try:
+                data1_2 = self.q2_toHiger.get(timeout=2.0)
+            except:
+                self.fail()
             # Node 1 ---> Node 3
             self.q1_fromHigher.put([fid1_3, str1.encode()])
-            data1_3 = self.q3_toHiger.get()
+            try:
+                data1_3 = self.q3_toHiger.get(timeout=2.0)
+            except:
+                self.fail()
             # Node 2 ---> Node 1
             self.q2_fromHigher.put([fid2_1, str2.encode()])
-            data2_1 = self.q1_toHiger.get()
+            try:
+                data2_1 = self.q1_toHiger.get(timeout=2.0)
+            except:
+                self.fail()
             # Node 3 ---> Node 1
             self.q3_fromHigher.put([fid3_1, str3.encode()])
-            data3_1 = self.q1_toHiger.get()
+            try:
+                data3_1 = self.q1_toHiger.get(timeout=2.0)
+            except:
+                self.fail()
             # Node 3 ---> Node 2
             self.q3_fromHigher.put([fid3_2, str3.encode()])
-            data3_2 = self.q2_toHiger.get()
+            try:
+                data3_2 = self.q2_toHiger.get(timeout=2.0)
+            except:
+                self.fail()
 
             self.assertEqual(data1_2[1].decode(), str1)
             self.assertEqual(data1_3[1].decode(), str1)

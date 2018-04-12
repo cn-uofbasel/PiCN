@@ -75,18 +75,18 @@ HELLO WORLD
 
 ### Operational Matters
 
-* [PiCN Toolbox](doc/toolbox.md)
-* [Setting up a Network](doc/network_setup.md)
-* [Packet Formats](doc/packet_formats.md)
+* [PiCN Toolbox](docs/toolbox.md)
+* [Setting up a Network](docs/network_setup.md)
+* [Packet Formats](docs/packet_formats.md)
 
 ### Internals
 
-* [Architecture](doc/architecture.md)
-* [Project Structure](doc/project_structure.md)
-* [Management Interface](doc/management_interface.md)
+* [Architecture](docs/architecture.md)
+* [Project Structure](docs/project_structure.md)
+* [Management Interface](docs/management_interface.md)
 
 
 ### The Project
 
-* [Licensing](doc/licensing.md)
+* [Licensing](docs/licensing.md)
 * [Mailinglist](https://www.maillist.unibas.ch/mailman/listinfo/picn)

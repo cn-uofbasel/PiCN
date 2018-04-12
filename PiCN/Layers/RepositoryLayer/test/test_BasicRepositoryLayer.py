@@ -48,13 +48,19 @@ class test_BasicRepositoryLayer(unittest.TestCase):
         i1 = Interest("/test/data/f1")
         c1 = Content("/test/data/f1", "data1")
         self.repositoryLayer.queue_from_lower.put([0, i1])
-        data = self.repositoryLayer.queue_to_lower.get()
+        try:
+            data = self.repositoryLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(c1, data[1])
 
         i2 = Interest("/test/data/f2")
         c2 = Content("/test/data/f2", "data2")
         self.repositoryLayer.queue_from_lower.put([0, i2])
-        data = self.repositoryLayer.queue_to_lower.get()
+        try:
+            data = self.repositoryLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(c2, data[1])
 
     def test_nack_content(self):
@@ -63,7 +69,10 @@ class test_BasicRepositoryLayer(unittest.TestCase):
         i1 = Interest("/test/data/f3")
         n1 = Nack(i1.name, NackReason.NO_CONTENT, interest=i1)
         self.repositoryLayer.queue_from_lower.put([0, i1])
-        data = self.repositoryLayer.queue_to_lower.get()
+        try:
+            data = self.repositoryLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(n1, data[1])
 
     def test_nack_prefix(self):
@@ -72,5 +81,8 @@ class test_BasicRepositoryLayer(unittest.TestCase):
         i1 = Interest("/data/test/f1")
         n1 = Nack(i1.name, NackReason.NO_CONTENT, interest=i1)
         self.repositoryLayer.queue_from_lower.put([0, i1])
-        data = self.repositoryLayer.queue_to_lower.get()
+        try:
+            data = self.repositoryLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
         self.assertEqual(n1, data[1])
