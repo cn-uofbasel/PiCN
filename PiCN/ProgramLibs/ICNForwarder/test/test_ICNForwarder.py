@@ -52,7 +52,8 @@ class cases_ICNForwarder(object):
         #create test content
         name = Name("/test/data/object")
         test_content = Content(name, content="HelloWorld")
-        self.assertEqual(self.forwarder1.cs.find_content_object(name).content, test_content)
+        cs_fwd1 = self.forwarder1.data_structs.get('cs')
+        self.assertEqual(cs_fwd1.find_content_object(name).content, test_content)
 
         #create interest
         interest = Interest("/test/data/object")
@@ -103,7 +104,8 @@ class cases_ICNForwarder(object):
         #create test content
         name = Name("/test/data/object")
         test_content = Content(name, content="HelloWorld")
-        self.assertEqual(self.forwarder2.cs.find_content_object(name).content, test_content)
+        cs_fwd2 = self.forwarder2.data_structs.get('cs')
+        self.assertEqual(cs_fwd2.find_content_object(name).content, test_content)
 
         #create interest
         interest = Interest("/test/data/object")

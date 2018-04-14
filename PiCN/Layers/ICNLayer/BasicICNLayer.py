@@ -14,12 +14,18 @@ from PiCN.Processes import LayerProcess
 
 
 class BasicICNLayer(LayerProcess):
-    """ICN Forwarding Plane. Maintains data structures for ICN Forwarding"""
+    """ICN Forwarding Plane. Maintains data structures for ICN Forwarding
+    """
 
     def __init__(self, cs: BaseContentStore=None, pit: BasePendingInterestTable=None,
-                 fib: BaseForwardingInformationBase=None, log_level=255):
+                 fib: BaseForwardingInformationBase=None, log_level=255, manager: multiprocessing.Manager=None):
         super().__init__(logger_name="ICNLayer", log_level=log_level)
-        self._cs: BaseContentStore = cs
+        if manager is None:
+            manager = multiprocessing.Manager()
+        # Store CS, FIB, PIT here to sync over processes.
+        # Note: Datastruct must be stored in a local var to access and be written back to the dict to sync!
+        self._data_structs = manager.dict()
+        self._data_structs['cs'] = cs
         self._pit: BasePendingInterestTable = pit
         self._fib: BaseContentStore = fib
         self._cs_timeout: int = 10
@@ -32,7 +38,7 @@ class BasicICNLayer(LayerProcess):
         high_level_id = data[0]
         packet = data[1]
         if isinstance(packet, Interest):
-            cs_entry = self._cs.find_content_object(packet.name)
+            cs_entry = self.check_cs(packet)
             if cs_entry is not None:
                 self.queue_to_higher.put([high_level_id, cs_entry.content])
                 return
@@ -87,7 +93,7 @@ class BasicICNLayer(LayerProcess):
         if cs_entry is not None:
             self.logger.info("Found in content store")
             to_lower.put([face_id, cs_entry.content])
-            self._cs.update_timestamp(cs_entry)
+            self.update_timestamp_in_cs(cs_entry)
             return
         pit_entry = self.check_pit(interest.name)
         if pit_entry is not None:
@@ -129,7 +135,7 @@ class BasicICNLayer(LayerProcess):
                 else:
                     to_lower.put([pit_entry.faceids[i], content])
             self._pit.remove_pit_entry(pit_entry.name)
-            self._cs.add_content_object(content)
+            self.add_to_cs(content)
 
     def handle_nack(self, face_id: int, nack: Nack, to_lower: multiprocessing.Queue,
                     to_higher: multiprocessing.Queue, from_local: bool = False):
@@ -160,7 +166,6 @@ class BasicICNLayer(LayerProcess):
                 self.logger.info("Try using next FIB path")
                 self._pit.add_used_fib_entry(nack.name, fib_entry)
                 to_lower.put([fib_entry.faceid, pit_entry.interest])
-
 
     def ageing(self):
         """Ageing the data structs"""
@@ -198,17 +203,31 @@ class BasicICNLayer(LayerProcess):
         """Aging the CS"""
         cur_time = time.time()
         remove = []
-        for cs_entry in self._cs.container:
+        cs = self.cs
+        for cs_entry in cs.container:
             if cs_entry.static is True:
                 continue
             if cs_entry.timestamp + self._cs_timeout < cur_time:
                 remove.append(cs_entry)
         for cs_entry in remove:
-            self._cs.remove_content_object(cs_entry.content.name)
+            cs.remove_content_object(cs_entry.content.name)
+        self.cs = cs
 
+    def add_to_cs(self, content, static=False):
+        cs = self.cs
+        cs.add_content_object(content, static)
+        self.cs = cs
+
+    def update_timestamp_in_cs(self, cs_entry):
+        """update the timestamp of an CS entry
+        :param cs_entry The CS entry to be updated
+        """
+        cs = self.cs
+        cs.update_timestamp(cs_entry)
+        self.cs = cs
 
     def check_cs(self, interest: Interest) -> Content:
-        return self._cs.find_content_object(interest.name)
+        return self.cs.find_content_object(interest.name)
 
     def check_pit(self, name: Name) -> PendingInterestTableEntry:
         return self._pit.find_pit_entry(name)
@@ -219,11 +238,11 @@ class BasicICNLayer(LayerProcess):
     @property
     def cs(self):
         """The Content Store"""
-        return self._cs
+        return self._data_structs.get('cs')
 
     @cs.setter
     def cs(self, cs):
-        self._cs = cs
+        self._data_structs['cs'] = cs
 
     @property
     def fib(self):

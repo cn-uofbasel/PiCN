@@ -10,8 +10,7 @@ from PiCN.Packets import Content
 class test_ContentStoreMemoryExact(unittest.TestCase):
 
     def setUp(self):
-        self.manager = multiprocessing.Manager()
-        self.cs = ContentStoreMemoryExact(self.manager)
+        self.cs = ContentStoreMemoryExact()
 
     def tearDown(self):
         pass

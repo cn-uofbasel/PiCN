@@ -17,7 +17,9 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
     def setUp(self):
         self.parser: DefaultNFNParser = DefaultNFNParser()
         self.manager = multiprocessing.Manager()
-        self.optimizer: ToDataFirstOptimizer = ToDataFirstOptimizer(None, ContentStoreMemoryExact(self.manager),
+        self.data_structs = self.manager.dict()
+        self.data_structs['cs'] = ContentStoreMemoryExact()
+        self.optimizer: ToDataFirstOptimizer = ToDataFirstOptimizer(None, self.data_structs,
                                                                     ForwardingInformationBaseMemoryPrefix(self.manager),
                                                                     None)
 
@@ -80,8 +82,10 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         workflow = "/func/f1(/test/data)"
         self.optimizer.fib.add_fib_entry(Name("/func"), 1, False)
         self.optimizer.prefix = Name("/func/f1")
-        self.optimizer.cs.add_content_object(
+        cs = self.optimizer.cs
+        cs.add_content_object(
             Content(Name("/func/f1"), "PYTHON\nf\ndef f():\n    return 'Hello World'"),True)
+        self.optimizer.cs = cs
         ast = self.parser.parse(workflow)
         self.assertFalse(self.optimizer.compute_fwd(ast))
         self.assertTrue(self.optimizer.compute_local(ast))

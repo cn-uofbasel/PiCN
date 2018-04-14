@@ -52,7 +52,8 @@ class cases_NFNForwarder(object):
         #create test content
         name = Name("/test/data/object")
         test_content = Content(name, content="HelloWorld")
-        self.assertEqual(self.forwarder1.cs.find_content_object(name).content, test_content)
+        cs_fwd1 = self.forwarder1.data_structs.get('cs')
+        self.assertEqual(cs_fwd1.find_content_object(name).content, test_content)
 
         #create interest
         interest = Interest("/test/data/object")
@@ -103,7 +104,8 @@ class cases_NFNForwarder(object):
         #create test content
         name = Name("/test/data/object")
         test_content = Content(name, content="HelloWorld")
-        self.assertEqual(self.forwarder2.cs.find_content_object(name).content, test_content)
+        cs_fwd2 = self.forwarder2.data_structs.get('cs')
+        self.assertEqual(cs_fwd2.find_content_object(name).content, test_content)
 
         #create interest
         interest = Interest("/test/data/object")
@@ -210,6 +212,7 @@ class cases_NFNForwarder(object):
         # send interest
         self.testSock.sendto(encoded_interest, ("127.0.0.1", self.forwarder1_port))
         # receive content
+        self.testSock.settimeout(3)
         encoded_content, addr = self.testSock.recvfrom(8192)
         time.sleep(0.1)
         content: Content = self.encoder.decode(encoded_content)

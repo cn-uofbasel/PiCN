@@ -17,13 +17,14 @@ class testNFNEvaluator(unittest.TestCase):
 
     def setUp(self):
         self.manager: multiprocessing.Manager = multiprocessing.Manager()
-        self.cs: ContentStoreMemoryExact = ContentStoreMemoryExact(self.manager)
+        self.data_structs = self.manager.dict()
+        self.data_structs['cs'] = ContentStoreMemoryExact()
         self.fib: ForwardingInformationBaseMemoryPrefix = ForwardingInformationBaseMemoryPrefix(self.manager)
         self.pit: PendingInterstTableMemoryExact = PendingInterstTableMemoryExact(self.manager)
-        self.optimizer = ToDataFirstOptimizer(None, self.cs, self.fib, self.pit)
+        self.optimizer = ToDataFirstOptimizer(None, self.data_structs, self.fib, self.pit)
         self.executor = NFNPythonExecutor
         self.rewrite_table = self.manager.dict()
-        self.evaluator = NFNEvaluator(None, self.cs, self.fib, self.pit, self.rewrite_table)
+        self.evaluator = NFNEvaluator(None, self.data_structs, self.fib, self.pit, self.rewrite_table)
         self.evaluator.executor["PYTHON"] = self.executor
         pass
 

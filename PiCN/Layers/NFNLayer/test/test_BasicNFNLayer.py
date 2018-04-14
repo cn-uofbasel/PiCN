@@ -15,12 +15,13 @@ class test_BasicNFNLayer(unittest.TestCase):
     """Test the BasicNFNLayer"""
 
     def setUp(self):
-        self.manager = multiprocessing.Manager()
-        self.cs = ContentStoreMemoryExact(self.manager)
-        self.fib = ForwardingInformationBaseMemoryPrefix(self.manager)
-        self.pit = PendingInterstTableMemoryExact(self.manager)
+        manager = multiprocessing.Manager()
+        self.data_structs = manager.dict()
+        self.data_structs['cs'] = ContentStoreMemoryExact()
+        self.fib = ForwardingInformationBaseMemoryPrefix(manager)
+        self.pit = PendingInterstTableMemoryExact(manager)
         self.executor = {"PYTHON": NFNPythonExecutor}
-        self.nfnLayer: BasicNFNLayer = BasicNFNLayer(self.manager, self.cs, self.fib, self.pit, self.executor)
+        self.nfnLayer: BasicNFNLayer = BasicNFNLayer(manager, self.data_structs, self.fib, self.pit, self.executor)
         self.nfnLayer.queue_from_lower = multiprocessing.Queue()
         self.nfnLayer.queue_to_lower = multiprocessing.Queue()
 

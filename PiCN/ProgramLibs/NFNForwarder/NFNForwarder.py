@@ -41,11 +41,12 @@ class NFNForwarder(object):
 
         # setup data structures
         manager = multiprocessing.Manager()
-        self.cs = ContentStoreMemoryExact(manager)
+        self.data_structs = manager.dict()
+        self.data_structs['cs'] = ContentStoreMemoryExact()
         self.fib = ForwardingInformationBaseMemoryPrefix(manager)
         self.pit = PendingInterstTableMemoryExact(manager)
 
-        self.icnlayer.cs = self.cs
+        self.icnlayer._data_structs = self.data_structs
         self.icnlayer.fib = self.fib
         self.icnlayer.pit = self.pit
 
@@ -57,7 +58,7 @@ class NFNForwarder(object):
         # setup nfn
         self.icnlayer._interest_to_app = True
         self.executors = {"PYTHON": NFNPythonExecutor}
-        self.nfnlayer = BasicNFNLayer(manager, self.cs, self.fib, self.pit, self.executors,
+        self.nfnlayer = BasicNFNLayer(manager, self.icnlayer._data_structs, self.fib, self.pit, self.executors,
                                       log_level=log_level)
 
         self.lstack: LayerStack = LayerStack([
@@ -72,7 +73,7 @@ class NFNForwarder(object):
         self.routing = BasicRouting(self.icnlayer.pit, None, log_level=log_level)  # TODO NOT IMPLEMENTED YET
 
         # mgmt
-        self.mgmt = Mgmt(self.cs, self.fib, self.pit, self.linklayer, self.linklayer.get_port(), self.stop_forwarder,
+        self.mgmt = Mgmt(self.data_structs, self.fib, self.pit, self.linklayer, self.linklayer.get_port(), self.stop_forwarder,
                          log_level=log_level)
 
     def start_forwarder(self):

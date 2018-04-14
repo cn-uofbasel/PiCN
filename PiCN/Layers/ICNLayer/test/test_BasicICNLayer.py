@@ -19,7 +19,7 @@ class test_BasicICNLayer(unittest.TestCase):
         #setup icn_layer
         self.icn_layer = BasicICNLayer()
         self.manager = multiprocessing.Manager()
-        self.cs = ContentStoreMemoryExact(self.manager)
+        self.cs = ContentStoreMemoryExact()
         self.fib = ForwardingInformationBaseMemoryPrefix(self.manager)
         self.pit = PendingInterstTableMemoryExact(self.manager)
         self.icn_layer.cs = self.cs
@@ -151,7 +151,7 @@ class test_BasicICNLayer(unittest.TestCase):
 
         #add content
         content = Content("/test/data")
-        self.icn_layer.cs.add_content_object(content)
+        self.icn_layer.add_to_cs(content)
 
         #request content
         self.queue1_icn_routing_up.put([from_faceid, interest])
@@ -324,8 +324,8 @@ class test_BasicICNLayer(unittest.TestCase):
         name2 = Name("/data/test")
         content2 = Content(name2, "Goodbye")
 
-        self.cs.add_content_object(content1)
-        self.cs.add_content_object(content2, static=True)
+        self.icn_layer.add_to_cs(content1)
+        self.icn_layer.add_to_cs(content2, static=True)
 
         self.assertEqual(len(self.icn_layer.cs.container), 2)
         self.assertEqual(self.icn_layer.cs.container[0].content, content1)
@@ -511,7 +511,7 @@ class test_BasicICNLayer(unittest.TestCase):
         i = Interest(n)
         c = Content(n, "Hello World")
         self.icn_layer._fib.add_fib_entry(n, faceid, True)
-        self.icn_layer._cs.add_content_object(c)
+        self.icn_layer.add_to_cs(c)
         self.icn_layer.queue_from_lower.put([from_faceid, i])
         try:
             to_faceid, data = self.icn_layer.queue_to_lower.get(timeout=2.0)
