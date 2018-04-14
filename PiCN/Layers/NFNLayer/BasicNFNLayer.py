@@ -23,12 +23,9 @@ class BasicNFNLayer(LayerProcess):
     """NFN Layer Implementation"""
 
     def __init__(self, manager: multiprocessing.Manager, data_structs: Dict,
-                 fib: BaseForwardingInformationBase, pit: BasePendingInterestTable,
                  executor: Dict[str, type(BaseNFNExecutor)], logger_name="NFN Layer", log_level=255):
         super().__init__(logger_name, log_level)
         self._data_structs = data_structs
-        self.fib = fib
-        self.pit = pit
         self._running_computations: Dict[int, NFNEvaluator] = {} # {} #computation id -> computation
         self._computation_request_table: Dict[Name, List[int]] = manager.dict()  # request(name) -> [computation id]
         self._pending_computations: multiprocessing.Queue[(Interest, bool)] = multiprocessing.Queue() # computations not started yet
@@ -243,7 +240,7 @@ class BasicNFNLayer(LayerProcess):
                 self.start_computation(interest[0], running_computations, interest[1])
 
     def start_computation(self, interest, running_computations, local: bool=False):
-        evaluator = self.nfn_evaluator_type(interest, self._data_structs, self.fib, self.pit,
+        evaluator = self.nfn_evaluator_type(interest, self._data_structs,
                                             self.rewrite_table, self.executor, local, self.logger.level)
         running_computations[self._next_computation_id] = evaluator
         running_computations[self._next_computation_id].start_process()

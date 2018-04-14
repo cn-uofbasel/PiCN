@@ -10,9 +10,8 @@ from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
 
 class ToDataFirstOptimizer(BaseNFNOptimizer):
 
-    def __init__(self, prefix: Name, data_structs: Dict, fib: BaseForwardingInformationBase,
-                 pit: BasePendingInterestTable) -> None:
-        super().__init__(prefix, data_structs, fib, pit)
+    def __init__(self, prefix: Name, data_structs: Dict) -> None:
+        super().__init__(prefix, data_structs)
 
     def compute_local(self, ast: AST) -> bool:
         if self.cs.find_content_object(self.prefix):

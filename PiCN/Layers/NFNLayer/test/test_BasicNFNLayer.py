@@ -18,10 +18,10 @@ class test_BasicNFNLayer(unittest.TestCase):
         manager = multiprocessing.Manager()
         self.data_structs = manager.dict()
         self.data_structs['cs'] = ContentStoreMemoryExact()
-        self.fib = ForwardingInformationBaseMemoryPrefix(manager)
-        self.pit = PendingInterstTableMemoryExact(manager)
+        self.data_structs['fib'] = ForwardingInformationBaseMemoryPrefix()
+        self.data_structs['pit'] = PendingInterstTableMemoryExact()
         self.executor = {"PYTHON": NFNPythonExecutor}
-        self.nfnLayer: BasicNFNLayer = BasicNFNLayer(manager, self.data_structs, self.fib, self.pit, self.executor)
+        self.nfnLayer: BasicNFNLayer = BasicNFNLayer(manager, self.data_structs, self.executor)
         self.nfnLayer.queue_from_lower = multiprocessing.Queue()
         self.nfnLayer.queue_to_lower = multiprocessing.Queue()
 
@@ -61,7 +61,9 @@ class test_BasicNFNLayer(unittest.TestCase):
 
     def test_fwd_computation(self):
         """Test forwarding of a computation"""
-        self.fib.add_fib_entry(Name("/test"), 1, True)
+        fib = self.data_structs.get('fib')
+        fib.add_fib_entry(Name("/test"), 1, True)
+        self.data_structs['fib'] = fib
         self.nfnLayer.start_process()
         cid = 1
         name = Name("/test/data")
@@ -78,7 +80,9 @@ class test_BasicNFNLayer(unittest.TestCase):
 
     def test_fwd_computation_back(self):
         """Test forwarding of a computation sending data back"""
-        self.fib.add_fib_entry(Name("/test"), 1, True)
+        fib = self.data_structs.get('fib')
+        fib.add_fib_entry(Name("/test"), 1, True)
+        self.data_structs['fib'] = fib
         self.nfnLayer.start_process()
         cid = 1
         name = Name("/test/data")
@@ -99,7 +103,9 @@ class test_BasicNFNLayer(unittest.TestCase):
 
     def test_fwd_computation_change_name(self):
         """Test rewriting and forwarding of a computation"""
-        self.fib.add_fib_entry(Name("/test"), 1, True)
+        fib = self.data_structs.get('fib')
+        fib.add_fib_entry(Name("/test"), 1, True)
+        self.data_structs['fib'] = fib
         self.nfnLayer.start_process()
         cid = 1
         name = Name("/func/f1")
@@ -118,7 +124,9 @@ class test_BasicNFNLayer(unittest.TestCase):
 
     def test_fwd_computation_change_name_map_back(self):
         """Test rewriting and forwarding of a computation, map back"""
-        self.fib.add_fib_entry(Name("/test"), 1, True)
+        fib = self.data_structs.get('fib')
+        fib.add_fib_entry(Name("/test"), 1, True)
+        self.data_structs['fib'] = fib
         self.nfnLayer.start_process()
         cid = 1
         name = Name("/func/f1")
@@ -277,7 +285,9 @@ def f():
 
     def test_fwd_computation_nack_stop_fwd_nack(self):
         """Test forwarding of a computation and stop computation"""
-        self.fib.add_fib_entry(Name("/test"), 1, True)
+        fib = self.data_structs.get('fib')
+        fib.add_fib_entry(Name("/test"), 1, True)
+        self.data_structs['fib'] = fib
         self.nfnLayer.start_process()
         cid = 1
         name = Name("/test/data")
@@ -307,8 +317,10 @@ def f():
 
     def test_fwd_computation_nack_second_path(self):
         """Test forwarding of a computation and applying second rule"""
-        self.fib.add_fib_entry(Name("/test"), 1, True)
-        self.fib.add_fib_entry(Name("/func"), 2, True)
+        fib = self.data_structs.get('fib')
+        fib.add_fib_entry(Name("/test"), 1, True)
+        fib.add_fib_entry(Name("/func"), 2, True)
+        self.data_structs['fib'] = fib
         self.nfnLayer.start_process()
         cid = 1
         name = Name("/test/data")

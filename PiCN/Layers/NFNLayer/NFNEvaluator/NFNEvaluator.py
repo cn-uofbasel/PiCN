@@ -19,8 +19,7 @@ from PiCN.Packets import Content, Interest, Name, Nack, NackReason
 class NFNEvaluator(PiCNProcess):
     """NFN Dispatcher for PiCN"""
 
-    def __init__(self, interest: Interest, data_structs: dict, fib: BaseForwardingInformationBase,
-                 pit: BasePendingInterestTable, rewrite_table: Dict[Interest, List[Interest]],
+    def __init__(self, interest: Interest, data_structs: dict, rewrite_table: Dict[Interest, List[Interest]],
                  executor: Dict[str, type(BaseNFNExecutor)] = {}, local: bool=False, log_level: int = 255):
         super().__init__("NFNEvaluator", log_level)
         self.interest: Interest = interest
@@ -33,8 +32,6 @@ class NFNEvaluator(PiCNProcess):
         self.rewrite_table: Dict[Name, List[Name]] = rewrite_table #remapped name -> original names
 
         self.data_structs: Dict = data_structs
-        self.fib: BaseForwardingInformationBase = fib
-        self.pit: BasePendingInterestTable = pit
 
         self.parser: DefaultNFNParser = DefaultNFNParser()
         self.optimizer: BaseNFNOptimizer = None
@@ -65,7 +62,7 @@ class NFNEvaluator(PiCNProcess):
         name_str, prepended = self.parser.network_name_to_nfn_str(name)
         ast: AST = self.parser.parse(name_str)
         self.logger.info("Evaluating " + str(name))
-        self.optimizer = ToDataFirstOptimizer(prepended, self.data_structs, self.fib, self.pit)
+        self.optimizer = ToDataFirstOptimizer(prepended, self.data_structs)
         did_fwd = False
         if self.optimizer.compute_fwd(ast) and not self.force_compute_local:
             self.logger.info("FWD")

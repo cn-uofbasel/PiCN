@@ -10,12 +10,9 @@ from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
 
 class BaseNFNOptimizer(object):
     """Base class for the NFN Optimizers"""
-    def __init__(self, prefix: Name, data_structs: Dict, fib: BaseForwardingInformationBase,
-                 pit: BasePendingInterestTable):
+    def __init__(self, prefix: Name, data_structs: Dict):
         self.prefix: Name = prefix
         self._data_structs = data_structs
-        self._fib: BaseForwardingInformationBase = fib
-        self._pit: BasePendingInterestTable = pit
 
     @abc.abstractmethod
     def compute_local(self, ast: AST) -> bool:
@@ -39,17 +36,17 @@ class BaseNFNOptimizer(object):
 
     @property
     def fib(self):
-        return self._fib
+        return self._data_structs.get('fib')
 
     @fib.setter
     def fib(self, fib):
-        self._fib = fib
+        self._data_structs['fib'] = fib
 
     @property
     def pit(self):
-        return self._pit
+        return self._data_structs.get('pit')
 
     @pit.setter
     def pit(self, pit):
-        self._pit = pit
+        self._data_structs['pit'] = pit
 
