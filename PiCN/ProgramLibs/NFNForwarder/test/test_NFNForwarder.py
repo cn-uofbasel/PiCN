@@ -13,7 +13,7 @@ from PiCN.ProgramLibs.NFNForwarder import NFNForwarder
 class cases_NFNForwarder(object):
     """Test the ICN Forwarder"""
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def get_encoder(self):
         """returns the encoder to be used """
 
