@@ -67,7 +67,7 @@ you@machine:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newforwardingrule /the:0
 
 Fetch content from the repository via the forwarding node:
 ```console
-you@notebook:~$ picn-fetch --format ndntlv 127.0.0.1 9000 /the/prefix/example 
+you@machine:~$ picn-fetch --format ndntlv 127.0.0.1 9000 /the/prefix/example 
 HELLO WORLD
 ```
 
