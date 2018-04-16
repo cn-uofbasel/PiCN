@@ -1,18 +1,17 @@
 """Simple NFN Optimizer, alsways forwarding towards data"""
 
+from typing import Dict
 
 from PiCN.Packets import Name
 from PiCN.Layers.NFNLayer.Parser.AST import *
 from PiCN.Layers.NFNLayer.NFNEvaluator.NFNOptimizer import BaseNFNOptimizer
-from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
 from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
 
 class ToDataFirstOptimizer(BaseNFNOptimizer):
 
-    def __init__(self, prefix: Name, cs: BaseContentStore, fib: BaseForwardingInformationBase,
-                 pit: BasePendingInterestTable) -> None:
-        super().__init__(prefix, cs, fib, pit)
+    def __init__(self, prefix: Name, data_structs: Dict) -> None:
+        super().__init__(prefix, data_structs)
 
     def compute_local(self, ast: AST) -> bool:
         if self.cs.find_content_object(self.prefix):

@@ -17,13 +17,14 @@ class testNFNEvaluator(unittest.TestCase):
 
     def setUp(self):
         self.manager: multiprocessing.Manager = multiprocessing.Manager()
-        self.cs: ContentStoreMemoryExact = ContentStoreMemoryExact(self.manager)
-        self.fib: ForwardingInformationBaseMemoryPrefix = ForwardingInformationBaseMemoryPrefix(self.manager)
-        self.pit: PendingInterstTableMemoryExact = PendingInterstTableMemoryExact(self.manager)
-        self.optimizer = ToDataFirstOptimizer(None, self.cs, self.fib, self.pit)
+        self.data_structs = self.manager.dict()
+        self.data_structs['cs'] = ContentStoreMemoryExact()
+        self.data_structs['fib'] = ForwardingInformationBaseMemoryPrefix()
+        self.data_structs['pit'] = PendingInterstTableMemoryExact()
+        self.optimizer = ToDataFirstOptimizer(None, self.data_structs)
         self.executor = NFNPythonExecutor
         self.rewrite_table = self.manager.dict()
-        self.evaluator = NFNEvaluator(None, self.cs, self.fib, self.pit, self.rewrite_table)
+        self.evaluator = NFNEvaluator(None, self.data_structs, self.rewrite_table)
         self.evaluator.executor["PYTHON"] = self.executor
         pass
 
@@ -176,7 +177,9 @@ def f(a, b):
 
     def test_fwd_multiple_params(self):
         """Test fwd a function with multiple data as parameter"""
-        self.evaluator.fib.add_fib_entry(Name("/test"), 0, True)
+        fib = self.data_structs.get('fib')
+        fib.add_fib_entry(Name("/test"), 0, True)
+        self.data_structs['fib'] = fib
         fwdname1 = Name("/test/data1")
         fwdname1 += "/func/f1(_,/test/data2)"
         fwdname1 += "NFN"

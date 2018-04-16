@@ -9,8 +9,8 @@ from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore, ContentStoreEntr
 class ContentStoreMemoryExact(BaseContentStore):
     """ A in memory Content Store using exact matching"""
 
-    def __init__(self, manager: multiprocessing.Manager):
-        BaseContentStore.__init__(self, manager)
+    def __init__(self):
+        BaseContentStore.__init__(self)
 
     def find_content_object(self, name: Name) -> ContentStoreEntry:
         for c in self._container:

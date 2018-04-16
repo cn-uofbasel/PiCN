@@ -52,7 +52,8 @@ class cases_ICNForwarder(object):
         #create test content
         name = Name("/test/data/object")
         test_content = Content(name, content="HelloWorld")
-        self.assertEqual(self.forwarder1.cs.find_content_object(name).content, test_content)
+        cs_fwd1 = self.forwarder1.data_structs.get('cs')
+        self.assertEqual(cs_fwd1.find_content_object(name).content, test_content)
 
         #create interest
         interest = Interest("/test/data/object")
@@ -89,7 +90,7 @@ class cases_ICNForwarder(object):
         testMgmtSock2.close()
         self.assertEqual(data.decode(),
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newforwardingrule OK:0\r\n")
-        self.assertEqual(self.forwarder1.fib.find_fib_entry(Name("/test/data")).faceid, 0)
+        self.assertEqual(self.forwarder1.icnlayer.fib.find_fib_entry(Name("/test/data")).faceid, 0)
 
         # new content
         testMgmtSock3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -103,7 +104,8 @@ class cases_ICNForwarder(object):
         #create test content
         name = Name("/test/data/object")
         test_content = Content(name, content="HelloWorld")
-        self.assertEqual(self.forwarder2.cs.find_content_object(name).content, test_content)
+        cs_fwd2 = self.forwarder2.data_structs.get('cs')
+        self.assertEqual(cs_fwd2.find_content_object(name).content, test_content)
 
         #create interest
         interest = Interest("/test/data/object")
@@ -116,7 +118,7 @@ class cases_ICNForwarder(object):
         content = self.encoder.decode(encoded_content)
         self.assertEqual(content, test_content)
         time.sleep(2)
-        self.assertEqual(len(self.forwarder1.pit.container), 0)
+        self.assertEqual(len(self.forwarder1.icnlayer.pit.container), 0)
 
 
 

@@ -5,6 +5,7 @@ import os
 import select
 import socket
 import time
+from typing import Dict
 
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
@@ -18,12 +19,10 @@ from PiCN.Processes import PiCNProcess
 class Mgmt(PiCNProcess):
     """Mgmt System for PiCN"""
 
-    def __init__(self, cs: BaseContentStore, fib: BaseForwardingInformationBase, pit: BasePendingInterestTable,
-                 linklayer: LayerProcess, port: int, shutdown = None, repo_prfx: str=None, repo_path: str=None, log_level=255):
+    def __init__(self, data_structs: Dict, linklayer: LayerProcess, port: int, shutdown = None,
+                 repo_prfx: str=None, repo_path: str=None, log_level=255):
         super().__init__("MgmtSys", log_level)
-        self._cs: BaseContentStore = cs
-        self._fib: BaseForwardingInformationBase = fib
-        self._pit: BasePendingInterestTable = pit
+        self._data_structs: Dict = data_structs
         self._linklayer = linklayer
         self._repo_prfx = repo_prfx
         self._repo_path = repo_path
@@ -98,7 +97,8 @@ class Mgmt(PiCNProcess):
             return
 
     def icnl_mgmt(self, command, params, replysock):
-        if(self._cs == None or self._fib == None or self._pit == None):
+        if(self._data_structs.get('cs') == None or self._data_structs.get('fib') == None or
+                self._data_structs.get('pit') == None):
             reply = "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n Not a Forwarder OK\r\n"
             replysock.send(reply.encode())
         # newface expects /linklayer/newface/ip:port
@@ -107,7 +107,9 @@ class Mgmt(PiCNProcess):
             faceid = int(faceid)
             prefix = prefix.replace("%2F", "/")
             name = Name(prefix)
-            self._fib.add_fib_entry(name, faceid, True)
+            fib = self._data_structs.get('fib')
+            fib.add_fib_entry(name, faceid, True)
+            self._data_structs['fib'] = fib
             reply = "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newforwardingrule OK:" + str(faceid) + "\r\n"
             replysock.send(reply.encode())
             self.logger.info("New Forwardingrule added " + prefix + "|" + str(faceid))
@@ -117,7 +119,9 @@ class Mgmt(PiCNProcess):
             prefix = prefix.replace("%2F", "/")
             name = Name(prefix)
             content = Content(name, content)
-            self._cs.add_content_object(content, static=True)
+            cs = self._data_structs.get('cs')
+            cs.add_content_object(content, static=True)
+            self._data_structs['cs'] = cs
             reply = "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newcontent OK\r\n"
             replysock.send(reply.encode())
             self.logger.info("New content added " + prefix + "|" + content.content)

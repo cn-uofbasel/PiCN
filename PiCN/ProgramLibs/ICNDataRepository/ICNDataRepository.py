@@ -53,7 +53,7 @@ class ICNDataRepository(object):
         ])
 
         # mgmt
-        self.mgmt = Mgmt(None, None, None, self.linklayer, self.linklayer.get_port(),
+        self.mgmt = Mgmt(None, self.linklayer, self.linklayer.get_port(),
                          self.start_repo, repo_path=foldername,
                          repo_prfx=prefix, log_level=log_level)
 

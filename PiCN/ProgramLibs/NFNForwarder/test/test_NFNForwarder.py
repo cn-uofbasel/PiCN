@@ -13,7 +13,7 @@ from PiCN.ProgramLibs.NFNForwarder import NFNForwarder
 class cases_NFNForwarder(object):
     """Test the ICN Forwarder"""
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def get_encoder(self):
         """returns the encoder to be used """
 
@@ -52,7 +52,8 @@ class cases_NFNForwarder(object):
         #create test content
         name = Name("/test/data/object")
         test_content = Content(name, content="HelloWorld")
-        self.assertEqual(self.forwarder1.cs.find_content_object(name).content, test_content)
+        cs_fwd1 = self.forwarder1.data_structs.get('cs')
+        self.assertEqual(cs_fwd1.find_content_object(name).content, test_content)
 
         #create interest
         interest = Interest("/test/data/object")
@@ -89,7 +90,7 @@ class cases_NFNForwarder(object):
         testMgmtSock2.close()
         self.assertEqual(data.decode(),
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newforwardingrule OK:0\r\n")
-        self.assertEqual(self.forwarder1.fib.find_fib_entry(Name("/test/data")).faceid, 0)
+        self.assertEqual(self.forwarder1.icnlayer.fib.find_fib_entry(Name("/test/data")).faceid, 0)
 
         # new content
         testMgmtSock3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -103,7 +104,8 @@ class cases_NFNForwarder(object):
         #create test content
         name = Name("/test/data/object")
         test_content = Content(name, content="HelloWorld")
-        self.assertEqual(self.forwarder2.cs.find_content_object(name).content, test_content)
+        cs_fwd2 = self.forwarder2.data_structs.get('cs')
+        self.assertEqual(cs_fwd2.find_content_object(name).content, test_content)
 
         #create interest
         interest = Interest("/test/data/object")
@@ -116,7 +118,7 @@ class cases_NFNForwarder(object):
         content = self.encoder.decode(encoded_content)
         self.assertEqual(content, test_content)
         time.sleep(4)
-        self.assertEqual(len(self.forwarder1.pit.container), 0)
+        self.assertEqual(len(self.forwarder1.icnlayer.pit.container), 0)
 
     def test_NFNForwarder_simple_compute_two_nodes(self):
         """Test a simple forwarding scenario with one additional node forwarding the data"""
@@ -143,7 +145,7 @@ class cases_NFNForwarder(object):
         testMgmtSock2.close()
         self.assertEqual(data.decode(),
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newforwardingrule OK:0\r\n")
-        self.assertEqual(0, self.forwarder1.fib.find_fib_entry(Name("/lib/func")).faceid)
+        self.assertEqual(0, self.forwarder1.icnlayer.fib.find_fib_entry(Name("/lib/func")).faceid)
 
         #add function
         testMgmtSock3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -167,7 +169,7 @@ class cases_NFNForwarder(object):
         self.assertEqual("Hello World", content.content)
         self.assertEqual(name, content.name)
         time.sleep(2)
-        self.assertEqual(len(self.forwarder1.pit.container), 0)
+        self.assertEqual(len(self.forwarder1.icnlayer.pit.container), 0)
 
     def test_NFNForwarder_compute_param_two_nodes(self):
         """Test a simple forwarding scenario with one additional node forwarding the data"""
@@ -180,8 +182,8 @@ class cases_NFNForwarder(object):
         fid2 = self.forwarder2.linklayer.get_or_create_fid(("127.0.0.1", self.forwarder1_port), True)
 
         # register prefixes
-        self.forwarder1.fib.add_fib_entry(Name("/lib/func"), fid1, True)
-        self.forwarder2.fib.add_fib_entry(Name("/test"), fid2, True)
+        self.forwarder1.icnlayer.add_to_fib(Name("/lib/func"), fid1, True)
+        self.forwarder2.icnlayer.add_to_fib(Name("/test"), fid2, True)
 
         # add function
         testMgmtSock1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -210,12 +212,13 @@ class cases_NFNForwarder(object):
         # send interest
         self.testSock.sendto(encoded_interest, ("127.0.0.1", self.forwarder1_port))
         # receive content
+        self.testSock.settimeout(3)
         encoded_content, addr = self.testSock.recvfrom(8192)
         time.sleep(0.1)
         content: Content = self.encoder.decode(encoded_content)
         self.assertEqual("HELLOWORLD", content.content)
         self.assertEqual(name, content.name)
-        self.assertEqual(len(self.forwarder1.pit.container), 0)
+        self.assertEqual(len(self.forwarder1.icnlayer.pit.container), 0)
 
     def test_NFNForwarder_compute_subcomp_two_nodes(self):
         """Test a simple forwarding scenario with one additional node forwarding the data"""
@@ -228,8 +231,8 @@ class cases_NFNForwarder(object):
         fid2 = self.forwarder2.linklayer.get_or_create_fid(("127.0.0.1", self.forwarder1_port), True)
 
         # register prefixes
-        self.forwarder1.fib.add_fib_entry(Name("/lib/func"), fid1, True)
-        self.forwarder2.fib.add_fib_entry(Name("/test"), fid2, True)
+        self.forwarder1.icnlayer.add_to_fib(Name("/lib/func"), fid1, True)
+        self.forwarder2.icnlayer.add_to_fib(Name("/test"), fid2, True)
 
         # add function
         testMgmtSock1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -273,7 +276,7 @@ class cases_NFNForwarder(object):
         self.assertEqual("RESULT", content.content)
         self.assertEqual(name, content.name)
         time.sleep(4)
-        self.assertEqual(len(self.forwarder1.pit.container), 0)
+        self.assertEqual(len(self.forwarder1.icnlayer.pit.container), 0)
 
     def test_NFNForwarder_compute_subcomp_two_nodes_chunking_result(self):
         """Test a simple forwarding scenario with one additional node forwarding the data"""
@@ -286,8 +289,8 @@ class cases_NFNForwarder(object):
         fid2 = self.forwarder2.linklayer.get_or_create_fid(("127.0.0.1", self.forwarder1_port), True)
 
         # register prefixes
-        self.forwarder1.fib.add_fib_entry(Name("/lib/func"), fid1, True)
-        self.forwarder2.fib.add_fib_entry(Name("/test"), fid2, True)
+        self.forwarder1.icnlayer.add_to_fib(Name("/lib/func"), fid1, True)
+        self.forwarder2.icnlayer.add_to_fib(Name("/test"), fid2, True)
 
         # add function
         testMgmtSock1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -331,7 +334,7 @@ class cases_NFNForwarder(object):
         self.assertEqual('mdo:/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/c0;/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/c1;/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/c2;/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/c3:/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/m1', content.content)
         self.assertEqual(name, content.name)
         time.sleep(4)
-        self.assertEqual(len(self.forwarder1.pit.container), 0)
+        self.assertEqual(len(self.forwarder1.icnlayer.pit.container), 0)
 
 class test_NFNForwarder_SimplePacketEncoder(cases_NFNForwarder, unittest.TestCase):
     """Runs tests with the SimplePacketEncoder"""

@@ -10,8 +10,8 @@ from PiCN.Packets import Interest, Name
 class PendingInterstTableMemoryExact(BasePendingInterestTable):
     """in-memory Pending Interest Table using exact prefix matching"""
 
-    def __init__(self, manager: multiprocessing.Manager) -> None:
-        super().__init__(manager)
+    def __init__(self) -> None:
+        super().__init__()
 
     def add_pit_entry(self, name, faceid: int, interest: Interest = None, local_app = False):
         for pit_entry in self._container:

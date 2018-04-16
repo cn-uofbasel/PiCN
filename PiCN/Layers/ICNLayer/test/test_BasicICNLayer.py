@@ -19,9 +19,9 @@ class test_BasicICNLayer(unittest.TestCase):
         #setup icn_layer
         self.icn_layer = BasicICNLayer()
         self.manager = multiprocessing.Manager()
-        self.cs = ContentStoreMemoryExact(self.manager)
-        self.fib = ForwardingInformationBaseMemoryPrefix(self.manager)
-        self.pit = PendingInterstTableMemoryExact(self.manager)
+        self.cs = ContentStoreMemoryExact()
+        self.fib = ForwardingInformationBaseMemoryPrefix()
+        self.pit = PendingInterstTableMemoryExact()
         self.icn_layer.cs = self.cs
         self.icn_layer.fib = self.fib
         self.icn_layer.pit = self.pit
@@ -47,7 +47,7 @@ class test_BasicICNLayer(unittest.TestCase):
         #Add entry to the fib
         name = Name("/test/data")
         interest = Interest("/test/data")
-        self.icn_layer.fib.add_fib_entry(name, to_faceid, static=True)
+        self.icn_layer.add_to_fib(name, to_faceid, static=True)
 
         #forward entry
         self.queue1_icn_routing_up.put([from_faceid, interest])
@@ -79,7 +79,7 @@ class test_BasicICNLayer(unittest.TestCase):
         #Add entry to the fib
         name = Name("/test")
         interest = Interest("/test/data")
-        self.icn_layer.fib.add_fib_entry(name, to_faceid, static=True)
+        self.icn_layer.add_to_fib(name, to_faceid, static=True)
 
         #forward entry
         self.queue1_icn_routing_up.put([from_faceid, interest])
@@ -113,7 +113,7 @@ class test_BasicICNLayer(unittest.TestCase):
         name = Name("/test")
         interest1 = Interest("/test/data")
         interest2 = Interest("/test/data")
-        self.icn_layer.fib.add_fib_entry(name, to_faceid)
+        self.icn_layer.add_to_fib(name, to_faceid)
 
         # forward entry
         self.queue1_icn_routing_up.put([from_faceid1, interest1])
@@ -151,7 +151,7 @@ class test_BasicICNLayer(unittest.TestCase):
 
         #add content
         content = Content("/test/data")
-        self.icn_layer.cs.add_content_object(content)
+        self.icn_layer.add_to_cs(content)
 
         #request content
         self.queue1_icn_routing_up.put([from_faceid, interest])
@@ -173,11 +173,11 @@ class test_BasicICNLayer(unittest.TestCase):
         from_faceid = 2
         interest = Interest("/test/data/bla")
         name = Name("/test/data")
-        self.icn_layer.fib.add_fib_entry(name, to_faceid, static=True)
+        self.icn_layer.add_to_fib(name, to_faceid, static=True)
 
         #add content
         content = Content("/test/data")
-        self.icn_layer.cs.add_content_object(content)
+        self.icn_layer.add_to_cs(content)
 
         #request content
         self.queue1_icn_routing_up.put([from_faceid, interest])
@@ -211,7 +211,7 @@ class test_BasicICNLayer(unittest.TestCase):
         name = Name("/test/data")
         content = Content("/test/data")
 
-        self.icn_layer.pit.add_pit_entry(name, from_faceid)
+        self.icn_layer.add_to_pit(name, from_faceid, None, None)
 
         self.queue1_icn_routing_up.put([content_in_faceid, content])
 
@@ -232,8 +232,8 @@ class test_BasicICNLayer(unittest.TestCase):
         name = Name("/test/data")
         content = Content("/test/data")
 
-        self.icn_layer.pit.add_pit_entry(name, from_faceid1)
-        self.icn_layer.pit.add_pit_entry(name, from_faceid2)
+        self.icn_layer.add_to_pit(name, from_faceid1, None, False)
+        self.icn_layer.add_to_pit(name, from_faceid2, None, False)
 
         self.queue1_icn_routing_up.put([content_in_faceid, content])
 
@@ -263,8 +263,8 @@ class test_BasicICNLayer(unittest.TestCase):
         name = Name("/test/data")
         interest = Interest(name)
 
-        self.icn_layer.fib.add_fib_entry(name, to_faceid)
-        self.icn_layer.pit.add_pit_entry(name, from_faceid1, interest)
+        self.icn_layer.add_to_fib(name, to_faceid)
+        self.icn_layer.add_to_pit(name, from_faceid1, interest, False)
         self.assertEqual(len(self.icn_layer.pit.container), 1)
         self.assertEqual(self.icn_layer.pit.container[0].name, name)
 
@@ -324,8 +324,8 @@ class test_BasicICNLayer(unittest.TestCase):
         name2 = Name("/data/test")
         content2 = Content(name2, "Goodbye")
 
-        self.cs.add_content_object(content1)
-        self.cs.add_content_object(content2, static=True)
+        self.icn_layer.add_to_cs(content1)
+        self.icn_layer.add_to_cs(content2, static=True)
 
         self.assertEqual(len(self.icn_layer.cs.container), 2)
         self.assertEqual(self.icn_layer.cs.container[0].content, content1)
@@ -366,8 +366,8 @@ class test_BasicICNLayer(unittest.TestCase):
         self.icn_layer.start_process()
         faceid = 1
         n = Name("/test/data")
-        self.icn_layer._pit.add_pit_entry(n, faceid)
-        self.assertEqual(len(self.icn_layer._pit.container), 1)
+        self.icn_layer.add_to_pit(n, faceid, None, None)
+        self.assertEqual(len(self.icn_layer.pit.container), 1)
         c = Content(n, "HelloWorld")
         self.icn_layer.queue_from_higher.put([0, c])
         try:
@@ -401,8 +401,8 @@ class test_BasicICNLayer(unittest.TestCase):
         faceid = -1
         from_faceid = 1
         n = Name("/test/data")
-        self.icn_layer._pit.add_pit_entry(n, faceid, local_app=True)
-        self.assertEqual(len(self.icn_layer._pit.container), 1)
+        self.icn_layer.add_to_pit(n, faceid, interest=None, local_app=True)
+        self.assertEqual(len(self.icn_layer.pit.container), 1)
         c = Content(n, "HelloWorld")
         self.icn_layer.queue_from_lower.put([from_faceid, c])
         try:
@@ -422,7 +422,7 @@ class test_BasicICNLayer(unittest.TestCase):
         faceid = 1
         n = Name("/test/data")
         i = Interest(n)
-        self.icn_layer._fib.add_fib_entry(n, faceid, True)
+        self.icn_layer.add_to_fib(n, faceid, True)
         self.icn_layer.queue_from_higher.put([0, i])
         try:
             to_faceid, data = self.icn_layer.queue_to_lower.get(timeout=2.0)
@@ -430,8 +430,8 @@ class test_BasicICNLayer(unittest.TestCase):
             self.fail()
         self.assertEqual(to_faceid, faceid)
         self.assertEqual(i, data)
-        self.assertEqual(self.icn_layer._pit.container[0].interest, i)
-        self.assertTrue(self.icn_layer._pit.container[0].local_app[0])
+        self.assertEqual(self.icn_layer.pit.container[0].interest, i)
+        self.assertTrue(self.icn_layer.pit.container[0].local_app[0])
 
     def test_ICNLayer_interest_from_app_layer_pit(self):
         """Test sending and interest message from APP with a PIT entry --> interest not for higher layer"""
@@ -445,9 +445,9 @@ class test_BasicICNLayer(unittest.TestCase):
         from_faceid = 2
         n = Name("/test/data")
         i = Interest(n)
-        self.icn_layer._fib.add_fib_entry(n, faceid, True)
-        self.icn_layer._pit.add_pit_entry(n, from_faceid, i, local_app=False)
-        self.assertFalse(self.icn_layer._pit.container[0].local_app[0])
+        self.icn_layer.add_to_fib(n, faceid, True)
+        self.icn_layer.add_to_pit(n, from_faceid, i, local_app=False)
+        self.assertFalse(self.icn_layer.pit.container[0].local_app[0])
         self.icn_layer.queue_from_higher.put([0, i])
         try:
             to_faceid, data = self.icn_layer.queue_to_lower.get(timeout=2.0)
@@ -455,8 +455,8 @@ class test_BasicICNLayer(unittest.TestCase):
             self.fail()
         self.assertEqual(to_faceid, faceid)
         self.assertEqual(i, data)
-        self.assertEqual(self.icn_layer._pit.container[0].interest, i)
-        self.assertFalse(self.icn_layer._pit.container[0].local_app[0]) #Just forward, not from local app
+        self.assertEqual(self.icn_layer.pit.container[0].interest, i)
+        self.assertFalse(self.icn_layer.pit.container[0].local_app[0]) #Just forward, not from local app
 
     def test_ICNLayer_interest_to_app_layer_no_pit(self):
         """Test sending and interest message from APP with no PIT entry"""
@@ -470,14 +470,14 @@ class test_BasicICNLayer(unittest.TestCase):
         from_faceid = 2
         n = Name("/test/data")
         i = Interest(n)
-        self.icn_layer._fib.add_fib_entry(n, faceid, True)
+        self.icn_layer.add_to_fib(n, faceid, True)
         self.icn_layer.queue_from_lower.put([from_faceid, i])
         try:
             data = self.icn_layer.queue_to_higher.get(timeout=2.0)
         except:
             self.fail()
         self.assertEqual(data[1], i)
-        self.assertEqual(self.icn_layer._pit.container[0].interest, i)
+        self.assertEqual(self.icn_layer.pit.container[0].interest, i)
 
     def test_ICNLayer_interest_to_app_layer_pit(self):
         """Test sending and interest message from APP with a PIT entry"""
@@ -491,8 +491,8 @@ class test_BasicICNLayer(unittest.TestCase):
         from_faceid = 2
         n = Name("/test/data")
         i = Interest(n)
-        self.icn_layer._fib.add_fib_entry(n, faceid, True)
-        self.icn_layer._pit.add_pit_entry(n, from_faceid, i, local_app=False)
+        self.icn_layer.add_to_fib(n, faceid, True)
+        self.icn_layer.add_to_pit(n, from_faceid, i, local_app=False)
         self.icn_layer.queue_from_lower.put([from_faceid, i])
         time.sleep(1)
         self.assertTrue(self.icn_layer.queue_to_higher.empty()) #--> deduplication by pit entry
@@ -510,8 +510,8 @@ class test_BasicICNLayer(unittest.TestCase):
         n = Name("/test/data")
         i = Interest(n)
         c = Content(n, "Hello World")
-        self.icn_layer._fib.add_fib_entry(n, faceid, True)
-        self.icn_layer._cs.add_content_object(c)
+        self.icn_layer.add_to_fib(n, faceid, True)
+        self.icn_layer.add_to_cs(c)
         self.icn_layer.queue_from_lower.put([from_faceid, i])
         try:
             to_faceid, data = self.icn_layer.queue_to_lower.get(timeout=2.0)
@@ -562,7 +562,7 @@ class test_BasicICNLayer(unittest.TestCase):
         i1 = Interest(n1)
         fid1 = 1
         nack1 = Nack(n1, NackReason.NO_ROUTE, interest=i1)
-        self.pit.add_pit_entry(n1, fid1, i1)
+        self.icn_layer.add_to_pit(n1, fid1, i1, False)
         self.icn_layer.queue_from_lower.put([2, nack1])
         try:
             data = self.icn_layer.queue_to_lower.get(timeout=2.0)
@@ -581,9 +581,9 @@ class test_BasicICNLayer(unittest.TestCase):
         to_fib2 = 3
         to_fib3 = 4
         nack1 = Nack(n1, NackReason.NO_ROUTE, interest=i1)
-        self.pit.add_pit_entry(n1, from_fid, i1)
-        self.fib.add_fib_entry(Name("/test"), to_fib2)
-        self.fib.add_fib_entry(Name("/test/data"), to_fib3)
+        self.icn_layer.add_to_pit(n1, from_fid, i1, None)
+        self.icn_layer.add_to_fib(Name("/test"), to_fib2)
+        self.icn_layer.add_to_fib(Name("/test/data"), to_fib3)
         self.icn_layer.queue_from_lower.put([to_fib1, nack1])
         try:
             data = self.icn_layer.queue_to_lower.get(timeout=2.0)
