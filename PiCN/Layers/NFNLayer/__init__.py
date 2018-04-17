@@ -4,4 +4,4 @@
   * No Higher Layer, use queues to higher and from higher to buffer processes in the pool
 """
 
-from .BasicNFNLayer import BasicNFNLayer
+from .BasicNFNLayer_deprecated import BasicNFNLayer_deprecated
