@@ -31,7 +31,7 @@ class NFNComputationList(BaseNFNComputationTable):
     def get_ready_computations(self):
         return list(filter(lambda n: n.ready_to_continue() == True, self.container))
 
-    def ageing(self):
+    def ageing(self):  #TODO, what to do with NACKs for removed computations
         comp_to_remove = []
         requests = []
         for comp in self.container:
