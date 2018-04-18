@@ -6,12 +6,12 @@ import unittest
 from PiCN.Packets import Name, Content
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationList
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationTableEntry
-from PiCN.Layers.NFNLayer.R2C import SimpleR2CClient
+from PiCN.Layers.NFNLayer.R2C import TimeoutR2CClient
 
 class test_NFNComputationList(unittest.TestCase):
 
     def setUp(self):
-        self.r2cclient = SimpleR2CClient()
+        self.r2cclient = TimeoutR2CClient()
         self.computationList: NFNComputationList = NFNComputationList(self.r2cclient)
 
     def tearDown(self):

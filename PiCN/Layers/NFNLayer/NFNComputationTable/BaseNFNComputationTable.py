@@ -7,7 +7,7 @@ from enum import Enum
 from typing import List
 from PiCN.Packets import Content, Name
 
-from PiCN.Layers.NFNLayer.R2C import BaseR2CClient, SimpleR2CClient
+from PiCN.Layers.NFNLayer.R2C import BaseR2CClient, TimeoutR2CClient
 
 class NFNComputationState(Enum):
     START = 0
@@ -38,7 +38,7 @@ class NFNComputationTableEntry(object):
 
     def __init__(self, name: Name, r2cclient: BaseR2CClient=None):
         self.original_name: Name = name # original name of the computation
-        self.r2cclient: BaseR2CClient = r2cclient if r2cclient is not None else SimpleR2CClient # r2c clients used for ageing
+        self.r2cclient: BaseR2CClient = r2cclient if r2cclient is not None else TimeoutR2CClient # r2c clients used for ageing
         self.awaiting_data: List[NFNAwaitListEntry] = [] # data that are awaited by the computation
         self.available_data: List[Content] = [] # data that are required and now available
         self.comp_state: NFNComputationState = NFNComputationState.START # marker where to continue this computation after requests

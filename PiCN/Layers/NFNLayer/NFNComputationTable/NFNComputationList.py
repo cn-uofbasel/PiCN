@@ -43,5 +43,3 @@ class NFNComputationList(BaseNFNComputationTable):
             else:
                 #issue r2c requests
                 pass
-
-

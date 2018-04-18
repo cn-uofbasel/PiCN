@@ -5,7 +5,7 @@ from typing import List
 from PiCN.Layers.NFNLayer.R2C import BaseR2CClient
 from PiCN.Packets import Name
 
-class SimpleR2CClient(BaseR2CClient):
+class TimeoutR2CClient(BaseR2CClient):
 
     def R2C_selection(self, names: List[Name]) -> List[Name]:
         return_list = []
