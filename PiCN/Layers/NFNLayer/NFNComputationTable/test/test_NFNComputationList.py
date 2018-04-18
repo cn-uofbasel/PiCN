@@ -103,7 +103,8 @@ class test_NFNComputationList(unittest.TestCase):
         #wait for entry to timeout
         time.sleep(2)
         res = self.computationList.container[0].ageing()
-        self.assertEqual(res, [request_name]) # ageing returns list of names, for which timeout prevention is required
+        compare_name = self.r2cclient.R2C_create_message(request_name)
+        self.assertEqual(res, [request_name, compare_name]) # ageing returns list of names, for which timeout prevention is required
 
     def test_computation_table_entry_ageing_nfn_multiple_awaits(self):
         """test the ageing of await list with nfn entries"""
@@ -120,4 +121,6 @@ class test_NFNComputationList(unittest.TestCase):
         #wait for entry to timeout
         time.sleep(2)
         res = self.computationList.container[0].ageing()
-        self.assertEqual(res, [request_name, request_name2]) # ageing returns list of names, for which timeout prevention is required
+        compare_name = self.r2cclient.R2C_create_message(request_name)
+        compare_name2 = self.r2cclient.R2C_create_message(request_name2)
+        self.assertEqual(res, [request_name, request_name2, compare_name, compare_name2]) # ageing returns list of names, for which timeout prevention is required

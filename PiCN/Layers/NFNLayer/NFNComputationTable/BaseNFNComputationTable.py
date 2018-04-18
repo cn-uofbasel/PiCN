@@ -89,8 +89,8 @@ class NFNComputationTableEntry(object):
             self.awaiting_data.remove(al_entry)
             al_entry.times = time.time()
             self.awaiting_data.append(al_entry)
-        #todo: add requests to awaiting data
-        return required_requests
+        r2c_requests = list(map(lambda n: self.r2cclient.R2C_create_message(n), required_requests))
+        return required_requests + r2c_requests
 
     def __eq__(self, other):
         return self.original_name == other.original_name
