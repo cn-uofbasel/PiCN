@@ -103,7 +103,7 @@ class BaseNFNComputationTable(object):
 
     def __init__(self, r2cclient: BaseR2CClient):
         self.r2cclient = r2cclient
-        self.container: List[BaseNFNComputationTable] = []
+        self.container: List[NFNComputationTableEntry] = []
 
     @abc.abstractmethod
     def add_computation(self, name):

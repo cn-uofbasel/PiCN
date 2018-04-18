@@ -124,3 +124,75 @@ class test_NFNComputationList(unittest.TestCase):
         compare_name = self.r2cclient.R2C_create_message(request_name)
         compare_name2 = self.r2cclient.R2C_create_message(request_name2)
         self.assertEqual(res, [request_name, request_name2, compare_name, compare_name2]) # ageing returns list of names, for which timeout prevention is required
+
+    def test_computation_table_ageing_nfn_requests(self):
+        """test the ageing of the computation table using nfn requests"""
+        name = Name("/test/NFN")
+        name2 = Name("/data/NFN")
+
+        self.computationList.add_computation(name)
+        self.computationList.add_computation(name2)
+
+        self.computationList.container[0].timeout = 1.0
+        self.computationList.container[1].timeout = 1.0
+
+        request_name = Name("/request/NFN")
+        request_name1 = Name("/request1/NFN")
+        request_name2 = Name("/request2/NFN")
+
+        self.computationList.container[0].add_name_to_await_list(request_name)
+        self.computationList.container[0].add_name_to_await_list(request_name1)
+        self.computationList.container[1].add_name_to_await_list(request_name2)
+
+        self.assertEqual(len(self.computationList.container), 2)
+        self.assertEqual(len(self.computationList.container[0].awaiting_data), 2)
+        self.assertEqual(len(self.computationList.container[1].awaiting_data), 1)
+
+        res = self.computationList.ageing()
+        self.assertEqual(res, [])
+        time.sleep(2)
+
+        res = self.computationList.ageing()
+
+        self.assertEqual(len(self.computationList.container), 2)
+        self.assertEqual(len(self.computationList.container[0].awaiting_data), 2)
+        self.assertEqual(len(self.computationList.container[1].awaiting_data), 1)
+
+        self.assertEqual(res, [request_name, request_name1,
+                               self.r2cclient.R2C_create_message(request_name),
+                               self.r2cclient.R2C_create_message(request_name1),
+                               request_name2, self.r2cclient.R2C_create_message(request_name2)])
+
+    def test_computation_table_ageing_mixed_requests(self):
+        """test the ageing of the computation table using nfn and non nfn requests"""
+        name = Name("/test/NFN")
+        name2 = Name("/data/NFN")
+
+        self.computationList.add_computation(name)
+        self.computationList.add_computation(name2)
+
+        self.computationList.container[0].timeout = 1.0
+        self.computationList.container[1].timeout = 1.0
+
+        request_name = Name("/request/NFN")
+        request_name1 = Name("/request1")
+        request_name2 = Name("/request2/NFN")
+
+        self.computationList.container[0].add_name_to_await_list(request_name)
+        self.computationList.container[0].add_name_to_await_list(request_name1)
+        self.computationList.container[1].add_name_to_await_list(request_name2)
+
+        self.assertEqual(len(self.computationList.container), 2)
+        self.assertEqual(len(self.computationList.container[0].awaiting_data), 2)
+        self.assertEqual(len(self.computationList.container[1].awaiting_data), 1)
+
+        res = self.computationList.ageing()
+        self.assertEqual(res, [])
+        time.sleep(2)
+
+        res = self.computationList.ageing()
+
+        self.assertEqual(len(self.computationList.container), 1)
+        self.assertEqual(len(self.computationList.container[0].awaiting_data), 1)
+
+        self.assertEqual(res, [request_name2, self.r2cclient.R2C_create_message(request_name2)])

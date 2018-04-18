@@ -33,13 +33,15 @@ class NFNComputationList(BaseNFNComputationTable):
 
     def ageing(self):
         comp_to_remove = []
-        ts = time.time()
+        requests = []
         for comp in self.container:
-            r2c_requests = comp.ageing()
-            if r2c_requests == []:
+            required_requests = comp.ageing()
+            if required_requests == []:
                 continue
-            if r2c_requests == None:
+            if required_requests == None:
                 comp_to_remove.append(comp) #remove comp if there was a timeout that should not be refreshed
             else:
-                #issue r2c requests
-                pass
+                requests += required_requests
+        for c in comp_to_remove:
+            self.container.remove(c)
+        return requests
