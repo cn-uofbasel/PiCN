@@ -125,8 +125,8 @@ class test_NFNComputationList(unittest.TestCase):
         compare_name2 = self.r2cclient.R2C_create_message(request_name2)
         self.assertEqual(res, [request_name, request_name2, compare_name, compare_name2]) # ageing returns list of names, for which timeout prevention is required
 
-    def test_computation_table_ageing_nfn_requests(self):
-        """test the ageing of the computation table using nfn requests"""
+    def test_computation_table_ageing_nfn_requests_and_ready_computations(self):
+        """test the ageing of the computation table using nfn requests and check ready computations"""
         name = Name("/test/NFN")
         name2 = Name("/data/NFN")
 
@@ -163,8 +163,17 @@ class test_NFNComputationList(unittest.TestCase):
                                self.r2cclient.R2C_create_message(request_name1),
                                request_name2, self.r2cclient.R2C_create_message(request_name2)])
 
-    def test_computation_table_ageing_mixed_requests(self):
-        """test the ageing of the computation table using nfn and non nfn requests"""
+        self.computationList.push_data(Content(request_name))
+        ready_comps = self.computationList.get_ready_computations()
+        self.assertEqual(ready_comps, [])
+
+        self.computationList.push_data(Content(request_name1))
+        ready_comps = self.computationList.get_ready_computations()
+        self.assertEqual(len(ready_comps), 1)
+        self.assertEqual(ready_comps[0].original_name, name)
+
+    def test_computation_table_ageing_mixed_requests_and_ready_computations(self):
+        """test the ageing of the computation table using nfn and non nfn requests, and check ready computations"""
         name = Name("/test/NFN")
         name2 = Name("/data/NFN")
 
@@ -196,3 +205,8 @@ class test_NFNComputationList(unittest.TestCase):
         self.assertEqual(len(self.computationList.container[0].awaiting_data), 1)
 
         self.assertEqual(res, [request_name2, self.r2cclient.R2C_create_message(request_name2)])
+
+        self.computationList.push_data(Content(request_name2))
+        ready_comps = self.computationList.get_ready_computations()
+        self.assertEqual(len(ready_comps), 1)
+        self.assertEqual(ready_comps[0].original_name, name2)
