@@ -9,11 +9,11 @@ from PiCN.Layers.ICNLayer.ContentStore import ContentTree
 class ContentStorePrefixMatch(BaseContentStore):
     """ An in-memory content store with prefix matching"""
 
-    def __init__(self, manager: multiprocessing.Manager = None):
-        self._container:ContentTree = ContentTree() # TODO - this is not yet multiprocessing capable!
+    def __init__(self):
+        self._container:ContentTree = ContentTree()
 
     def find_content_object(self, name: Name) -> ContentStoreEntry:
-        # todo
+        # TODO
         return None
 
     def add_content_object(self, content: Content, static: bool=False):
