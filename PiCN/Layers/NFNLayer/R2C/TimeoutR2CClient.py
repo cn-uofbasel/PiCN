@@ -18,3 +18,11 @@ class TimeoutR2CClient(BaseR2CClient):
 
     def R2C_handle_reply(self, name: Name):
         pass
+
+    def R2C_create_message(self, name: Name):
+        new_name = Name(name.components)
+        new_name.components.remove(b"NFN")
+        new_name.components.append(b"R2C")
+        new_name.components.append(b"KEEPALIVE")
+        new_name.components.append(b"NFN")
+        return new_name
