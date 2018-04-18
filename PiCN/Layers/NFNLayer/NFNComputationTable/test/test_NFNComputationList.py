@@ -79,7 +79,7 @@ class test_NFNComputationList(unittest.TestCase):
         res = self.computationList.container[0].ageing()
         self.assertIsNone(res) #computation requirements could not be resolved, ageging returns None
 
-    def test_computation_table_entry_ageing_nfn(self):
+    def test_computation_table_entry_ageing_nfn_single_awaits(self):
         """test the ageing of await list with nfn entries"""
         name = Name("/test/NFN")
         request_name = Name("/request/NFN")
@@ -93,3 +93,20 @@ class test_NFNComputationList(unittest.TestCase):
         time.sleep(2)
         res = self.computationList.container[0].ageing()
         self.assertEqual(res, [request_name]) # ageing returns list of names, for which timeout prevention is required
+
+    def test_computation_table_entry_ageing_nfn_multiple_awaits(self):
+        """test the ageing of await list with nfn entries"""
+        name = Name("/test/NFN")
+        request_name = Name("/request/NFN")
+        request_name2 = Name("/request2/NFN")
+        self.computationList.add_computation(name)
+        self.computationList.container[0].timeout = 1
+        self.computationList.container[0].add_name_to_await_list(request_name)
+        self.computationList.container[0].add_name_to_await_list(request_name2)
+        self.assertEqual(len(self.computationList.container[0].awaiting_data), 2)
+        res = self.computationList.container[0].ageing()
+        self.assertEqual(res, []) #nothing to do, ageing returns empty list
+        #wait for entry to timeout
+        time.sleep(2)
+        res = self.computationList.container[0].ageing()
+        self.assertEqual(res, [request_name, request_name2]) # ageing returns list of names, for which timeout prevention is required

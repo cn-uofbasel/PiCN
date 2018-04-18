@@ -24,7 +24,10 @@ class NFNAwaitListEntry(object):
         self.time_stamp = time.time()
 
     def __eq__(self, other):
-        return self.name == other.name
+        if type(other) == NFNAwaitListEntry:
+            return self.name == other.name
+        elif type(other) == Name:
+            return self.name == other
 
 class NFNComputationTableEntry(object):
     """Data Structure storing information about a Running Computation
@@ -79,9 +82,11 @@ class NFNComputationTableEntry(object):
                     return None
                 else:
                     required_requests.append(al_entry.name)
-                    self.awaiting_data.remove(al_entry)
-                    al_entry.time_stamp = time.time()
-                    self.awaiting_data.append(al_entry)
+
+        for al_entry in required_requests:
+            self.awaiting_data.remove(al_entry)
+            al_entry.time_stamp = time.time()
+            self.awaiting_data.append(al_entry)
         return  required_requests
 
     def __eq__(self, other):
