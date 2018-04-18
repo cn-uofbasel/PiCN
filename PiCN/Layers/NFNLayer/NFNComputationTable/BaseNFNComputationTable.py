@@ -7,6 +7,7 @@ from enum import Enum
 from typing import List
 from PiCN.Packets import Content, Name
 
+from PiCN.Layers.NFNLayer.R2C import BaseR2CClient, SimpleR2CClient
 
 class NFNComputationState(Enum):
     START = 0
@@ -32,17 +33,17 @@ class NFNAwaitListEntry(object):
 class NFNComputationTableEntry(object):
     """Data Structure storing information about a Running Computation
     :param name: ICN-Name of the computation
+    :param r2cclient: r2cclient handler that selects and handles messages to be handled
     """
 
-    def __init__(self, name: Name):
+    def __init__(self, name: Name, r2cclient: BaseR2CClient=None):
         self.original_name: Name = name # original name of the computation
+        self.r2cclient: BaseR2CClient = r2cclient if r2cclient is not None else SimpleR2CClient # r2c clients used for ageing
         self.awaiting_data: List[NFNAwaitListEntry] = [] # data that are awaited by the computation
         self.available_data: List[Content] = [] # data that are required and now available
         self.comp_state: NFNComputationState = NFNComputationState.START # marker where to continue this computation after requests
         self.time_stamp = time.time() # time at which the computation was started
-
         self.timeout = 4.0 #timeout before a request expires
-
 
     def add_name_to_await_list(self, name):
         """adds a name to the list of awaited data
@@ -62,10 +63,11 @@ class NFNComputationTableEntry(object):
         self.awaiting_data.remove(NFNAwaitListEntry(content.name))
 
     def ready_to_continue(self) -> bool:
-        """Returns if all required data were received
+        """Returns if all required data were received, excludes R2C
         :return True if all data were received, else false
         """
-        if len(self.awaiting_data) == 0:
+        l = list(filter(lambda n: b"R2C" not in n.name.components, self.awaiting_data))
+        if len(l) == 0:
             return True
         else:
             return False
@@ -75,27 +77,32 @@ class NFNComputationTableEntry(object):
         :return A list of entries for which timeout reqests must be sent and [] if reqest is fine, None if entry must be deleted
         """
         ts = time.time()
-        required_requests = []
+        possible_requests = []
         for al_entry in self.awaiting_data:
             if ts > self.timeout + al_entry.time_stamp:
-                if not al_entry.use_timeout_requests:
-                    return None
-                else:
-                    required_requests.append(al_entry.name)
-
-        for al_entry in required_requests:
+                possible_requests.append(al_entry.name)
+        required_requests = self.r2cclient.R2C_selection(possible_requests)
+        if required_requests == None:
+            return None
+        for name in required_requests:
+            al_entry = list(filter(lambda n: n.name == name, self.awaiting_data))[0]
             self.awaiting_data.remove(al_entry)
-            al_entry.time_stamp = time.time()
+            al_entry.times = time.time()
             self.awaiting_data.append(al_entry)
-        return  required_requests
+        #todo: add requests to awaiting data
+        return required_requests
 
     def __eq__(self, other):
         return self.original_name == other.original_name
 
 
 class BaseNFNComputationTable(object):
+    """BaseNFNComputationTable to handle running computations
+    :param r2cclient: R2CClient to handle ageing
+    """
 
-    def __init__(self):
+    def __init__(self, r2cclient: BaseR2CClient):
+        self.r2cclient = r2cclient
         self.container: List[BaseNFNComputationTable] = []
 
     @abc.abstractmethod

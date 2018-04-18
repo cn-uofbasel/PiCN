@@ -6,12 +6,13 @@ import unittest
 from PiCN.Packets import Name, Content
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationList
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationTableEntry
-from PiCN.Layers.NFNLayer.NFNComputationTable import NFNAwaitListEntry
+from PiCN.Layers.NFNLayer.R2C import SimpleR2CClient
 
 class test_NFNComputationList(unittest.TestCase):
 
     def setUp(self):
-        self.computationList: NFNComputationList = NFNComputationList()
+        self.r2cclient = SimpleR2CClient()
+        self.computationList: NFNComputationList = NFNComputationList(self.r2cclient)
 
     def tearDown(self):
         pass
@@ -63,6 +64,16 @@ class test_NFNComputationList(unittest.TestCase):
         ready_comps = self.computationList.get_ready_computations()
         self.assertEqual(len(ready_comps), 3)
         self.assertEqual(ready_comps, self.computationList.container[:3])
+
+    def test_ready_computations_excludes_r2c(self):
+        """Test if the list of ready computations excludes R2C"""
+        name = Name("/test/NFN")
+        request_name = Name("/test/R2C")
+        self.computationList.add_computation(name)
+        self.computationList.container[0].add_name_to_await_list(request_name)
+        self.assertEqual(len(self.computationList.container[0].awaiting_data), 1)
+        ready_comps = self.computationList.get_ready_computations()
+        self.assertEqual(ready_comps, [NFNComputationTableEntry(name)])
 
     def test_computation_table_entry_ageing_no_nfn(self):
         """test the ageing of await list with non nfn entries"""

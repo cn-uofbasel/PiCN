@@ -1,17 +1,21 @@
 """Implementation of the NFNComputationTable using a list"""
 
-from .BaseNFNComputationTable import BaseNFNComputationTable, NFNComputationTableEntry
+import time
+
+from PiCN.Layers.NFNLayer.NFNComputationTable.BaseNFNComputationTable import BaseNFNComputationTable, NFNComputationTableEntry
+from PiCN.Layers.NFNLayer.R2C import BaseR2CClient
 
 class NFNComputationList(BaseNFNComputationTable):
     """Implementation of the NFNComputationTable using a list"""
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, r2cclient: BaseR2CClient):
+        super().__init__(r2cclient)
+
 
     def add_computation(self, name):
         if self.is_comp_running(name):
             return
-        self.container.append(NFNComputationTableEntry(name))
+        self.container.append(NFNComputationTableEntry(name, self.r2cclient))
 
     def is_comp_running(self, name):
         l = list(map(lambda n: n.original_name, self.container))
@@ -26,3 +30,18 @@ class NFNComputationList(BaseNFNComputationTable):
 
     def get_ready_computations(self):
         return list(filter(lambda n: n.ready_to_continue() == True, self.container))
+
+    def ageing(self):
+        comp_to_remove = []
+        ts = time.time()
+        for comp in self.container:
+            r2c_requests = comp.ageing()
+            if r2c_requests == []:
+                continue
+            if r2c_requests == None:
+                comp_to_remove.append(comp) #remove comp if there was a timeout that should not be refreshed
+            else:
+                #issue r2c requests
+                pass
+
+
