@@ -1,7 +1,6 @@
-""" Data structure to organize content objects in a tree reflecting their namespace hierarchy """
+""" Data structure to organize named objects in a tree reflecting their namespace hierarchy """
 
 from PiCN.Packets import Content, Name
-from PiCN.Layers.ICNLayer.ContentStore import ContentStoreEntry
 
 from functools import reduce
 from collections import defaultdict
@@ -11,7 +10,8 @@ from typing import List
 
 class ContentTree():
     """
-    Data structure to organize content objects in a tree reflecting their namespace hierarchy.
+    Data structure to organize objects with property 'name' (of type PiCN.Packets.Name) in a tree reflecting their
+    namespace hierarchy (e.g. Content, ContentStoreEntry). Exact and prefix lookup is possible.
     """
 
     def __init__(self):
@@ -39,10 +39,10 @@ class ContentTree():
         """
         return json.dumps(self.__tree)
 
-    def insert(self, content: Content) -> None:
+    def insert(self, content) -> None:
         """
-        Insert a content object
-        :param content: Content object to insert
+        Insert an object
+        :param content: Object to insert (must have a property 'name' of type PiCN.Packets.Name)
         :return: None
         """
         path = content.name.components
@@ -50,8 +50,8 @@ class ContentTree():
 
     def remove(self, name: Name) -> None:
         """
-        Remove a content object
-        :param name: Name of content object to remove
+        Remove an object
+        :param name: Name of object to remove
         :return: None
         """
         # TODO: this only removes the leaf (=value) but not nodes (=nested dicts) which are no longer used (if any).
@@ -62,7 +62,7 @@ class ContentTree():
         """
         Lookup (only exact matches are returned)
         :param name: Name to lookup
-        :return: Content Object or None
+        :return: Object or None
         """
         path = name.components
         try:
@@ -72,9 +72,9 @@ class ContentTree():
 
     def prefix_lookup(self, name: Name) -> Content:
         """
-        Find any content object which has a given prefix (or exact match)
+        Find any object which has a given prefix (or exact match)
         :param name: name/prefix
-        :return: Content Object or None
+        :return: Object or None
         """
         def traverse(tree):
             if tree["leaf"] is not None:
