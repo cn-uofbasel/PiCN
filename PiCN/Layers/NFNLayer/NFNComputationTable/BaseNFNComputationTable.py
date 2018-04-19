@@ -8,6 +8,7 @@ from typing import List
 from PiCN.Packets import Content, Name, Interest
 
 from PiCN.Layers.NFNLayer.R2C import BaseR2CClient, TimeoutR2CClient
+from PiCN.Layers.NFNLayer.Parser import AST
 
 class NFNComputationState(Enum):
     START = 0
@@ -33,13 +34,16 @@ class NFNAwaitListEntry(object):
 class NFNComputationTableEntry(object):
     """Data Structure storing information about a Running Computation
     :param name: ICN-Name of the computation
+    :param interest: the original Interest message
+    :param ast: name parsed and transformed to Abstract Syntax Tree
     :param r2cclient: r2cclient handler that selects and handles messages to be handled
     """
 
-    def __init__(self, name: Name, interest: Interest=None, r2cclient: BaseR2CClient=None):
+    def __init__(self, name: Name, interest: Interest=None, ast: AST=None, r2cclient: BaseR2CClient=None):
         self.original_name: Name = name # original name of the computation
-        self.r2cclient: BaseR2CClient = r2cclient if r2cclient is not None else TimeoutR2CClient # r2c clients used for ageing
         self.interest = interest
+        self.ast = ast
+        self.r2cclient: BaseR2CClient = r2cclient if r2cclient is not None else TimeoutR2CClient # r2c clients used for ageing
         self.awaiting_data: List[NFNAwaitListEntry] = [] # data that are awaited by the computation
         self.available_data: List[Content] = [] # data that are required and now available
         self.comp_state: NFNComputationState = NFNComputationState.START # marker where to continue this computation after requests
@@ -109,10 +113,11 @@ class BaseNFNComputationTable(object):
         self.container: List[NFNComputationTableEntry] = []
 
     @abc.abstractmethod
-    def add_computation(self, name: Name, interest: Interest):
+    def add_computation(self, name: Name, interest: Interest, ast: AST=None):
         """add a computation to the Computation table (i.e. start a new computation)
         :param name: icn-name of the computation
         :param interest: the original interest message
+        :param AST: abstract syntax tree of the computation
         """
 
     @abc.abstractmethod
@@ -120,6 +125,25 @@ class BaseNFNComputationTable(object):
         """checks if a name was already added to the list of running computations
         :param name: name to check
         :return True if computation was already added, else false
+        """
+
+    @abc.abstractmethod
+    def get_computation(self, name: Name) -> NFNComputationTableEntry:
+        """Find a NFNComputationTableEntry
+        :param name: Name of the computation for which a Entry should be returned
+        :return The NFNComputationEntry corresponding to the name
+        """
+
+    @abc.abstractmethod
+    def remove_computation(self, name: Name):
+        """Removes a NFNComputationEntry from the container
+        :param name: Name of the Computation to be removed
+        """
+
+    @abc.abstractmethod
+    def append_computation(self, entry: NFNComputationTableEntry):
+        """Appends a NFNComputationTableEntry if it is not already available in the container
+        :param entry: the NFNComputationTableEntry to be appended
         """
 
     @abc.abstractmethod

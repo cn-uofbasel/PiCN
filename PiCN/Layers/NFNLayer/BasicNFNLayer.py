@@ -9,6 +9,9 @@ from PiCN.Layers.NFNLayer.NFNComputationTable import BaseNFNComputationTable
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationList
 from PiCN.Layers.NFNLayer.NFNExecutor import BaseNFNExecutor
 from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
+from PiCN.Layers.NFNLayer.NFNOptimizer import BaseNFNOptimizer
+from PiCN.Layers.NFNLayer.NFNOptimizer import ToDataFirstOptimizer
+from PiCN.Layers.NFNLayer.R2C import TimeoutR2CClient
 
 class BasicNFNLayer(LayerProcess):
     """Basic NFN Layer Implementation"""
@@ -18,8 +21,11 @@ class BasicNFNLayer(LayerProcess):
         super().__init__("NFN-Layer", log_level=log_level)
         self.icn_data_structs = icn_data_structs
         self.executors = executors
-        self.computation_table: BaseNFNComputationTable = NFNComputationList if computationTable == None else computationTable
+        self.r2cclient = TimeoutR2CClient()
+        self.computation_table: BaseNFNComputationTable = NFNComputationList(self.r2cclient) \
+            if computationTable == None else computationTable
         self.parser: DefaultNFNParser = DefaultNFNParser()
+        self.optimizer_t: type(BaseNFNOptimizer) = ToDataFirstOptimizer
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         """handle incomming data from the lower layer """
@@ -40,10 +46,21 @@ class BasicNFNLayer(LayerProcess):
         if interest.name.components[-1] != b"NFN": #send non NFN interests back
             self.queue_to_lower.put(interest)
             return
-
-        self.computation_table.add_computation(interest.name, interest)
+        #parse interest and create computation
         nfn_str = self.parser.network_name_to_nfn_str(interest.name)
         ast = self.parser.parse(nfn_str)
+        self.computation_table.add_computation(interest.name, interest, ast)
+        optimizer = self.optimizer_t(interest.name, self.icn_data_structs)
+
+        #request required data
+        required_optimizer_data = optimizer.required_data(ast)
+
+        if required_optimizer_data != []: # Optimizer requires additional data
+            pass
+        else: # Optimizer relies on local data
+            pass
+
+
 
     def handleContent(self, content: Content):
         pass

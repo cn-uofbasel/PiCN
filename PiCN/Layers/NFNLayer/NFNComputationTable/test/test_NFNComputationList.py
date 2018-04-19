@@ -34,6 +34,46 @@ class test_NFNComputationList(unittest.TestCase):
         self.assertTrue(NFNComputationTableEntry(name2) in self.computationList.container)
         self.assertEqual(len(self.computationList.container), 2)
 
+
+    def test_get_computation(self):
+        """Test getting an entry from the computation container"""
+        name = Name("/test")
+        self.computationList.add_computation(name, Interest(name))
+        get_name1 = Name("/test")
+        res = self.computationList.get_computation(get_name1)
+        self.assertEqual(res.original_name, name)
+
+        get_name2 = Name("/data")
+        res = self.computationList.get_computation(get_name2)
+        self.assertIsNone(res)
+
+    def test_remove_computation(self):
+        """Test removing a computation from the container"""
+        name = Name("/test")
+        name2 = Name("/data")
+        self.computationList.add_computation(name, Interest(name))
+        self.computationList.add_computation(name2, Interest(name2))
+
+        self.assertEqual(len(self.computationList.container), 2)
+        self.computationList.remove_computation(Name("/test"))
+        self.assertEqual(len(self.computationList.container), 1)
+        self.assertEqual(self.computationList.container[0].original_name, name2)
+
+    def test_append_computation(self):
+        """Test appending a computation"""
+        name = Name("/test")
+        name2 = Name("/data")
+        self.computationList.add_computation(name, Interest(name))
+        self.computationList.add_computation(name2, Interest(name2))
+        self.assertEqual(len(self.computationList.container), 2)
+        comp = self.computationList.get_computation(name)
+        self.computationList.remove_computation(name)
+        self.assertEqual(len(self.computationList.container), 1)
+        self.computationList.append_computation(comp)
+        self.assertEqual(len(self.computationList.container), 2)
+        self.assertEqual(self.computationList.container[0].original_name, name2)
+        self.assertEqual(self.computationList.container[1].original_name, name)
+
     def test_push_data(self):
         """Test the function push data"""
         name = Name("/test")

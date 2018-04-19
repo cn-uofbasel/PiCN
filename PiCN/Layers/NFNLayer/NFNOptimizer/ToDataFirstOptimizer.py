@@ -12,6 +12,9 @@ class ToDataFirstOptimizer(BaseNFNOptimizer):
     def __init__(self, prefix: Name, data_structs: Dict) -> None:
         super().__init__(prefix, data_structs)
 
+    def required_data(self, ast: AST):
+        return []
+
     def compute_local(self, ast: AST) -> bool:
         if self.cs.find_content_object(self.prefix):
             return True
@@ -50,7 +53,7 @@ class ToDataFirstOptimizer(BaseNFNOptimizer):
             return False
         return True
 
-    def rewrite(self, ast: AST):
+    def rewrite(self, ast: AST) -> List[str]:
         names = self._get_names_from_ast(ast)
         functions = self._get_functions_from_ast(ast)
         names_in_fib = []
@@ -73,7 +76,7 @@ class ToDataFirstOptimizer(BaseNFNOptimizer):
         return rewrites
 
 
-    def _set_prepended_name(self, ast: AST, name: Name, root: AST):
+    def _set_prepended_name(self, ast: AST, name: Name, root: AST) -> str:
         if isinstance(ast, AST_FuncCall) or isinstance(ast, AST_Name):
             if name == Name(ast._element):
                 ast._prepend = True

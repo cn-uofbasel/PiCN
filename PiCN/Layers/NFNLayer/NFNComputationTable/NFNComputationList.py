@@ -2,6 +2,8 @@
 
 import time
 
+
+from PiCN.Packets import  Name
 from PiCN.Layers.NFNLayer.NFNComputationTable.BaseNFNComputationTable import BaseNFNComputationTable, NFNComputationTableEntry
 from PiCN.Layers.NFNLayer.R2C import BaseR2CClient
 
@@ -12,10 +14,10 @@ class NFNComputationList(BaseNFNComputationTable):
         super().__init__(r2cclient)
 
 
-    def add_computation(self, name, interest):
+    def add_computation(self, name, interest, ast=None):
         if self.is_comp_running(name):
             return
-        self.container.append(NFNComputationTableEntry(name, interest, self.r2cclient))
+        self.container.append(NFNComputationTableEntry(name, interest, ast, self.r2cclient))
 
     def is_comp_running(self, name):
         l = list(map(lambda n: n.original_name, self.container))
@@ -31,6 +33,20 @@ class NFNComputationList(BaseNFNComputationTable):
             if v is True:
                 ret = True
         return ret
+
+    def get_computation(self, name: Name):
+        for c in self.container:
+            if name == c.original_name:
+                return c
+        return None
+
+    def remove_computation(self, name: Name):
+        c = self.get_computation(name)
+        self.container.remove(c)
+
+    def append_computation(self, entry: NFNComputationTableEntry):
+        if entry not in self.container:
+            self.container.append(entry)
 
     def get_ready_computations(self):
         return list(filter(lambda n: n.ready_to_continue() == True, self.container))

@@ -1,7 +1,7 @@
 """Base class for the NFN Optimizers"""
 
 import abc
-from typing import Dict
+from typing import Dict, List
 
 from PiCN.Packets import Name
 from PiCN.Layers.NFNLayer.Parser import AST
@@ -15,16 +15,32 @@ class BaseNFNOptimizer(object):
         self._data_structs = data_structs
 
     @abc.abstractmethod
+    def required_data(self, ast: AST) -> List[Name]:
+        """decides which requests must be issued for the optimizer
+        :param ast: The Abstract Syntax Tree for the current computation
+        :return List of names which should be requested
+        """
+
+    @abc.abstractmethod
     def compute_local(self, ast: AST) -> bool:
-        """decide if the computation should be executed locally"""
+        """decide if the computation should be executed locally
+        :param ast: The Abstract Syntax Tree for the current computation
+        :return True if computation should be executed locally, else False
+        """
 
     @abc.abstractmethod
     def compute_fwd(self, ast: AST) -> bool:
-        """decide if the computation should be forwarded"""
+        """decide if the computation should be forwarded
+        :param ast: The Abstract Syntax Tree for the current computation
+        :return True if computation should be forwarded, else False
+        """
 
     @abc.abstractmethod
-    def rewrite(self, ast: AST):
-        """rewrite the NFN interest and prepend a name"""
+    def rewrite(self, ast: AST) -> List[str]:
+        """rewrite the NFN interest and prepend a name
+        :param ast: The Abstract Syntax Tree for the current computation
+        :return List of computation strings, including a marker which name should be prepended.
+        """
 
     @property
     def cs(self):
