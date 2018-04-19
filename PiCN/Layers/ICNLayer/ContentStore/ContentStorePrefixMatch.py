@@ -40,5 +40,11 @@ class ContentStorePrefixMatch(BaseContentStore):
         self._container.remove(name)
 
     def update_timestamp(self, cs_entry: ContentStoreEntry):
-        # TODO
-        return None
+        """
+        Update timestamp
+        :param cs_entry: content store entry
+        :return: None
+        """
+        self._container.remove(cs_entry.name)
+        cs_entry.timestamp = time.time()
+        self._container.insert(cs_entry)
