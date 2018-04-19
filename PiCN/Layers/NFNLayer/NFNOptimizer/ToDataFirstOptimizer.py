@@ -9,14 +9,14 @@ from PiCN.Layers.NFNLayer.NFNOptimizer import BaseNFNOptimizer
 
 class ToDataFirstOptimizer(BaseNFNOptimizer):
 
-    def __init__(self, prefix: Name, data_structs: Dict) -> None:
-        super().__init__(prefix, data_structs)
+    def __init__(self, data_structs: Dict) -> None:
+        super().__init__(data_structs)
 
-    def required_data(self, ast: AST):
+    def required_data(self, prepended_prefix: Name, ast: AST):
         return []
 
-    def compute_local(self, ast: AST) -> bool:
-        if self.cs.find_content_object(self.prefix):
+    def compute_local(self, prepended_prefix: Name, ast: AST) -> bool:
+        if self.cs.find_content_object(prepended_prefix):
             return True
         names = self._get_names_from_ast(ast)
         functions = self._get_functions_from_ast(ast)
@@ -34,8 +34,8 @@ class ToDataFirstOptimizer(BaseNFNOptimizer):
             return False
         return True
 
-    def compute_fwd(self, ast: AST) -> bool:
-        if self.cs.find_content_object(self.prefix):
+    def compute_fwd(self, prepended_prefix: Name, ast: AST) -> bool:
+        if self.cs.find_content_object(prepended_prefix):
             return False
         names = self._get_names_from_ast(ast)
         functions = self._get_functions_from_ast(ast)
@@ -53,7 +53,7 @@ class ToDataFirstOptimizer(BaseNFNOptimizer):
             return False
         return True
 
-    def rewrite(self, ast: AST) -> List[str]:
+    def rewrite(self, prepended_prefix: Name, ast: AST) -> List[str]:
         names = self._get_names_from_ast(ast)
         functions = self._get_functions_from_ast(ast)
         names_in_fib = []

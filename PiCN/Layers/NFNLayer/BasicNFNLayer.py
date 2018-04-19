@@ -7,6 +7,7 @@ from PiCN.Packets import Interest, Content, Nack
 from PiCN.Processes import LayerProcess
 from PiCN.Layers.NFNLayer.NFNComputationTable import BaseNFNComputationTable
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationList
+from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationState
 from PiCN.Layers.NFNLayer.NFNExecutor import BaseNFNExecutor
 from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
 from PiCN.Layers.NFNLayer.NFNOptimizer import BaseNFNOptimizer
@@ -25,7 +26,7 @@ class BasicNFNLayer(LayerProcess):
         self.computation_table: BaseNFNComputationTable = NFNComputationList(self.r2cclient) \
             if computationTable == None else computationTable
         self.parser: DefaultNFNParser = DefaultNFNParser()
-        self.optimizer_t: type(BaseNFNOptimizer) = ToDataFirstOptimizer
+        self.optimizer: BaseNFNOptimizer = ToDataFirstOptimizer(self.icn_data_structs)
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         """handle incomming data from the lower layer """
@@ -47,23 +48,29 @@ class BasicNFNLayer(LayerProcess):
             self.queue_to_lower.put(interest)
             return
         #parse interest and create computation
-        nfn_str = self.parser.network_name_to_nfn_str(interest.name)
+        nfn_str, prepended_name = self.parser.network_name_to_nfn_str(interest.name)
         ast = self.parser.parse(nfn_str)
         self.computation_table.add_computation(interest.name, interest, ast)
-        optimizer = self.optimizer_t(interest.name, self.icn_data_structs)
 
         #request required data
-        required_optimizer_data = optimizer.required_data(ast)
+        required_optimizer_data = self.optimizer.required_data(ast)
 
+        self.computation_table.update_status(interest.name, NFNComputationState.FWD)
         if required_optimizer_data != []: # Optimizer requires additional data
-            pass
-        else: # Optimizer relies on local data
-            pass
+            raise NotImplemented("Global Optimizing not implemeted yet")
+            #TODO add to await list, send messages to reqeust data
+            return
 
-
+        #if no data are required we can continue directly, otherwise data handler must call that
+        self.forwarding_descision()
 
     def handleContent(self, content: Content):
         pass
 
     def handleNack(self, nack: Nack):
         pass
+
+
+    def forwarding_descision(self):
+        """Decide weather a computation should be executed locally or be forwarded"""
+

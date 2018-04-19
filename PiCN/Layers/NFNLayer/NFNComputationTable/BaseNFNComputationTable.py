@@ -14,6 +14,7 @@ class NFNComputationState(Enum):
     START = 0
     FWD = 1
     EXEC = 2
+    REWRITE = 3
 
 class NFNAwaitListEntry(object):
     """Data Structure storing information about reqests of a running computation

@@ -21,7 +21,7 @@ class testNFNEvaluator(unittest.TestCase):
         self.data_structs['cs'] = ContentStoreMemoryExact()
         self.data_structs['fib'] = ForwardingInformationBaseMemoryPrefix()
         self.data_structs['pit'] = PendingInterstTableMemoryExact()
-        self.optimizer = ToDataFirstOptimizer(None, self.data_structs)
+        self.optimizer = ToDataFirstOptimizer(self.data_structs)
         self.executor = NFNPythonExecutor
         self.rewrite_table = self.manager.dict()
         self.evaluator = NFNEvaluator(None, self.data_structs, self.rewrite_table)

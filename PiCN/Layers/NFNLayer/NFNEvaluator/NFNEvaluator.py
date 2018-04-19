@@ -59,12 +59,12 @@ class NFNEvaluator(PiCNProcess):
         name_str, prepended = self.parser.network_name_to_nfn_str(name)
         ast: AST = self.parser.parse(name_str)
         self.logger.info("Evaluating " + str(name))
-        self.optimizer = ToDataFirstOptimizer(prepended, self.data_structs)
+        self.optimizer = ToDataFirstOptimizer(self.data_structs)
         did_fwd = False
-        if self.optimizer.compute_fwd(ast) and not self.force_compute_local:
+        if self.optimizer.compute_fwd(prepended, ast) and not self.force_compute_local:
             self.logger.info("FWD")
             did_fwd = True
-            computation_strs = self.optimizer.rewrite(ast)
+            computation_strs = self.optimizer.rewrite(prepended, ast)
             interests = []
             for r in computation_strs:
                 name = self.parser.nfn_str_to_network_name(r)
@@ -77,7 +77,7 @@ class NFNEvaluator(PiCNProcess):
             if len(interests) > 0:
                 self.computation_out_queue.put(interests)
 
-        if self.optimizer.compute_local(ast) or self.force_compute_local:
+        if self.optimizer.compute_local(prepended, ast) or self.force_compute_local:
             self.logger.info("Compute Local")
             #request child nodes
             if not isinstance(ast, AST_FuncCall):
