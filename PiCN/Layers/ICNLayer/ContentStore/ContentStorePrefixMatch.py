@@ -1,6 +1,6 @@
 """ An in-memory content store with prefix matching"""
 
-import multiprocessing, time, sys
+import time
 
 from PiCN.Packets import Content, Name
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore, ContentStoreEntry
@@ -13,13 +13,30 @@ class ContentStorePrefixMatch(BaseContentStore):
         self._container:ContentTree = ContentTree()
 
     def find_content_object(self, name: Name) -> ContentStoreEntry:
-        # TODO
-        return None
+        """
+        Lookup a content object (prefix match)
+        :param name:  Name
+        :return:      Matching Content Object or None
+        """
+        return self._container.prefix_lookup(name)
 
     def add_content_object(self, content: Content, static: bool=False):
-        self._container.insert(content)
+        """
+        Insert content object
+        :param content: content object to insert
+        :param static: <todo>
+        :return: None
+        """
+        entry = ContentStoreEntry(content, static=static)
+        entry.timestamp = time.time()
+        self._container.insert(entry)
 
     def remove_content_object(self, name: Name):
+        """
+        Remove content object
+        :param name: Name (exact)
+        :return: None
+        """
         self._container.remove(name)
 
     def update_timestamp(self, cs_entry: ContentStoreEntry):
