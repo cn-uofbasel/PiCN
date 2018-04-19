@@ -41,10 +41,9 @@ class BasicNFNLayer(LayerProcess):
             self.queue_to_lower.put(interest)
             return
 
+        self.computation_table.add_computation(interest.name, interest)
         nfn_str = self.parser.network_name_to_nfn_str(interest.name)
-
-
-        self.computation_table.add_computation(interest.name)
+        ast = self.parser.parse(nfn_str)
 
     def handleContent(self, content: Content):
         pass
