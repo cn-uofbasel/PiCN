@@ -149,7 +149,7 @@ class test_NFNComputationList(unittest.TestCase):
         self.assertEqual(len(self.computationList.container[1].awaiting_data), 1)
 
         res = self.computationList.ageing()
-        self.assertEqual(res, [])
+        self.assertEqual(res, ([], []))
         time.sleep(2)
 
         res = self.computationList.ageing()
@@ -158,10 +158,10 @@ class test_NFNComputationList(unittest.TestCase):
         self.assertEqual(len(self.computationList.container[0].awaiting_data), 2)
         self.assertEqual(len(self.computationList.container[1].awaiting_data), 1)
 
-        self.assertEqual(res, [request_name, request_name1,
+        self.assertEqual(res, ([request_name, request_name1,
                                self.r2cclient.R2C_create_message(request_name),
                                self.r2cclient.R2C_create_message(request_name1),
-                               request_name2, self.r2cclient.R2C_create_message(request_name2)])
+                               request_name2, self.r2cclient.R2C_create_message(request_name2)], []))
 
         self.computationList.push_data(Content(request_name))
         ready_comps = self.computationList.get_ready_computations()
@@ -196,7 +196,7 @@ class test_NFNComputationList(unittest.TestCase):
         self.assertEqual(len(self.computationList.container[1].awaiting_data), 1)
 
         res = self.computationList.ageing()
-        self.assertEqual(res, [])
+        self.assertEqual(res, ([], []))
         time.sleep(2)
 
         res = self.computationList.ageing()
@@ -204,7 +204,7 @@ class test_NFNComputationList(unittest.TestCase):
         self.assertEqual(len(self.computationList.container), 1)
         self.assertEqual(len(self.computationList.container[0].awaiting_data), 1)
 
-        self.assertEqual(res, [request_name2, self.r2cclient.R2C_create_message(request_name2)])
+        self.assertEqual(res, ([request_name2, self.r2cclient.R2C_create_message(request_name2)], [name]))
 
         self.computationList.push_data(Content(request_name2))
         ready_comps = self.computationList.get_ready_computations()

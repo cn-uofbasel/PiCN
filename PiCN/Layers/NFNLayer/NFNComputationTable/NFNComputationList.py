@@ -44,4 +44,4 @@ class NFNComputationList(BaseNFNComputationTable):
                 requests += required_requests
         for c in comp_to_remove:
             self.container.remove(c)
-        return requests
+        return (requests, list(map(lambda n: n.original_name, comp_to_remove)))

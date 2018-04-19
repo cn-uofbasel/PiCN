@@ -131,8 +131,8 @@ class BaseNFNComputationTable(object):
         """
 
     @abc.abstractmethod
-    def ageing(self) -> List[Name]:
+    def ageing(self) -> (List[Name], List[Name]):
         """age the running computations.
         Removes entries which timed out and tells for which entries a timeout request must be sent
-        :return List of Names for which Timeout Reqest must be sent.
+        :return List of Names for which Timeout Reqest must be sent and List of Names for which nacks must be sent.
         """
