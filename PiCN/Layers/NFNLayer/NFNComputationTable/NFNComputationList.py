@@ -25,8 +25,12 @@ class NFNComputationList(BaseNFNComputationTable):
             return False
 
     def push_data(self, content):
+        ret = False
         for s in self.container:
-            s.push_data(content)
+            v = s.push_data(content)
+            if v is True:
+                ret = True
+        return ret
 
     def get_ready_computations(self):
         return list(filter(lambda n: n.ready_to_continue() == True, self.container))

@@ -51,16 +51,18 @@ class NFNComputationTableEntry(object):
         """
         self.awaiting_data.append(NFNAwaitListEntry(name))
 
-    def push_data(self, content: Content):
+    def push_data(self, content: Content) -> bool:
         """check if content was requested, adds entry to available data and removes the name from the await list
         :param content: Content Object that should be added to the computation
+        :return True if content was required, else False
         """
         if content.name not in list(map(lambda n: n.name, self.awaiting_data)):
-            return
+            return False
         if content in self.available_data:
-            return
+            return False
         self.available_data.append(content)
         self.awaiting_data.remove(NFNAwaitListEntry(content.name))
+        return True
 
     def ready_to_continue(self) -> bool:
         """Returns if all required data were received, excludes R2C
@@ -106,22 +108,23 @@ class BaseNFNComputationTable(object):
         self.container: List[NFNComputationTableEntry] = []
 
     @abc.abstractmethod
-    def add_computation(self, name):
+    def add_computation(self, name: Name):
         """add a computation to the Computation table (i.e. start a new computation)
         :param name: icn-name of the computation
         """
 
     @abc.abstractmethod
-    def is_comp_running(self, name) -> bool:
+    def is_comp_running(self, name: Name) -> bool:
         """checks if a name was already added to the list of running computations
         :param name: name to check
         :return True if computation was already added, else false
         """
 
     @abc.abstractmethod
-    def push_data(self, content):
+    def push_data(self, content: Content) -> bool:
         """add received data to running computations
         :param content: content to be added
+        :return True if the content was required, else False
         """
 
     @abc.abstractmethod

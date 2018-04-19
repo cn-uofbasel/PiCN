@@ -167,7 +167,8 @@ class test_NFNComputationList(unittest.TestCase):
         ready_comps = self.computationList.get_ready_computations()
         self.assertEqual(ready_comps, [])
 
-        self.computationList.push_data(Content(request_name1))
+        v = self.computationList.push_data(Content(request_name1))
+        self.assertTrue(v)
         ready_comps = self.computationList.get_ready_computations()
         self.assertEqual(len(ready_comps), 1)
         self.assertEqual(ready_comps[0].original_name, name)
@@ -206,7 +207,19 @@ class test_NFNComputationList(unittest.TestCase):
 
         self.assertEqual(res, ([request_name2, self.r2cclient.R2C_create_message(request_name2)], [name]))
 
-        self.computationList.push_data(Content(request_name2))
+        v = self.computationList.push_data(Content(request_name2))
+        self.assertTrue(v)
         ready_comps = self.computationList.get_ready_computations()
         self.assertEqual(len(ready_comps), 1)
         self.assertEqual(ready_comps[0].original_name, name2)
+
+    def test_computation_table_push_back(self):
+        """Test the return value of the push back function"""
+        name = Name("/test/NFN")
+        self.computationList.add_computation(name)
+        reqeuest_name = Name("/request/name")
+        v = self.computationList.push_data(Content(reqeuest_name))
+        self.assertFalse(v)
+        self.computationList.container[0].add_name_to_await_list(reqeuest_name)
+        v = self.computationList.push_data(Content(reqeuest_name))
+        self.assertTrue(v)
