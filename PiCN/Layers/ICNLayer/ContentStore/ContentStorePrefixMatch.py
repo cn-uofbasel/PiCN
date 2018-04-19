@@ -4,7 +4,7 @@ import time
 
 from PiCN.Packets import Content, Name
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore, ContentStoreEntry
-from PiCN.Layers.ICNLayer.ContentStore import ContentTree
+from PiCN.Layers.ICNLayer.ContentStore.ContentTree import ContentTree
 
 class ContentStorePrefixMatch(BaseContentStore):
     """ An in-memory content store with prefix matching"""
