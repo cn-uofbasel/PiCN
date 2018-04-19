@@ -3,8 +3,10 @@
 import time
 
 
-from PiCN.Packets import  Name
-from PiCN.Layers.NFNLayer.NFNComputationTable.BaseNFNComputationTable import BaseNFNComputationTable, NFNComputationTableEntry
+from PiCN.Packets import Name
+from PiCN.Layers.NFNLayer.NFNComputationTable.BaseNFNComputationTable import BaseNFNComputationTable
+from PiCN.Layers.NFNLayer.NFNComputationTable.BaseNFNComputationTable import NFNComputationTableEntry
+from PiCN.Layers.NFNLayer.NFNComputationTable.BaseNFNComputationTable import NFNComputationState
 from PiCN.Layers.NFNLayer.R2C import BaseR2CClient
 
 class NFNComputationList(BaseNFNComputationTable):

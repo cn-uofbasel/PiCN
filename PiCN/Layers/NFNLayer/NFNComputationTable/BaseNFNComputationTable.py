@@ -165,3 +165,23 @@ class BaseNFNComputationTable(object):
         Removes entries which timed out and tells for which entries a timeout request must be sent
         :return List of Names for which Timeout Reqest must be sent and List of NFNComputationTableEntrys for which nacks must be sent.
         """
+
+    def update_status(self, name: Name, status: NFNComputationState):
+        """Update the status of a computation giving a name
+        :param name: Name of the computation entry to be updated
+        :param status: The new Status
+        """
+        c = self.get_computation(name)
+        self.remove_computation(name)
+        c.comp_state = status
+        self.append_computation(c)
+
+    def add_awaiting_data(self, name: Name, awaiting_name: Name):
+        """Add a name to the await list of a existing computation
+        :param name: Name of the existing computation
+        "param awaiting_name: Name to be added to the await list.
+        """
+        c = self.get_computation(name)
+        self.remove_computation(name)
+        c.add_name_to_await_list(awaiting_name)
+        self.append_computation(c)

@@ -5,6 +5,7 @@ import unittest
 
 from PiCN.Packets import Name, Content, Interest
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationList
+from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationState
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationTableEntry
 from PiCN.Layers.NFNLayer.R2C import TimeoutR2CClient
 
@@ -33,7 +34,6 @@ class test_NFNComputationList(unittest.TestCase):
         self.assertTrue(NFNComputationTableEntry(name) in self.computationList.container)
         self.assertTrue(NFNComputationTableEntry(name2) in self.computationList.container)
         self.assertEqual(len(self.computationList.container), 2)
-
 
     def test_get_computation(self):
         """Test getting an entry from the computation container"""
@@ -73,6 +73,29 @@ class test_NFNComputationList(unittest.TestCase):
         self.assertEqual(len(self.computationList.container), 2)
         self.assertEqual(self.computationList.container[0].original_name, name2)
         self.assertEqual(self.computationList.container[1].original_name, name)
+
+    def test_update_status(self):
+        """Test updating the status of a computation"""
+        name = Name("/test")
+        name2 = Name("/data")
+        self.computationList.add_computation(name, Interest(name))
+        self.computationList.add_computation(name2, Interest(name2))
+        self.assertEqual(self.computationList.container[0].comp_state, NFNComputationState.START)
+        self.assertEqual(self.computationList.container[1].comp_state, NFNComputationState.START)
+        self.computationList.update_status(name, NFNComputationState.FWD)
+        self.assertEqual(self.computationList.get_computation(name).comp_state, NFNComputationState.FWD)
+        self.assertEqual(self.computationList.get_computation(name2).comp_state, NFNComputationState.START)
+
+    def test_add_to_await_list(self):
+        """test adding data to the await list"""
+        name = Name("/test")
+        name2 = Name("/data")
+        self.computationList.add_computation(name, Interest(name))
+        self.computationList.add_computation(name2, Interest(name2))
+        self.computationList.add_awaiting_data(name, Name("/request"))
+        self.assertEqual(self.computationList.get_computation(name).awaiting_data, [Name("/request")])
+        self.assertEqual(self.computationList.get_computation(name2).awaiting_data, [])
+
 
     def test_push_data(self):
         """Test the function push data"""
