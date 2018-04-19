@@ -70,7 +70,6 @@ class BasicNFNLayer(LayerProcess):
     def handleNack(self, nack: Nack):
         pass
 
-
     def forwarding_descision(self):
         """Decide weather a computation should be executed locally or be forwarded"""
 
