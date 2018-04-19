@@ -12,10 +12,10 @@ class NFNComputationList(BaseNFNComputationTable):
         super().__init__(r2cclient)
 
 
-    def add_computation(self, name):
+    def add_computation(self, name, interest):
         if self.is_comp_running(name):
             return
-        self.container.append(NFNComputationTableEntry(name, self.r2cclient))
+        self.container.append(NFNComputationTableEntry(name, interest, self.r2cclient))
 
     def is_comp_running(self, name):
         l = list(map(lambda n: n.original_name, self.container))

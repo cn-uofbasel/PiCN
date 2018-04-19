@@ -6,7 +6,7 @@ import unittest
 
 from PiCN.Packets import Content, Interest, Name, Nack, NackReason
 from PiCN.Layers.NFNLayer import BasicNFNLayer_deprecated
-from PiCN.Layers.NFNLayer.NFNEvaluator.NFNExecutor import NFNPythonExecutor
+from PiCN.Layers.NFNLayer.NFNExecutor import NFNPythonExecutor
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseMemoryPrefix
 from PiCN.Layers.ICNLayer.PendingInterestTable import PendingInterstTableMemoryExact

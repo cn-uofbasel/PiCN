@@ -3,15 +3,12 @@
 import multiprocessing
 import select
 import time
-from typing import Dict, List
+from typing import Dict
 
 from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
 from PiCN.Layers.NFNLayer.Parser.AST import *
-from PiCN.Layers.NFNLayer.NFNEvaluator.NFNOptimizer import BaseNFNOptimizer, ToDataFirstOptimizer
-from PiCN.Layers.NFNLayer.NFNEvaluator.NFNExecutor import BaseNFNExecutor
-from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
-from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
-from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
+from PiCN.Layers.NFNLayer.NFNOptimizer import BaseNFNOptimizer, ToDataFirstOptimizer
+from PiCN.Layers.NFNLayer.NFNExecutor import BaseNFNExecutor
 from PiCN.Processes import PiCNProcess
 from PiCN.Packets import Content, Interest, Name, Nack, NackReason
 

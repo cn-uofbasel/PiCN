@@ -4,9 +4,8 @@ from typing import Dict
 
 from PiCN.Packets import Name
 from PiCN.Layers.NFNLayer.Parser.AST import *
-from PiCN.Layers.NFNLayer.NFNEvaluator.NFNOptimizer import BaseNFNOptimizer
-from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
-from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
+from PiCN.Layers.NFNLayer.NFNOptimizer import BaseNFNOptimizer
+
 
 class ToDataFirstOptimizer(BaseNFNOptimizer):
 

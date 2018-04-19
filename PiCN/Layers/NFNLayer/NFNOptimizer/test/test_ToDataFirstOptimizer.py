@@ -7,9 +7,8 @@ from PiCN.Packets import Name, Content
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseMemoryPrefix
 
-from PiCN.Layers.NFNLayer.Parser.AST import *
 from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
-from PiCN.Layers.NFNLayer.NFNEvaluator.NFNOptimizer import ToDataFirstOptimizer
+from PiCN.Layers.NFNLayer.NFNOptimizer import ToDataFirstOptimizer
 
 class test_ToDataFirstOptimizer(unittest.TestCase):
     """Testing the to Data First Optimizers"""

@@ -56,11 +56,11 @@ class LayerProcess(PiCNProcess):
     def queue_to_higher(self, q):
         self._queue_to_higher = q
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         """ handle incomming data from the lower layer """
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         """ handle incomming data from the higher layer """
 

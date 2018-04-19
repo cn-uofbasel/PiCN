@@ -5,7 +5,7 @@ import abc
 import time
 from enum import Enum
 from typing import List
-from PiCN.Packets import Content, Name
+from PiCN.Packets import Content, Name, Interest
 
 from PiCN.Layers.NFNLayer.R2C import BaseR2CClient, TimeoutR2CClient
 
@@ -36,9 +36,10 @@ class NFNComputationTableEntry(object):
     :param r2cclient: r2cclient handler that selects and handles messages to be handled
     """
 
-    def __init__(self, name: Name, r2cclient: BaseR2CClient=None):
+    def __init__(self, name: Name, interest: Interest=None, r2cclient: BaseR2CClient=None):
         self.original_name: Name = name # original name of the computation
         self.r2cclient: BaseR2CClient = r2cclient if r2cclient is not None else TimeoutR2CClient # r2c clients used for ageing
+        self.interest = interest
         self.awaiting_data: List[NFNAwaitListEntry] = [] # data that are awaited by the computation
         self.available_data: List[Content] = [] # data that are required and now available
         self.comp_state: NFNComputationState = NFNComputationState.START # marker where to continue this computation after requests
@@ -108,9 +109,10 @@ class BaseNFNComputationTable(object):
         self.container: List[NFNComputationTableEntry] = []
 
     @abc.abstractmethod
-    def add_computation(self, name: Name):
+    def add_computation(self, name: Name, interest: Interest):
         """add a computation to the Computation table (i.e. start a new computation)
         :param name: icn-name of the computation
+        :param interest: the original interest message
         """
 
     @abc.abstractmethod
@@ -134,8 +136,8 @@ class BaseNFNComputationTable(object):
         """
 
     @abc.abstractmethod
-    def ageing(self) -> (List[Name], List[Name]):
+    def ageing(self) -> (List[Name], List[NFNComputationTableEntry]):
         """age the running computations.
         Removes entries which timed out and tells for which entries a timeout request must be sent
-        :return List of Names for which Timeout Reqest must be sent and List of Names for which nacks must be sent.
+        :return List of Names for which Timeout Reqest must be sent and List of NFNComputationTableEntrys for which nacks must be sent.
         """

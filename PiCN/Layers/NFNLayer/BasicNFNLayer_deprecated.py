@@ -12,12 +12,9 @@ from typing import List, Dict
 
 from PiCN.Processes import LayerProcess
 from PiCN.Packets import Interest, Content, Name, Packet, Nack
-from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
-from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
-from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
 
 from PiCN.Layers.NFNLayer.NFNEvaluator import NFNEvaluator
-from PiCN.Layers.NFNLayer.NFNEvaluator.NFNExecutor import BaseNFNExecutor
+from PiCN.Layers.NFNLayer.NFNExecutor import BaseNFNExecutor
 
 class BasicNFNLayer_deprecated(LayerProcess):
     """NFN Layer Implementation"""
