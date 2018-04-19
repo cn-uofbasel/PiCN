@@ -1,6 +1,5 @@
 """Tests for the in Memory Content Store with exact matching"""
 
-import multiprocessing
 import unittest
 
 from PiCN.Layers.ICNLayer.ContentStore.ContentStoreMemoryExact import ContentStoreMemoryExact
