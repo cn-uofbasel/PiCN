@@ -127,7 +127,7 @@ class BasicNFNLayer(LayerProcess):
         """
         params = []
         entry = self.computation_table.get_computation(interest.name)
-
+        self.computation_table.remove_computation(interest.name)
         function_name = Name(entry.ast._element)
         function_code = entry.available_data[function_name]
         executor: BaseNFNExecutor = self.executors.get(self.get_nf_code_language(function_code))
@@ -137,5 +137,6 @@ class BasicNFNLayer(LayerProcess):
             params.append(entry.available_data[e.name])
 
         res = executor.execute(function_code, params)
-        return res
+        content_res: Content = Content(entry.original_name, res)
+        self.queue_to_lower.put([entry.id, content_res])
 
