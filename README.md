@@ -29,7 +29,7 @@ PiCN is written in Python 3.6+ and tested on Linux, Mac OS X and Windows. More t
 * Peek Tool
 * Management Tool
 
-## Hands On!
+## Getting Started!
 Let us setup a simple network which consists of a data repository and a forwarding node:
 
 ![Hands On: Topology](https://raw.githubusercontent.com/cn-uofbasel/PiCN/master/docs/img/initial-hands-on.png "Hands On: Topology")
