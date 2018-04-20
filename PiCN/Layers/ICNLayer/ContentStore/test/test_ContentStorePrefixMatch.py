@@ -2,14 +2,14 @@
 
 import unittest
 
-from PiCN.Layers.ICNLayer.ContentStore.ContentStorePrefixMatch import ContentStorePrefixMatch
+from PiCN.Layers.ICNLayer.ContentStore.ContentStoreMemoryPrefix import ContentStoreMemoryPrefix
 from PiCN.Packets import Content
 
 
 class test_ContentStorePrefixMatch(unittest.TestCase):
 
     def setUp(self):
-        self.cs = ContentStorePrefixMatch()
+        self.cs = ContentStoreMemoryPrefix()
 
     def tearDown(self):
         pass

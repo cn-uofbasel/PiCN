@@ -8,7 +8,7 @@ from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformation
 from PiCN.Layers.ICNLayer.PendingInterestTable import PendingInterstTableMemoryExact
 from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
 
-from PiCN.Layers.ICNLayer.ContentStore.ContentStorePrefixMatch import ContentStorePrefixMatch
+from PiCN.Layers.ICNLayer.ContentStore.ContentStoreMemoryPrefix import ContentStoreMemoryPrefix
 from PiCN.Layers.LinkLayer import UDP4LinkLayer
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder, SimpleStringEncoder
 from PiCN.Logger import Logger
@@ -37,7 +37,7 @@ class ICNForwarder(object):
         # setup data structures
         manager = multiprocessing.Manager()
         self.data_structs = manager.dict()
-        self.data_structs['cs'] = ContentStorePrefixMatch()
+        self.data_structs['cs'] = ContentStoreMemoryPrefix()
         self.data_structs['fib'] = ForwardingInformationBaseMemoryPrefix()
         self.data_structs['pit'] = PendingInterstTableMemoryExact()
 
