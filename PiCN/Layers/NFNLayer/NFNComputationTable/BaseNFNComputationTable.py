@@ -67,7 +67,7 @@ class NFNComputationTableEntry(object):
         """
         if content.name not in list(map(lambda n: n.name, self.awaiting_data)):
             return False
-        if content in self.available_data:
+        if content.name in self.available_data:
             return False
         self.available_data[content.name] = content.content
         self.awaiting_data.remove(NFNAwaitListEntry(content.name))
