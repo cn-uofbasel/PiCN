@@ -96,8 +96,6 @@ class BasicNFNLayer(LayerProcess):
             if not isinstance(entry.ast, AST_FuncCall):
                 return
 
-            params_requests = []
-            params = []
             for p in entry.ast.params:
                 name = None
                 if isinstance(p, AST_Name):
@@ -114,10 +112,30 @@ class BasicNFNLayer(LayerProcess):
 
             self.computation_table.append_computation(entry)
             if(entry.awaiting_data == []):
-                self.compute()
+                self.compute(interest)
 
-        def compute(self):
-            pass
+    def get_nf_code_language(self, function: str):
+        """extract the programming language of a function
+        :param function: function data
+        """
+        language = function.split("\n")[0]
+        return language
 
+    def compute(self, interest: Interest):
+        """Compute a result, when all data are available
+        :param interest: The original interest message to be handled (can be taken from computation table)
+        """
+        params = []
+        entry = self.computation_table.get_computation(interest.name)
 
-        #TODO if computation, request all required data, start if no data are required.
+        function_name = Name(entry.ast._element)
+        function_code = entry.available_data[function_name]
+        executor: BaseNFNExecutor = self.executors.get(self.get_nf_code_language(function_code))
+        if executor is not None:
+            return None
+        for e in entry.ast.params:
+            params.append(entry.available_data[e.name])
+
+        res = executor.execute(function_code, params)
+        return res
+

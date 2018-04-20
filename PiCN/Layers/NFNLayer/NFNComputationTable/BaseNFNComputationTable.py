@@ -4,7 +4,7 @@ the Computation Status"""
 import abc
 import time
 from enum import Enum
-from typing import List
+from typing import List, Dict
 from PiCN.Packets import Content, Name, Interest
 
 from PiCN.Layers.NFNLayer.R2C import BaseR2CClient, TimeoutR2CClient
@@ -45,10 +45,10 @@ class NFNComputationTableEntry(object):
         self.original_name: Name = name # original name of the computation
         self.id = id
         self.interest = interest
-        self.ast = ast
+        self.ast: AST = ast
         self.r2cclient: BaseR2CClient = r2cclient if r2cclient is not None else TimeoutR2CClient() # r2c clients used for ageing
         self.awaiting_data: List[NFNAwaitListEntry] = [] # data that are awaited by the computation
-        self.available_data: List[Content] = [] # data that are required and now available
+        self.available_data: Dict[Name, Content] = {} # data that are required and now available
         self.rewrite_list: List[Name] = [] # list of all possible rewrites
         self.comp_state: NFNComputationState = NFNComputationState.START # marker where to continue this computation after requests
         self.time_stamp = time.time() # time at which the computation was started
@@ -69,7 +69,7 @@ class NFNComputationTableEntry(object):
             return False
         if content in self.available_data:
             return False
-        self.available_data.append(content)
+        self.available_data[content.name] = content.content
         self.awaiting_data.remove(NFNAwaitListEntry(content.name))
         return True
 
