@@ -8,6 +8,10 @@ import operator
 import json
 from typing import List
 
+
+def Tree(content_object=None):
+    return {"subtree": defaultdict(Tree), "leaf": content_object}
+
 class ContentTree():
     """
     Data structure to organize objects with property 'name' (of type PiCN.Packets.Name) in a tree reflecting their
@@ -18,8 +22,6 @@ class ContentTree():
         """
        Create empty tree
         """
-        def Tree(content_object=None):
-            return {"subtree": defaultdict(Tree), "leaf": content_object}
         self.__tree = Tree()
 
     def __get_subtree(self, path: List[str]):
