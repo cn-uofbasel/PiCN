@@ -4,7 +4,7 @@ import abc
 import multiprocessing
 from typing import List
 
-from PiCN.Packets import Interest, Name
+from PiCN.Packets import Name
 
 
 class ForwardingInformationBaseEntry(object):

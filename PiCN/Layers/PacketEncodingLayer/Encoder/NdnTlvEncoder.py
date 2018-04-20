@@ -1,6 +1,5 @@
 """NDN TLV Encoder"""
 
-from PiCN.Logger import Logger
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
 from PiCN.Packets import Packet, Content, Interest, Nack, NackReason, Name, UnknownPacket
 
