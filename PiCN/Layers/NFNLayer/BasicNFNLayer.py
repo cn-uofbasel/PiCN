@@ -3,7 +3,7 @@ import multiprocessing
 
 from typing import Dict
 
-from PiCN.Packets import Interest, Content, Nack, Name
+from PiCN.Packets import Interest, Content, Nack, NackReason, Name
 from PiCN.Processes import LayerProcess
 from PiCN.Layers.NFNLayer.NFNComputationTable import BaseNFNComputationTable
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationList
@@ -131,8 +131,8 @@ class BasicNFNLayer(LayerProcess):
         function_name = Name(entry.ast._element)
         function_code = entry.available_data[function_name]
         executor: BaseNFNExecutor = self.executors.get(self.get_nf_code_language(function_code))
-        if executor is not None:
-            return None
+        if executor is None:
+            self.queue_to_lower.put([entry.id, Nack(entry.original_name, NackReason.COMP_EXCEPTION, interest=entry.interest)])
         for e in entry.ast.params:
             params.append(entry.available_data[e.name])
 
