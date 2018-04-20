@@ -35,18 +35,21 @@ class NFNAwaitListEntry(object):
 class NFNComputationTableEntry(object):
     """Data Structure storing information about a Running Computation
     :param name: ICN-Name of the computation
+    :param id: ID given from layer communication
     :param interest: the original Interest message
     :param ast: name parsed and transformed to Abstract Syntax Tree
     :param r2cclient: r2cclient handler that selects and handles messages to be handled
     """
 
-    def __init__(self, name: Name, interest: Interest=None, ast: AST=None, r2cclient: BaseR2CClient=None):
+    def __init__(self, name: Name, id: int=0, interest: Interest=None, ast: AST=None, r2cclient: BaseR2CClient=None):
         self.original_name: Name = name # original name of the computation
+        self.id = id
         self.interest = interest
         self.ast = ast
-        self.r2cclient: BaseR2CClient = r2cclient if r2cclient is not None else TimeoutR2CClient # r2c clients used for ageing
+        self.r2cclient: BaseR2CClient = r2cclient if r2cclient is not None else TimeoutR2CClient() # r2c clients used for ageing
         self.awaiting_data: List[NFNAwaitListEntry] = [] # data that are awaited by the computation
         self.available_data: List[Content] = [] # data that are required and now available
+        self.rewrite_list: List[Name] = [] # list of all possible rewrites
         self.comp_state: NFNComputationState = NFNComputationState.START # marker where to continue this computation after requests
         self.time_stamp = time.time() # time at which the computation was started
         self.timeout = 4.0 #timeout before a request expires
@@ -85,6 +88,19 @@ class NFNComputationTableEntry(object):
         :return A list of entries for which timeout reqests must be sent and [] if reqest is fine, None if entry must be deleted
         """
         ts = time.time()
+        #Rewrite Case
+        if self.comp_state == NFNComputationState.REWRITE:
+            if self.awaiting_data != [] and ts > self.awaiting_data[0].time_stamp + self.timeout:  #r2c msg timout
+                self.rewrite_list.pop(0)
+                if self.rewrite_list == []:
+                    return None
+            if ts > self.time_stamp + self.timeout:
+                r2c_request = self.r2cclient.R2C_create_message(self.rewrite_list[0])
+                self.add_name_to_await_list(r2c_request)
+                return [self.rewrite_list[0], r2c_request]
+            else:
+                return []
+        #Local Case
         possible_requests = []
         for al_entry in self.awaiting_data:
             if ts > self.timeout + al_entry.time_stamp:
@@ -98,6 +114,8 @@ class NFNComputationTableEntry(object):
             al_entry.times = time.time()
             self.awaiting_data.append(al_entry)
         r2c_requests = list(map(lambda n: self.r2cclient.R2C_create_message(n), required_requests))
+        for r2c_r in r2c_requests:
+            self.add_name_to_await_list(r2c_r)
         return required_requests + r2c_requests
 
     def __eq__(self, other):
@@ -114,9 +132,10 @@ class BaseNFNComputationTable(object):
         self.container: List[NFNComputationTableEntry] = []
 
     @abc.abstractmethod
-    def add_computation(self, name: Name, interest: Interest, ast: AST=None):
+    def add_computation(self, name: Name, id: int, interest: Interest, ast: AST=None):
         """add a computation to the Computation table (i.e. start a new computation)
         :param name: icn-name of the computation
+        :param id: ID given from layer communication
         :param interest: the original interest message
         :param AST: abstract syntax tree of the computation
         """

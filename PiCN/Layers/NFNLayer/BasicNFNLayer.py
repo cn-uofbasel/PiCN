@@ -3,13 +3,13 @@ import multiprocessing
 
 from typing import Dict
 
-from PiCN.Packets import Interest, Content, Nack
+from PiCN.Packets import Interest, Content, Nack, Name
 from PiCN.Processes import LayerProcess
 from PiCN.Layers.NFNLayer.NFNComputationTable import BaseNFNComputationTable
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationList
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationState
 from PiCN.Layers.NFNLayer.NFNExecutor import BaseNFNExecutor
-from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
+from PiCN.Layers.NFNLayer.Parser import *
 from PiCN.Layers.NFNLayer.NFNOptimizer import BaseNFNOptimizer
 from PiCN.Layers.NFNLayer.NFNOptimizer import ToDataFirstOptimizer
 from PiCN.Layers.NFNLayer.R2C import TimeoutR2CClient
@@ -30,27 +30,29 @@ class BasicNFNLayer(LayerProcess):
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         """handle incomming data from the lower layer """
+        id = data[0]
+        packet = data[1]
         if isinstance(data, Interest):
-            self.handleInterest(data)
+            self.handleInterest(id, data)
         elif isinstance(data, Content):
-            self.handleContent(data)
+            self.handleContent(id, data)
         elif isinstance(data, Nack):
-            self.handleNack(data)
+            self.handleNack(id, data)
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         """Currently no higher layer than the NFN Layer"""
         pass
 
-    def handleInterest(self, interest: Interest):
+    def handleInterest(self, id: int, interest: Interest):
         """start a new computation from an interest or send it down if no NFN tag"""
         #TODO R2C!!!
         if interest.name.components[-1] != b"NFN": #send non NFN interests back
-            self.queue_to_lower.put(interest)
+            self.queue_to_lower.put([id, interest])
             return
         #parse interest and create computation
         nfn_str, prepended_name = self.parser.network_name_to_nfn_str(interest.name)
         ast = self.parser.parse(nfn_str)
-        self.computation_table.add_computation(interest.name, interest, ast)
+        self.computation_table.add_computation(interest.name, id, interest, ast)
 
         #request required data
         required_optimizer_data = self.optimizer.required_data(ast)
@@ -62,14 +64,60 @@ class BasicNFNLayer(LayerProcess):
             return
 
         #if no data are required we can continue directly, otherwise data handler must call that
-        self.forwarding_descision()
+        self.forwarding_descision(interest)
 
-    def handleContent(self, content: Content):
+    def handleContent(self, id: int, content: Content):
         pass
 
-    def handleNack(self, nack: Nack):
+    def handleNack(self, id: int, nack: Nack):
         pass
 
-    def forwarding_descision(self):
-        """Decide weather a computation should be executed locally or be forwarded"""
+    def forwarding_descision(self, interest: Interest):
+        """Decide weather a computation should be executed locally or be forwarded
+        :param interest: The original interest message to be handled (can be taken from computation table)
+        """
+        nfn_str, prepended_name = self.parser.network_name_to_nfn_str(interest.name)
+        entry = self.computation_table.get_computation(interest.name)
 
+        if self.optimizer.compute_fwd(prepended_name, entry.ast):
+            self.logger.info("FWD")
+            rewritten_names = self.optimizer.rewrite(interest.name, entry.ast)
+            self.computation_table.update_status(interest.name, NFNComputationState.REWRITE)
+            self.computation_table.remove_computation(interest.name)
+            entry.rewrite_list = rewritten_names
+            request = self.parser.nfn_str_to_network_name(rewritten_names[0])
+            self.queue_to_lower.put([entry.id, request])
+            self.computation_table.append_computation(entry)
+
+        if self.optimizer.compute_local(prepended_name, entry.ast):
+            self.logger.info("Compute Local")
+            self.computation_table.update_status(interest.name, NFNComputationState.EXEC)
+            self.computation_table.remove_computation(interest.name)
+            if not isinstance(entry.ast, AST_FuncCall):
+                return
+
+            params_requests = []
+            params = []
+            for p in entry.ast.params:
+                name = None
+                if isinstance(p, AST_Name):
+                    name = Name(p._element)
+                    self.queue_to_lower.put([id, Interest(name)])
+                elif isinstance(p, AST_FuncCall):
+                    p._prepend = True
+                    name = self.parser.nfn_str_to_network_name((str(p)))
+                    p._prepend = False
+                    self.handleInterest(id, interest)
+                else:
+                    continue
+                entry.add_name_to_await_list(name)
+
+            self.computation_table.append_computation(entry)
+            if(entry.awaiting_data == []):
+                self.compute()
+
+        def compute(self):
+            pass
+
+
+        #TODO if computation, request all required data, start if no data are required.
