@@ -292,3 +292,26 @@ class test_NFNComputationList(unittest.TestCase):
         self.computationList.container[0].add_name_to_await_list(reqeuest_name)
         v = self.computationList.push_data(Content(reqeuest_name))
         self.assertTrue(v)
+
+
+    def test_computation_table_rewrite(self):
+        """test computation rewriting"""
+        name = Name("/test/NFN")
+        self.computationList.add_computation(name, 0, Interest(name))
+        self.computationList.update_status(name, NFNComputationState.REWRITE)
+        rewrite_list = [Name("/test1/NFN"), Name("/test2/NFN")]
+        entry = self.computationList.get_computation(name)
+        self.computationList.remove_computation(name)
+        entry.rewrite_list = rewrite_list
+        self.computationList.append_computation(entry)
+        #do not match wrong data
+        self.computationList.push_data(Content(Name("/test2/NFN")))
+        self.assertEqual(self.computationList.get_computation(name).comp_state, NFNComputationState.REWRITE)
+        #match correct data
+        self.computationList.push_data(Content(Name("/test1/NFN"), "HelloWorld"))
+        self.assertEqual(self.computationList.get_computation(name).comp_state, NFNComputationState.WRITEBACK)
+        #test ready
+        ready = self.computationList.get_ready_computations()
+        self.assertEqual(name, ready[0].original_name)
+        self.assertEqual("HelloWorld", ready[0].available_data.get(rewrite_list[0]))
+
