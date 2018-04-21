@@ -67,7 +67,11 @@ class BasicNFNLayer(LayerProcess):
         self.forwarding_descision(interest)
 
     def handleContent(self, id: int, content: Content):
-        pass
+        """handle a arriving content object
+        :param id: id of the computation
+        :param content: content that arrived
+        """
+
 
     def handleNack(self, id: int, nack: Nack):
         pass
@@ -128,6 +132,11 @@ class BasicNFNLayer(LayerProcess):
         params = []
         entry = self.computation_table.get_computation(interest.name)
         self.computation_table.remove_computation(interest.name)
+        if entry.comp_state == NFNComputationState.WRITEBACK:
+            #TODO FIXME is it required to put that in handle content?
+            res = entry.available_data[entry.rewrite_list[0]]
+            self.queue_to_lower.put(entry.id, Content(entry.original_name, res))
+            return
         function_name = Name(entry.ast._element)
         function_code = entry.available_data[function_name]
         executor: BaseNFNExecutor = self.executors.get(self.get_nf_code_language(function_code))

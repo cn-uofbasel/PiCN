@@ -15,6 +15,7 @@ class NFNComputationState(Enum):
     FWD = 1
     EXEC = 2
     REWRITE = 3
+    WRITEBACK=4
 
 class NFNAwaitListEntry(object):
     """Data Structure storing information about reqests of a running computation
@@ -65,6 +66,11 @@ class NFNComputationTableEntry(object):
         :param content: Content Object that should be added to the computation
         :return True if content was required, else False
         """
+        if self.comp_state == NFNComputationState.REWRITE:
+            if self.rewrite_list[0] == content.name:
+                self.comp_state = NFNComputationState.WRITEBACK
+                self.available_data[content.name] = content.content
+                return True
         if content.name not in list(map(lambda n: n.name, self.awaiting_data)):
             return False
         if content.name in self.available_data:
@@ -77,6 +83,8 @@ class NFNComputationTableEntry(object):
         """Returns if all required data were received, excludes R2C
         :return True if all data were received, else false
         """
+        if self.comp_state == NFNComputationState.WRITEBACK:
+            return True
         l = list(filter(lambda n: b"R2C" not in n.name.components, self.awaiting_data))
         if len(l) == 0:
             return True
