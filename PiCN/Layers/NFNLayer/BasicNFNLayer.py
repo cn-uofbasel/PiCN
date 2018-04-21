@@ -82,6 +82,7 @@ class BasicNFNLayer(LayerProcess):
 
     def handleNack(self, id: int, nack: Nack):
         #todo remove comp
+        #todo or choose next rewirte
         pass
 
     def forwarding_descision(self, interest: Interest):
