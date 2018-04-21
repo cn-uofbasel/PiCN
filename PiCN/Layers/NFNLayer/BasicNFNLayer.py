@@ -75,9 +75,13 @@ class BasicNFNLayer(LayerProcess):
         if not used:
             self.queue_to_lower.put([id, content])
             return
+
         ready_comps = self.computation_table.get_ready_computations()
         for comp in ready_comps:
-            self.compute(comp.interest)
+            if comp.comp_state == NFNComputationState.FWD:
+                self.forwarding_descision(comp.interest)
+            if comp.comp_state == NFNComputationState.EXEC:
+                self.compute(comp.interest)
 
 
     def handleNack(self, id: int, nack: Nack):
