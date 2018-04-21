@@ -4,13 +4,13 @@ import time
 
 from PiCN.Packets import Content, Name
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore, ContentStoreEntry
-from PiCN.Layers.ICNLayer.ContentStore.ContentTree import ContentTree
+from PiCN.Layers.ICNLayer.ContentStore.NamedObjectTree import NamedObjectTree
 
 class ContentStoreMemoryPrefix(BaseContentStore):
     """ An in-memory content store with prefix matching"""
 
     def __init__(self):
-        self._container:ContentTree = ContentTree()
+        self._container:NamedObjectTree = NamedObjectTree()
 
     def find_content_object(self, name: Name) -> ContentStoreEntry:
         """

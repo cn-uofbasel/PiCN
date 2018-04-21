@@ -1,6 +1,6 @@
 """ Data structure to organize named objects in a tree reflecting their namespace hierarchy """
 
-from PiCN.Packets import Content, Name
+from PiCN.Packets import Name
 
 from functools import reduce
 from collections import defaultdict
@@ -9,10 +9,10 @@ import json
 from typing import List
 
 
-def Tree(content_object=None):
-    return {"subtree": defaultdict(Tree), "leaf": content_object}
+def Tree(named_object=None):
+    return {"subtree": defaultdict(Tree), "leaf": named_object}
 
-class ContentTree():
+class NamedObjectTree():
     """
     Data structure to organize objects with property 'name' (of type PiCN.Packets.Name) in a tree reflecting their
     namespace hierarchy (e.g. Content, ContentStoreEntry). Exact and prefix lookup is possible.
@@ -41,14 +41,14 @@ class ContentTree():
         """
         return json.dumps(self.__tree)
 
-    def insert(self, content) -> None:
+    def insert(self, named_object) -> None:
         """
         Insert an object
-        :param content: Object to insert (must have a property 'name' of type PiCN.Packets.Name)
+        :param named_object: Object to insert (must have a property 'name' of type PiCN.Packets.Name)
         :return: None
         """
-        path = content.name.components
-        (self.__get_subtree(path[:-1])[path[-1]])["leaf"] = content
+        path = named_object.name.components
+        (self.__get_subtree(path[:-1])[path[-1]])["leaf"] = named_object
 
     def remove(self, name: Name) -> None:
         """
@@ -64,7 +64,7 @@ class ContentTree():
         """
         Lookup (only exact matches are returned)
         :param name: Name to lookup
-        :return: Object or None
+        :return: Named object or None
         """
         path = name.components
         try:
@@ -72,11 +72,11 @@ class ContentTree():
         except KeyError:
             return None
 
-    def prefix_lookup(self, name: Name) -> Content:
+    def prefix_lookup(self, name: Name):
         """
         Find any object which has a given prefix (or exact match)
         :param name: name/prefix
-        :return: Object or None
+        :return: Named object or None
         """
         def traverse(tree):
             if tree["leaf"] is not None:

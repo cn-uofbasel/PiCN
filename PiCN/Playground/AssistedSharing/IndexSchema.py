@@ -9,7 +9,7 @@ class Rule():
         """
         Create new rule object
         :param pattern: Regex
-        :param type: Mime type of high-level object
+        :param type: Mime type of wrapped high-level object
         :param wrappers: Wrappers applied to content which is published under matching names
         """
         self.patter = pattern
@@ -38,7 +38,7 @@ class IndexSchema(object):
 
     def __init__(self, wire_schema):
         """
-        Create Index Schema Object from network representation
+        Create Index schema object from network representation
         :param wire_schema: Index schema as retrieved from network
         """
         lines = wire_schema.split('\n')

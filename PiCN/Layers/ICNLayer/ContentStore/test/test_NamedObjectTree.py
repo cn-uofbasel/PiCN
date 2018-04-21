@@ -1,17 +1,17 @@
-"""Tests for the ContentTree data structure"""
+"""Tests for the NamedObjectTree data structure"""
 
 import unittest
 
-from PiCN.Layers.ICNLayer.ContentStore.ContentTree import ContentTree
+from PiCN.Layers.ICNLayer.ContentStore.NamedObjectTree import NamedObjectTree
 from PiCN.Layers.ICNLayer.ContentStore.BaseContentStore import ContentStoreEntry
 from PiCN.Packets import Content, Name
 
 
-class test_ContentTree(unittest.TestCase):
+class test_NamedObjectTree(unittest.TestCase):
 
     def setUp(self):
-        self.tree1_co = ContentTree()  # for tests with objects of type Content
-        self.tree_cse = ContentTree()  # for tests with objects of type ContentStoreEntry
+        self.tree1_co = NamedObjectTree()  # for tests with objects of type Content
+        self.tree_cse = NamedObjectTree()  # for tests with objects of type ContentStoreEntry
 
     def tearDown(self):
         pass
