@@ -3,12 +3,9 @@
 import multiprocessing
 
 from PiCN.Layers.ICNLayer.ContentStore.ContentStoreMemoryPrefix import ContentStoreMemoryPrefix
-from PiCN.Layers.ICNLayer.ContentStore.ContentStoreMemoryExact import ContentStoreMemoryExact
-from PiCN.Packets import Name, Content, Interest, Packet, Nack, NackReason
-
-from PiCN.Layers.ICNLayer.ContentStore.ContentStoreMemoryPrefix import ContentStoreMemoryPrefix
-from PiCN.Packets import Name, Content, Interest, Packet, Nack, NackReason
+from PiCN.Packets import Content, Interest, Packet, Nack, NackReason
 from PiCN.Processes import LayerProcess
+from PiCN.Playground.AssistedSharing.SampleData import alice_index_schema
 
 
 class RepoLayer(LayerProcess):
@@ -19,7 +16,7 @@ class RepoLayer(LayerProcess):
             manager = multiprocessing.Manager()
         self._data_structs = manager.dict()
         cs = ContentStoreMemoryPrefix()
-        cs.add_content_object(Content("/test/name", "test content"))
+        cs.add_content_object(Content("/alice/schema.index", alice_index_schema))
         self._data_structs['cs'] = cs
 
 
