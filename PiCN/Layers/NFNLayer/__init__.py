@@ -5,3 +5,4 @@
 """
 
 from .BasicNFNLayer_deprecated import BasicNFNLayer_deprecated
+from .BasicNFNLayer import BasicNFNLayer
