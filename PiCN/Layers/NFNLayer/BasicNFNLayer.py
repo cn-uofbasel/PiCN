@@ -71,6 +71,13 @@ class BasicNFNLayer(LayerProcess):
         :param id: id of the computation
         :param content: content that arrived
         """
+        used = self.computation_table.push_data(content)
+        if not used:
+            self.queue_to_lower.put([id, content])
+            return
+        ready_comps = self.computation_table.get_ready_computations()
+        for comp in ready_comps:
+            self.compute(comp.interest)
 
 
     def handleNack(self, id: int, nack: Nack):
