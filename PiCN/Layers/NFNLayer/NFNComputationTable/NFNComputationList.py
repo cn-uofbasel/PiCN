@@ -7,12 +7,12 @@ from PiCN.Packets import Name
 from PiCN.Layers.NFNLayer.NFNComputationTable.BaseNFNComputationTable import BaseNFNComputationTable
 from PiCN.Layers.NFNLayer.NFNComputationTable.BaseNFNComputationTable import NFNComputationTableEntry
 from PiCN.Layers.NFNLayer.NFNComputationTable.BaseNFNComputationTable import NFNComputationState
-from PiCN.Layers.NFNLayer.R2C import BaseR2CClient
+from PiCN.Layers.NFNLayer.R2C import BaseR2CHandler
 
 class NFNComputationList(BaseNFNComputationTable):
     """Implementation of the NFNComputationTable using a list"""
 
-    def __init__(self, r2cclient: BaseR2CClient):
+    def __init__(self, r2cclient: BaseR2CHandler):
         super().__init__(r2cclient)
 
 

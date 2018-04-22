@@ -12,7 +12,7 @@ from PiCN.Layers.NFNLayer.NFNExecutor import BaseNFNExecutor
 from PiCN.Layers.NFNLayer.Parser import *
 from PiCN.Layers.NFNLayer.NFNOptimizer import BaseNFNOptimizer
 from PiCN.Layers.NFNLayer.NFNOptimizer import ToDataFirstOptimizer
-from PiCN.Layers.NFNLayer.R2C import TimeoutR2CClient
+from PiCN.Layers.NFNLayer.R2C import TimeoutR2CHandler
 
 class BasicNFNLayer(LayerProcess):
     """Basic NFN Layer Implementation"""
@@ -22,7 +22,7 @@ class BasicNFNLayer(LayerProcess):
         super().__init__("NFN-Layer", log_level=log_level)
         self.icn_data_structs = icn_data_structs
         self.executors = executors
-        self.r2cclient = TimeoutR2CClient()
+        self.r2cclient = TimeoutR2CHandler()
         self.computation_table: BaseNFNComputationTable = NFNComputationList(self.r2cclient) \
             if computationTable == None else computationTable
         self.parser: DefaultNFNParser = DefaultNFNParser()
@@ -45,7 +45,8 @@ class BasicNFNLayer(LayerProcess):
 
     def handleInterest(self, id: int, interest: Interest):
         """start a new computation from an interest or send it down if no NFN tag"""
-        #TODO R2C!!!
+        if self.r2cclient.R2C_identify_Name(interest.name):
+            self.r2cclient.R2C_handle_request(interest.name)
         if interest.name.components[-1] != b"NFN": #send non NFN interests back
             self.queue_to_lower.put([id, interest])
             return

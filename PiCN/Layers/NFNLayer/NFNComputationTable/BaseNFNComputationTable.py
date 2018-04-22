@@ -7,7 +7,7 @@ from enum import Enum
 from typing import List, Dict
 from PiCN.Packets import Content, Name, Interest
 
-from PiCN.Layers.NFNLayer.R2C import BaseR2CClient, TimeoutR2CClient
+from PiCN.Layers.NFNLayer.R2C import BaseR2CHandler, TimeoutR2CHandler
 from PiCN.Layers.NFNLayer.Parser import AST
 
 class NFNComputationState(Enum):
@@ -42,12 +42,12 @@ class NFNComputationTableEntry(object):
     :param r2cclient: r2cclient handler that selects and handles messages to be handled
     """
 
-    def __init__(self, name: Name, id: int=0, interest: Interest=None, ast: AST=None, r2cclient: BaseR2CClient=None):
+    def __init__(self, name: Name, id: int=0, interest: Interest=None, ast: AST=None, r2cclient: BaseR2CHandler=None):
         self.original_name: Name = name # original name of the computation
         self.id = id
         self.interest = interest
         self.ast: AST = ast
-        self.r2cclient: BaseR2CClient = r2cclient if r2cclient is not None else TimeoutR2CClient() # r2c clients used for ageing
+        self.r2cclient: BaseR2CHandler = r2cclient if r2cclient is not None else TimeoutR2CHandler() # r2c clients used for ageing
         self.awaiting_data: List[NFNAwaitListEntry] = [] # data that are awaited by the computation
         self.available_data: Dict[Name, Content] = {} # data that are required and now available
         self.rewrite_list: List[Name] = [] # list of all possible rewrites
@@ -137,7 +137,7 @@ class BaseNFNComputationTable(object):
     :param r2cclient: R2CClient to handle ageing
     """
 
-    def __init__(self, r2cclient: BaseR2CClient):
+    def __init__(self, r2cclient: BaseR2CHandler):
         self.r2cclient = r2cclient
         self.container: List[NFNComputationTableEntry] = []
 

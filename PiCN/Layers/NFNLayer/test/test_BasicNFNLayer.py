@@ -6,7 +6,7 @@ import multiprocessing
 from PiCN.Layers.NFNLayer import BasicNFNLayer
 from PiCN.Layers.NFNLayer.NFNExecutor import NFNPythonExecutor
 from PiCN.Layers.NFNLayer.NFNComputationTable import *
-from PiCN.Layers.NFNLayer.R2C import TimeoutR2CClient
+from PiCN.Layers.NFNLayer.R2C import TimeoutR2CHandler
 
 from PiCN.Packets import Name, Interest, Content
 
@@ -25,7 +25,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.icn_data_structs['pit'] = PendingInterstTableMemoryExact()
 
         self.executor = {"PYTHON": NFNPythonExecutor()}
-        self.r2cclient = TimeoutR2CClient()
+        self.r2cclient = TimeoutR2CHandler()
         self.computation_table = NFNComputationList(self.r2cclient)
         self.nfn_layer = BasicNFNLayer(self.icn_data_structs, self.executor, self.computation_table)
 

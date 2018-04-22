@@ -8,12 +8,12 @@ from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationList
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationState
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationTableEntry
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNAwaitListEntry
-from PiCN.Layers.NFNLayer.R2C import TimeoutR2CClient
+from PiCN.Layers.NFNLayer.R2C import TimeoutR2CHandler
 
 class test_NFNComputationList(unittest.TestCase):
 
     def setUp(self):
-        self.r2cclient = TimeoutR2CClient()
+        self.r2cclient = TimeoutR2CHandler()
         self.computationList: NFNComputationList = NFNComputationList(self.r2cclient)
 
     def tearDown(self):

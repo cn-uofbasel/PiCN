@@ -3,9 +3,10 @@
 import abc
 from typing import List
 
-from PiCN.Packets import Name
+from PiCN.Layers.NFNLayer.NFNComputationTable import BaseNFNComputationTable
+from PiCN.Packets import Name, Content
 
-class BaseR2CClient(object):
+class BaseR2CHandler(object):
     """Base Class for R2C Clients in PiCN's NFN Layer"""
 
     def __init__(self):
@@ -32,8 +33,24 @@ class BaseR2CClient(object):
         """
 
     @abc.abstractmethod
+    def R2C_get_original_message(self, name: Name) -> Name:
+        """takes a R2C message and removes the R2C components
+        :param name: R2C name from which the components should be removed
+        :return NFN name without R2C marker
+        """
+
+
+    @abc.abstractmethod
     def R2C_identify_Name(self, name: Name) -> bool:
         """checks if a R2C messages matches this handler
         :param name: Name to identify
         :return True if Name matches handler, else False
+        """
+
+    @abc.abstractmethod
+    def R2C_handle_request(self, name: Name, computationTable: BaseNFNComputationTable) -> Content:
+        """handles a R2C request
+        :param Name: Name of the R2C request
+        :param computationTable: The current computationTable
+        :return content object to reply
         """
