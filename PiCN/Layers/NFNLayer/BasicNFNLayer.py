@@ -46,7 +46,9 @@ class BasicNFNLayer(LayerProcess):
     def handleInterest(self, id: int, interest: Interest):
         """start a new computation from an interest or send it down if no NFN tag"""
         if self.r2cclient.R2C_identify_Name(interest.name):
-            self.r2cclient.R2C_handle_request(interest.name)
+            c = self.r2cclient.R2C_handle_request(interest.name)
+            if c is not None:
+                self.queue_to_lower.put([id, c])
         if interest.name.components[-1] != b"NFN": #send non NFN interests back
             self.queue_to_lower.put([id, interest])
             return
