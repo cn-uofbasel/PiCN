@@ -10,12 +10,17 @@ class BaseNFNExecutor(object):
         pass
 
     @property
-    def language(self):
-        """returns the language type supported by the executor"""
+    def language(self) -> str:
+        """returns the language type supported by the executor
+        :return string identifying the language the Executor can handle
+        """
         return  self._language
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def execute(self, function: str, params: List) -> str: #TODO params no string? ast value! same for result?
         """execute a function code. this can call other programming languages
         IMPORTANT: SANDBOXING REQUIRED!!!
+        :param function: function code as str
+        :param params: list containing the parameter
+        :return result as string
         """
