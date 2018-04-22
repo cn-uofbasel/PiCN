@@ -10,6 +10,8 @@ class TimeoutR2CClient(BaseR2CClient):
     def R2C_selection(self, names: List[Name]) -> List[Name]:
         return_list = []
         for n in names:
+            if b"R2C" in n.components:
+                continue
             if n.components[-1] == b"NFN":
                 return_list.append(n)
             else:
@@ -26,3 +28,8 @@ class TimeoutR2CClient(BaseR2CClient):
         new_name.components.append(b"KEEPALIVE")
         new_name.components.append(b"NFN")
         return new_name
+
+    def R2C_identify_Name(self, name: Name):
+        if len(name.components) < 3:
+            return False
+        return name.components[-1] == b"NFN" and name.components[-2] == b"KEEPALIVE" and name.components[-3] == b"R2C"

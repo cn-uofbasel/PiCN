@@ -30,3 +30,10 @@ class BaseR2CClient(object):
         :param name: name that should be transformed to corresponding R2C
         :return R2C name
         """
+
+    @abc.abstractmethod
+    def R2C_identify_Name(self, name: Name) -> bool:
+        """checks if a R2C messages matches this handler
+        :param name: Name to identify
+        :return True if Name matches handler, else False
+        """

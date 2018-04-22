@@ -112,6 +112,8 @@ class NFNComputationTableEntry(object):
         possible_requests = []
         for al_entry in self.awaiting_data:
             if ts > self.timeout + al_entry.time_stamp:
+                if self.r2cclient.R2C_identify_Name(al_entry.name):
+                    return None
                 possible_requests.append(al_entry.name)
         required_requests = self.r2cclient.R2C_selection(possible_requests)
         if required_requests == None:

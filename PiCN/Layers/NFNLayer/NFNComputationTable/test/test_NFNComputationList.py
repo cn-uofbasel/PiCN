@@ -293,7 +293,6 @@ class test_NFNComputationList(unittest.TestCase):
         v = self.computationList.push_data(Content(reqeuest_name))
         self.assertTrue(v)
 
-
     def test_computation_table_rewrite(self):
         """test computation rewriting"""
         name = Name("/test/NFN")
@@ -315,3 +314,37 @@ class test_NFNComputationList(unittest.TestCase):
         self.assertEqual(name, ready[0].original_name)
         self.assertEqual("HelloWorld", ready[0].available_data.get(rewrite_list[0]))
 
+    def test_r2c_timeout_prevention(self): #todo same for rewrite
+        """test r2c timeout prevention"""
+        name1 = Name("/test1/NFN")
+        name2 = Name("/test2/NFN")
+        self.computationList.add_computation(name1, 0, Interest(name1))
+        self.computationList.add_computation(name2, 0, Interest(name2))
+
+        requestname1 = Name("/request1/NFN")
+        requestname2 = Name("/request2/NFN")
+
+        self.computationList.add_awaiting_data(name1, requestname1)
+        self.computationList.add_awaiting_data(name2, requestname2)
+
+        entry1 = self.computationList.get_computation(name1)
+        self.computationList.remove_computation(name1)
+        entry1.timeout = 1
+        self.computationList.append_computation(entry1)
+
+        entry2 = self.computationList.get_computation(name2)
+        self.computationList.remove_computation(name2)
+        entry2.timeout = 1
+        self.computationList.append_computation(entry2)
+        #ask for requests
+        time.sleep(1)
+        request_list = self.computationList.ageing()
+        self.assertEqual(request_list, ([requestname1, self.r2cclient.R2C_create_message(requestname1),
+                                        requestname2, self.r2cclient.R2C_create_message(requestname2)], []))
+
+        self.computationList.push_data(Content(self.r2cclient.R2C_create_message(requestname1)))
+        time.sleep(1)
+        request_list = self.computationList.ageing()
+
+        self.assertEqual(request_list, ([requestname1, self.r2cclient.R2C_create_message(requestname1)],
+                                         [name2]))
