@@ -32,18 +32,21 @@ def main(args):
 
     # Receive content object
     try:
-        encoded_content, addr = sock.recvfrom(8192)
+        wire_packet, addr = sock.recvfrom(8192)
     except:
         print("Timeout.")
         sys.exit(-1)
 
     # Print
     if args.plain is False:
-        printer = NdnTlvPrinter(encoded_content)
+        printer = NdnTlvPrinter(wire_packet)
         printer.formatted_print()
     else:
-        payload = NdnTlvEncoder().decode_data(encoded_content)[1]
-        sys.stdout.buffer.write(payload)
+        encoder = NdnTlvEncoder()
+        if encoder.is_content(wire_packet):
+            sys.stdout.buffer.write(encoder.decode_data(wire_packet)[1])
+        else:
+            sys.exit(-2)
 
 
 if __name__ == "__main__":
@@ -51,7 +54,7 @@ if __name__ == "__main__":
     parser.add_argument('-i', '--ip', type=str, default='127.0.0.1', help="IP address or hostname of forwarder (default: 127.0.0.1)")
     parser.add_argument('-p', '--port', type=int, default=9000, help="UDP port (default: 9000)")
     parser.add_argument('-f', '--format', choices=['ndntlv','simple'], type=str, default='ndntlv', help='Packet Format (default: ndntlv)')
-    parser.add_argument('--plain', help="plain output (writes only payload to stdout)", action="store_true")
+    parser.add_argument('--plain', help="plain output (writes payload to stdout or returns -2 for NACK)", action="store_true")
     parser.add_argument('name', type=str, help="CCN name of the content object to fetch")
     args = parser.parse_args()
     main(args)

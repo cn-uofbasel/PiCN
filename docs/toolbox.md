@@ -37,7 +37,8 @@ optional arguments:
   -p PORT, --port PORT  UDP port (default: 9000)
   -f {ndntlv,simple}, --format {ndntlv,simple}
                         Packet Format (default: ndntlv)
-  --plain               plain output (writes only payload to stdout)
+  --plain               plain output (writes payload to stdout or returns -2
+                        for NACK)
 ```
 
 
