@@ -177,3 +177,135 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.nfn_layer.compute(computation_interest)
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
         self.assertEqual(Content(computation_name, "HELLO WORLD"), res[1])
+
+
+    def test_forwarding_descision_no_rewrite(self):
+        """Test if forward or compute local: goal: forward with no rewrite"""
+        fib: ForwardingInformationBaseMemoryPrefix = self.nfn_layer.icn_data_structs.get('fib')
+        fib.add_fib_entry(Name('/func'), 1, True)
+        self.nfn_layer.icn_data_structs['fib'] = fib
+
+        computation_name = Name("/func/f1")
+        computation_name += "_(/test/data)"
+        computation_name += "NFN"
+        computation_interest = Interest(computation_name)
+
+        computation_entry = NFNComputationTableEntry(computation_name)
+        computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
+        computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
+
+        self.nfn_layer.forwarding_descision(computation_interest)
+        res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
+        self.assertEqual(res[1], computation_interest)
+        self.assertEqual(self.computation_table.get_computation(computation_name).comp_state, NFNComputationState.REWRITE)
+        self.assertEqual(len(self.computation_table.get_computation(computation_name).rewrite_list), 1)
+        self.assertEqual(self.computation_table.get_computation(computation_name).rewrite_list[0], "%/func/f1%(/test/data)")
+
+    def test_forwarding_descision_rewrite(self):
+        """Test if forward or compute local: goal: forward with rewrite"""
+        fib: ForwardingInformationBaseMemoryPrefix = self.nfn_layer.icn_data_structs.get('fib')
+        fib.add_fib_entry(Name('/test'), 1, True)
+        self.nfn_layer.icn_data_structs['fib'] = fib
+
+        computation_name = Name("/func/f1")
+        computation_name += "_(1,/test/data)"
+        computation_name += "NFN"
+        computation_interest = Interest(computation_name)
+
+        computation_entry = NFNComputationTableEntry(computation_name)
+        computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
+        computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
+
+        self.nfn_layer.forwarding_descision(computation_interest)
+        res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
+        compare_name = Name("/test/data")
+        compare_name += "/func/f1(1,_)"
+        compare_name += "NFN"
+        self.assertEqual(res[1], Interest(compare_name))
+        self.assertEqual(len(self.computation_table.get_computation(computation_name).rewrite_list), 1)
+        self.assertEqual(self.computation_table.get_computation(computation_name).rewrite_list[0], "/func/f1(1,%/test/data%)")
+
+    def test_forward_descision_fwd_not_prepended_local(self):
+        """Test if the forward or compute local: forward with not prepended data local available"""
+        fib: ForwardingInformationBaseMemoryPrefix = self.nfn_layer.icn_data_structs.get('fib')
+        fib.add_fib_entry(Name('/test'), 1, True)
+        self.nfn_layer.icn_data_structs['fib'] = fib
+
+        c1 = Content("/test/data", "Hello World")
+        cs: ContentStoreMemoryExact = self.nfn_layer.icn_data_structs.get('cs')
+        cs.add_content_object(c1)
+        self.nfn_layer.icn_data_structs['cs'] = cs
+
+        computation_name = Name("/func/f1")
+        computation_name += "_(1,/test/data)"
+        computation_name += "NFN"
+        computation_interest = Interest(computation_name)
+
+        computation_entry = NFNComputationTableEntry(computation_name)
+        computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
+        computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
+
+        self.nfn_layer.forwarding_descision(computation_interest)
+        res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
+        compare_name = Name("/test/data")
+        compare_name += "/func/f1(1,_)"
+        compare_name += "NFN"
+        self.assertEqual(res[1], Interest(compare_name))
+        self.assertEqual(len(self.computation_table.get_computation(computation_name).rewrite_list), 1)
+        self.assertEqual(self.computation_table.get_computation(computation_name).rewrite_list[0], "/func/f1(1,%/test/data%)")
+
+    def test_forward_descision_compute_local_no_param(self):
+        """Test if the forward or compute local: goal: compute local with no parameter"""
+        fib: ForwardingInformationBaseMemoryPrefix = self.nfn_layer.icn_data_structs.get('fib')
+        fib.add_fib_entry(Name('/test'), 1, True)
+        self.nfn_layer.icn_data_structs['fib'] = fib
+
+        c1 = Content("/func/f1", "PYTHON\nf\ndef f(a):\n    return a.upper()")
+        cs: ContentStoreMemoryExact = self.nfn_layer.icn_data_structs.get('cs')
+        cs.add_content_object(c1)
+        self.nfn_layer.icn_data_structs['cs'] = cs
+
+        computation_name = Name("/func/f1")
+        computation_name += "_()"
+        computation_name += "NFN"
+        computation_interest = Interest(computation_name)
+
+        computation_entry = NFNComputationTableEntry(computation_name)
+        computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
+        computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
+
+        self.nfn_layer.forwarding_descision(computation_interest)
+        res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
+        self.assertEqual(res[1], Interest(Name("/func/f1")))
+
+    def test_forward_descision_compute_local_param(self):
+        """Test if the forward or compute local: goal: compute local with parameter"""
+        fib: ForwardingInformationBaseMemoryPrefix = self.nfn_layer.icn_data_structs.get('fib')
+        fib.add_fib_entry(Name('/test'), 1, True)
+        self.nfn_layer.icn_data_structs['fib'] = fib
+
+        c1 = Content("/func/f1", "PYTHON\nf\ndef f(a):\n    return a.upper()")
+        cs: ContentStoreMemoryExact = self.nfn_layer.icn_data_structs.get('cs')
+        cs.add_content_object(c1)
+        self.nfn_layer.icn_data_structs['cs'] = cs
+
+        computation_name = Name("/func/f1")
+        computation_name += "_(1,/test/data)"
+        computation_name += "NFN"
+        computation_interest = Interest(computation_name)
+
+        computation_entry = NFNComputationTableEntry(computation_name)
+        computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
+        computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
+
+        self.nfn_layer.forwarding_descision(computation_interest)
+        res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
+        self.assertEqual(res[1], Interest(Name("/func/f1")))
+        res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
+        self.assertEqual(res[1], Interest(Name("/test/data")))
+        self.assertTrue(self.nfn_layer.queue_to_lower.empty())

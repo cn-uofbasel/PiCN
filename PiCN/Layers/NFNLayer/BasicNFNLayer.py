@@ -107,7 +107,7 @@ class BasicNFNLayer(LayerProcess):
             self.computation_table.remove_computation(interest.name)
             entry.rewrite_list = rewritten_names
             request = self.parser.nfn_str_to_network_name(rewritten_names[0])
-            self.queue_to_lower.put([entry.id, request])
+            self.queue_to_lower.put([entry.id, Interest(request)])
             self.computation_table.append_computation(entry)
 
         if self.optimizer.compute_local(prepended_name, entry.ast):
@@ -116,6 +116,10 @@ class BasicNFNLayer(LayerProcess):
             self.computation_table.remove_computation(interest.name)
             if not isinstance(entry.ast, AST_FuncCall):
                 return
+
+            func_name = Name(entry.ast._element)
+            entry.add_name_to_await_list(func_name)
+            self.queue_to_lower.put([id, Interest(func_name)])
 
             for p in entry.ast.params:
                 name = None
@@ -126,7 +130,7 @@ class BasicNFNLayer(LayerProcess):
                     p._prepend = True
                     name = self.parser.nfn_str_to_network_name((str(p)))
                     p._prepend = False
-                    self.handleInterest(id, interest)
+                    self.handleInterest(id, Interest(name))
                 else:
                     continue
                 entry.add_name_to_await_list(name)
