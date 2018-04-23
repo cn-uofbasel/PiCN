@@ -35,6 +35,10 @@ class ToDataFirstOptimizer(BaseNFNOptimizer):
         return True
 
     def compute_fwd(self, prepended_prefix: Name, ast: AST) -> bool:
+        if prepended_prefix is None:
+            names = self._get_functions_from_ast(ast)
+            if names != []:
+                prepended_prefix = names[0]
         if self.cs.find_content_object(prepended_prefix):
             return False
         names = self._get_names_from_ast(ast)

@@ -309,3 +309,38 @@ class test_BasicNFNLayer(unittest.TestCase):
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
         self.assertEqual(res[1], Interest(Name("/test/data")))
         self.assertTrue(self.nfn_layer.queue_to_lower.empty())
+
+    def test_forward_descision_compute_inner_call(self):
+        """Test if the forward or compute local: goal: compute local with inner call"""
+        fib: ForwardingInformationBaseMemoryPrefix = self.nfn_layer.icn_data_structs.get('fib')
+        fib.add_fib_entry(Name('/test'), 1, True)
+        self.nfn_layer.icn_data_structs['fib'] = fib
+
+        c1 = Content("/func/f1", "PYTHON\nf\ndef f(a):\n    return a.upper()")
+        cs: ContentStoreMemoryExact = self.nfn_layer.icn_data_structs.get('cs')
+        cs.add_content_object(c1)
+        self.nfn_layer.icn_data_structs['cs'] = cs
+
+        computation_name = Name("/func/f1")
+        computation_name += "_(/func/f2(/test/data))"
+        computation_name += "NFN"
+        computation_interest = Interest(computation_name)
+
+
+        inner_computation_name = Name("/test/data")
+        inner_computation_name += "/func/f2(_)"
+        inner_computation_name += "NFN"
+        inner_computation_interest = Interest(inner_computation_name)
+
+
+        computation_entry = NFNComputationTableEntry(computation_name)
+        computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
+        computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
+
+        self.nfn_layer.forwarding_descision(computation_interest)
+        res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
+        self.assertEqual(res[1], Interest(Name("/func/f1")))
+        res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
+        self.assertEqual(res[1], inner_computation_interest)
+        self.assertTrue(self.nfn_layer.queue_to_lower.empty())

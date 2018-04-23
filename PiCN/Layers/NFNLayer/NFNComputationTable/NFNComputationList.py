@@ -19,7 +19,7 @@ class NFNComputationList(BaseNFNComputationTable):
     def add_computation(self, name, id, interest, ast=None):
         if self.is_comp_running(name):
             return
-        self.container.append(NFNComputationTableEntry(name, interest, ast, self.r2cclient))
+        self.container.append(NFNComputationTableEntry(name, id, interest, ast, self.r2cclient))
 
     def is_comp_running(self, name):
         l = list(map(lambda n: n.original_name, self.container))

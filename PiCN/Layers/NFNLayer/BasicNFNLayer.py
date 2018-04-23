@@ -59,7 +59,7 @@ class BasicNFNLayer(LayerProcess):
         self.computation_table.add_computation(interest.name, id, interest, ast)
 
         #request required data
-        required_optimizer_data = self.optimizer.required_data(ast)
+        required_optimizer_data = self.optimizer.required_data(interest.name, ast)
 
         self.computation_table.update_status(interest.name, NFNComputationState.FWD)
         if required_optimizer_data != []: # Optimizer requires additional data
@@ -127,9 +127,9 @@ class BasicNFNLayer(LayerProcess):
                     name = Name(p._element)
                     self.queue_to_lower.put([id, Interest(name)])
                 elif isinstance(p, AST_FuncCall):
-                    p._prepend = True
+                    #p._prepend = True
                     name = self.parser.nfn_str_to_network_name((str(p)))
-                    p._prepend = False
+                    #p._prepend = False
                     self.handleInterest(id, Interest(name))
                 else:
                     continue
