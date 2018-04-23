@@ -14,7 +14,7 @@ from PiCN.Playground.AssistedSharing.SampleData import alice_index_schema
 class RepoLayer(LayerProcess):
 
     def __init__(self, log_level=255, manager: multiprocessing.Manager=None):
-        super().__init__(logger_name="ICNLayer", log_level=log_level)
+        super().__init__(logger_name="RepoLayer", log_level=log_level)
         if manager is None:
             manager = multiprocessing.Manager()
         self._data_structs = manager.dict()
@@ -22,7 +22,7 @@ class RepoLayer(LayerProcess):
         cache.add_content_object(Content("/alice/schema.index", alice_index_schema))
         self._data_structs['cache'] = cache
         self._files_in_repo = {"/alice/movies/cats-and-dogs.mp4" : "/tmp/cats-and-dogs.mp4",
-                       "/alice/public/img/basel.jpg" : "/tmp/basel.jpg"}
+                               "/alice/public/img/basel.jpg"     : "/tmp/basel.jpg"}
 
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
@@ -142,4 +142,4 @@ class RepoLayer(LayerProcess):
         self.cache = cache
 
     def ageing(self):
-            pass # data should not be deleted from cache
+            pass # data should not be removed from cache
