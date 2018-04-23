@@ -49,6 +49,7 @@ class BasicNFNLayer(LayerProcess):
             c = self.r2cclient.R2C_handle_request(interest.name)
             if c is not None:
                 self.queue_to_lower.put([id, c])
+            return
         if interest.name.components[-1] != b"NFN": #send non NFN interests back
             self.queue_to_lower.put([id, interest])
             return
@@ -162,7 +163,10 @@ class BasicNFNLayer(LayerProcess):
         if executor is None:
             self.queue_to_lower.put([entry.id, Nack(entry.original_name, NackReason.COMP_EXCEPTION, interest=entry.interest)])
         for e in entry.ast.params:
-            params.append(entry.available_data[e.name])
+            if isinstance(e, AST_Name):
+                params.append(entry.available_data[e.name])
+            elif not isinstance(e.type, AST):
+                params.append(e.type(e._element))
 
         res = executor.execute(function_code, params)
         content_res: Content = Content(entry.original_name, str(res))
