@@ -18,9 +18,9 @@ class RepoLayer(LayerProcess):
         if manager is None:
             manager = multiprocessing.Manager()
         self._data_structs = manager.dict()
-        cs = ContentStoreMemoryExact()
-        cs.add_content_object(Content("/alice/schema.index", alice_index_schema))
-        self._data_structs['cs'] = cs
+        cache = ContentStoreMemoryExact()
+        cache.add_content_object(Content("/alice/schema.index", alice_index_schema))
+        self._data_structs['cache'] = cache
         self._files_in_repo = {"/alice/movies/cats-and-dogs.mp4" : "/tmp/cats-and-dogs.mp4",
                        "/alice/public/img/basel.jpg" : "/tmp/basel.jpg"}
 
@@ -44,7 +44,7 @@ class RepoLayer(LayerProcess):
         packet = data[1]
 
         if isinstance(packet, Interest):
-            self.handle_interest(face_id, packet, to_lower, to_higher, False)
+            self.handle_interest(face_id, packet, to_lower)
         elif isinstance(packet, Content):
             self.logger.info("Received Data Packet, do nothing")
             return
@@ -55,25 +55,38 @@ class RepoLayer(LayerProcess):
             self.logger.info("Received Unknown Packet, do nothing")
             return
 
-    def handle_interest(self, face_id: int, interest: Interest, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, from_local: bool = False):
-
-         cs_entry = self.cs.find_content_object(interest.name)
-         if cs_entry is not None:
-             self.logger.info("Found in cache")
-             to_lower.put([face_id, cs_entry.content])
-             return
-         else:
-             self.logger.info("Not found in cache, try to generate")
-             if self.generate_data(interest.name) is False:
-                 nack = Nack(interest.name, NackReason.NO_CONTENT, interest=interest)
-                 to_lower.put([face_id, nack])
-                 return
-             else:
-                 manifest = self.cs.find_content_object(interest.name).content
-                 to_lower.put([face_id, manifest])
-                 return
+    def handle_interest(self, face_id: int, interest: Interest, to_lower: multiprocessing.Queue):
+        """
+        Handle incoming interest
+        :param face_id: ID of incoming face
+        :param interest: Interest
+        :param to_lower: Queue to lower layer
+        :return: None
+        """
+        cache_entry = self.cache.find_content_object(interest.name)
+        if cache_entry is not None:
+            self.logger.info("Found in cache")
+            to_lower.put([face_id, cache_entry.content])
+            return
+        else:
+            if self.generate_data(interest.name) is False:
+                nack = Nack(interest.name, NackReason.NO_CONTENT, interest=interest)
+                to_lower.put([face_id, nack])
+                self.logger.info("Object not in repo")
+                return
+            else:
+                self.logger.info("Not found in cache, successfully generated")
+                manifest = self.cache.find_content_object(interest.name).content
+                to_lower.put([face_id, manifest])
+                return
 
     def generate_data(self, network_name: Name, chunk_size: int = 4096):
+        """
+        Generates manifest and chunks for a file in the repo
+        :param network_name: Network name of high-level object
+        :param chunk_size: chunk size
+        :return: True if successful, False otherwise
+        """
         try:
             fs_name = self._files_in_repo[network_name.to_string()]
         except:
@@ -92,30 +105,41 @@ class RepoLayer(LayerProcess):
                 m.update(chunk)
                 digest = m.hexdigest()
                 chunk_network_name = Name(network_name.to_string() + '/chunk/' + digest)
-                # add to cs and chunk list
+                # add to cache and chunk list
                 chunk_names.append(chunk_network_name.to_string())
-                self.add_to_cs(Content(chunk_network_name, chunk))
+                self.add_to_cache(Content(chunk_network_name, chunk))
             # generate manifest
             manifest_data = "\n".join(chunk_names)
             manifest = Content(network_name, manifest_data)
-            self.add_to_cs(manifest)
+            self.add_to_cache(manifest)
             return True
 
     @property
-    def cs(self):
-        """The Content Store"""
-        return self._data_structs.get('cs')
+    def cache(self):
+        """
+        Get Cache
+        :return: Cache
+        """
+        return self._data_structs.get('cache')
 
-    @cs.setter
-    def cs(self, cs):
-        self._data_structs['cs'] = cs
+    @cache.setter
+    def cache(self, cache):
+        """
+        Set cache
+        :param cache: Cache to store
+        :return: None
+        """
+        self._data_structs['cache'] = cache
 
-    def add_to_cs(self, content: Content):
-        #cs = self._data_structs.get('cs')
-        cs = self.cs
-        cs.add_content_object(content)
-        # self._data_structs['cs'] = cs
-        self.cs = cs
+    def add_to_cache(self, content: Content):
+        """
+        Add a content object to the repositories cache
+        :param content: Content object to add
+        :return: None
+        """
+        cache = self.cache
+        cache.add_content_object(content)
+        self.cache = cache
 
     def ageing(self):
-            pass
+            pass # data should not be deleted from cache
