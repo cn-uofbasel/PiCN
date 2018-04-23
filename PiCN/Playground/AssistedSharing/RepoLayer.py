@@ -24,10 +24,8 @@ class RepoLayer(LayerProcess):
         self._files_in_repo = {"/alice/movies/cats-and-dogs.mp4" : "/tmp/cats-and-dogs.mp4",
                                "/alice/public/img/basel.jpg"     : "/tmp/basel.jpg"}
 
-
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         pass
-
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         if len(data) != 2:
