@@ -87,7 +87,7 @@ class RepoLayer(LayerProcess):
             chunk_names = list()
             for n in range(0, num_chunks-1):
                 # extract chunk and compute digest
-                chunk = file[n : min(n+1, file_length)]
+                chunk = file[4096 * n : min(4096*(n+1), file_length)]
                 m = hashlib.sha256()
                 m.update(chunk)
                 digest = m.hexdigest()
