@@ -34,6 +34,10 @@ class IndexSchema(object):
         -> wrapper:/simple/chunking
         => type:/mime/application/pdf
 
+    doc:/alice/public/img/basel.jpg$
+        -> wrapper:/simple/chunking
+        => type:/mime/image/jpeg
+
     """
 
     def __init__(self, wire_schema):
