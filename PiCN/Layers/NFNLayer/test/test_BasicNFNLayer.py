@@ -93,3 +93,21 @@ class test_BasicNFNLayer(unittest.TestCase):
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
         self.assertEqual(Content(computation_name, "abcabc"), res[1])
 
+    def test_compute__params_int_float(self):
+        """Test computing with a single function call and a single parameter, int"""
+        computation_name = Name("/func/f1")
+        computation_name += "_(2,12.5)"
+        computation_name += "NFN"
+        computation_interest = Interest(computation_name)
+
+        computation_entry = NFNComputationTableEntry(computation_name)
+        computation_entry.available_data[Name("/func/f1")] = "PYTHON\nf\ndef f(a,b):\n    return a*b"
+
+        computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
+        computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
+
+        self.nfn_layer.computation_table.append_computation(computation_entry)
+
+        self.nfn_layer.compute(computation_interest)
+        res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
+        self.assertEqual(Content(computation_name, "25.0"), res[1])

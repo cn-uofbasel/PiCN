@@ -54,7 +54,10 @@ class AST_Name(AST):
 class AST_String(AST):
     """String AST Element"""
     def __init__(self, element: str):
-        super().__init__(element[1:-1])
+        super().__init__(element[1:-1]) #removes "
+
+    def __str__(self):
+        return '"' + self._element + '"'
 
     @property
     def type(self):
