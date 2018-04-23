@@ -74,7 +74,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
         self.assertEqual(Content(computation_name, "42"), res[1])
 
-    def test_compute__params_int_str(self):
+    def test_compute_params_int_str(self):
         """Test computing with a single function call and a int and str as parameter"""
         computation_name = Name("/func/f1")
         computation_name += "_(2,\"abc\")"
@@ -93,7 +93,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
         self.assertEqual(Content(computation_name, "abcabc"), res[1])
 
-    def test_compute__params_int_float(self):
+    def test_compute_params_int_float(self):
         """Test computing with a single function call and int and float as parameter"""
         computation_name = Name("/func/f1")
         computation_name += "_(2,12.5)"
@@ -112,8 +112,8 @@ class test_BasicNFNLayer(unittest.TestCase):
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
         self.assertEqual(Content(computation_name, "25.0"), res[1])
 
-    def test_compute__params_names(self):
-        """Test computing with a single function call and name as parameter"""
+    def test_compute_params_single_name(self):
+        """Test computing with a single function call and one name as parameter"""
         computation_name = Name("/test/data")
         computation_name += "/func/f1(_)"
         computation_name += "NFN"
@@ -131,3 +131,25 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.nfn_layer.compute(computation_interest)
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
         self.assertEqual(Content(computation_name, "HELLO WORLD"), res[1])
+
+    def test_compute_params_multiple_names(self):
+        """Test computing with a single function call and one name as parameter"""
+        computation_name = Name("/test/data")
+        computation_name += "/func/f1(_,/data/test,2)"
+        computation_name += "NFN"
+        computation_interest = Interest(computation_name)
+
+        computation_entry = NFNComputationTableEntry(computation_name)
+        computation_entry.available_data[Name("/test/data")] = "Hello World"
+        computation_entry.available_data[Name("/data/test")] = "PICN"
+        computation_entry.available_data[Name("/func/f1")] = "PYTHON\nf\ndef f(a,b,c):\n    return a.upper() " \
+                                                             "+ ', ' +b.upper()*2"
+
+        computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
+        computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
+
+        self.nfn_layer.computation_table.append_computation(computation_entry)
+
+        self.nfn_layer.compute(computation_interest)
+        res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
+        self.assertEqual(Content(computation_name, "HELLO WORLD, PICNPICN"), res[1])
