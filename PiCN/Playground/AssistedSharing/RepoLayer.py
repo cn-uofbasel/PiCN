@@ -22,7 +22,7 @@ class RepoLayer(LayerProcess):
         cs.add_content_object(Content("/alice/schema.index", alice_index_schema))
         self._data_structs['cs'] = cs
         self._files = {"/alice/movies/cats-and-dogs.mp4" : "/tmp/cats-and-dogs.mp4",
-                       "/alice/img/basel.jpg" : "/tmp/basel.jpg"}
+                       "/alice/public/img/basel.jpg" : "/tmp/basel.jpg"}
 
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
