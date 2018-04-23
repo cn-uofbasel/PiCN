@@ -164,7 +164,7 @@ class BasicNFNLayer(LayerProcess):
             self.queue_to_lower.put([entry.id, Nack(entry.original_name, NackReason.COMP_EXCEPTION, interest=entry.interest)])
         for e in entry.ast.params:
             if isinstance(e, AST_Name):
-                params.append(entry.available_data[e.name])
+                params.append(entry.available_data[Name(e._element)])
             elif not isinstance(e.type, AST):
                 params.append(e.type(e._element))
 
