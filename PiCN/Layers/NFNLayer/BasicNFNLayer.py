@@ -152,7 +152,9 @@ class BasicNFNLayer(LayerProcess):
         if entry.comp_state == NFNComputationState.WRITEBACK:
             #TODO FIXME is it required to put that in handle content?
             res = entry.available_data[entry.rewrite_list[0]]
-            self.queue_to_lower.put(entry.id, Content(entry.original_name, res))
+            data = Content(entry.original_name, res)
+            self.queue_to_lower.put(entry.id, data)
+            self.computation_table.push_data(data)
             return
         function_name = Name(entry.ast._element)
         function_code = entry.available_data.get(function_name)
@@ -165,6 +167,11 @@ class BasicNFNLayer(LayerProcess):
         for e in entry.ast.params:
             if isinstance(e, AST_Name):
                 params.append(entry.available_data[Name(e._element)])
+            elif isinstance(e, AST_FuncCall):
+                search_name = Name()
+                search_name += str(e)
+                search_name += "NFN"
+                params.append(entry.available_data[search_name])
             elif not isinstance(e.type, AST):
                 params.append(e.type(e._element))
 

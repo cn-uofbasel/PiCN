@@ -153,3 +153,27 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.nfn_layer.compute(computation_interest)
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
         self.assertEqual(Content(computation_name, "HELLO WORLD, PICNPICN"), res[1])
+
+    def test_compute_recursive(self):
+        """Test computing with a single function call and one name as parameter"""
+        computation_name = Name("/test/data")
+        computation_name += "/func/f1(/method/f2(_))"
+        computation_name += "NFN"
+        computation_interest = Interest(computation_name)
+
+        name2 = Name()
+        name2 += "/method/f2(/test/data)"
+        name2 += "NFN"
+
+        computation_entry = NFNComputationTableEntry(computation_name)
+        computation_entry.available_data[Name("/func/f1")] = "PYTHON\nf\ndef f(a):\n    return a.upper() "
+        computation_entry.available_data[name2] = "Hello World"
+
+        computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
+        computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
+
+        self.nfn_layer.computation_table.append_computation(computation_entry)
+
+        self.nfn_layer.compute(computation_interest)
+        res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
+        self.assertEqual(Content(computation_name, "HELLO WORLD"), res[1])
