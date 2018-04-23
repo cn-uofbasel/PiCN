@@ -21,7 +21,7 @@ class RepoLayer(LayerProcess):
         cs = ContentStoreMemoryExact()
         cs.add_content_object(Content("/alice/schema.index", alice_index_schema))
         self._data_structs['cs'] = cs
-        self._files = {"/alice/movies/cats-and-dogs.mp4" : "/tmp/cats-and-dogs.mp4",
+        self._files_in_repo = {"/alice/movies/cats-and-dogs.mp4" : "/tmp/cats-and-dogs.mp4",
                        "/alice/public/img/basel.jpg" : "/tmp/basel.jpg"}
 
 
@@ -55,7 +55,6 @@ class RepoLayer(LayerProcess):
             self.logger.info("Received Unknown Packet, do nothing")
             return
 
-
     def handle_interest(self, face_id: int, interest: Interest, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, from_local: bool = False):
 
          cs_entry = self.cs.find_content_object(interest.name)
@@ -65,29 +64,30 @@ class RepoLayer(LayerProcess):
              return
          else:
              self.logger.info("Not found in cache, try to generate")
-             self.generate_data(interest.name)
-             cs_entry = self.cs.find_content_object(interest.name)
-             if cs_entry is not None:
+             if self.generate_data(interest.name) is False:
+                 nack = Nack(interest.name, NackReason.NO_CONTENT, interest=interest)
+                 to_lower.put([face_id, nack])
+                 return
+             else:
                  manifest = self.cs.find_content_object(interest.name).content
                  to_lower.put([face_id, manifest])
                  return
-             else:
-                  nack = Nack(interest.name, NackReason.NO_CONTENT, interest=interest)
-                  to_lower.put([face_id, nack])
 
-
-    def generate_data(self, network_name: Name):
-        fs_name = self._files[network_name.to_string()]
+    def generate_data(self, network_name: Name, chunk_size: int = 4096):
+        try:
+            fs_name = self._files_in_repo[network_name.to_string()]
+        except:
+            return False
         with open(fs_name, "r+") as f:
             # open file and determine number of chunks
             file = mmap.mmap(f.fileno(), 0)
             file_length = len(file)
-            num_chunks = math.ceil(file_length / 4096) # chunk size: 4096 bytes
+            num_chunks = math.ceil(file_length / chunk_size)
             # generate data packets (manifest and chunk)
             chunk_names = list()
-            for n in range(0, num_chunks-1):
+            for n in range(0, num_chunks+1):
                 # extract chunk and compute digest
-                chunk = file[4096 * n : min(4096*(n+1), file_length)]
+                chunk = file[chunk_size * n : min(chunk_size*(n+1), file_length)]
                 m = hashlib.sha256()
                 m.update(chunk)
                 digest = m.hexdigest()
@@ -99,6 +99,7 @@ class RepoLayer(LayerProcess):
             manifest_data = "\n".join(chunk_names)
             manifest = Content(network_name, manifest_data)
             self.add_to_cs(manifest)
+            return True
 
     @property
     def cs(self):
