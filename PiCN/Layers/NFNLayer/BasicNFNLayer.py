@@ -89,9 +89,34 @@ class BasicNFNLayer(LayerProcess):
 
 
     def handleNack(self, id: int, nack: Nack):
-        #todo remove comp
-        #todo or choose next rewirte
-        pass
+        remove_list = []
+        for e in self.computation_table.container:
+            self.computation_table.remove_computation(e.original_name)
+            #check next rewrite if current is nacked
+            if e.comp_state == NFNComputationState.REWRITE and\
+                    e.rewrite_list != [] and\
+                    nack.name == self.parser.nfn_str_to_network_name(e.rewrite_list[0]):
+                e.rewrite_list.pop(0)
+                if e.rewrite_list == []:
+                    remove_list.append(e)
+                else:
+                    request = self.parser.nfn_str_to_network_name(e.rewrite_list[0])
+                    self.queue_to_lower.put([e.id, request])
+            #check if nack-ed data were required.
+            elif nack.name == e.original_name:
+                remove_list.append(e.original_name)
+            else:
+                for a in e.awaiting_data:
+                    if nack.name == a.name:
+                        remove_list.append(e.original_name)
+            self.computation_table.append_computation(e)
+        #remove all computation that are nack-ed and forward nack
+        for r in remove_list:
+            e = self.computation_table.get_computation(r)
+            self.computation_table.remove_computation(r)
+            new_nack = Nack(e.original_name, nack.reason, interest=e.interest)
+            self.queue_to_lower.put([e.id, new_nack])
+            self.handleNack(e.id, new_nack)
 
     def forwarding_descision(self, interest: Interest):
         """Decide weather a computation should be executed locally or be forwarded
@@ -108,6 +133,7 @@ class BasicNFNLayer(LayerProcess):
             entry.rewrite_list = rewritten_names
             request = self.parser.nfn_str_to_network_name(rewritten_names[0])
             self.queue_to_lower.put([entry.id, Interest(request)])
+#            self.handleInterest([entry.id, Interest(request)]) #TODO required
             self.computation_table.append_computation(entry)
 
         if self.optimizer.compute_local(prepended_name, entry.ast):
@@ -119,7 +145,7 @@ class BasicNFNLayer(LayerProcess):
 
             func_name = Name(entry.ast._element)
             entry.add_name_to_await_list(func_name)
-            self.queue_to_lower.put([id, Interest(func_name)])
+            self.queue_to_lower.put([entry.id, Interest(func_name)])
 
             for p in entry.ast.params:
                 name = None
