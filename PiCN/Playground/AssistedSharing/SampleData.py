@@ -1,6 +1,6 @@
 """ Sample Data"""
 
-alice_index_schema = ("doc:/alice/movies/[^/]+\n"
+alice_index_schema = ("doc:/alice/movies/[^/]+$\n"
                       "   -> wrapper:/irtf/icnrg/flic\n"
                       "   -> wrapper:/alice/homebrewed/ac\n"
                       "       mode='CBC'\n"
