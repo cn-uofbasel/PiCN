@@ -25,7 +25,7 @@ class WrapperDescription(object):
         Create wrapper description object from network representation
         :param wire_desc: Wrapper description as retrieved from network
         """
-        # extract encapsulation repice
+        # extract encapsulation recipe
         try:
             encap_recipe_block = re.compile("^def encap:.*", re.MULTILINE | re.DOTALL).search(str(wire_desc)).group()
             self.encap_recipe = '\n'.join(list(map(lambda l: l.strip(), str(encap_recipe_block).split('\n')[1:-1])))
