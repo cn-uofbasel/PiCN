@@ -332,7 +332,6 @@ class test_BasicNFNLayer(unittest.TestCase):
         inner_computation_name += "NFN"
         inner_computation_interest = Interest(inner_computation_name)
 
-
         computation_entry = NFNComputationTableEntry(computation_name)
         computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
         computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
@@ -344,3 +343,98 @@ class test_BasicNFNLayer(unittest.TestCase):
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
         self.assertEqual(res[1], inner_computation_interest)
         self.assertTrue(self.nfn_layer.queue_to_lower.empty())
+
+
+    def test_handle_interest(self):
+        """Test if handle interest handles an interest message correctly"""
+
+        fib: ForwardingInformationBaseMemoryPrefix = self.nfn_layer.icn_data_structs.get('fib')
+        fib.add_fib_entry(Name('/test'), 1, True)
+        self.nfn_layer.icn_data_structs['fib'] = fib
+
+        c1 = Content("/func/f1", "PYTHON\nf\ndef f(a):\n    return a.upper()")
+        cs: ContentStoreMemoryExact = self.nfn_layer.icn_data_structs.get('cs')
+        cs.add_content_object(c1)
+        self.nfn_layer.icn_data_structs['cs'] = cs
+
+        computation_name = Name("/func/f1")
+        computation_name += "_(/func/f2(/test/data))"
+        computation_name += "NFN"
+        computation_interest = Interest(computation_name)
+
+
+        inner_computation_name = Name("/test/data")
+        inner_computation_name += "/func/f2(_)"
+        inner_computation_name += "NFN"
+        inner_computation_interest = Interest(inner_computation_name)
+
+        computation_entry = NFNComputationTableEntry(computation_name)
+        computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
+        computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
+
+        self.nfn_layer.handleInterest(0, computation_interest)
+        res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
+        self.assertEqual(res[1], Interest(Name("/func/f1")))
+        res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
+        self.assertEqual(res[1], inner_computation_interest)
+        self.assertTrue(self.nfn_layer.queue_to_lower.empty())
+
+    def test_handle_content_not_expected(self):
+        """Test if a content object is handled correctly, if not expected"""
+        content = Content("/test/data", "HelloWorld")
+        self.nfn_layer.handleContent(1, content)
+        res = self.nfn_layer.queue_to_lower.get()
+        self.assertEqual(res, [1, content])
+
+
+    def test_handle_content_expected(self):
+        """Test if content object is handled correctly if expected"""
+        computation_name = Name("/func/f1")
+        computation_name += "_(1,/test/data)"
+        computation_name += "NFN"
+        computation_interest = Interest(computation_name)
+        awaiting_name = Name("/test/data")
+
+        computation_entry = NFNComputationTableEntry(computation_name)
+        computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
+        computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
+        computation_entry.add_name_to_await_list(awaiting_name)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
+
+        self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).awaiting_data), 1)
+        self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).available_data), 0)
+        self.assertEqual(self.nfn_layer.computation_table.get_computation(computation_name).awaiting_data[0].name, awaiting_name)
+
+        self.nfn_layer.handleContent(1, Content("/test/data", "HelloWorld"))
+
+        self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).awaiting_data), 0)
+        self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).available_data), 1)
+        self.assertEqual(self.nfn_layer.computation_table.get_computation(computation_name).available_data[awaiting_name], "HelloWorld")
+
+
+    def test_handle_content_start_computation(self):
+        """Test if content object is handled correctly if expected"""
+        computation_name = Name("/func/f1")
+        computation_name += "_(1,/test/data)"
+        computation_name += "NFN"
+        computation_interest = Interest(computation_name)
+        awaiting_name = Name("/test/data")
+        func_name = Name("/func/f1")
+
+        computation_entry = NFNComputationTableEntry(computation_name, 1, computation_interest)
+        computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
+        computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
+        computation_entry.add_name_to_await_list(awaiting_name)
+        computation_entry.add_name_to_await_list(func_name)
+        computation_entry.comp_state = NFNComputationState.EXEC
+        self.nfn_layer.computation_table.append_computation(computation_entry)
+
+        self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).awaiting_data), 2)
+        self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).available_data), 0)
+        self.assertEqual(self.nfn_layer.computation_table.get_computation(computation_name).awaiting_data[0].name, awaiting_name)
+
+        self.nfn_layer.handleContent(1, Content(awaiting_name, "HelloWorld"))
+        self.nfn_layer.handleContent(1, Content("/func/f1", "PYTHON\nf\ndef f(a,b):\n    return 2*b.upper()"))
+        res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
+        self.assertEqual(res, [1, Content(computation_name, "HELLOWORLDHELLOWORLD")])
