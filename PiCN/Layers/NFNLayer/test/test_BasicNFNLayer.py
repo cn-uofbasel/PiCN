@@ -7,7 +7,7 @@ from PiCN.Layers.NFNLayer import BasicNFNLayer
 from PiCN.Layers.NFNLayer.NFNExecutor import NFNPythonExecutor
 from PiCN.Layers.NFNLayer.NFNComputationTable import *
 from PiCN.Layers.NFNLayer.R2C import TimeoutR2CHandler
-
+from PiCN.Layers.NFNLayer.Parser import *
 from PiCN.Packets import Name, Interest, Content
 
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
@@ -26,8 +26,8 @@ class test_BasicNFNLayer(unittest.TestCase):
 
         self.executor = {"PYTHON": NFNPythonExecutor()}
         self.r2cclient = TimeoutR2CHandler()
-        self.computation_table = NFNComputationList(self.r2cclient)
-        self.nfn_layer = BasicNFNLayer(self.icn_data_structs, self.executor, self.computation_table)
+        self.nfn_layer = BasicNFNLayer(self.icn_data_structs, self.executor)
+        self.computation_table = self.nfn_layer.computation_table
 
         self.nfn_layer.queue_to_lower = multiprocessing.Queue()
         self.nfn_layer.queue_from_lower = multiprocessing.Queue()
@@ -53,7 +53,6 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.nfn_layer.compute(computation_interest)
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
         self.assertEqual(Content(computation_name, "25"), res[1])
-
 
     def test_compute_single_param_int(self):
         """Test computing with a single function call and a single parameter, int"""
@@ -177,7 +176,6 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.nfn_layer.compute(computation_interest)
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
         self.assertEqual(Content(computation_name, "HELLO WORLD"), res[1])
-
 
     def test_forwarding_descision_no_rewrite(self):
         """Test if forward or compute local: goal: forward with no rewrite"""
@@ -344,7 +342,6 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.assertEqual(res[1], inner_computation_interest)
         self.assertTrue(self.nfn_layer.queue_to_lower.empty())
 
-
     def test_handle_interest(self):
         """Test if handle interest handles an interest message correctly"""
 
@@ -387,7 +384,6 @@ class test_BasicNFNLayer(unittest.TestCase):
         res = self.nfn_layer.queue_to_lower.get()
         self.assertEqual(res, [1, content])
 
-
     def test_handle_content_expected(self):
         """Test if content object is handled correctly if expected"""
         computation_name = Name("/func/f1")
@@ -411,7 +407,6 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).awaiting_data), 0)
         self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).available_data), 1)
         self.assertEqual(self.nfn_layer.computation_table.get_computation(computation_name).available_data[awaiting_name], "HelloWorld")
-
 
     def test_handle_content_start_computation(self):
         """Test if content object is handled correctly if expected"""
@@ -438,3 +433,36 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.nfn_layer.handleContent(1, Content("/func/f1", "PYTHON\nf\ndef f(a,b):\n    return 2*b.upper()"))
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
         self.assertEqual(res, [1, Content(computation_name, "HELLOWORLDHELLOWORLD")])
+
+    def test_handle_content_start_fwd(self):
+        """test rewrting handling content"""
+        fib: ForwardingInformationBaseMemoryPrefix = self.nfn_layer.icn_data_structs.get('fib')
+        fib.add_fib_entry(Name('/test'), 1, True)
+        self.nfn_layer.icn_data_structs['fib'] = fib
+
+        computation_name = Name("/func/f1")
+        computation_name += "_(/test/data)"
+        computation_name += "NFN"
+        computation_interest = Interest(computation_name)
+
+        computation_entry = NFNComputationTableEntry(computation_name)
+        computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
+        computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
+        computation_entry.interest = computation_interest
+        self.nfn_layer.computation_table.append_computation(computation_entry)
+
+        compare_name = Name("/test/data")
+        compare_name += "/func/f1(_)"
+        compare_name += "NFN"
+
+        self.nfn_layer.forwarding_descision(computation_interest)
+        res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
+        self.assertEqual(res[1], Interest(compare_name))
+        self.assertEqual(self.computation_table.get_computation(computation_name).comp_state, NFNComputationState.REWRITE)
+        self.assertEqual(len(self.computation_table.get_computation(computation_name).rewrite_list), 1)
+        self.assertEqual(self.computation_table.get_computation(computation_name).rewrite_list[0], "/func/f1(%/test/data%)")
+
+        self.nfn_layer.handleContent(res[0], Content(compare_name, "HelloWorld"))
+        res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
+        self.assertEqual([res[0], Content(computation_name, "HelloWorld")], res)
+

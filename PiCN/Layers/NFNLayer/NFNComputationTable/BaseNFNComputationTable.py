@@ -7,6 +7,7 @@ from enum import Enum
 from typing import List, Dict
 from PiCN.Packets import Content, Name, Interest
 
+from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
 from PiCN.Layers.NFNLayer.R2C import BaseR2CHandler, TimeoutR2CHandler
 from PiCN.Layers.NFNLayer.Parser import AST
 
@@ -42,7 +43,8 @@ class NFNComputationTableEntry(object):
     :param r2cclient: r2cclient handler that selects and handles messages to be handled
     """
 
-    def __init__(self, name: Name, id: int=0, interest: Interest=None, ast: AST=None, r2cclient: BaseR2CHandler=None):
+    def __init__(self, name: Name, id: int=0, interest: Interest=None, ast: AST=None, r2cclient: BaseR2CHandler=None,
+                 parser: DefaultNFNParser=DefaultNFNParser()):
         self.original_name: Name = name # original name of the computation
         self.id = id
         self.interest = interest
@@ -51,6 +53,7 @@ class NFNComputationTableEntry(object):
         self.awaiting_data: List[NFNAwaitListEntry] = [] # data that are awaited by the computation
         self.available_data: Dict[Name, Content] = {} # data that are required and now available
         self.rewrite_list: List[Name] = [] # list of all possible rewrites
+        self.parser = parser
         self.comp_state: NFNComputationState = NFNComputationState.START # marker where to continue this computation after requests
         self.time_stamp = time.time() # time at which the computation was started
         self.timeout = 4.0 #timeout before a request expires
@@ -67,7 +70,7 @@ class NFNComputationTableEntry(object):
         :return True if content was required, else False
         """
         if self.comp_state == NFNComputationState.REWRITE:
-            if self.rewrite_list[0] == content.name:
+            if self.parser.nfn_str_to_network_name(self.rewrite_list[0]) == content.name:
                 self.comp_state = NFNComputationState.WRITEBACK
                 self.available_data[content.name] = content.content
                 return True
@@ -137,8 +140,9 @@ class BaseNFNComputationTable(object):
     :param r2cclient: R2CClient to handle ageing
     """
 
-    def __init__(self, r2cclient: BaseR2CHandler):
+    def __init__(self, r2cclient: BaseR2CHandler, parser: DefaultNFNParser):
         self.r2cclient = r2cclient
+        self.parser = parser
         self.container: List[NFNComputationTableEntry] = []
 
     @abc.abstractmethod

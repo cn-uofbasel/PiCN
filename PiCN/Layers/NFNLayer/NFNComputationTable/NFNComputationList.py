@@ -3,23 +3,24 @@
 import time
 
 
-from PiCN.Packets import Name
+from PiCN.Packets import Name, Interest
 from PiCN.Layers.NFNLayer.NFNComputationTable.BaseNFNComputationTable import BaseNFNComputationTable
 from PiCN.Layers.NFNLayer.NFNComputationTable.BaseNFNComputationTable import NFNComputationTableEntry
 from PiCN.Layers.NFNLayer.NFNComputationTable.BaseNFNComputationTable import NFNComputationState
+from PiCN.Layers.NFNLayer.Parser import *
 from PiCN.Layers.NFNLayer.R2C import BaseR2CHandler
 
 class NFNComputationList(BaseNFNComputationTable):
     """Implementation of the NFNComputationTable using a list"""
 
-    def __init__(self, r2cclient: BaseR2CHandler):
-        super().__init__(r2cclient)
+    def __init__(self, r2cclient: BaseR2CHandler, parser: DefaultNFNParser):
+        super().__init__(r2cclient, parser)
 
 
-    def add_computation(self, name, id, interest, ast=None):
+    def add_computation(self, name: Name, id: int, interest, ast:AST=None):
         if self.is_comp_running(name):
             return
-        self.container.append(NFNComputationTableEntry(name, id, interest, ast, self.r2cclient))
+        self.container.append(NFNComputationTableEntry(name, id, interest, ast, self.r2cclient, self.parser))
 
     def is_comp_running(self, name):
         l = list(map(lambda n: n.original_name, self.container))

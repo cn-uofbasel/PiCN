@@ -23,9 +23,9 @@ class BasicNFNLayer(LayerProcess):
         self.icn_data_structs = icn_data_structs
         self.executors = executors
         self.r2cclient = TimeoutR2CHandler()
-        self.computation_table: BaseNFNComputationTable = NFNComputationList(self.r2cclient) \
-            if computationTable == None else computationTable
         self.parser: DefaultNFNParser = DefaultNFNParser()
+        self.computation_table: BaseNFNComputationTable = NFNComputationList(self.r2cclient, self.parser) \
+            if computationTable == None else computationTable
         self.optimizer: BaseNFNOptimizer = ToDataFirstOptimizer(self.icn_data_structs)
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
@@ -84,7 +84,7 @@ class BasicNFNLayer(LayerProcess):
         for comp in ready_comps:
             if comp.comp_state == NFNComputationState.FWD:
                 self.forwarding_descision(comp.interest)
-            if comp.comp_state == NFNComputationState.EXEC:
+            if comp.comp_state == NFNComputationState.EXEC or comp.comp_state == NFNComputationState.WRITEBACK:
                 self.compute(comp.interest)
 
 
@@ -155,9 +155,10 @@ class BasicNFNLayer(LayerProcess):
         self.computation_table.remove_computation(interest.name)
         if entry.comp_state == NFNComputationState.WRITEBACK:
             #TODO FIXME is it required to put that in handle content?
-            res = entry.available_data[entry.rewrite_list[0]]
+            name = self.parser.nfn_str_to_network_name(entry.rewrite_list[0])
+            res = entry.available_data[name]
             data = Content(entry.original_name, res)
-            self.queue_to_lower.put(entry.id, data)
+            self.queue_to_lower.put([entry.id, data])
             self.computation_table.push_data(data)
             return
         function_name = Name(entry.ast._element)
