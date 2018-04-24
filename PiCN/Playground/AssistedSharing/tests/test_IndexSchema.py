@@ -44,6 +44,5 @@ class test_IndexSchema(unittest.TestCase):
         self.assertTrue(schema.find_matching_rule("/alice/public/img/basel.png/foo") is None)
 
 
-
 if __name__ == '__main__':
     unittest.main()

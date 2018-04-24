@@ -14,3 +14,14 @@ alice_index_schema = ("doc:/alice/movies/[^/]+$\n"
                       "doc:/alice/public/img/basel.jpg$\n"
                       "   -> wrapper:/simple/chunking\n"
                       "   => type:/mime/image/jpeg\n")
+
+ac_wrapper_desc = ("def decap:\n"
+                   "    $secDek = call:/alice/homebrewed/fetchDEK(#, @id.pub)\n"
+                   "    $dek = call:/crypto/lib/rsa/decrypt($secDek, @id.priv)\n"
+                   "    return call:/nist/aes/decrypt(#, $dek, %mode, %padding)\n"
+                   "\n"
+                   "\n"
+                   "def encap:\n"
+                   "    $secDek = call:/alice/homebrewed/fetchDEK(#, @id.pub)\n",
+                   "    $dek = call:/crypto/lib/rsa/decrypt($secDek, @id.priv\n",
+                   "    sreturn call:/nist/aes/encrypt(#, $dek, %mode, %padding)\n")

@@ -52,7 +52,7 @@ class IndexSchema(object):
 
     """
 
-    def __init__(self, wire_schema):
+    def __init__(self, wire_schema: bytearray):
         """
         Create Index schema object from network representation
         :param wire_schema: Index schema as retrieved from network
