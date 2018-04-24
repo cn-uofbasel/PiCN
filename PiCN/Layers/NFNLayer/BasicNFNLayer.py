@@ -133,7 +133,7 @@ class BasicNFNLayer(LayerProcess):
             entry.rewrite_list = rewritten_names
             request = self.parser.nfn_str_to_network_name(rewritten_names[0])
             self.queue_to_lower.put([entry.id, Interest(request)])
-#            self.handleInterest([entry.id, Interest(request)]) #TODO required
+#            self.handleInterest([entry.id, Interest(request)]) #TODO required?
             self.computation_table.append_computation(entry)
 
         if self.optimizer.compute_local(prepended_name, entry.ast):
