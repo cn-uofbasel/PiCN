@@ -70,7 +70,11 @@ class NFNComputationTableEntry(object):
         :return True if content was required, else False
         """
         if self.comp_state == NFNComputationState.REWRITE:
-            if self.parser.nfn_str_to_network_name(self.rewrite_list[0]) == content.name:
+            if type(self.rewrite_list[0]) == Name:
+                rw_name = self.rewrite_list[0]
+            else:
+                rw_name = self.parser.nfn_str_to_network_name(self.rewrite_list[0])
+            if rw_name == content.name:
                 self.comp_state = NFNComputationState.WRITEBACK
                 self.available_data[content.name] = content.content
                 return True

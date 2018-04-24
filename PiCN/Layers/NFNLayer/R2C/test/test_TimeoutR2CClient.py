@@ -4,6 +4,7 @@ import unittest
 
 from PiCN.Packets import Name, Content, Interest
 from PiCN.Layers.NFNLayer.R2C import TimeoutR2CHandler
+from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationList
 
 class test_TimeoutR2CClient(unittest.TestCase):
@@ -28,7 +29,7 @@ class test_TimeoutR2CClient(unittest.TestCase):
     def test_handle_r2c_request(self):
         """test the handling of r2c messages"""
         name = Name("/test/NFN")
-        comp_list = NFNComputationList(self.r2cClient)
+        comp_list = NFNComputationList(self.r2cClient, DefaultNFNParser())
         comp_list.add_computation(name, 1, Interest(name))
         r2c_request = self.r2cClient.R2C_create_message(name)
         c = self.r2cClient.R2C_handle_request(r2c_request, comp_list)

@@ -90,6 +90,8 @@ class DefaultNFNParser(object):
         return  nfn_comp, prepended_name
 
     def nfn_str_to_network_name(self, nfn_str: str, prependmarker: str = "%") -> Name:
+        if "NFN" in nfn_str:
+            nfn_str.replace("/NFN", "")
         if prependmarker not in nfn_str:
             name = Name()
             name += nfn_str
