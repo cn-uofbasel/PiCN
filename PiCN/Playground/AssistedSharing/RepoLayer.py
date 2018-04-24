@@ -8,7 +8,7 @@ import hashlib
 from PiCN.Layers.ICNLayer.ContentStore.ContentStoreMemoryExact import ContentStoreMemoryExact
 from PiCN.Packets import Content, Interest, Packet, Nack, NackReason, Name
 from PiCN.Processes import LayerProcess
-from PiCN.Playground.AssistedSharing.SampleData import alice_index_schema
+from PiCN.Playground.AssistedSharing.SampleData import alice_index_schema, ac_wrapper_desc
 
 
 class RepoLayer(LayerProcess):
@@ -20,6 +20,7 @@ class RepoLayer(LayerProcess):
         self._data_structs = manager.dict()
         cache = ContentStoreMemoryExact()
         cache.add_content_object(Content("/alice/schema.index", alice_index_schema))
+        cache.add_content_object(Content("/alice/homebrewed/ac", ac_wrapper_desc))
         self._data_structs['cache'] = cache
         self._files_in_repo = {"/alice/movies/cats-and-dogs.mp4" : "/tmp/cats-and-dogs.mp4",
                                "/alice/public/img/basel.jpg"     : "/tmp/basel.jpg"}
@@ -96,7 +97,7 @@ class RepoLayer(LayerProcess):
             num_chunks = math.ceil(file_length / chunk_size)
             # generate data packets (manifest and chunk)
             chunk_names = list()
-            for n in range(0, num_chunks+1):
+            for n in range(0, num_chunks):
                 # extract chunk and compute digest
                 chunk = file[chunk_size * n : min(chunk_size*(n+1), file_length)]
                 m = hashlib.sha256()

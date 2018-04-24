@@ -8,20 +8,20 @@ class test_IndexSchema(unittest.TestCase):
 
     def test_create_empty(self):
         # index schema
-        alice_index_schema = ("doc:/alice/movies/[^/]+$\n"
-                              "   -> wrapper:/irtf/icnrg/flic\n"
-                              "   -> wrapper:/alice/homebrewed/ac\n"
-                              "       mode='CBC'\n"
-                              "       padding='PKCS5'\n"
-                              "    => type:/mime/video/mp4\n"
-                              "\n"
-                              "doc:/alice/public/docs/.*[.]pdf$\n"
-                              "   -> wrapper:/simple/chunking\n"
-                              "   => type:/mime/application/pdf\n"
-                              "\n"
-                              "doc:/alice/public/img/basel.jpg$\n"
-                              "   -> wrapper:/simple/chunking\n"
-                              "   => type:/mime/image/jpeg\n")
+        alice_index_schema = ''.join(("doc:/alice/movies/[^/]+$\n"
+                                      "   -> wrapper:/irtf/icnrg/flic\n"
+                                      "   -> wrapper:/alice/homebrewed/ac\n"
+                                      "       mode='CBC'\n"
+                                      "       padding='PKCS5'\n"
+                                      "    => type:/mime/video/mp4\n"
+                                      "\n"
+                                      "doc:/alice/public/docs/.*[.]pdf$\n"
+                                      "   -> wrapper:/simple/chunking\n"
+                                      "   => type:/mime/application/pdf\n"
+                                      "\n"
+                                      "doc:/alice/public/img/basel.jpg$\n"
+                                      "   -> wrapper:/simple/chunking\n"
+                                      "   => type:/mime/image/jpeg\n"))
 
         # parse
         schema = IndexSchema(alice_index_schema)
