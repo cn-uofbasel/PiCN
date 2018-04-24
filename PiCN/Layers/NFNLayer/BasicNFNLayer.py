@@ -154,24 +154,29 @@ class BasicNFNLayer(LayerProcess):
         entry = self.computation_table.get_computation(interest.name)
         self.computation_table.remove_computation(interest.name)
         if entry.comp_state == NFNComputationState.WRITEBACK:
-            #TODO FIXME is it required to put that in handle content?
             name = self.parser.nfn_str_to_network_name(entry.rewrite_list[0])
             res = entry.available_data[name]
             data = Content(entry.original_name, res)
             self.queue_to_lower.put([entry.id, data])
-            self.computation_table.push_data(data)
+            self.handleContent(entry.id, data)
             return
         function_name = Name(entry.ast._element)
         function_code = entry.available_data.get(function_name)
         if function_code is None:
-            print("shit")
+            self.queue_to_lower.put([entry.id, Nack(entry.original_name,
+                                                    NackReason.COMP_PARAM_UNAVAILABLE, interest=entry.interest)])
             return #TODO NACK
         executor: BaseNFNExecutor = self.executors.get(self.get_nf_code_language(function_code))
         if executor is None:
             self.queue_to_lower.put([entry.id, Nack(entry.original_name, NackReason.COMP_EXCEPTION, interest=entry.interest)])
         for e in entry.ast.params:
             if isinstance(e, AST_Name):
-                params.append(entry.available_data[Name(e._element)])
+                param = entry.available_data.get(Name(e._element))
+                if param is None:
+                    self.queue_to_lower.put([entry.id, Nack(entry.original_name, NackReason.COMP_PARAM_UNAVAILABLE,
+                                                            interest=entry.interest)])
+                    return
+                params.append(param)
             elif isinstance(e, AST_FuncCall):
                 search_name = Name()
                 search_name += str(e)
