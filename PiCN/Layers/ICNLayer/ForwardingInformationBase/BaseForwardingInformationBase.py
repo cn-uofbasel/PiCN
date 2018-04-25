@@ -50,16 +50,20 @@ class BaseForwardingInformationBase(object):
 
     @abc.abstractmethod
     def add_fib_entry(self, name: Name, fid: int, static: bool):
-        """Add an Interest to the PIT"""
+        """Add an Interest to the FIB"""
 
     @abc.abstractmethod
     def remove_fib_entry(self, name: Name):
-        """Remove an entry from the PIT"""
+        """Remove an entry from the FIB"""
 
     @abc.abstractmethod
     def find_fib_entry(self, name: Name, already_used: List[ForwardingInformationBaseEntry]) \
             ->ForwardingInformationBaseEntry:
-        """Find an entry in the PIT"""
+        """Find an entry in the FIB"""
+
+    @abc.abstractmethod
+    def clear(self):
+        """Remove all entries from the FIB"""
 
     @property
     def container(self):
