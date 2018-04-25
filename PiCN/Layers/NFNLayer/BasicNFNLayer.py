@@ -89,10 +89,14 @@ class BasicNFNLayer(LayerProcess):
 
 
     def handleNack(self, id: int, nack: Nack):
+        """Handles a Nack
+        :param id: id of the computation
+        :param nack: nack that arrived
+        """
         remove_list = []
         for e in self.computation_table.container:
             self.computation_table.remove_computation(e.original_name)
-            #check next rewrite if current is nack-ed
+            #check next rewrite if current is nack-ed TODO this is a code duplication with ageing in ComputationTableEntry
             if e.comp_state == NFNComputationState.REWRITE and\
                     e.rewrite_list != [] and\
                     nack.name == self.parser.nfn_str_to_network_name(e.rewrite_list[0]):

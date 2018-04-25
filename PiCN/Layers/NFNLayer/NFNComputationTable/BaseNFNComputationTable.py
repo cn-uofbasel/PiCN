@@ -104,7 +104,7 @@ class NFNComputationTableEntry(object):
         """
         ts = time.time()
         #Rewrite Case
-        if self.comp_state == NFNComputationState.REWRITE:
+        if self.comp_state == NFNComputationState.REWRITE: #TODO this contains a code duplication with handleNack in BasicNFNLayer
             if self.awaiting_data != [] and ts > self.awaiting_data[0].time_stamp + self.timeout:  #r2c msg timout
                 self.rewrite_list.pop(0)
                 if self.rewrite_list == []:
