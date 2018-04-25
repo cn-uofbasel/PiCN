@@ -98,7 +98,7 @@ class BasicNFNLayer(LayerProcess):
                     nack.name == self.parser.nfn_str_to_network_name(e.rewrite_list[0]):
                 e.rewrite_list.pop(0)
                 if e.rewrite_list == []:
-                    remove_list.append(e)
+                    remove_list.append(e.original_name)
                 else:
                     request = Interest(self.parser.nfn_str_to_network_name(e.rewrite_list[0]))
                     self.queue_to_lower.put([e.id, request])
@@ -112,8 +112,8 @@ class BasicNFNLayer(LayerProcess):
             self.computation_table.append_computation(e)
         #remove all computation that are nack-ed and forward nack
         for r in remove_list:
-            e = self.computation_table.get_computation(r.original_name)
-            self.computation_table.remove_computation(r.original_name)
+            e = self.computation_table.get_computation(r)
+            self.computation_table.remove_computation(r)
             new_nack = Nack(e.original_name, nack.reason, interest=e.interest)
             self.queue_to_lower.put([e.id, new_nack])
             self.handleNack(e.id, new_nack)
