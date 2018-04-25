@@ -501,3 +501,42 @@ class test_BasicNFNLayer(unittest.TestCase):
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
         self.assertEqual(res[1], Nack(computation_name, NackReason.COMP_PARAM_UNAVAILABLE, interest=Interest(computation_name)))
 
+    def test_handle_nack_on_rewritten_computation_further_rewrite(self):
+        """Test if a Nack message is handled correctly for a rewritten computation, when there is a further rewrite"""
+        fib: ForwardingInformationBaseMemoryPrefix = self.nfn_layer.icn_data_structs.get('fib')
+        fib.add_fib_entry(Name('/test'), 1, True)
+        fib.add_fib_entry(Name('/data'), 1, True)
+        self.nfn_layer.icn_data_structs['fib'] = fib
+
+        computation_name = Name("/func/f1")
+        computation_name += "_(/test/data,/data/test)"
+        computation_name += "NFN"
+        computation_interest = Interest(computation_name)
+
+        computation_entry = NFNComputationTableEntry(computation_name)
+        computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
+        computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
+        computation_entry.interest = computation_interest
+        self.nfn_layer.computation_table.append_computation(computation_entry)
+
+        nack_name = Name("/test/data")
+        nack_name += "/func/f1(_,/data/test)"
+        nack_name += "NFN"
+
+        self.nfn_layer.forwarding_descision(computation_interest)
+        res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
+        self.assertEqual(res[1], Interest(nack_name))
+        self.assertEqual(self.computation_table.get_computation(computation_name).comp_state,
+                         NFNComputationState.REWRITE)
+        self.assertEqual(len(self.computation_table.get_computation(computation_name).rewrite_list), 2)
+        self.assertEqual(self.computation_table.get_computation(computation_name).rewrite_list,
+                         ["/func/f1(%/test/data%,/data/test)", "/func/f1(/test/data,%/data/test%)"])
+
+        self.nfn_layer.handleNack(res[1], Nack(nack_name, NackReason.COMP_PARAM_UNAVAILABLE, interest=Interest(nack_name)))
+
+        second_request_name = Name("/data/test")
+        second_request_name += "/func/f1(/test/data,_)"
+        second_request_name += "NFN"
+
+        res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
+        self.assertEqual(res[1], Interest(second_request_name))

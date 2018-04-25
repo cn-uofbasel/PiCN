@@ -100,7 +100,7 @@ class BasicNFNLayer(LayerProcess):
                 if e.rewrite_list == []:
                     remove_list.append(e)
                 else:
-                    request = self.parser.nfn_str_to_network_name(e.rewrite_list[0])
+                    request = Interest(self.parser.nfn_str_to_network_name(e.rewrite_list[0]))
                     self.queue_to_lower.put([e.id, request])
             #check if nack-ed data were required.
             elif nack.name == e.original_name:
