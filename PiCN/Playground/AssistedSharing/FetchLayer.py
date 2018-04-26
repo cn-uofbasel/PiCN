@@ -82,4 +82,4 @@ class FetchLayer(LayerProcess):
         pass  # TODO
 
     def ageing(self):
-        pass  # data should not be removed from cache
+        pass  # no ageing in this layer

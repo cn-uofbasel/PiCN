@@ -10,11 +10,11 @@ def main(args):
     # create stack
     fetchTool = FetchStack(args.ip, args.port, Name(args.name))
 
-    # fetch high_level object
-    # content = fetchTool.fetch_data(Name(args.name)) # TODO
+    # Note: fetching is triggered in FetchStack
 
     # stop
-    fetchTool.stop_fetch()
+    # fetchTool.stop_fetch()
+    # TODO - shift this into FetchStack?
 
 
 if __name__ == "__main__":
