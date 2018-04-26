@@ -10,8 +10,8 @@ def main(args):
     # create stack
     fetchTool = FetchStack(args.ip, args.port, Name(args.name))
 
-    # fetch high-level object
-    # content = fetchTool.fetch_data(Name(args.name))  # TODO
+    # fetch high_level object
+    # content = fetchTool.fetch_data(Name(args.name)) # TODO
 
     # stop
     fetchTool.stop_fetch()

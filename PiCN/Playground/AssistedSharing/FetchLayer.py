@@ -13,15 +13,17 @@ class FetchLayer(LayerProcess):
         self.high_level_name = None
         self.wrapper_description = None
 
-    def trigger_fetching(self, high_level_name):
+    def trigger_fetching(self, high_level_name: Name, face_id: int):
         """
         Trigger fetching of high level object
         :param high_level_name: Name of high level object
+        :param face_id: Face id to send interest
         :return: None
         """
-        assert(self.high_level_name is None)
-        # TODO -- set self.high_level_name
-        # TODO -- send interest for high_level_name
+        assert (self.high_level_name is None)
+        self.high_level_name = high_level_name
+        self.queue_to_lower.put([face_id, Interest(high_level_name)])
+        self.logger.info("Send interest for wrapper description")
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         pass  # this is the highest layer in the stack
@@ -69,14 +71,15 @@ class FetchLayer(LayerProcess):
                 self.logger.info("Received data but wrapper description not ready. Skip.")
                 return
         else:
-            pass # todo -- hand over to unwrapping procedure
+            pass  # todo -- hand over to unwrapping procedure: do_encapsulation(..)
 
     def do_encapsulation(self):
         """
         Start encapsulation (self.wrapper_description must be initialized)
         :return: None
         """
-        pass # TODO
+        assert (self.wrapper_description is not None)
+        pass  # TODO
 
     def ageing(self):
         pass  # data should not be removed from cache

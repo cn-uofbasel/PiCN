@@ -41,13 +41,13 @@ class FetchStack(object):
         ])
 
         # setup face
-        self.fid = self.link_layer.create_new_fid((ip, port), True)
+        self.face_id = self.link_layer.create_new_fid((ip, port), True)
 
         # start all layers in the stack
         self.layer_stack.start_all()
 
         # trigger fetch
-        self.fetch_layer.trigger_fetching(high_level_name)
+        self.fetch_layer.trigger_fetching(high_level_name, self.face_id)
 
     def stop_fetch(self):
         """
