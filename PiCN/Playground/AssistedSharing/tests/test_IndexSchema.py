@@ -1,11 +1,9 @@
-
 import unittest
 
 from PiCN.Playground.AssistedSharing.IndexSchema import IndexSchema
 
 
 class test_IndexSchema(unittest.TestCase):
-
     def test_create_empty(self):
         # index schema
         alice_index_schema = ''.join(("doc:/alice/movies/[^/]+$\n"

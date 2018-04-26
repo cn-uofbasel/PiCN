@@ -5,6 +5,7 @@ import re
 
 from PiCN.Packets.Name import Name
 
+
 class Rule():
     """ Representation of a rule within an index schema"""
 
@@ -59,6 +60,7 @@ class IndexSchema(object):
         """
         lines = wire_schema.split('\n')
         as_list = [list(group) for k, group in groupby(lines, lambda x: x == "") if not k]
+
         def wrapper_mapper(wrappers):
             wrapper_list = []
             for e in wrappers:
@@ -69,8 +71,9 @@ class IndexSchema(object):
                     value = e.split('=')[1][1:-1]
                     wrapper_list[-1][1][key] = value
             return wrapper_list
+
         rule_mapper = lambda r: Rule(r[0][4:], r[-1][12:], wrapper_mapper(r[1:-1]))
-        self.rules = list(map(rule_mapper, as_list)) # list of Rule objects
+        self.rules = list(map(rule_mapper, as_list))  # list of Rule objects
 
     def find_matching_rule(self, name: Name) -> Rule:
         """
