@@ -15,6 +15,7 @@ def main(args):
     # stop
     # fetchTool.stop_fetch()
     # TODO - shift this into FetchStack?
+    # TODO - avoid end of main
 
 
 if __name__ == "__main__":
