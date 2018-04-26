@@ -12,7 +12,7 @@ from PiCN.Playground.AssistedSharing.SampleData import alice_index_schema, ac_wr
 
 
 class FetchLayer(LayerProcess):
-    def __init__(self, log_level=255, manager: multiprocessing.Manager = None):
+    def __init__(self, log_level=255):
         super().__init__(logger_name="FetchLayer", log_level=log_level)
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
