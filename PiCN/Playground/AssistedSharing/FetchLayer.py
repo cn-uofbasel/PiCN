@@ -1,19 +1,27 @@
 """Fetch Layer: fetch a high-level object"""
 
 import multiprocessing
-import mmap
-import math
-import hashlib
 
-from PiCN.Layers.ICNLayer.ContentStore.ContentStoreMemoryExact import ContentStoreMemoryExact
-from PiCN.Packets import Content, Interest, Packet, Nack, NackReason, Name
+from PiCN.Packets import Content, Interest, Packet, Nack, Name
 from PiCN.Processes import LayerProcess
-from PiCN.Playground.AssistedSharing.SampleData import alice_index_schema, ac_wrapper_desc
+from PiCN.Playground.AssistedSharing.WrapperDescription import WrapperDescription
 
 
 class FetchLayer(LayerProcess):
     def __init__(self, log_level=255):
         super().__init__(logger_name="FetchLayer", log_level=log_level)
+        self.high_level_name = None
+        self.wrapper_description = None
+
+    def trigger_fetching(self, high_level_name):
+        """
+        Trigger fetching of high level object
+        :param high_level_name: Name of high level object
+        :return: None
+        """
+        assert(self.high_level_name is None)
+        # TODO -- set self.high_level_name
+        # TODO -- send interest for high_level_name
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         pass  # this is the highest layer in the stack
@@ -33,9 +41,10 @@ class FetchLayer(LayerProcess):
         packet = data[1]
 
         if isinstance(packet, Interest):
-            self.handle_interest(face_id, packet, to_lower)
+            self.logger.info("Received Interest Packet, do nothing")
         elif isinstance(packet, Content):
-            self.logger.info("Received Data Packet, do nothing")
+            self.logger.info("Received Data Packet: " + packet.name)
+            self.handle_content(packet, face_id, to_lower)
             return
         elif isinstance(packet, Nack):
             self.logger.info("Received NACK, do nothing")
@@ -44,15 +53,30 @@ class FetchLayer(LayerProcess):
             self.logger.info("Received Unknown Packet, do nothing")
             return
 
-    def handle_interest(self, face_id: int, interest: Interest, to_lower: multiprocessing.Queue):
+    def handle_content(self, content: Content, face_id: int, to_lower: multiprocessing.Queue):
         """
-        Handle incoming interest
-        :param face_id: ID of incoming face
-        :param interest: Interest
+        Handle received content object
+        :param content: Received data packet
+        :param face_id: Incoming face id
         :param to_lower: Queue to lower layer
         :return: None
         """
-        pass
+        if self.wrapper_description is None:
+            if content.name is self.high_level_name:
+                self.wrapper_description = WrapperDescription(content.content)
+                self.do_encapsulation()
+            else:
+                self.logger.info("Received data but wrapper description not ready. Skip.")
+                return
+        else:
+            pass # todo -- hand over to unwrapping procedure
+
+    def do_encapsulation(self):
+        """
+        Start encapsulation (self.wrapper_description must be initialized)
+        :return: None
+        """
+        pass # TODO
 
     def ageing(self):
         pass  # data should not be removed from cache

@@ -8,7 +8,7 @@ from PiCN.Playground.AssistedSharing.FetchStack import FetchStack
 
 def main(args):
     # create stack
-    fetchTool = FetchStack(args.ip, args.port)
+    fetchTool = FetchStack(args.ip, args.port, Name(args.name))
 
     # fetch high-level object
     # content = fetchTool.fetch_data(Name(args.name))  # TODO

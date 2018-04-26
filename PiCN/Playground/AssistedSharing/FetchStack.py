@@ -1,5 +1,6 @@
 """Fetch Stack"""
 
+from PiCN.Packets.Name import Name
 from PiCN.LayerStack import LayerStack
 from PiCN.Playground.AssistedSharing.FetchLayer import FetchLayer
 from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
@@ -10,11 +11,19 @@ from PiCN.Layers.PacketEncodingLayer.Encoder.NdnTlvEncoder import NdnTlvEncoder
 class FetchStack(object):
     """Fetch Stack"""
 
-    def __init__(self, ip: str, port: int, log_level=255):
+    def __init__(self, ip: str, port: int, high_level_name: Name, log_level=255):
+        """
+
+        :param ip:
+        :param port:
+        :param high_level_name:
+        :param log_level:
+        """
         """
         Create stack of layers for fetch tool (UDP only)
         :param ip: IP address of entry node to network
         :param port: Port address of entry node to network
+        :param high_level_name: Name of high-level object to fetch 
         :param log_level: Log level
         """
         # create encoder
@@ -34,8 +43,11 @@ class FetchStack(object):
         # setup face
         self.fid = self.link_layer.create_new_fid((ip, port), True)
 
-        # create packet
+        # start all layers in the stack
         self.layer_stack.start_all()
+
+        # trigger fetch
+        self.fetch_layer.trigger_fetching(high_level_name)
 
     def stop_fetch(self):
         """
