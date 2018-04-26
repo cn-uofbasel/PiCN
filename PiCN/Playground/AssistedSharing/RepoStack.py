@@ -1,4 +1,4 @@
-"""Publisher"""
+"""Publisher Stack"""
 
 import multiprocessing
 
