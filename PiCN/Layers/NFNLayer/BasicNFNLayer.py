@@ -32,12 +32,12 @@ class BasicNFNLayer(LayerProcess):
         """handle incomming data from the lower layer """
         id = data[0]
         packet = data[1]
-        if isinstance(data, Interest):
-            self.handleInterest(id, data)
-        elif isinstance(data, Content):
-            self.handleContent(id, data)
-        elif isinstance(data, Nack):
-            self.handleNack(id, data)
+        if isinstance(packet, Interest):
+            self.handleInterest(id, packet)
+        elif isinstance(packet, Content):
+            self.handleContent(id, packet)
+        elif isinstance(packet, Nack):
+            self.handleNack(id, packet)
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         """Currently no higher layer than the NFN Layer"""
@@ -187,7 +187,7 @@ class BasicNFNLayer(LayerProcess):
             name = self.parser.nfn_str_to_network_name(entry.rewrite_list[0])
             res = entry.available_data[name]
             data = Content(entry.original_name, res)
-            self.queue_to_lower.put([entry.id, data])
+            #self.queue_to_lower.put([entry.id, data])
             self.handleContent(entry.id, data)
             return
         function_name = Name(entry.ast._element)
@@ -195,7 +195,7 @@ class BasicNFNLayer(LayerProcess):
         if function_code is None:
             self.queue_to_lower.put([entry.id, Nack(entry.original_name,
                                                     NackReason.COMP_PARAM_UNAVAILABLE, interest=entry.interest)])
-            return #TODO NACK
+            return
         executor: BaseNFNExecutor = self.executors.get(self.get_nf_code_language(function_code))
         if executor is None:
             self.queue_to_lower.put([entry.id, Nack(entry.original_name, NackReason.COMP_EXCEPTION, interest=entry.interest)])
@@ -216,6 +216,9 @@ class BasicNFNLayer(LayerProcess):
                 params.append(e.type(e._element))
 
         res = executor.execute(function_code, params)
+        if res is None:
+            self.queue_to_lower.put([entry.id, Nack(entry.original_name, NackReason.COMP_EXCEPTION,
+                                                    interest=entry.interest)])
         content_res: Content = Content(entry.original_name, str(res))
         self.queue_to_lower.put([entry.id, content_res])
 

@@ -1,5 +1,6 @@
 """Test the BasicNFNLayer"""
 
+import time
 import unittest
 import multiprocessing
 
@@ -585,3 +586,41 @@ class test_BasicNFNLayer(unittest.TestCase):
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
         self.assertEqual(res[1], Nack(computation_name, NackReason.NO_CONTENT, interest=computation_interest))
         self.assertEqual(self.nfn_layer.computation_table.container, [])
+
+    def test_fwd(self):
+        """test forwarding using the BasicNFNLayer"""
+        fib: ForwardingInformationBaseMemoryPrefix = self.nfn_layer.icn_data_structs.get('fib')
+        fib.add_fib_entry(Name('/test'), 1, True)
+        fib.add_fib_entry(Name('/data'), 1, True)
+        self.nfn_layer.icn_data_structs['fib'] = fib
+
+        self.nfn_layer.start_process()
+
+        computation_name = Name("/func/f1")
+        computation_name += "_(/test/data,/data/test)"
+        computation_name += "NFN"
+        computation_interest = Interest(computation_name)
+
+        self.nfn_layer.queue_from_lower.put([1, computation_interest])
+        res1 = self.nfn_layer.queue_to_lower.get(timeout=2.0)
+
+        res1_name = Name("/test/data")
+        res1_name += "/func/f1(_,/data/test)"
+        res1_name += "NFN"
+        res1_interest = Interest(res1_name)
+        self.assertEqual(res1[1], res1_interest)
+
+        self.nfn_layer.queue_from_lower.put([1, Nack(res1_name, NackReason.NO_CONTENT, interest=res1_interest)])
+        res2 = self.nfn_layer.queue_to_lower.get(timeout=2.0)
+
+        res2_name = Name("/data/test")
+        res2_name += "/func/f1(/test/data,_)"
+        res2_name += "NFN"
+        res2_interest = Interest(res2_name)
+        self.assertEqual(res2[1], res2_interest)
+
+        self.nfn_layer.queue_from_lower.put([1, Content(res2_name, "Hello World")])
+        res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
+        self.assertEqual(res[1], Content(computation_name, "Hello World"))
+        self.assertTrue(self.nfn_layer.queue_to_lower.empty())
+

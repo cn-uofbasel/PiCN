@@ -5,6 +5,7 @@ import time
 import unittest
 
 from PiCN.Packets import Content, Interest, Name, Nack, NackReason
+from PiCN.Layers.NFNLayer import BasicNFNLayer
 from PiCN.Layers.NFNLayer import BasicNFNLayer_deprecated
 from PiCN.Layers.NFNLayer.NFNExecutor import NFNPythonExecutor
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
@@ -49,7 +50,7 @@ class test_BasicNFNLayer_deprecated(unittest.TestCase):
         self.nfnLayer.start_process()
         self.nfnLayer.queue_from_lower.put([1, interest])
         time.sleep(0.3)
-        data = self.nfnLayer.queue_to_lower.get()
+        data = self.nfnLayer.queue_to_lower.get(timeout=2.0)
         self.assertEqual([1, interest], data)
         content = Content(interest.name, "Result")
         self.nfnLayer.queue_from_lower.put([3, content])
@@ -185,7 +186,7 @@ def f():
         name += "NFN"
         interest = Interest(name)
         self.nfnLayer.queue_from_lower.put([cid, interest])
-        data = self.nfnLayer.queue_to_lower.get()
+        data = self.nfnLayer.queue_to_lower.get(timeout=2.0)
         self.assertEqual(data[1].name, Name("/test/data"))
         content = Content("/test/data", "result")
         self.nfnLayer.queue_from_lower.put([data[0], content])
