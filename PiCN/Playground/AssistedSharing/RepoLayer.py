@@ -26,7 +26,7 @@ class RepoLayer(LayerProcess):
                                "/alice/public/img/basel.jpg"     : "/tmp/basel.jpg"}
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
-        pass
+        pass # this is the highest layer in the stack
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         if len(data) != 2:
