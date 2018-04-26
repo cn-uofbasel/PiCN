@@ -23,7 +23,7 @@ class FetchStack(object):
         # create layers
         self.link_layer = UDP4LinkLayer(0, log_level=log_level)
         self.packet_encoding_layer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
-        self.fetch_layer = FetchLayer(self.chunkifyer, log_level)
+        self.fetch_layer = FetchLayer(log_level)
 
         self.layer_stack: LayerStack = LayerStack([
             self.fetch_layer,
