@@ -670,8 +670,10 @@ class test_BasicNFNLayer(unittest.TestCase):
         r2c_name += "NFN"
         r2c_interest = Interest(r2c_name)
         res4 = self.nfn_layer.queue_to_lower.get(timeout=2.0)
-        self.assertEqual(res4[1], inner_interest)
+        self.assertEqual(res4[1], Content(r2c_name, 'Running'))
 
         self.nfn_layer.queue_from_lower.put([2, Content(inner_name, "HelloWorld")])
+        res5 = self.nfn_layer.queue_to_lower.get()
+        self.assertEqual(res5[1], inner_interest)
         res = self.nfn_layer.queue_to_lower.get()
         self.assertEqual(res[1], Content(computation_name, "HELLOWORLD"))

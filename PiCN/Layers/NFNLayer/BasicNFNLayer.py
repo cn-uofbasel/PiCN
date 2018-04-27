@@ -55,8 +55,8 @@ class BasicNFNLayer(LayerProcess):
         if self.r2cclient.R2C_identify_Name(interest.name):
             c = self.r2cclient.R2C_handle_request(interest.name, self.computation_table)
             if c is not None:
-                if packet_id < 0: #local request
-                    self.push_data(c) #satisfy local r2c messages
+                if packet_id < 0:
+                    self.push_data(c) #local request
                 else:
                     self.queue_to_lower.put([packet_id, c])
             return
@@ -243,10 +243,12 @@ class BasicNFNLayer(LayerProcess):
         for n in requests:
             if type(n) is str:
                 continue
-                name = self.parser.nfn_str_to_network_name(n)
             else:
                 name = n
-            self.handleInterest(-1, Interest(name)) #todo should handle interest here, to reach local comps?
+            if '_' in ''.join(name.string_components): #sth is broken here, so this is just a quick fix
+                self.handleInterest(0, Interest(name))
+            else:
+                self.handleInterest(-1, Interest(name))
         for n in removes:
             if type(n) is str:
                 name = self.parser.nfn_str_to_network_name(n)
