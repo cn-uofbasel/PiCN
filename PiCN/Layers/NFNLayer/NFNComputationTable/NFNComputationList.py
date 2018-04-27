@@ -17,10 +17,13 @@ class NFNComputationList(BaseNFNComputationTable):
         super().__init__(r2cclient, parser)
 
 
-    def add_computation(self, name: Name, id: int, interest, ast:AST=None):
+    def add_computation(self, name: Name, id: int, interest, ast:AST=None) -> bool:
         if self.is_comp_running(name):
-            return
+            c = self.get_computation(name)
+            c.time_stamp = time.time()
+            return False
         self.container.append(NFNComputationTableEntry(name, id, interest, ast, self.r2cclient, self.parser))
+        return True
 
     def is_comp_running(self, name):
         l = list(map(lambda n: n.original_name, self.container))

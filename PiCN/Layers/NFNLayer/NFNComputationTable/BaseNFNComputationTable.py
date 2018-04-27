@@ -112,7 +112,8 @@ class NFNComputationTableEntry(object):
             if ts > self.time_stamp + self.timeout:
                 r2c_request = self.r2cclient.R2C_create_message(self.rewrite_list[0])
                 self.add_name_to_await_list(r2c_request)
-                return [self.rewrite_list[0], r2c_request]
+                request_name = self.parser.nfn_str_to_network_name(self.rewrite_list[0])
+                return [request_name, r2c_request]
             else:
                 return []
         #Local Case
@@ -150,12 +151,13 @@ class BaseNFNComputationTable(object):
         self.container: List[NFNComputationTableEntry] = []
 
     @abc.abstractmethod
-    def add_computation(self, name: Name, id: int, interest: Interest, ast: AST=None):
+    def add_computation(self, name: Name, id: int, interest: Interest, ast: AST=None) -> bool:
         """add a computation to the Computation table (i.e. start a new computation)
         :param name: icn-name of the computation
         :param id: ID given from layer communication
         :param interest: the original interest message
         :param AST: abstract syntax tree of the computation
+        :return True if entry was added, false if it was already available and timestamp was updated
         """
 
     @abc.abstractmethod

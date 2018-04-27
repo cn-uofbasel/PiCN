@@ -655,11 +655,23 @@ class test_BasicNFNLayer(unittest.TestCase):
 
         self.assertEqual(res2, [2, inner_interest])
 
-#        time.sleep(4)
+        self.nfn_layer.queue_from_lower.put([2, c1])
 
-        #TODO add r2c checks
+        time.sleep(4)
 
-        #self.nfn_layer.ageing()
+        self.nfn_layer.ageing()
+        res3 = self.nfn_layer.queue_to_lower.get(timeout=2.0)
+        self.assertEqual(res3[1], inner_interest)
 
-        #res3 = self.nfn_layer.queue_to_lower.get(timeout=2.0)
-        #res4 = self.nfn_layer.queue_to_lower.get(timeout=2.0)
+        r2c_name = Name("/test/data")
+        r2c_name += "/func/f2(_)"
+        r2c_name += "R2C"
+        r2c_name += "KEEPALIVE"
+        r2c_name += "NFN"
+        r2c_interest = Interest(r2c_name)
+        res4 = self.nfn_layer.queue_to_lower.get(timeout=2.0)
+        self.assertEqual(res4[1], inner_interest)
+
+        self.nfn_layer.queue_from_lower.put([2, Content(inner_name, "HelloWorld")])
+        res = self.nfn_layer.queue_to_lower.get()
+        self.assertEqual(res[1], Content(computation_name, "HELLOWORLD"))

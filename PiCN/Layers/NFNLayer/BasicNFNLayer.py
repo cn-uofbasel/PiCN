@@ -53,9 +53,12 @@ class BasicNFNLayer(LayerProcess):
         :param interest: interest that arrived
         """
         if self.r2cclient.R2C_identify_Name(interest.name):
-            c = self.r2cclient.R2C_handle_request(interest.name)
+            c = self.r2cclient.R2C_handle_request(interest.name, self.computation_table)
             if c is not None:
-                self.queue_to_lower.put([packet_id, c])
+                if packet_id < 0: #local request
+                    self.push_data(c) #satisfy local r2c messages
+                else:
+                    self.queue_to_lower.put([packet_id, c])
             return
         if interest.name.components[-1] != b"NFN": #send non NFN interests back
             self.queue_to_lower.put([packet_id, interest])
@@ -63,7 +66,9 @@ class BasicNFNLayer(LayerProcess):
         #parse interest and create computation
         nfn_str, prepended_name = self.parser.network_name_to_nfn_str(interest.name)
         ast = self.parser.parse(nfn_str)
-        self.add_computation(interest.name, packet_id, interest, ast)
+
+        if self.add_computation(interest.name, packet_id, interest, ast) == False:
+            return
 
         #request required data
         required_optimizer_data = self.optimizer.required_data(interest.name, ast)
@@ -236,10 +241,20 @@ class BasicNFNLayer(LayerProcess):
         requests, removes = ct.ageing()
 
         for n in requests:
-            self.queue_to_lower.put([0, Interest(n)])
-
+            if type(n) is str:
+                continue
+                name = self.parser.nfn_str_to_network_name(n)
+            else:
+                name = n
+            self.handleInterest(-1, Interest(name)) #todo should handle interest here, to reach local comps?
         for n in removes:
-            self.queue_to_lower.put(0, Nack(n, NackReason.COMP_TERMINATED, Interest(n)))
+            if type(n) is str:
+                name = self.parser.nfn_str_to_network_name(n)
+            else:
+                name = n
+            nack = Nack(n, NackReason.COMP_TERMINATED, interest=Interest(name))
+            #self.handleNack(-1, nack)
+            self.queue_to_lower.put([0, nack])
         self.computation_table = ct
 
     @property
