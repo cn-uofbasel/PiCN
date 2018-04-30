@@ -63,7 +63,7 @@ class BaseForwardingInformationBase(object):
 
     @abc.abstractmethod
     def clear(self):
-        """Remove all entries from the FIB"""
+        """Remove all non-static entries from the FIB"""
 
     @property
     def container(self):

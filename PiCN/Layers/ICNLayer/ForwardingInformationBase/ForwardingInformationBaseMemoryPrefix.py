@@ -35,5 +35,6 @@ class ForwardingInformationBaseMemoryPrefix(BaseForwardingInformationBase):
                 self._container.remove(fib_entry)
 
     def clear(self):
-        self._container.clear()
-
+        for fib_entry in self._container:
+            if not fib_entry.static:
+                self._container.remove(fib_entry)

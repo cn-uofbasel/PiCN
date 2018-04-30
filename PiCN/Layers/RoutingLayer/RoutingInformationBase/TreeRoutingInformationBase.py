@@ -134,7 +134,7 @@ class _RIBTreeNode(object):
         myname = self._nc.decode('utf-8') if self._nc is not None else '/'
         s += f'{"│ " * (depth-1)}├╴{myname}: {self._distance_vector}\n'
         for child in self._children.values():
-            s += f'│ {child.to_string(depth + 1)}'
+            s += f'│ {child.pretty_print(depth + 1)}'
         return s
 
 
@@ -173,7 +173,7 @@ class TreeRoutingInformationBase(BaseRoutingInformationBase):
         fib.clear()
         # Add the longest prefix representation entries to the FIB
         for name, fid, dist in self:
-            fib.add_fib_entry(name, fid, static=True)
+            fib.add_fib_entry(name, fid, static=False)
 
     def __iter__(self):
         collapsed: List[Tuple[List[bytes], int, int]] = self._tree.collapse()

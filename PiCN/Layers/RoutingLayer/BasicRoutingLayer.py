@@ -2,7 +2,6 @@ from typing import List, Tuple
 
 import multiprocessing
 import threading
-import socket
 from datetime import datetime, timedelta
 
 from PiCN.Processes import LayerProcess
@@ -16,17 +15,15 @@ from PiCN.Packets import Name, Content, Interest
 class BasicRoutingLayer(LayerProcess):
 
     def __init__(self, linklayer: UDP4LinkLayer, icnlayer: BasicICNLayer,
-                 bcaddrs: List[Tuple[str, int]] = None, log_level: int = 255):
+                 peers: List[Tuple[str, int]] = None, log_level: int = 255):
         super().__init__('BasicRoutingLayer', log_level)
         self._prefix: Name = Name('/routing')
         self._linklayer: UDP4LinkLayer = linklayer
         self._icnlayer: BasicICNLayer = icnlayer
         self._rib_maxage: timedelta = timedelta(seconds=3600)
-        self._bcaddrs: List[Tuple[str, int]] = bcaddrs if bcaddrs is not None else []
+        self._peers: List[Tuple[str, int]] = peers if peers is not None else []
         self._ageing_interval: float = 5.0
         self._ageing_timer: threading.Timer = None
-        if self._linklayer is not None:
-            self._linklayer.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
     def start_process(self):
         super().start_process()
@@ -61,7 +58,7 @@ class BasicRoutingLayer(LayerProcess):
                 # TODO(s3lph): Make rcv_fid static
                 for line in lines:
                     name, dist = line.rsplit(':', 1)
-                    rib.insert(Name(name), rcv_fid, dist + 1, now + self._rib_maxage)
+                    rib.insert(Name(name), rcv_fid, int(dist) + 1, now + self._rib_maxage)
                 self._icnlayer.rib = rib
             return
         self.queue_to_higher.put(data)
@@ -82,6 +79,6 @@ class BasicRoutingLayer(LayerProcess):
 
     def _send_routing_interest(self):
         solicitation: Interest = Interest(self._prefix)
-        for addr in self._bcaddrs:
-            fid = self._linklayer.get_or_create_fid(addr, static=False)
+        for addr in self._peers:
+            fid = self._linklayer.get_or_create_fid(addr, static=True)
             self.queue_to_lower.put([fid, solicitation])
