@@ -45,8 +45,8 @@ class test_BasicChunkLayer(unittest.TestCase):
         self.chunkLayer._request_table.append(RequestTableEntry(n1))
         self.chunkLayer._request_table.append(RequestTableEntry(n2))
 
-        result2 = self.chunkLayer.get_requesttableentry(n2)
-        result1 = self.chunkLayer.get_requesttableentry(n1)
+        result2 = self.chunkLayer.get_request_table_entry(n2)
+        result1 = self.chunkLayer.get_request_table_entry(n1)
 
         self.assertEqual(result1.name, n1)
         self.assertEqual(result2.name, n2)
@@ -118,7 +118,7 @@ class test_BasicChunkLayer(unittest.TestCase):
         self.assertFalse(entry2)
         self.assertTrue(entry3)
 
-        rt_entry = self.chunkLayer.get_requesttableentry(Name("/test/data/c1"))
+        rt_entry = self.chunkLayer.get_request_table_entry(Name("/test/data/c1"))
         self.chunkLayer._request_table.remove(rt_entry)
         rt_entry = self.chunkLayer.remove_chunk_name_from_request_table_entry(rt_entry, Name("/test/data/c1"))
         self.chunkLayer._request_table.append(rt_entry)
@@ -151,7 +151,7 @@ class test_BasicChunkLayer(unittest.TestCase):
         self.assertFalse(entry2)
         self.assertTrue(entry3)
 
-        rt_entry = self.chunkLayer.get_requesttableentry(Name("/test/data/m1"))
+        rt_entry = self.chunkLayer.get_request_table_entry(Name("/test/data/m1"))
         self.chunkLayer._request_table.remove(rt_entry)
         rt_entry = self.chunkLayer.remove_metadata_name_from_request_table(rt_entry, Name("/test/data/m1"))
         self.chunkLayer._request_table.append(rt_entry)
@@ -341,7 +341,7 @@ class test_BasicChunkLayer(unittest.TestCase):
 
         self.assertTrue(self.chunkLayer.queue_to_lower.empty())
 
-        request: RequestTableEntry = self.chunkLayer.get_requesttableentry(md1_n)
+        request: RequestTableEntry = self.chunkLayer.get_request_table_entry(md1_n)
         self.assertEqual(request.requested_chunks, chunknames[:4])
         self.assertEqual(request.requested_md[0], md2_n)
 
@@ -355,7 +355,7 @@ class test_BasicChunkLayer(unittest.TestCase):
 
         time.sleep(1)
 
-        request: RequestTableEntry = self.chunkLayer.get_requesttableentry(md1_n)
+        request: RequestTableEntry = self.chunkLayer.get_request_table_entry(md1_n)
 
         self.assertEqual(len(request.requested_md), 0)
         self.assertEqual(len(request.requested_chunks), 5)

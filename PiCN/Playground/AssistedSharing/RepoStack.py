@@ -1,4 +1,4 @@
-"""Publisher"""
+"""Publisher Stack"""
 
 import multiprocessing
 
@@ -10,9 +10,9 @@ from PiCN.Layers.LinkLayer import UDP4LinkLayer
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder, NdnTlvEncoder
 from PiCN.Logger import Logger
 
-class RepoStack(object):
 
-    def __init__(self, port=8500, log_level=255, encoder: BasicEncoder=NdnTlvEncoder):
+class RepoStack(object):
+    def __init__(self, port=8500, log_level=255, encoder: BasicEncoder = NdnTlvEncoder):
         # debug level
         logger = Logger("Publisher", log_level)
 

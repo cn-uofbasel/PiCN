@@ -12,8 +12,7 @@ from PiCN.Playground.AssistedSharing.SampleData import alice_index_schema, ac_wr
 
 
 class RepoLayer(LayerProcess):
-
-    def __init__(self, log_level=255, manager: multiprocessing.Manager=None):
+    def __init__(self, log_level=255, manager: multiprocessing.Manager = None):
         super().__init__(logger_name="RepoLayer", log_level=log_level)
         if manager is None:
             manager = multiprocessing.Manager()
@@ -22,11 +21,11 @@ class RepoLayer(LayerProcess):
         cache.add_content_object(Content("/alice/schema.index", alice_index_schema))
         cache.add_content_object(Content("/alice/homebrewed/ac", ac_wrapper_desc))
         self._data_structs['cache'] = cache
-        self._files_in_repo = {"/alice/movies/cats-and-dogs.mp4" : "/tmp/cats-and-dogs.mp4",
-                               "/alice/public/img/basel.jpg"     : "/tmp/basel.jpg"}
+        self._files_in_repo = {"/alice/movies/cats-and-dogs.mp4": "/tmp/cats-and-dogs.mp4",
+                               "/alice/public/img/basel.jpg": "/tmp/basel.jpg"}
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
-        pass
+        pass  # this is the highest layer in the stack
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         if len(data) != 2:
@@ -99,7 +98,7 @@ class RepoLayer(LayerProcess):
             chunk_names = list()
             for n in range(0, num_chunks):
                 # extract chunk and compute digest
-                chunk = file[chunk_size * n : min(chunk_size*(n+1), file_length)]
+                chunk = file[chunk_size * n: min(chunk_size * (n + 1), file_length)]
                 m = hashlib.sha256()
                 m.update(chunk)
                 digest = m.hexdigest()
@@ -141,4 +140,4 @@ class RepoLayer(LayerProcess):
         self.cache = cache
 
     def ageing(self):
-            pass # data should not be removed from cache
+        pass  # data should not be removed from cache
