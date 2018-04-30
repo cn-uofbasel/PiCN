@@ -1,3 +1,4 @@
+
 import unittest
 
 import os
@@ -36,9 +37,9 @@ class test_RoutingLayer(unittest.TestCase):
         self.fetch = Fetch('127.0.0.1', 9004, encoder=NdnTlvEncoder())
         # Create RIB entry for the repository (with Python weirdness)
         repo_fid: int = self.f9000.linklayer.create_new_fid(('127.0.0.1', 9090), static=True)
-        rib: BaseRoutingInformationBase = self.f9000.icnlayer.rib
+        rib: BaseRoutingInformationBase = self.f9000.data_structs['rib']
         rib.insert(Name('/testrepo'), repo_fid, distance=1, timeout=None)
-        self.f9000.icnlayer.rib = rib
+        self.f9000.data_structs['rib'] = rib
 
     def tearDown(self):
         self.f9000.stop_forwarder()

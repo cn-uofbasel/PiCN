@@ -53,7 +53,7 @@ class ICNForwarder(object):
         self.icnlayer._data_structs = self.data_structs
 
         if routing:
-            self.routinglayer = BasicRoutingLayer(self.linklayer, self.icnlayer, peers=peers, log_level=log_level)
+            self.routinglayer = BasicRoutingLayer(self.linklayer, self.data_structs, peers=peers, log_level=log_level)
             self.lstack.insert(self.routinglayer, below_of=self.icnlayer)
 
         # mgmt
