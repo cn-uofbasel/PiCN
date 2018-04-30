@@ -2,9 +2,7 @@
 import unittest
 
 from PiCN.LayerStack import LayerStack
-from PiCN.Layers.ICNLayer import BasicICNLayer
 from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
-from PiCN.Layers.LinkLayer import UDP4LinkLayer
 from PiCN.Processes import LayerProcess
 
 
@@ -21,9 +19,9 @@ class test_LayerStack(unittest.TestCase):
         self.assertEqual(0, len(lstack.queues))
 
     def test_create_multiple(self):
-        toplayer: LayerProcess = BasicICNLayer()
+        toplayer: LayerProcess = BasicPacketEncodingLayer()
         middlelayer: LayerProcess = BasicPacketEncodingLayer()
-        bottomlayer: LayerProcess = UDP4LinkLayer()
+        bottomlayer: LayerProcess = BasicPacketEncodingLayer()
         lstack: LayerStack = LayerStack([
             toplayer,
             middlelayer,
@@ -39,7 +37,7 @@ class test_LayerStack(unittest.TestCase):
         self.assertNotEqual(toplayer.queue_from_lower, bottomlayer.queue_to_higher)
 
     def test_insert_bottom(self):
-        toplayer: LayerProcess = BasicICNLayer()
+        toplayer: LayerProcess = BasicPacketEncodingLayer()
         newlayer: LayerProcess = BasicPacketEncodingLayer()
         lstack: LayerStack = LayerStack([toplayer])
         lstack.insert(newlayer, below_of=toplayer)
@@ -52,7 +50,7 @@ class test_LayerStack(unittest.TestCase):
         self.assertEqual(lstack.queue_from_lower, newlayer.queue_from_lower)
 
     def test_insert_top(self):
-        bottomlayer: LayerProcess = UDP4LinkLayer()
+        bottomlayer: LayerProcess = BasicPacketEncodingLayer()
         newlayer: LayerProcess = BasicPacketEncodingLayer()
         lstack: LayerStack = LayerStack([bottomlayer])
         lstack.insert(newlayer, on_top_of=bottomlayer)
@@ -65,8 +63,8 @@ class test_LayerStack(unittest.TestCase):
         self.assertEqual(lstack.queue_from_higher, newlayer.queue_from_higher)
 
     def test_insert_between(self):
-        toplayer: LayerProcess = BasicICNLayer()
-        bottomlayer: LayerProcess = UDP4LinkLayer()
+        toplayer: LayerProcess = BasicPacketEncodingLayer()
+        bottomlayer: LayerProcess = BasicPacketEncodingLayer()
         newlayer: LayerProcess = BasicPacketEncodingLayer()
         lstack: LayerStack = LayerStack([
             toplayer,
