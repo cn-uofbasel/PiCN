@@ -12,7 +12,7 @@ class test_PendingInterstTableMemoryExact(unittest.TestCase):
 
     def setUp(self):
         self.manager = multiprocessing.Manager()
-        self.pit: PendingInterstTableMemoryExact = PendingInterstTableMemoryExact(self.manager)
+        self.pit: PendingInterstTableMemoryExact = PendingInterstTableMemoryExact()
 
     def tearDown(self):
         pass

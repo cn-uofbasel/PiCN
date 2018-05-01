@@ -4,7 +4,7 @@ import abc
 import multiprocessing
 from typing import List
 
-from PiCN.Packets import Interest, Name
+from PiCN.Packets import Name
 
 
 class ForwardingInformationBaseEntry(object):
@@ -45,18 +45,18 @@ class ForwardingInformationBaseEntry(object):
 class BaseForwardingInformationBase(object):
     """Abstract BaseForwardingInformationBase for usage in BasicICNLayer"""
 
-    def __init__(self, manager: multiprocessing.Manager):
-        self._container: List[ForwardingInformationBaseEntry] = manager.list()
+    def __init__(self):
+        self._container: List[ForwardingInformationBaseEntry] = []
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def add_fib_entry(self, name: Name, fid: int, static: bool):
         """Add an Interest to the PIT"""
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def remove_fib_entry(self, name: Name):
         """Remove an entry from the PIT"""
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def find_fib_entry(self, name: Name, already_used: List[ForwardingInformationBaseEntry]) \
             ->ForwardingInformationBaseEntry:
         """Find an entry in the PIT"""

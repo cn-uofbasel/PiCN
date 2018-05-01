@@ -21,24 +21,24 @@ class BasicPacketEncodingLayer(LayerProcess):
         self._encoder = encoder
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
-        faceid, packet = self.check_data(data)
-        if faceid == None or packet is None:
+        face_id, packet = self.check_data(data)
+        if face_id == None or packet is None:
             return
         encoded_packet = self.encode(packet)
         if encoded_packet is None:
             self.logger.info("Dropping Packet since None")
             return
-        to_lower.put([faceid, encoded_packet])
+        to_lower.put([face_id, encoded_packet])
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
-        faceid, packet = self.check_data(data)
-        if faceid == None or packet == None:
+        face_id, packet = self.check_data(data)
+        if face_id == None or packet == None:
             return
         decoded_packet = self.decode(packet)
         if decoded_packet is None:
             self.logger.info("Dropping Packet since None")
             return
-        to_higher.put([faceid, decoded_packet])
+        to_higher.put([face_id, decoded_packet])
 
     def encode(self, data):
         self.logger.info("Encode packet")

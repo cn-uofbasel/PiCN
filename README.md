@@ -29,7 +29,7 @@ PiCN is written in Python 3.6+ and tested on Linux, Mac OS X and Windows. More t
 * Peek Tool
 * Management Tool
 
-## Hands On!
+## Getting Started!
 Let us setup a simple network which consists of a data repository and a forwarding node:
 
 ![Hands On: Topology](https://raw.githubusercontent.com/cn-uofbasel/PiCN/master/docs/img/initial-hands-on.png "Hands On: Topology")
@@ -67,7 +67,7 @@ you@machine:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newforwardingrule /the:0
 
 Fetch content from the repository via the forwarding node:
 ```console
-you@notebook:~$ picn-fetch --format ndntlv 127.0.0.1 9000 /the/prefix/example 
+you@machine:~$ picn-fetch --format ndntlv 127.0.0.1 9000 /the/prefix/example 
 HELLO WORLD
 ```
 

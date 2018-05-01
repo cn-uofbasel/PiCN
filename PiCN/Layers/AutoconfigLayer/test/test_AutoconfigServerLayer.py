@@ -15,16 +15,19 @@ from PiCN.Layers.AutoconfigLayer.test.mocks import MockLinkLayer
 class test_AutoconfigServerLayer(unittest.TestCase):
 
     def setUp(self):
-        self.manager = multiprocessing.Manager()
+        manager = multiprocessing.Manager()
         self.linklayer_mock = MockLinkLayer(port=1337)
-        self.fib = ForwardingInformationBaseMemoryPrefix(self.manager)
+        self.ds = manager.dict()
+        fib = ForwardingInformationBaseMemoryPrefix()
         # Create a face and an example route
         outfid = self.linklayer_mock._get_or_create_fid(('127.13.37.42', 4242))
-        self.fib.add_fib_entry(Name('/global'), outfid)
+        fib.add_fib_entry(Name('/global'), outfid)
+        self.ds['fib'] = fib
         # List of advertised prefixes
         self.prefixes: List[Tuple[Name, bool]] = [(Name('/test/repos'), False), (Name('/home'), True)]
-        self.autoconflayer = AutoconfigServerLayer(linklayer=self.linklayer_mock, fib=self.fib, address='127.0.1.1',
-                                                   bcaddr='127.255.255.255', registration_prefixes=self.prefixes)
+        self.autoconflayer = AutoconfigServerLayer(linklayer=self.linklayer_mock, data_structs=self.ds,
+                                                   address='127.0.1.1', bcaddr='127.255.255.255',
+                                                   registration_prefixes=self.prefixes)
         self.autoconflayer.queue_to_higher = self.queue_to_higher = multiprocessing.Queue()
         self.autoconflayer.queue_from_higher = self.queue_from_higher = multiprocessing.Queue()
         self.autoconflayer.queue_to_lower = self.queue_to_lower = multiprocessing.Queue()

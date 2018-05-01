@@ -25,11 +25,12 @@ class test_Mgmt(unittest.TestCase):
         self.q1 = multiprocessing.Queue()
         self.linklayer.queue_from_higher = self.q1
 
-        self.cs = ContentStoreMemoryExact(self.manager)
-        self.fib = ForwardingInformationBaseMemoryPrefix(self.manager)
-        self.pit = PendingInterstTableMemoryExact(self.manager)
+        self._data_structs = self.manager.dict()
+        self._data_structs['cs'] = ContentStoreMemoryExact()
+        self._data_structs['fib'] = ForwardingInformationBaseMemoryPrefix()
+        self._data_structs['pit'] = PendingInterstTableMemoryExact()
 
-        self.mgmt = Mgmt(self.cs, self.fib, self.pit, self.linklayer, self.linklayerport)
+        self.mgmt = Mgmt(self._data_structs, self.linklayer, self.linklayerport)
         self.testMgmtSock1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.testMgmtSock2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.testMgmtSock3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -122,8 +123,8 @@ class test_Mgmt(unittest.TestCase):
         self.assertEqual(data.decode(),
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newforwardingrule OK:3\r\n")
 
-        self.assertEqual(self.fib.find_fib_entry(Name("/test/data")).faceid, 2)
-        self.assertEqual(self.fib.find_fib_entry(Name("/data/test")).faceid, 3)
+        self.assertEqual(self._data_structs.get('fib').find_fib_entry(Name("/test/data")).faceid, 2)
+        self.assertEqual(self._data_structs.get('fib').find_fib_entry(Name("/data/test")).faceid, 3)
 
     def test_mgmt_add_content(self):
         """Test adding content"""
@@ -147,8 +148,9 @@ class test_Mgmt(unittest.TestCase):
         self.assertEqual(data.decode(),
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newcontent OK\r\n")
 
-        self.assertEqual(self.cs.find_content_object(Name("/test/data")).content.content, "HelloWorld")
-        self.assertEqual(self.cs.find_content_object(Name("/data/test")).content.content, "GoodBye")
+        cs = self._data_structs.get('cs')
+        self.assertEqual(cs.find_content_object(Name("/test/data")).content.content, "HelloWorld")
+        self.assertEqual(cs.find_content_object(Name("/data/test")).content.content, "GoodBye")
 
 
     def test_add_face_mgmt_client(self):
@@ -168,14 +170,14 @@ class test_Mgmt(unittest.TestCase):
         self.mgmt.start_process()
 
         data = self.mgmt_client.add_forwarding_rule(Name("/test/data"), 2)
-        self.assertEqual(data, "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newforwardingrule OK:2\r\n")
+        self.assertEqual("HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newforwardingrule OK:2\r\n", data)
 
         time.sleep(1)
         data = self.mgmt_client.add_forwarding_rule(Name("/data/test"), 3)
         self.assertEqual(data, "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newforwardingrule OK:3\r\n")
 
-        self.assertEqual(self.fib.find_fib_entry(Name("/test/data")).faceid, 2)
-        self.assertEqual(self.fib.find_fib_entry(Name("/data/test")).faceid, 3)
+        self.assertEqual(self._data_structs.get('fib').find_fib_entry(Name("/test/data")).faceid, 2)
+        self.assertEqual(self._data_structs.get('fib').find_fib_entry(Name("/data/test")).faceid, 3)
 
     def test_mgmt_add_content_mgmt_client(self):
         """Test adding content using MgmtClient"""
@@ -189,8 +191,9 @@ class test_Mgmt(unittest.TestCase):
         data = self.mgmt_client.add_new_content(Name("/data/test"), "GoodBye")
         self.assertEqual(data, "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newcontent OK\r\n")
 
-        self.assertEqual(self.cs.find_content_object(Name("/test/data")).content.content, "HelloWorld")
-        self.assertEqual(self.cs.find_content_object(Name("/data/test")).content.content, "GoodBye")
+        cs = self._data_structs.get('cs')
+        self.assertEqual(cs.find_content_object(Name("/test/data")).content.content, "HelloWorld")
+        self.assertEqual(cs.find_content_object(Name("/data/test")).content.content, "GoodBye")
 
     def test_mgmt_shutdown_mgmt_client(self):
         """Test adding content"""

@@ -17,9 +17,10 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
     def setUp(self):
         self.parser: DefaultNFNParser = DefaultNFNParser()
         self.manager = multiprocessing.Manager()
-        self.optimizer: ToDataFirstOptimizer = ToDataFirstOptimizer(None, ContentStoreMemoryExact(self.manager),
-                                                                    ForwardingInformationBaseMemoryPrefix(self.manager),
-                                                                    None)
+        self.data_structs = self.manager.dict()
+        self.data_structs['cs'] = ContentStoreMemoryExact()
+        self.data_structs['fib'] = ForwardingInformationBaseMemoryPrefix()
+        self.optimizer: ToDataFirstOptimizer = ToDataFirstOptimizer(None, self.data_structs)
 
     def tearDown(self):
         pass
@@ -40,7 +41,9 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         cmp_name += "_()"
         cmp_name += "NFN"
         workflow = "/func/f1()"
-        self.optimizer.fib.add_fib_entry(Name("/func"), 1, False)
+        fib = self.optimizer.fib
+        fib.add_fib_entry(Name("/func"), 1, False)
+        self.optimizer.fib = fib
         ast = self.parser.parse(workflow)
         self.assertTrue(self.optimizer.compute_fwd(ast))
         self.assertFalse(self.optimizer.compute_local(ast))
@@ -59,7 +62,9 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         cmp_name += "_(/test/data)"
         cmp_name += "NFN"
         workflow = "/func/f1(/test/data)"
-        self.optimizer.fib.add_fib_entry(Name("/func"), 1, False)
+        fib = self.optimizer.fib
+        fib.add_fib_entry(Name("/func"), 1, False)
+        self.optimizer.fib = fib
         ast = self.parser.parse(workflow)
         self.assertTrue(self.optimizer.compute_fwd(ast))
         self.assertFalse(self.optimizer.compute_local(ast))
@@ -78,10 +83,14 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         cmp_name += "_(/test/data)"
         cmp_name += "NFN"
         workflow = "/func/f1(/test/data)"
-        self.optimizer.fib.add_fib_entry(Name("/func"), 1, False)
+        fib = self.optimizer.fib
+        fib.add_fib_entry(Name("/func"), 1, False)
+        self.optimizer.fib = fib
         self.optimizer.prefix = Name("/func/f1")
-        self.optimizer.cs.add_content_object(
+        cs = self.optimizer.cs
+        cs.add_content_object(
             Content(Name("/func/f1"), "PYTHON\nf\ndef f():\n    return 'Hello World'"),True)
+        self.optimizer.cs = cs
         ast = self.parser.parse(workflow)
         self.assertFalse(self.optimizer.compute_fwd(ast))
         self.assertTrue(self.optimizer.compute_local(ast))
@@ -100,7 +109,9 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         cmp_name._components.append("_(/test/data)")
         cmp_name._components.append("NFN")
         workflow = "/func/f1(/test/data)"
-        self.optimizer.fib.add_fib_entry(Name("/func"), 1, False)
+        fib = self.optimizer.fib
+        fib.add_fib_entry(Name("/func"), 1, False)
+        self.optimizer.fib = fib
         self.optimizer.prefix = Name("/func/f1")
         ast = self.parser.parse(workflow)
         self.assertTrue(self.optimizer.compute_fwd(ast))
@@ -113,7 +124,9 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         cmp_name += "/func/f1(_)"
         cmp_name += "NFN"
         workflow = "/func/f1(/test/data)"
-        self.optimizer.fib.add_fib_entry(Name("/test"), 1, False)
+        fib = self.optimizer.fib
+        fib.add_fib_entry(Name("/test"), 1, False)
+        self.optimizer.fib = fib
         ast = self.parser.parse(workflow)
         self.assertTrue(self.optimizer.compute_fwd(ast))
         self.assertFalse(self.optimizer.compute_local(ast))
@@ -134,8 +147,10 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         cmp_name2 += "_(/test/data)"
         cmp_name2 += "NFN"
         workflow = "/func/f1(/test/data)"
-        self.optimizer.fib.add_fib_entry(Name("/test"), 1, False)
-        self.optimizer.fib.add_fib_entry(Name("/func"), 2, False)
+        fib = self.optimizer.fib
+        fib.add_fib_entry(Name("/test"), 1, False)
+        fib.add_fib_entry(Name("/func"), 2, False)
+        self.optimizer.fib = fib
         ast = self.parser.parse(workflow)
         self.assertTrue(self.optimizer.compute_fwd(ast))
         self.assertFalse(self.optimizer.compute_local(ast))
@@ -162,8 +177,10 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         cmp_name2 = cmp_name2 + "/func/f1(/test/data,_(2,/data/test))"
         cmp_name2 = cmp_name2 + "NFN"
         workflow = "/func/f1(/test/data,/lib/f2(2,/data/test))"
-        self.optimizer.fib.add_fib_entry(Name("/lib"), 1, False)
-        self.optimizer.fib.add_fib_entry(Name("/test"), 2, False)
+        fib = self.optimizer.fib
+        fib.add_fib_entry(Name("/lib"), 1, False)
+        fib.add_fib_entry(Name("/test"), 2, False)
+        self.optimizer.fib = fib
         ast = self.parser.parse(workflow)
         self.assertTrue(self.optimizer.compute_fwd(ast))
         self.assertFalse(self.optimizer.compute_local(ast))

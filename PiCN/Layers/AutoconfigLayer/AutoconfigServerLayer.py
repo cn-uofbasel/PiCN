@@ -1,4 +1,6 @@
 
+from typing import Dict
+
 import multiprocessing
 import socket
 from typing import List, Tuple
@@ -18,12 +20,12 @@ _AUTOCONFIG_SERVICE_REGISTRATION_PREFIX: Name = Name('/autoconfig/service')
 
 class AutoconfigServerLayer(LayerProcess):
 
-    def __init__(self, linklayer: UDP4LinkLayer = None, fib: BaseForwardingInformationBase = None,
+    def __init__(self, linklayer: UDP4LinkLayer, data_structs: Dict[str, object],
                  address: str = '127.0.0.1', bcaddr: str = '255.255.255.255',
                  registration_prefixes: List[Tuple[Name, bool]] = list(), log_level: int = 255):
         """
         :param linklayer:
-        :param fib:
+        :param data_structs:
         :param address:
         :param bcaddr:
         :param log_level:
@@ -31,7 +33,7 @@ class AutoconfigServerLayer(LayerProcess):
         super().__init__(logger_name='AutoconfigLayer', log_level=log_level)
 
         self._linklayer: UDP4LinkLayer = linklayer
-        self._fib: BaseForwardingInformationBase = fib
+        self._data_structs: Dict[str, object] = data_structs
         self._announce_addr: str = address
         self._broadcast_addr: str = bcaddr
         self._known_services: List[Tuple[Name, Tuple[str, int], datetime]] = []
@@ -74,7 +76,8 @@ class AutoconfigServerLayer(LayerProcess):
         self.logger.info('Autoconfig information requested')
         port: int = self._linklayer.get_port()
         content: str = f'udp4://{self._announce_addr}:{port}\n'
-        for entry in self._fib.container:
+        fib: BaseForwardingInformationBase = self._data_structs['fib']
+        for entry in fib.container:
             entry: ForwardingInformationBaseEntry = entry
             content += f'r:{entry.name.to_string()}\n'
         for prefix, local in self._service_registration_prefixes:
@@ -138,7 +141,9 @@ class AutoconfigServerLayer(LayerProcess):
                                            str(int(self._service_registration_timeout.total_seconds())) + '\n')
                     return ack
         srvfid: int = self._linklayer.get_or_create_fid(srvaddr, static=True)
-        self._fib.add_fib_entry(srvname, srvfid, static=True)
+        fib: BaseForwardingInformationBase = self._data_structs['fib']
+        fib.add_fib_entry(srvname, srvfid, static=True)
+        self._data_structs['fib'] = fib
         self._known_services.append((srvname, srvaddr, datetime.now() + self._service_registration_timeout))
         ack: Content = Content(interest.name, str(int(self._service_registration_timeout.total_seconds())) + '\n')
         return ack

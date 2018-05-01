@@ -11,8 +11,7 @@ from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
 
 from PiCN.Layers.LinkLayer import UDP4LinkLayer
-from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
-from PiCN.Packets import Packet, Content, Interest, Nack, NackReason
+from PiCN.Packets import Content, Interest
 
 class cases_BasicPacketEncodingLayer(object):
 

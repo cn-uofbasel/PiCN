@@ -5,14 +5,11 @@ import os
 import shutil
 import unittest
 
-
 from PiCN.ProgramLibs.Fetch import Fetch
 
 from PiCN.Packets import Name, NackReason
 from PiCN.ProgramLibs.ICNDataRepository import ICNDataRepository
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
-
-
 
 class cases_ICNDataRepository(object):
     """Test the ICN Data Repository using fetch"""

@@ -1,6 +1,5 @@
 """Tests for the in Memory Content Store with exact matching"""
 
-import multiprocessing
 import unittest
 
 from PiCN.Layers.ICNLayer.ContentStore.ContentStoreMemoryExact import ContentStoreMemoryExact
@@ -10,8 +9,7 @@ from PiCN.Packets import Content
 class test_ContentStoreMemoryExact(unittest.TestCase):
 
     def setUp(self):
-        self.manager = multiprocessing.Manager()
-        self.cs = ContentStoreMemoryExact(self.manager)
+        self.cs = ContentStoreMemoryExact()
 
     def tearDown(self):
         pass

@@ -158,9 +158,3 @@ class UDP4LinkLayer(LayerProcess):
             del self._fids_timestamps[oldest_ts]
         else:
             pass
-
-
-
-
-
-

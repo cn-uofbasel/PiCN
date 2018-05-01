@@ -1,17 +1,16 @@
 """ A in memory Forwarding Information Base using longest matching"""
 
-import multiprocessing
 from typing import List
 
 from PiCN.Layers.ICNLayer.ForwardingInformationBase.BaseForwardingInformationBase import BaseForwardingInformationBase, \
     ForwardingInformationBaseEntry
-from PiCN.Packets import Name, Interest
+from PiCN.Packets import Name
 
 
 class ForwardingInformationBaseMemoryPrefix(BaseForwardingInformationBase):
 
-    def __init__(self, manager: multiprocessing.Manager):
-        super().__init__(manager)
+    def __init__(self):
+        super().__init__()
 
     def find_fib_entry(self, name: Name, already_used: List[ForwardingInformationBaseEntry] = None) -> ForwardingInformationBaseEntry:
         components = name.components[:]

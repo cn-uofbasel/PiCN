@@ -1,10 +1,8 @@
 """Test the UDP4LinkLayer"""
 
 import socket
-import time
 import unittest
 from multiprocessing import Queue
-from random import randint
 
 from PiCN.Layers.LinkLayer import UDP4LinkLayer
 

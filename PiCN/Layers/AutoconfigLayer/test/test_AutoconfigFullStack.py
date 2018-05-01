@@ -28,15 +28,18 @@ class test_AutoconfigFullStack(unittest.TestCase):
 
         # Set up forwarder
         manager = multiprocessing.Manager()
-        cs = ContentStoreMemoryExact(manager)
-        pit = PendingInterstTableMemoryExact(manager)
-        fib = ForwardingInformationBaseMemoryPrefix(manager)
+        ds = manager.dict()
+        ds['cs'] = ContentStoreMemoryExact()
+        ds['pit'] = PendingInterstTableMemoryExact()
+        ds['fib'] = ForwardingInformationBaseMemoryPrefix()
         prefixes = [(Name('/test/prefix/repos'), True)]
         forwarder_linklayer = UDP4LinkLayer(port=9000, manager=manager)
         forwarder_encoder = NdnTlvEncoder()
+        icnlayer = BasicICNLayer()
+        icnlayer._data_structs = ds
         self.forwarder = LayerStack([
-            BasicICNLayer(cs, pit, fib),
-            AutoconfigServerLayer(forwarder_linklayer, fib,
+            icnlayer,
+            AutoconfigServerLayer(forwarder_linklayer, ds,
                                   registration_prefixes=prefixes, bcaddr='127.255.255.255'),
             BasicPacketEncodingLayer(forwarder_encoder),
             forwarder_linklayer

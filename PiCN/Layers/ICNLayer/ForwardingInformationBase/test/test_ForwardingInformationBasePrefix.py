@@ -12,7 +12,7 @@ class test_ForwardingInformationBaseMemoryPrefix(unittest.TestCase):
 
     def setUp(self):
         self.manager = multiprocessing.Manager()
-        self.fib = ForwardingInformationBaseMemoryPrefix(self.manager)
+        self.fib = ForwardingInformationBaseMemoryPrefix()
 
     def tearDown(self):
         pass

@@ -1,7 +1,6 @@
 """Abstract BaseContentStore for usage in BasicICNLayer"""
 
 import abc
-import multiprocessing
 import time
 from typing import List
 
@@ -49,22 +48,22 @@ class ContentStoreEntry(object):
 class BaseContentStore(object):
     """Abstract BaseContentStore for usage in BasicICNLayer"""
 
-    def __init__(self, manager: multiprocessing.Manager):
-        self._container: List[ContentStoreEntry] = manager.list()
+    def __init__(self):
+        self._container: List[ContentStoreEntry] = []
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def add_content_object(self, content: Content, static: bool=False):
         """check if there is already a content object stored, otherwise store it in the container"""
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def find_content_object(self, name: Name) -> ContentStoreEntry:
         """check if there is a matching content object"""
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def remove_content_object(self, name: Name):
         """Remove a content object from CS"""
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def update_timestamp(self, cs_entry: ContentStoreEntry):
         """Update Timestamp of a ContentStoreEntry"""
 
