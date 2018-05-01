@@ -179,3 +179,6 @@ class TreeRoutingInformationBase(BaseRoutingInformationBase):
         collapsed: List[Tuple[List[bytes], int, int]] = self._tree.collapse()
         for name, fid, dist in collapsed:
             yield (Name(name), fid, dist)
+
+    def __len__(self):
+        return len(self._tree.collapse())

@@ -46,3 +46,11 @@ class BaseRoutingInformationBase(abc.ABC):
         :return: An iterator
         """
         pass
+
+    @abc.abstractmethod
+    def __len__(self):
+        """
+        Length of the longest-common-prefix-reduced entries of the RIB.
+        :return: Length of the entries that would be added to the FIB.
+        """
+        pass

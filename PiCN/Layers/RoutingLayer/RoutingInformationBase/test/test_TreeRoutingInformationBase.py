@@ -99,3 +99,12 @@ class test_TreeRoutingInformationBase(unittest.TestCase):
         unibasentry = ForwardingInformationBaseEntry(Name('/ndn/ch/unibas/dmi'), 1, True)
         self.assertIn(foobarentry, fib.container)
         self.assertIn(unibasentry, fib.container)
+
+    def test_iter_len(self):
+        rib: BaseRoutingInformationBase = TreeRoutingInformationBase()
+        rib.insert(Name('/foo/bar'), 0, 4, timeout=datetime.utcnow() + timedelta(hours=1))
+        rib.insert(Name('/ndn/ch/unibas/dmi'), 1, 2)
+        rib.insert(Name('/ndn/ch/unibas/cs'), 1, 3)
+        self.assertEqual(2, len(rib))
+        self.assertIn((Name('/foo/bar'), 0, 4), rib)
+        self.assertIn((Name('/ndn/ch/unibas'), 1, 2), rib)
