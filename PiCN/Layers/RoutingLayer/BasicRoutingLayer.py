@@ -6,7 +6,6 @@ import threading
 from datetime import datetime, timedelta
 
 from PiCN.Processes import LayerProcess
-from PiCN.Layers.ICNLayer import BasicICNLayer
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
 from PiCN.Layers.RoutingLayer.RoutingInformationBase import BaseRoutingInformationBase
 from PiCN.Layers.LinkLayer import UDP4LinkLayer
