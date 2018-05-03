@@ -33,7 +33,7 @@ class test_AutoconfigFullStack(unittest.TestCase):
         ds['pit'] = PendingInterstTableMemoryExact()
         ds['fib'] = ForwardingInformationBaseMemoryPrefix()
         prefixes = [(Name('/test/prefix/repos'), True)]
-        # TODO(s3lph): Using another port than 9000, as some other test doesn't seem to properly close a socket on
+        # TODO(s3lph): Using another port than 900*, as some other test doesn't seem to properly close a socket on
         # this port.
         forwarder_linklayer = UDP4LinkLayer(port=59000, manager=manager)
         forwarder_encoder = NdnTlvEncoder()
@@ -52,11 +52,11 @@ class test_AutoconfigFullStack(unittest.TestCase):
         repo_chunkifyer = SimpleContentChunkifyer()
         repo_chunklayer = BasicChunkLayer(repo_chunkifyer)
         repo_encoder = NdnTlvEncoder()
-        repo_linklayer = UDP4LinkLayer(port=9001, manager=manager)
+        repo_linklayer = UDP4LinkLayer(port=59001, manager=manager)
         self.repo = LayerStack([
             BasicRepositoryLayer(repository),
             repo_chunklayer,
-            AutoconfigRepoLayer('testrepo', repo_linklayer, repository, '127.0.0.1', 9001,
+            AutoconfigRepoLayer('testrepo', repo_linklayer, repository, '127.0.0.1', 59001,
                                 bcaddr='127.255.255.255', bcport=59000),
             BasicPacketEncodingLayer(repo_encoder),
             repo_linklayer
@@ -66,7 +66,7 @@ class test_AutoconfigFullStack(unittest.TestCase):
         client_chunkifyer = SimpleContentChunkifyer()
         client_chunklayer = BasicChunkLayer(client_chunkifyer)
         client_encoder = NdnTlvEncoder()
-        client_linklayer = UDP4LinkLayer(port=9002, manager=manager)
+        client_linklayer = UDP4LinkLayer(port=59002, manager=manager)
         self.client = LayerStack([
             client_chunklayer,
             AutoconfigClientLayer(client_linklayer, bcaddr='127.255.255.255', bcport=59000),
