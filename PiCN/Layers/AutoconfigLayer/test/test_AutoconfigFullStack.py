@@ -33,7 +33,9 @@ class test_AutoconfigFullStack(unittest.TestCase):
         ds['pit'] = PendingInterstTableMemoryExact()
         ds['fib'] = ForwardingInformationBaseMemoryPrefix()
         prefixes = [(Name('/test/prefix/repos'), True)]
-        forwarder_linklayer = UDP4LinkLayer(port=9000, manager=manager)
+        # TODO(s3lph): Using another port than 9000, as some other test doesn't seem to properly close a socket on
+        # this port.
+        forwarder_linklayer = UDP4LinkLayer(port=59000, manager=manager)
         forwarder_encoder = NdnTlvEncoder()
         icnlayer = BasicICNLayer()
         icnlayer._data_structs = ds
@@ -54,7 +56,8 @@ class test_AutoconfigFullStack(unittest.TestCase):
         self.repo = LayerStack([
             BasicRepositoryLayer(repository),
             repo_chunklayer,
-            AutoconfigRepoLayer('testrepo', repo_linklayer, repository, '127.0.0.1', 9001, bcaddr='127.255.255.255'),
+            AutoconfigRepoLayer('testrepo', repo_linklayer, repository, '127.0.0.1', 9001,
+                                bcaddr='127.255.255.255', bcport=59000),
             BasicPacketEncodingLayer(repo_encoder),
             repo_linklayer
         ])
@@ -66,7 +69,7 @@ class test_AutoconfigFullStack(unittest.TestCase):
         client_linklayer = UDP4LinkLayer(port=9002, manager=manager)
         self.client = LayerStack([
             client_chunklayer,
-            AutoconfigClientLayer(client_linklayer, bcaddr='127.255.255.255'),
+            AutoconfigClientLayer(client_linklayer, bcaddr='127.255.255.255', bcport=59000),
             BasicPacketEncodingLayer(client_encoder),
             client_linklayer
         ])

@@ -120,3 +120,11 @@ class test_ForwardingInformationBaseMemoryPrefix(unittest.TestCase):
         # test no match anymore best match
         fib_entry = self.fib.find_fib_entry(iname, already_used)
         self.assertEqual(fib_entry, None)
+
+    def test_clear(self):
+        self.fib.add_fib_entry(Name('/test/foo'), 42, static=True)
+        self.fib.add_fib_entry(Name('/test/bar'), 1337, static=False)
+        self.assertEqual(2, len(self.fib.container))
+        self.fib.clear()
+        self.assertEqual(1, len(self.fib.container))
+        self.assertIsNotNone(self.fib.find_fib_entry(Name('/test/foo')))

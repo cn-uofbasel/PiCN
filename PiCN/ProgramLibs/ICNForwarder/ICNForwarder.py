@@ -6,6 +6,8 @@ from PiCN.LayerStack.LayerStack import LayerStack
 from PiCN.Layers.ICNLayer import BasicICNLayer
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseMemoryPrefix
 from PiCN.Layers.ICNLayer.PendingInterestTable import PendingInterstTableMemoryExact
+from PiCN.Layers.RoutingLayer import BasicRoutingLayer
+from PiCN.Layers.RoutingLayer.RoutingInformationBase import TreeRoutingInformationBase
 from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
 from PiCN.Layers.AutoconfigLayer import AutoconfigServerLayer
 
@@ -14,14 +16,14 @@ from PiCN.Layers.LinkLayer import UDP4LinkLayer
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder, SimpleStringEncoder
 from PiCN.Logger import Logger
 from PiCN.Mgmt import Mgmt
-from PiCN.Routing import BasicRouting
 from PiCN.Packets import Name
 
 
 class ICNForwarder(object):
     """A ICN Forwarder using PiCN"""
 
-    def __init__(self, port=9000, log_level=255, encoder: BasicEncoder = None, autoconfig: bool = False):
+    def __init__(self, port=9000, log_level=255, encoder: BasicEncoder=None, routing: bool=False, peers=None,
+                 autoconfig: bool=False):
         # debug level
         logger = Logger("ICNForwarder", log_level)
 
@@ -45,6 +47,8 @@ class ICNForwarder(object):
         self.data_structs['cs'] = ContentStoreMemoryPrefix()
         self.data_structs['fib'] = ForwardingInformationBaseMemoryPrefix()
         self.data_structs['pit'] = PendingInterstTableMemoryExact()
+        if routing:
+            self.data_structs['rib'] = TreeRoutingInformationBase()
 
         self.icnlayer._data_structs = self.data_structs
 
@@ -64,8 +68,9 @@ class ICNForwarder(object):
                                                                                 log_level=log_level)
             self.lstack.insert(self.autoconfiglayer, below_of=self.icnlayer)
 
-        # routing
-        self.routing = BasicRouting(self.icnlayer.pit, None, log_level=log_level)  # TODO NOT IMPLEMENTED YET
+        if routing:
+            self.routinglayer = BasicRoutingLayer(self.linklayer, self.data_structs, peers=peers, log_level=log_level)
+            self.lstack.insert(self.routinglayer, below_of=self.icnlayer)
 
         # mgmt
         self.mgmt = Mgmt(self.data_structs, self.linklayer, self.linklayer.get_port(), self.stop_forwarder,

@@ -7,6 +7,7 @@ from typing import List
 
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore, ContentStoreEntry
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase, ForwardingInformationBaseEntry
+from PiCN.Layers.RoutingLayer.RoutingInformationBase import BaseRoutingInformationBase
 from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable, PendingInterestTableEntry
 from PiCN.Packets import Name, Content, Interest, Packet, Nack, NackReason
 from PiCN.Processes import LayerProcess
@@ -17,7 +18,8 @@ class BasicICNLayer(LayerProcess):
     """
 
     def __init__(self, cs: BaseContentStore=None, pit: BasePendingInterestTable=None,
-                 fib: BaseForwardingInformationBase=None, log_level=255, manager: multiprocessing.Manager=None):
+                 rib: BaseRoutingInformationBase=None, fib: BaseForwardingInformationBase=None, log_level=255,
+                 manager: multiprocessing.Manager=None):
         super().__init__(logger_name="ICNLayer", log_level=log_level)
         if manager is None:
             manager = multiprocessing.Manager()
@@ -27,6 +29,7 @@ class BasicICNLayer(LayerProcess):
         self._data_structs['cs'] = cs
         self._data_structs['pit'] = pit
         self._data_structs['fib'] = fib
+        self._data_structs['rib'] = rib
         self._cs_timeout: int = 10
         self._pit_timeout: int = 10
         self._pit_retransmits: int = 3
@@ -314,3 +317,11 @@ class BasicICNLayer(LayerProcess):
     @pit.setter
     def pit(self, pit: BasePendingInterestTable):
         self._data_structs['pit'] = pit
+
+    @property
+    def rib(self) -> BaseRoutingInformationBase:
+        return self._data_structs.get('rib')
+
+    @rib.setter
+    def rib(self, rib: BaseRoutingInformationBase):
+        self._data_structs['rib'] = rib

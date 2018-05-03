@@ -10,6 +10,7 @@ from PiCN.Processes import LayerProcess
 from PiCN.Layers.LinkLayer import UDP4LinkLayer
 from PiCN.Packets import Packet, Interest, Content, Nack, NackReason, Name
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseEntry, BaseForwardingInformationBase
+from PiCN.Layers.RoutingLayer.RoutingInformationBase import BaseRoutingInformationBase
 
 
 _AUTOCONFIG_PREFIX: Name = Name('/autoconfig')
@@ -123,11 +124,18 @@ class AutoconfigServerLayer(LayerProcess):
         host, port = addr.split(':')
         srvaddr = (host, int(port))
         srvname = Name(interest.name.components[len(_AUTOCONFIG_SERVICE_REGISTRATION_PREFIX)+1:])
-        if len([prefix[0] for prefix in self._service_registration_prefixes
-                if len(prefix[0]) == 0 or prefix[0].is_prefix_of(srvname)]) == 0:
+        prefix_candidates = [prefix for prefix in self._service_registration_prefixes
+                             if len(prefix[0]) == 0 or prefix[0].is_prefix_of(srvname)]
+        if len(prefix_candidates) == 0:
             nack: Nack = Nack(interest.name, NackReason.NO_ROUTE)
             nack.interest = interest
             return nack
+        # Sort by number of components descendingly, so the longest prefix can easily be obtained
+        prefix_candidates.sort(key=lambda p: len(p[0]), reverse=True)
+        registration_prefix, local_only = prefix_candidates[0]
+
+        timeout = datetime.now() + self._service_registration_timeout
+
         for i in range(len(self._known_services)):
             service, addr, _ = self._known_services[i]
             if service == srvname:
@@ -136,14 +144,24 @@ class AutoconfigServerLayer(LayerProcess):
                     nack.interest = interest
                     return nack
                 else:
-                    self._known_services[i] = (service, addr, datetime.now() + self._service_registration_timeout)
+                    self._known_services[i] = (service, addr, timeout)
                     ack: Content = Content(interest.name,
                                            str(int(self._service_registration_timeout.total_seconds())) + '\n')
                     return ack
         srvfid: int = self._linklayer.get_or_create_fid(srvaddr, static=True)
-        fib: BaseForwardingInformationBase = self._data_structs['fib']
-        fib.add_fib_entry(srvname, srvfid, static=True)
-        self._data_structs['fib'] = fib
+        if local_only or 'rib' not in self._data_structs:
+            # If the prefix is not routed or routing is disabled altogether, create a static FIB entry
+            fib: BaseForwardingInformationBase = self._data_structs['fib']
+            fib.add_fib_entry(srvname, srvfid, static=True)
+            self._data_structs['fib'] = fib
+        else:
+            # If routing is enabled AND the prefix is routed, create a RIB entry
+            rib: BaseRoutingInformationBase = self._data_structs['rib']
+            fib: BaseForwardingInformationBase = self._data_structs['fib']
+            rib.insert(srvname, srvfid, 1, timeout)
+            rib.build_fib(fib)
+            self._data_structs['rib'] = rib
+            self._data_structs['fib'] = fib
         self._known_services.append((srvname, srvaddr, datetime.now() + self._service_registration_timeout))
         ack: Content = Content(interest.name, str(int(self._service_registration_timeout.total_seconds())) + '\n')
         return ack
