@@ -12,6 +12,14 @@ class BaseRoutingInformationBase(abc.ABC):
     """
 
     @abc.abstractmethod
+    def __init__(self, shortest_only: bool = True):
+        """
+        Initialize a Routing Information Base
+        :param shortest_only: Whether to only add the shortest route to the FIB, or to add all routes.
+        """
+        pass
+
+    @abc.abstractmethod
     def ageing(self):
         """
         Remove outdated entries from the RIB.

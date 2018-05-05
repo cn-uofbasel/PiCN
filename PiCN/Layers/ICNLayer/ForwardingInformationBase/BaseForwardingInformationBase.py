@@ -2,7 +2,7 @@
 
 import abc
 import multiprocessing
-from typing import List
+from typing import List, Optional
 
 from PiCN.Packets import Name
 
@@ -11,12 +11,18 @@ class ForwardingInformationBaseEntry(object):
     """An entry in the Forwarding Information Base"""
 
     def __init__(self, name: Name, faceid: int, static: bool=False):
-       self._name: Name = name
-       self._faceid: int = faceid
-       self._static: bool = static
+        self._name: Name = name
+        self._faceid: int = faceid
+        self._static: bool = static
 
     def __eq__(self, other):
-        return self._name == other._name and self._faceid == other._faceid
+        if isinstance(other, ForwardingInformationBaseEntry):
+            return self._name == other._name and self._faceid == other._faceid
+        return False
+
+    def __repr__(self):
+        static: str = ' static' if self._static else ''
+        return f'<ForwardingInformationBaseEntry {self._name} via {self._faceid}{static} at {id(self)}>'
 
     @property
     def name(self):
@@ -42,11 +48,13 @@ class ForwardingInformationBaseEntry(object):
     def static(self, static):
         self._static = static
 
+
 class BaseForwardingInformationBase(object):
     """Abstract BaseForwardingInformationBase for usage in BasicICNLayer"""
 
     def __init__(self):
         self._container: List[ForwardingInformationBaseEntry] = []
+        self._manager: Optional[multiprocessing.Manager] = None
 
     @abc.abstractmethod
     def add_fib_entry(self, name: Name, fid: int, static: bool):
