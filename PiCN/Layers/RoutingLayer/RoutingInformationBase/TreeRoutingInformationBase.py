@@ -10,10 +10,11 @@ from PiCN.Packets import Name
 
 class _RIBTreeNode(object):
 
-    def __init__(self, nc: bytes = None):
+    def __init__(self, nc: bytes = None, collapse_reduce_to_shortest: bool = True):
         """
         :param nc: Name component represented by this node
         """
+        self._collapse_shortest: bool = collapse_reduce_to_shortest
         # Reference to parent node
         self._parent: _RIBTreeNode = None
         # Children nodes
@@ -42,7 +43,7 @@ class _RIBTreeNode(object):
             comps = comps[1:]
         # For each remaining name component in the to-be-inserted name, create a new tree node
         while len(comps) > 0:
-            child = _RIBTreeNode(comps[0])
+            child = _RIBTreeNode(comps[0], self._collapse_shortest)
             node._add_child(child)
             comps = comps[1:]
             node = child
@@ -60,7 +61,11 @@ class _RIBTreeNode(object):
         # If there are no children, simply add an entry for the own name
         if len(self._children) == 0:
             if len(self._distance_vector) > 0:
-                result.append((nclist,) + self._get_best_fid())
+                if self._collapse_shortest:
+                    result.append((list(nclist),) + self._get_best_fid())
+                else:
+                    for (fid, (dist, _)) in self._distance_vector.items():
+                        result.append((list(nclist), fid, dist))
         else:
             # Call collapse() recursively on each child
             ch_res: List[Tuple[List[bytes], int, int]] = []
@@ -71,7 +76,11 @@ class _RIBTreeNode(object):
                 [c[0].insert(0, self._nc) for c in ch_res]
             # If there is an explicit distance vector entry for the node itself, add it to the children's results
             if len(self._distance_vector) > 0:
-                ch_res.append((nclist,) + self._get_best_fid())
+                if self._collapse_shortest:
+                    ch_res.append((list(nclist),) + self._get_best_fid())
+                else:
+                    for (fid, (dist, _)) in self._distance_vector.items():
+                        ch_res.append((list(nclist), fid, dist))
             # Collect the number of distinct face IDs
             subfids = set()
             for c in ch_res:
@@ -80,7 +89,7 @@ class _RIBTreeNode(object):
             if len(subfids) == 1 and len(ch_res) > 1:
                 sf = subfids.pop()
                 dist = min([c[2] for c in ch_res if c[1] == sf])
-                result.append((nclist, sf, dist))
+                result.append((list(nclist), sf, dist))
             else:
                 # If there is more than one face in the results, don't collapse the entries to a prefix entry
                 for c in ch_res:
@@ -137,14 +146,28 @@ class _RIBTreeNode(object):
             s += f'│ {child.pretty_print(depth + 1)}'
         return s
 
+    def __repr__(self):
+        if self._nc is None:
+            return f'<_RIBTreeNode / ({len(self._distance_vector)} entries) at {id(self)}>'
+        node: _RIBTreeNode = self
+        comp: List[bytes] = []
+        while node._nc is not None:
+            comp.insert(0, node._nc)
+            node = node._parent
+        return f'<_RIBTreeNode {Name(comp)} ({len(self._distance_vector)} entries) at {id(self)}>'
+
 
 class TreeRoutingInformationBase(BaseRoutingInformationBase):
     """
     Implementation of a Routing Information Base that uses a tree structure for internal storage.
     """
 
-    def __init__(self):
-        self._tree: _RIBTreeNode = _RIBTreeNode()
+    def __init__(self, shortest_only: bool = True):
+        """
+        :param shortest_only: Whether to only add the shortest route to the FIB, or to add all routes.
+        """
+        super().__init__(shortest_only)
+        self._tree: _RIBTreeNode = _RIBTreeNode(collapse_reduce_to_shortest=shortest_only)
 
     def ageing(self):
         """
