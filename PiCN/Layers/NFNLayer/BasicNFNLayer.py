@@ -227,7 +227,7 @@ class BasicNFNLayer(LayerProcess):
             elif not isinstance(e.type, AST):
                 params.append(e.type(e._element))
 
-        res = executor.execute(function_code, params)
+        res = executor.execute(function_code=function_code, params=params)
         if res is None:
             self.queue_to_lower.put([entry.id, Nack(entry.original_name, NackReason.COMP_EXCEPTION,
                                                     interest=entry.interest)])
@@ -274,59 +274,66 @@ class BasicNFNLayer(LayerProcess):
         :param interest: the original interest message
         :param AST: abstract syntax tree of the computation
         """
-        ct = self.computation_table
-        ct.add_computation(name, id, interest, ast)
-        self.computation_table = ct
+        with self.icn_data_structs["lock"]:
+            ct = self.computation_table
+            ct.add_computation(name, id, interest, ast)
+            self.computation_table = ct
 
     def update_status(self, name: Name, status: NFNComputationState):
         """Update the status of a computation giving a name
         :param name: Name of the computation entry to be updated
         :param status: The new Status
         """
-        ct = self.computation_table
-        ct.update_status(name, status)
-        self.computation_table = ct
+        with self.icn_data_structs["lock"]:
+            ct = self.computation_table
+            ct.update_status(name, status)
+            self.computation_table = ct
 
     def push_data(self, content: Content) -> bool:
         """add received data to running computations
         :param content: content to be added
         :return True if the content was required, else False
         """
-        ct = self.computation_table
-        res = ct.push_data(content)
-        self.computation_table = ct
+        with self.icn_data_structs["lock"]:
+            ct = self.computation_table
+            res = ct.push_data(content)
+            self.computation_table = ct
         return res
 
     def get_ready_computations(self) -> List[NFNComputationTableEntry]:
         """get all computations that are ready to continue
         :return List of all NFNComputationTableEntrys which are ready
         """
-        ct = self.computation_table
-        res = ct.get_ready_computations()
-        self.computation_table = ct
+        with self.icn_data_structs["lock"]:
+            ct = self.computation_table
+            res = ct.get_ready_computations()
+            self.computation_table = ct
         return res
 
     def remove_computation(self, name: Name):
         """Removes a NFNComputationEntry from the container
         :param name: Name of the Computation to be removed
         """
-        ct = self.computation_table
-        ct.remove_computation(name)
-        self.computation_table = ct
+        with self.icn_data_structs["lock"]:
+            ct = self.computation_table
+            ct.remove_computation(name)
+            self.computation_table = ct
 
     def append_computation(self, entry: NFNComputationTableEntry):
         """Appends a NFNComputationTableEntry if it is not already available in the container
         :param entry: the NFNComputationTableEntry to be appended
         """
-        ct = self.computation_table
-        ct.append_computation(entry)
-        self.computation_table = ct
+        with self.icn_data_structs["lock"]:
+            ct = self.computation_table
+            ct.append_computation(entry)
+            self.computation_table = ct
 
     def add_awaiting_data(self, name: Name, awaiting_name: Name):
         """Add a name to the await list of a existing computation
         :param name: Name of the existing computation
         "param awaiting_name: Name to be added to the await list.
         """
-        ct = self.computation_table
-        ct.add_awaiting_data(name, awaiting_name)
-        self.computation_table = ct
+        with self.icn_data_structs["lock"]:
+            ct = self.computation_table
+            ct.add_awaiting_data(name, awaiting_name)
+            self.computation_table = ct

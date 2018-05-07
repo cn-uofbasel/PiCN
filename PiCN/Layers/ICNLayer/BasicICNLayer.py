@@ -109,7 +109,7 @@ class BasicICNLayer(LayerProcess):
         if new_face_id is not None:
             self.logger.info("Found in FIB, forwarding")
             self.add_to_pit(interest.name, face_id, interest, local_app=from_local)
-            self.add_used_fib_entry_to_pit(interest.name, new_face_id)
+            #self.add_used_fib_entry_to_pit(interest.name, new_face_id) #disabled, should only be applied if nack is received.
             to_lower.put([new_face_id.faceid, interest])
             return
         self.logger.info("No FIB entry, sending Nack")

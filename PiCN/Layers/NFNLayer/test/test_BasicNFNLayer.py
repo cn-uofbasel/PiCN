@@ -20,10 +20,12 @@ class test_BasicNFNLayer(unittest.TestCase):
     """Test the BasicNFNLayer"""
 
     def setUp(self):
-        self.icn_data_structs = multiprocessing.Manager().dict()
+        manager = multiprocessing.Manager()
+        self.icn_data_structs = manager.dict()
         self.icn_data_structs['cs'] = ContentStoreMemoryExact()
         self.icn_data_structs['fib'] = ForwardingInformationBaseMemoryPrefix()
         self.icn_data_structs['pit'] = PendingInterstTableMemoryExact()
+        self.icn_data_structs['lock'] = manager.Lock()
 
         self.executor = {"PYTHON": NFNPythonExecutor()}
         self.r2cclient = TimeoutR2CHandler()

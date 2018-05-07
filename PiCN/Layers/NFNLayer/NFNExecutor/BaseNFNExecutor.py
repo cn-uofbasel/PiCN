@@ -17,10 +17,10 @@ class BaseNFNExecutor(object):
         return  self._language
 
     @abc.abstractmethod
-    def execute(self, function: str, params: List) -> str: #TODO params no string? ast value! same for result?
+    def execute(self, function_code: str, params: List) -> str: #TODO params no string? ast value! same for result?
         """execute a function code. this can call other programming languages
         IMPORTANT: SANDBOXING REQUIRED!!!
-        :param function: function code as str
+        :param function_code: function code as str
         :param params: list containing the parameter
         :return result as string
         """
