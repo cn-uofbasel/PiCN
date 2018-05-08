@@ -40,7 +40,7 @@ class cases_FetchNFN(object):
 
         self.ICNRepo: ICNDataRepository = ICNDataRepository("/tmp/repo_unit_test", Name("/test/data"), 0,
                                                             encoder=self.get_encoder(), log_level=255)
-        self.forwarder1: NFNForwarder = NFNForwarder(0, log_level=255, encoder=self.get_encoder())
+        self.forwarder1: NFNForwarder = NFNForwarder(0, log_level=0, encoder=self.get_encoder())
         self.forwarder2: NFNForwarder = NFNForwarder(0, log_level=255, encoder=self.get_encoder())
 
         self.repo_port = self.ICNRepo.linklayer.get_port()

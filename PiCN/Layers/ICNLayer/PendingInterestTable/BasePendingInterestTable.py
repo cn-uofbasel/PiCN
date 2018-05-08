@@ -91,23 +91,23 @@ class BasePendingInterestTable(object):
     def __init__(self):
         self._container: List[PendingInterestTableEntry] = []
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def add_pit_entry(self, name: Name, faceid: int, interest: Interest = None, local_app: bool = False):
         """Add an new entry"""
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def find_pit_entry(self, name: Name) -> int:
         """Find an entry in the PIT"""
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def remove_pit_entry(self, name: Name):
         """Remove an entry in the PIT"""
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def update_timestamp(self, pit_entry: PendingInterestTableEntry):
         """Update Timestamp of a PIT Entry"""
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def add_used_fib_entry(self, name: Name, used_fib_entry: ForwardingInformationBaseEntry):
         """Add a used fib entry to the already used fib entries"""
 

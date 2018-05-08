@@ -41,7 +41,7 @@ class BasicICNLayer(LayerProcess):
             if cs_entry is not None:
                 self.queue_to_higher.put([high_level_id, cs_entry.content])
                 return
-            pit_entry = self.pit.find_pit_entry(packet.name)
+            pit_entry = self.pit.find_pit_entry(packet.name) #fixme, must me removed or manipulated, local app must be true!!!
             self.add_to_pit(packet.name, high_level_id, packet, local_app=True)
             fib_entry = self.fib.find_fib_entry(packet.name)
             if fib_entry is not None:
@@ -153,7 +153,9 @@ class BasicICNLayer(LayerProcess):
                         re_add = True
                 self.remove_pit_entry(pit_entry.name)
                 for i in range(0, len(pit_entry.faceids)):
-                    if to_higher and pit_entry.local_app[i]:
+                    print(to_higher)
+                    print(pit_entry.local_app[i], pit_entry.name)
+                    if to_higher is not None and pit_entry.local_app[i]:
                         to_higher.put([face_id, nack])
                         del pit_entry.face_id[i]
                         del pit_entry.local_app[i]
