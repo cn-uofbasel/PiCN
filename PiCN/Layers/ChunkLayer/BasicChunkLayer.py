@@ -46,9 +46,8 @@ class BasicChunkLayer(LayerProcess):
         if isinstance(packet, Interest):
             self.logger.info("Packet is Interest " + str(packet.name))
             request_entry = self.get_request_table_entry(packet.name)
-            if request_entry is not None:
-                return
-            self._request_table.append(RequestTableEntry(packet.name))
+            if request_entry is None:
+                self._request_table.append(RequestTableEntry(packet.name))
             to_lower.put([face_id, packet])
             return
         if isinstance(packet, Content):
