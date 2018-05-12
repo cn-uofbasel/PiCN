@@ -20,7 +20,7 @@ class AutoconfigRepoLayer(LayerProcess):
 
     def __init__(self, name: str, linklayer: UDP4LinkLayer, repo: BaseRepository,
                  addr: str, port: int = 9000, bcaddr: str = '255.255.255.255', bcport: int = 9000,
-                 log_level: int = 255):
+                 register_local: bool = True, register_global: bool = False, log_level: int = 255):
         super().__init__('AutoconfigRepoLayer', log_level)
         self._linklayer = linklayer
         self._repository = repo
@@ -31,6 +31,8 @@ class AutoconfigRepoLayer(LayerProcess):
         self._service_name: str = name
         self._prefix_timers: Dict[Name, threading.Timer] = dict()
         self._fwd_fid: int = None
+        self._register_local: bool = register_local
+        self._register_global: bool = register_global
 
         # Enable broadcasting on the link layer's socket.
         if self._linklayer is not None:
@@ -90,9 +92,13 @@ class AutoconfigRepoLayer(LayerProcess):
             if len(line.strip()) == 0:
                 continue
             t, n = line.split(':')
-            if t == 'pl':
+            if t == 'pl' and self._register_local:
                 prefix = Name(n)
-                self.logger.info(f'Got prefix {prefix}')
+                self.logger.info(f'Got local prefix {prefix}, sending registration')
+                self._send_service_registration(prefix + self._service_name)
+            if t == 'pg' and self._register_global:
+                prefix = Name(n)
+                self.logger.info(f'Got routed prefix {prefix}, sending registration')
                 self._send_service_registration(prefix + self._service_name)
 
     def _handle_service_registration(self, packet: Packet):

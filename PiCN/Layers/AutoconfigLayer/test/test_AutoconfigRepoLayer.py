@@ -158,3 +158,61 @@ class test_AutoconfigRepoLayer(unittest.TestCase):
                 pass
         registration_interest = Interest(registration_name)
         self.assertIn([bface, registration_interest], data)
+
+    def test_service_registration_global_ignored(self):
+        waittime = 5
+        self.autoconflayer.start_process()
+        # Receive forwarder solicitation
+        bface, _ = self.queue_to_lower.get()
+        # Send forwarder advertisement
+        forwarders = Content(Name('/autoconfig/forwarders'),
+                             'udp4://127.42.42.42:9000\nr:/global\npl:/test\npg:/routed\n')
+        self.queue_from_lower.put([42, forwarders])
+        # Receive service registration
+        # Catch all data the autoconfig layer sends downwards for 5 seconds
+        data = []
+        timeout = datetime.utcnow() + timedelta(seconds=waittime)
+        while datetime.utcnow() < timeout:
+            try:
+                data.append(self.queue_to_lower.get(timeout=waittime/10))
+            except queue.Empty:
+                pass
+        self.assertEqual(1, len(data))
+        fid, data = data[0]
+        self.assertEqual(bface, fid)
+        self.assertIsInstance(data, Interest)
+        registration_name = Name('/autoconfig/service')
+        registration_name += 'udp4://127.0.1.1:4242'
+        registration_name += 'test'
+        registration_name += 'testrepo'
+        self.assertEqual(registration_name, data.name)
+
+    def test_service_registration_global_only(self):
+        waittime = 5
+        self.autoconflayer._register_local = False
+        self.autoconflayer._register_global = True
+        self.autoconflayer.start_process()
+        # Receive forwarder solicitation
+        bface, _ = self.queue_to_lower.get()
+        # Send forwarder advertisement
+        forwarders = Content(Name('/autoconfig/forwarders'),
+                             'udp4://127.42.42.42:9000\nr:/global\npl:/test\npg:/routed\n')
+        self.queue_from_lower.put([42, forwarders])
+        # Receive service registration
+        # Catch all data the autoconfig layer sends downwards for 5 seconds
+        data = []
+        timeout = datetime.utcnow() + timedelta(seconds=waittime)
+        while datetime.utcnow() < timeout:
+            try:
+                data.append(self.queue_to_lower.get(timeout=waittime/10))
+            except queue.Empty:
+                pass
+        self.assertEqual(1, len(data))
+        fid, data = data[0]
+        self.assertEqual(bface, fid)
+        self.assertIsInstance(data, Interest)
+        registration_name = Name('/autoconfig/service')
+        registration_name += 'udp4://127.0.1.1:4242'
+        registration_name += 'routed'
+        registration_name += 'testrepo'
+        self.assertEqual(registration_name, data.name)
