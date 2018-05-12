@@ -268,8 +268,11 @@ class test_BasicChunkLayer(unittest.TestCase):
         i = Interest("/test/data")
         self.chunkLayer._request_table.append(RequestTableEntry(i.name))
         self.chunkLayer.queue_from_higher.put([0, i])
-        time.sleep(1)
-        self.assertTrue(self.chunkLayer.queue_to_lower.empty())
+        try:
+            data = self.chunkLayer.queue_to_lower.get(timeout=2.0)
+        except:
+            self.fail()
+        self.assertEqual(data[1], i)
         self.assertEqual(self.chunkLayer._request_table[0], RequestTableEntry(i.name))
 
     def test_content_from_higher_no_chunk(self):
