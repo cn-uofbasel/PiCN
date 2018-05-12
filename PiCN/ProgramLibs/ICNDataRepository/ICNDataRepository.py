@@ -23,7 +23,8 @@ class ICNDataRepository(object):
     """A ICN Forwarder using PiCN"""
 
     def __init__(self, foldername: str, prefix: Name,
-                 port=9000, log_level=255, encoder: BasicEncoder = None, autoconfig: bool = False):
+                 port=9000, log_level=255, encoder: BasicEncoder = None, autoconfig: bool = False,
+                 autoconfig_routed: bool = False):
 
         logger = Logger("ICNRepo", log_level)
         logger.info("Start PiCN Data Repository")
@@ -58,7 +59,8 @@ class ICNDataRepository(object):
             self.autoconfiglayer = AutoconfigRepoLayer(name=prefix.string_components[-1],
                                                        addr='127.0.0.1', port=port,
                                                        bcaddr='127.255.255.255', bcport=6363,
-                                                       linklayer=self.linklayer, repo=self.repo, log_level=log_level)
+                                                       linklayer=self.linklayer, repo=self.repo,
+                                                       register_global=autoconfig_routed, log_level=log_level)
             self.lstack.insert(self.autoconfiglayer, below_of=self.chunklayer)
 
 
