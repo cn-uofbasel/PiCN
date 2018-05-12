@@ -81,4 +81,8 @@ class BasicRoutingLayer(LayerProcess):
         solicitation: Interest = Interest(self._prefix)
         for addr in self._peers:
             fid = self._linklayer.get_or_create_fid(addr, static=True)
-            self.queue_to_lower.put([fid, solicitation])
+            try:
+                self.queue_to_lower.put([fid, solicitation])
+            except AssertionError:
+                # Queue is closed.
+                return
