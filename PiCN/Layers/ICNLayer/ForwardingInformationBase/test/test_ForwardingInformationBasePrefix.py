@@ -44,8 +44,8 @@ class test_ForwardingInformationBaseMemoryPrefix(unittest.TestCase):
         fid2 = 2
         name1 = Name("/test/data")
         name2 = Name("/data/test")
-        self.fib.add_fib_entry(name2, fid2)
         self.fib.add_fib_entry(name1, fid1)
+        self.fib.add_fib_entry(name2, fid2)
         entry = self.fib._container[1]
         self.assertEqual(entry.name, name1)
         self.assertEqual(entry.faceid, fid1)
