@@ -33,7 +33,9 @@ class test_AutoconfigFullStack(unittest.TestCase):
         ds['pit'] = PendingInterstTableMemoryExact()
         ds['fib'] = ForwardingInformationBaseMemoryPrefix()
         prefixes = [(Name('/test/prefix/repos'), True)]
-        forwarder_linklayer = UDP4LinkLayer(port=9000, manager=manager)
+        # Auto-assign port
+        forwarder_linklayer = UDP4LinkLayer(port=0, manager=manager)
+        forwarder_port = forwarder_linklayer.sock.getsockname()[1]
         forwarder_encoder = NdnTlvEncoder()
         icnlayer = BasicICNLayer()
         icnlayer._data_structs = ds
@@ -50,11 +52,14 @@ class test_AutoconfigFullStack(unittest.TestCase):
         repo_chunkifyer = SimpleContentChunkifyer()
         repo_chunklayer = BasicChunkLayer(repo_chunkifyer)
         repo_encoder = NdnTlvEncoder()
-        repo_linklayer = UDP4LinkLayer(port=9001, manager=manager)
+        # Auto-assign port
+        repo_linklayer = UDP4LinkLayer(port=0, manager=manager)
+        repo_port = repo_linklayer.sock.getsockname()[1]
         self.repo = LayerStack([
             BasicRepositoryLayer(repository),
             repo_chunklayer,
-            AutoconfigRepoLayer('testrepo', repo_linklayer, repository, '127.0.0.1', 9001, bcaddr='127.255.255.255'),
+            AutoconfigRepoLayer('testrepo', repo_linklayer, repository, '127.0.0.1', repo_port,
+                                bcaddr='127.255.255.255', bcport=forwarder_port),
             BasicPacketEncodingLayer(repo_encoder),
             repo_linklayer
         ])
@@ -63,10 +68,10 @@ class test_AutoconfigFullStack(unittest.TestCase):
         client_chunkifyer = SimpleContentChunkifyer()
         client_chunklayer = BasicChunkLayer(client_chunkifyer)
         client_encoder = NdnTlvEncoder()
-        client_linklayer = UDP4LinkLayer(port=9002, manager=manager)
+        client_linklayer = UDP4LinkLayer(port=0, manager=manager)
         self.client = LayerStack([
             client_chunklayer,
-            AutoconfigClientLayer(client_linklayer, bcaddr='127.255.255.255'),
+            AutoconfigClientLayer(client_linklayer, bcaddr='127.255.255.255', bcport=forwarder_port),
             BasicPacketEncodingLayer(client_encoder),
             client_linklayer
         ])
