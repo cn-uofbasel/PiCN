@@ -54,10 +54,10 @@ class ICNDataRepository(object):
             self.packetencodinglayer,
             self.linklayer
         ])
-
         if autoconfig:
             self.autoconfiglayer = AutoconfigRepoLayer(name=prefix.string_components[-1],
-                                                       addr='127.0.0.1', port=port,
+                                                       addr='127.0.0.1',
+                                                       port=self.linklayer.sock.getsockname()[1],  # special case port 0
                                                        bcaddr='127.255.255.255', bcport=6363,
                                                        linklayer=self.linklayer, repo=self.repo,
                                                        register_global=autoconfig_routed, log_level=log_level)
