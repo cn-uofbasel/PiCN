@@ -1,5 +1,7 @@
 """A ICN Repository using PiCN"""
 
+from typing import Optional
+
 import multiprocessing
 
 from PiCN.LayerStack.LayerStack import LayerStack
@@ -12,7 +14,7 @@ from PiCN.Layers.ChunkLayer.Chunkifyer import SimpleContentChunkifyer
 from PiCN.Layers.LinkLayer import UDP4LinkLayer
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
-from PiCN.Layers.RepositoryLayer.Repository import SimpleFileSystemRepository
+from PiCN.Layers.RepositoryLayer.Repository import BaseRepository, SimpleFileSystemRepository, SimpleMemoryRepository
 from PiCN.Logger import Logger
 from PiCN.Packets import Name
 from PiCN.Mgmt import Mgmt
@@ -22,9 +24,12 @@ from PiCN.Mgmt import Mgmt
 class ICNDataRepository(object):
     """A ICN Forwarder using PiCN"""
 
-    def __init__(self, foldername: str, prefix: Name,
+    def __init__(self, foldername: Optional[str], prefix: Name,
                  port=9000, log_level=255, encoder: BasicEncoder = None, autoconfig: bool = False,
                  autoconfig_routed: bool = False):
+        """
+        :param foldername: If None, use an in-memory repository. Else, use a file system repository.
+        """
 
         logger = Logger("ICNRepo", log_level)
         logger.info("Start PiCN Data Repository")
@@ -40,7 +45,11 @@ class ICNDataRepository(object):
 
         #repo
         manager = multiprocessing.Manager()
-        self.repo = SimpleFileSystemRepository(foldername, prefix, manager, logger)
+
+        if foldername is None:
+            self.repo: BaseRepository = SimpleMemoryRepository(prefix, manager, logger)
+        else:
+            self.repo: BaseRepository = SimpleFileSystemRepository(foldername, prefix, manager, logger)
 
         #initialize layers
         self.linklayer = UDP4LinkLayer(port, log_level=log_level)
