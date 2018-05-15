@@ -48,7 +48,7 @@ class ICNForwarder(object):
         self.data_structs['fib'] = ForwardingInformationBaseMemoryPrefix()
         self.data_structs['pit'] = PendingInterstTableMemoryExact()
         if routing:
-            self.data_structs['rib'] = TreeRoutingInformationBase()
+            self.data_structs['rib'] = TreeRoutingInformationBase(manager)
 
         self.icnlayer._data_structs = self.data_structs
 

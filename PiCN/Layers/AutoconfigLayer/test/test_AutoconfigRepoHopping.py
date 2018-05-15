@@ -1,6 +1,7 @@
 
 from typing import List, Tuple, Dict
 
+import multiprocessing
 import os
 import shutil
 import unittest
@@ -31,6 +32,7 @@ class test_AutoconfigRepoHopping(unittest.TestCase):
 
         """
 
+        self.manager = multiprocessing.Manager()
         self.autoconfig_edgeprefix: List[Tuple[Name, bool]] = [(Name('/edge'), False)]
         self.nodes: Dict[int, ICNForwarder] = dict()
         self.ports: Dict[int, int] = dict()
@@ -68,7 +70,7 @@ class test_AutoconfigRepoHopping(unittest.TestCase):
         fib00.add_fib_entry(Name('/edge'), fid00to20, static=True)
         fib00.add_fib_entry(Name('/edge'), fid00to30, static=True)
         self.nodes[00].data_structs['fib'] = fib00
-        self.nodes[00].data_structs['rib'] = TreeRoutingInformationBase(shortest_only=False)
+        self.nodes[00].data_structs['rib'] = TreeRoutingInformationBase(self.manager, shortest_only=False)
 
         # Set up faces and static FIB of core10 node.
         fid10to11: int = self.nodes[10].linklayer.get_or_create_fid(('127.0.0.1', self.ports[11]), static=True)
@@ -79,7 +81,7 @@ class test_AutoconfigRepoHopping(unittest.TestCase):
         fib10.add_fib_entry(Name('/edge'), fid10to12, static=True)
         fib10.add_fib_entry(Name('/edge'), fid10to13, static=True)
         self.nodes[10].data_structs['fib'] = fib10
-        self.nodes[10].data_structs['rib'] = TreeRoutingInformationBase(shortest_only=False)
+        self.nodes[10].data_structs['rib'] = TreeRoutingInformationBase(self.manager, shortest_only=False)
 
         # Set up faces and static FIB of core20 node.
         fid20to21: int = self.nodes[20].linklayer.get_or_create_fid(('127.0.0.1', self.ports[21]), static=True)
@@ -90,7 +92,7 @@ class test_AutoconfigRepoHopping(unittest.TestCase):
         fib20.add_fib_entry(Name('/edge'), fid20to22, static=True)
         fib20.add_fib_entry(Name('/edge'), fid20to23, static=True)
         self.nodes[20].data_structs['fib'] = fib20
-        self.nodes[20].data_structs['rib'] = TreeRoutingInformationBase(shortest_only=False)
+        self.nodes[20].data_structs['rib'] = TreeRoutingInformationBase(self.manager, shortest_only=False)
 
         # Set up faces and static FIB of core30 node.
         fid30to31: int = self.nodes[30].linklayer.get_or_create_fid(('127.0.0.1', self.ports[31]), static=True)
@@ -101,7 +103,7 @@ class test_AutoconfigRepoHopping(unittest.TestCase):
         fib30.add_fib_entry(Name('/edge'), fid30to32, static=True)
         fib30.add_fib_entry(Name('/edge'), fid30to33, static=True)
         self.nodes[30].data_structs['fib'] = fib30
-        self.nodes[30].data_structs['rib'] = TreeRoutingInformationBase(shortest_only=False)
+        self.nodes[30].data_structs['rib'] = TreeRoutingInformationBase(self.manager, shortest_only=False)
 
         self.nodes[00].routinglayer._ageing_interval = 1.0
         self.nodes[10].routinglayer._ageing_interval = 1.0

@@ -1,5 +1,6 @@
 
 import unittest
+import multiprocessing
 from datetime import datetime, timedelta
 
 from PiCN.Layers.RoutingLayer.RoutingInformationBase.TreeRoutingInformationBase import _RIBTreeNode
@@ -10,6 +11,9 @@ from PiCN.Packets import Name
 
 
 class test_TreeRoutingInformationBase(unittest.TestCase):
+
+    def setUp(self):
+        self.manager = multiprocessing.Manager()
 
     def test_insert(self):
         tree: _RIBTreeNode = _RIBTreeNode()
@@ -89,7 +93,7 @@ class test_TreeRoutingInformationBase(unittest.TestCase):
         self.assertNotIn(1, tree._distance_vector)
 
     def test_wrapper_class(self):
-        rib: BaseRoutingInformationBase = TreeRoutingInformationBase()
+        rib: BaseRoutingInformationBase = TreeRoutingInformationBase(self.manager)
         fib: BaseForwardingInformationBase = ForwardingInformationBaseMemoryPrefix()
         rib.insert(Name('/foo/bar'), 0, 42)
         rib.insert(Name('/ndn/ch/unibas/dmi/cn'), 1, 10)
@@ -101,7 +105,7 @@ class test_TreeRoutingInformationBase(unittest.TestCase):
         self.assertIn(unibasentry, fib.container)
 
     def test_iter_len(self):
-        rib: BaseRoutingInformationBase = TreeRoutingInformationBase()
+        rib: BaseRoutingInformationBase = TreeRoutingInformationBase(self.manager)
         rib.insert(Name('/foo/bar'), 0, 4, timeout=datetime.utcnow() + timedelta(hours=1))
         rib.insert(Name('/ndn/ch/unibas/dmi'), 1, 2)
         rib.insert(Name('/ndn/ch/unibas/cs'), 1, 3)
@@ -110,7 +114,7 @@ class test_TreeRoutingInformationBase(unittest.TestCase):
         self.assertIn((Name('/ndn/ch/unibas'), 1, 2), rib)
 
     def test_collapse_all_no_reduction(self):
-        rib: BaseRoutingInformationBase = TreeRoutingInformationBase(shortest_only=False)
+        rib: BaseRoutingInformationBase = TreeRoutingInformationBase(self.manager, shortest_only=False)
         rib.insert(Name('/ndn/ch/unibas/dmi/cn'), 1, 3)
         rib.insert(Name('/ndn/ch/unibas/dmi/cn'), 2, 4)
         rib.insert(Name('/ndn/edu/ucla'), 0, 4)

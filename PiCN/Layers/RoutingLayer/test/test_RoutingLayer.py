@@ -17,12 +17,14 @@ from PiCN.Packets import Interest, Content, Name
 class test_RoutingLayer(unittest.TestCase):
 
     def setUp(self):
+        self.manager = multiprocessing.Manager()
+
         self.linklayer_mock = MockLinkLayer()
         self.peer = ('127.42.13.37', 6363)
 
-        self.data_structs = multiprocessing.Manager().dict()
+        self.data_structs = self.manager.dict()
         self.data_structs['fib']: BaseForwardingInformationBase = ForwardingInformationBaseMemoryPrefix()
-        self.data_structs['rib']: BaseRoutingInformationBase = TreeRoutingInformationBase()
+        self.data_structs['rib']: BaseRoutingInformationBase = TreeRoutingInformationBase(self.manager)
 
         self.routinglayer = BasicRoutingLayer(self.linklayer_mock, self.data_structs, [self.peer])
 
