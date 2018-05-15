@@ -42,7 +42,7 @@ class ICNForwarder(object):
         self.data_structs['cs'] = ContentStoreMemoryPrefix()
         self.data_structs['fib'] = ForwardingInformationBaseMemoryPrefix()
         self.data_structs['pit'] = PendingInterstTableMemoryExact()
-        self.data_structs['rib'] = TreeRoutingInformationBase()
+        self.data_structs['rib'] = TreeRoutingInformationBase(manager)
 
         self.lstack: LayerStack = LayerStack([
             self.icnlayer,

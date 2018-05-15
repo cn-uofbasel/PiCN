@@ -1,6 +1,7 @@
 
 from typing import List, Tuple, Dict
 
+import multiprocessing
 from datetime import datetime
 
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
@@ -162,18 +163,20 @@ class TreeRoutingInformationBase(BaseRoutingInformationBase):
     Implementation of a Routing Information Base that uses a tree structure for internal storage.
     """
 
-    def __init__(self, shortest_only: bool = True):
+    def __init__(self, manager: multiprocessing.Manager, shortest_only: bool = True):
         """
         :param shortest_only: Whether to only add the shortest route to the FIB, or to add all routes.
         """
         super().__init__(shortest_only)
         self._tree: _RIBTreeNode = _RIBTreeNode(collapse_reduce_to_shortest=shortest_only)
+        self._lock: multiprocessing.Lock = manager.Lock()
 
     def ageing(self):
         """
         Remove outdated entries from the RIB.
         """
-        self._tree.ageing(datetime.utcnow())
+        with self._lock:
+            self._tree.ageing(datetime.utcnow())
 
     def insert(self, name: Name, fid: int, distance: int, timeout: datetime = None):
         """
@@ -184,7 +187,8 @@ class TreeRoutingInformationBase(BaseRoutingInformationBase):
         :param timeout: The timestamp after which to consider the route
         :return:
         """
-        self._tree.insert(name, fid, distance, timeout)
+        with self._lock:
+            self._tree.insert(name, fid, distance, timeout)
 
     def build_fib(self, fib: BaseForwardingInformationBase):
         """
@@ -199,9 +203,11 @@ class TreeRoutingInformationBase(BaseRoutingInformationBase):
             fib.add_fib_entry(name, fid, static=False)
 
     def __iter__(self):
-        collapsed: List[Tuple[List[bytes], int, int]] = self._tree.collapse()
+        with self._lock:
+            collapsed: List[Tuple[List[bytes], int, int]] = self._tree.collapse()
         for name, fid, dist in collapsed:
             yield (Name(name), fid, dist)
 
     def __len__(self):
-        return len(self._tree.collapse())
+        with self._lock:
+            return len(self._tree.collapse())
