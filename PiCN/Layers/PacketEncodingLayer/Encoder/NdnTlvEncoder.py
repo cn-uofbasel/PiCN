@@ -300,7 +300,10 @@ class NdnTlvEncoder(BasicEncoder):
         :param input:  Packet in NDN-TLV wire format
         :return: True if content object
         """
-        return input[0] == Tlv.Data
+        try:
+            return input[0] == Tlv.Data
+        except:
+            return False
 
     def is_interest(self, input: bytearray) -> bool:
         """
@@ -308,7 +311,10 @@ class NdnTlvEncoder(BasicEncoder):
         :param input:  Packet in NDN-TLV wire format
         :return: True if interest
         """
-        return input[0] == Tlv.Interest
+        try:
+            return input[0] == Tlv.Interest
+        except:
+            return False
 
     def is_nack(selfself, input: bytearray) -> bool:
         """
@@ -316,4 +322,7 @@ class NdnTlvEncoder(BasicEncoder):
         :param input:  Packet in NDN-TLV wire format
         :return: True if NACK
         """
-        return input[0] == 0x64 and input[3] == 0x03 and input[4] == 0x20
+        try:
+            return input[0] == 0x64 and input[3] == 0x03 and input[4] == 0x20
+        except:
+            return False
