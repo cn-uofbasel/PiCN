@@ -90,16 +90,28 @@ class NdnTlvEncoder(BasicEncoder):
         # print("got %d bytes to decode" % len(wire_data))
         if(self.is_content(wire_data)):
             self.logger.info("Decode content object")
-            (name, payload) = self.decode_data(wire_data)
-            return Content(name, payload, wire_data)
+            try:
+                (name, payload) = self.decode_data(wire_data)
+                return Content(name, payload, wire_data)
+            except:
+                self.logger.info("Decoding failed (malformed packet)")
+                return UnknownPacket(wire_format=wire_data)
         if(self.is_interest(wire_data)):
             self.logger.info("Decode interest")
-            name = self.decode_interest(wire_data)
-            return Interest(name, wire_data)
+            try:
+                name = self.decode_interest(wire_data)
+                return Interest(name, wire_data)
+            except:
+                self.logger.info("Decoding failed (malformed packet)")
+                return UnknownPacket(wire_format=wire_data)
         if(self.is_nack(wire_data)):
             self.logger.info("Decode NACK")
-            (name, reason) = self.decode_nack(wire_data)
-            return Nack(name, reason, wire_format=wire_data)
+            try:
+                (name, reason) = self.decode_nack(wire_data)
+                return Nack(name, reason, wire_format=wire_data)
+            except:
+                self.logger.info("Decoding failed (malformed packet)")
+                return UnknownPacket(wire_format=wire_data)
         else:
             self.logger.info("Decode failed (unknown packet type)")
             return UnknownPacket(wire_format=wire_data)
