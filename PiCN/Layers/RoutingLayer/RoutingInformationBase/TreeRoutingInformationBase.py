@@ -1,5 +1,5 @@
 
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Iterator
 
 import multiprocessing
 from datetime import datetime
@@ -51,12 +51,12 @@ class _RIBTreeNode(object):
         # Create a distance vector entry for the deepest node
         node._distance_vector[fid] = distance, timeout
 
-    def collapse(self) -> List[Tuple[List[bytes], int, int]]:
+    def collapse(self) -> List[Tuple[List[bytes], int, int, datetime]]:
         """
         Collapse the RIB information to a longest prefix representation for insertion into a FIB
         :return: Longest prefix representation
         """
-        result: List[Tuple[List[bytes], int, int]] = []
+        result: List[Tuple[List[bytes], int, int, datetime]] = []
         # Special treatment of the root node
         nclist = [self._nc] if self._nc is not None else []
         # If there are no children, simply add an entry for the own name
@@ -65,11 +65,11 @@ class _RIBTreeNode(object):
                 if self._collapse_shortest:
                     result.append((list(nclist),) + self._get_best_fid())
                 else:
-                    for (fid, (dist, _)) in self._distance_vector.items():
-                        result.append((list(nclist), fid, dist))
+                    for (fid, (dist, timeout)) in self._distance_vector.items():
+                        result.append((list(nclist), fid, dist, timeout))
         else:
             # Call collapse() recursively on each child
-            ch_res: List[Tuple[List[bytes], int, int]] = []
+            ch_res: List[Tuple[List[bytes], int, int, datetime]] = []
             for child in self._children.values():
                 ch_res += child.collapse()
             # Add own name component to the name of each entry in the children's results
@@ -80,8 +80,8 @@ class _RIBTreeNode(object):
                 if self._collapse_shortest:
                     ch_res.append((list(nclist),) + self._get_best_fid())
                 else:
-                    for (fid, (dist, _)) in self._distance_vector.items():
-                        ch_res.append((list(nclist), fid, dist))
+                    for (fid, (dist, timeout)) in self._distance_vector.items():
+                        ch_res.append((list(nclist), fid, dist, timeout))
             # Collect the number of distinct face IDs
             subfids = set()
             for c in ch_res:
@@ -89,8 +89,8 @@ class _RIBTreeNode(object):
             # If there is only one face in the results, reduce the entries to a single prefix entry with the own name
             if len(subfids) == 1 and len(ch_res) > 1:
                 sf = subfids.pop()
-                dist = min([c[2] for c in ch_res if c[1] == sf])
-                result.append((list(nclist), sf, dist))
+                dist, timeout = min([(c[2], c[3]) for c in ch_res if c[1] == sf])
+                result.append((list(nclist), sf, dist, timeout))
             else:
                 # If there is more than one face in the results, don't collapse the entries to a prefix entry
                 for c in ch_res:
@@ -103,7 +103,7 @@ class _RIBTreeNode(object):
         :param now: Reference time
         """
         # Recursively call ageing on all children
-        for child in self._children.values():
+        for child in list(self._children.values()):
             child.ageing(now)
         # Remove all outdated distance vector entries
         todelete: List[int] = list()
@@ -128,13 +128,13 @@ class _RIBTreeNode(object):
         self._children[child._nc] = child
         child._parent = self
 
-    def _get_best_fid(self) -> Tuple[int, int]:
+    def _get_best_fid(self) -> Tuple[int, int, datetime]:
         """
         Get the ID of the face with the minimal path to this name.
         :return: Face ID for the minimal distance path
         """
-        (fid, (dist, _)) = min(self._distance_vector.items(), key=lambda x: x[1][0])
-        return fid, dist
+        (fid, (dist, timeout)) = min(self._distance_vector.items(), key=lambda x: x[1][0])
+        return fid, dist, timeout
 
     def pretty_print(self, depth=0) -> str:
         """
@@ -199,14 +199,14 @@ class TreeRoutingInformationBase(BaseRoutingInformationBase):
         # Clear all previous FIB entries
         fib.clear()
         # Add the longest prefix representation entries to the FIB
-        for name, fid, dist in self:
+        for name, fid, dist, timeout in self:
             fib.add_fib_entry(name, fid, static=False)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Tuple[Name, int, int, datetime]]:
         with self._lock:
-            collapsed: List[Tuple[List[bytes], int, int]] = self._tree.collapse()
-        for name, fid, dist in collapsed:
-            yield (Name(name), fid, dist)
+            collapsed: List[Tuple[List[bytes], int, int, datetime]] = self._tree.collapse()
+        for name, fid, dist, timeout in collapsed:
+            yield (Name(name), fid, dist, timeout)
 
     def __len__(self):
         with self._lock:

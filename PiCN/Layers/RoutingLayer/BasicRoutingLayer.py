@@ -41,24 +41,31 @@ class BasicRoutingLayer(LayerProcess):
             self.logger.warn('Expects [fid, Packet] from lower')
             return
         rcv_fid, packet = data
+        now = datetime.utcnow()
         if packet.name == self._prefix:
             if isinstance(packet, Interest):
                 self.logger.info('Received routing interest')
                 rib: BaseRoutingInformationBase = self._datastructs['rib']
                 output: str = ''
-                for name, fid, dist in rib:
-                    output = f'{output}{name}:{dist}\n'
+                for name, fid, dist, timeout in rib:
+                    if timeout is None:
+                        output = f'{output}{name}:{dist}:-1\n'
+                    else:
+                        output = f'{output}{name}:{dist}:{int((timeout - now).total_seconds())}\n'
                 content: Content = Content(self._prefix, output.encode('utf-8'))
                 self.queue_to_lower.put([rcv_fid, content])
             elif isinstance(packet, Content):
                 self.logger.info('Received routing content')
                 rib: BaseRoutingInformationBase = self._datastructs['rib']
-                now: datetime = datetime.utcnow()
                 lines: List[str] = [l for l in packet.content.split('\n') if len(l) > 0]
                 # TODO(s3lph): Make rcv_fid static
                 for line in lines:
-                    name, dist = line.rsplit(':', 1)
-                    rib.insert(Name(name), rcv_fid, int(dist) + 1, now + self._rib_maxage)
+                    name, dist, timeout = line.rsplit(':', 2)
+                    if timeout == '-1':
+                        timeout = self._rib_maxage
+                    else:
+                        timeout = timedelta(seconds=int(timeout))
+                    rib.insert(Name(name), rcv_fid, int(dist) + 1, now + min(timeout, self._rib_maxage))
                 self._datastructs['rib'] = rib
             return
         self.queue_to_higher.put(data)

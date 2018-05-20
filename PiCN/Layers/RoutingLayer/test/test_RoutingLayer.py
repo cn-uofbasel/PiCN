@@ -111,7 +111,7 @@ class test_RoutingLayer(unittest.TestCase):
         # The routing interest sent into the layer
         i = Interest(Name('/routing'))
         # The expected reply - a content packet with empty content
-        c = Content(Name('/routing'), '/ndn/ch/unibas:3\n'.encode('utf-8'))
+        c = Content(Name('/routing'), '/ndn/ch/unibas:3:-1\n'.encode('utf-8'))
         self.queue_from_lower.put([42, i])
         # Collect all packets for a short time
         timeout = datetime.utcnow() + timedelta(seconds=waittime)
@@ -134,7 +134,7 @@ class test_RoutingLayer(unittest.TestCase):
         waittime = 1.0
 
         # The packet containing the route announcements of the peer
-        announcement = Content(Name('/routing'), '/ndn/ch/unibas:3\n'.encode('utf-8'))
+        announcement = Content(Name('/routing'), '/ndn/ch/unibas:3:-1\n'.encode('utf-8'))
         # Make sure an interest for /routing is sent out
         try:
             self.queue_to_lower.get(timeout=waittime)
@@ -144,7 +144,10 @@ class test_RoutingLayer(unittest.TestCase):
         self.queue_from_lower.put([42, announcement])
         sleep(waittime)
         # Make sure an appropriate entry is added to the RIB (with incremented distance)
-        self.assertIn((Name('/ndn/ch/unibas'), 42, 4), self.data_structs['rib'])
+        for name, fid, dist, _ in self.data_structs['rib']:
+            if name == Name('/ndn/ch/unibas') and fid == 42 and dist == 4:
+                return
+        self.fail()
 
     def test_ageing(self):
         waittime: float = 3.0

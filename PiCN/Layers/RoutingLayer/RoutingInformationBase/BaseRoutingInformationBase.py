@@ -1,6 +1,8 @@
 
+from typing import Iterator, Tuple
+
 import abc
-import datetime
+from datetime import datetime
 
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
 from PiCN.Packets import Name
@@ -48,10 +50,10 @@ class BaseRoutingInformationBase(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Tuple[Name, int, int, datetime]]:
         """
         Creates an iterator over the longest-common-prefix-reduced entries of the RIB.
-        :return: An iterator
+        :return: An iterator of tuples (name, fid, distance, timeout)
         """
         pass
 
