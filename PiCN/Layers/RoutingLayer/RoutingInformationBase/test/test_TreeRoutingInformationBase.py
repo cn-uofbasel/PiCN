@@ -41,28 +41,28 @@ class test_TreeRoutingInformationBase(unittest.TestCase):
         tree.insert(Name([]), 42, 10)
         tree.insert(Name([]), 2, 15)
         fid = tree._get_best_fid()
-        self.assertEqual((42, 10), fid)
+        self.assertEqual((42, 10, None), fid)
 
     def test_collapse_single_route(self):
         tree: _RIBTreeNode = _RIBTreeNode()
         tree.insert(Name('/foo/bar'), 42, 1337)
         fib = tree.collapse()
-        self.assertEqual([([b'foo', b'bar'], 42, 1337)], fib)
+        self.assertEqual([([b'foo', b'bar'], 42, 1337, None)], fib)
 
     def test_collapse_two_routes_same_name(self):
         tree: _RIBTreeNode = _RIBTreeNode()
         tree.insert(Name('/foo/bar'), 42, 1337)
         tree.insert(Name('/foo/bar'), 23, 10)
         fib = tree.collapse()
-        self.assertEqual([([b'foo', b'bar'], 23, 10)], fib)
+        self.assertEqual([([b'foo', b'bar'], 23, 10, None)], fib)
 
     def test_collapse_subtree_entries(self):
         tree: _RIBTreeNode = _RIBTreeNode()
         tree.insert(Name('/ndn'), 0, 5)
         tree.insert(Name('/ndn/ch/unibas'), 1, 10)
         fib = tree.collapse()
-        self.assertIn(([b'ndn'], 0, 5), fib)
-        self.assertIn(([b'ndn', b'ch', b'unibas'], 1, 10), fib)
+        self.assertIn(([b'ndn'], 0, 5, None), fib)
+        self.assertIn(([b'ndn', b'ch', b'unibas'], 1, 10, None), fib)
 
     def test_collapse_mixed(self):
         tree: _RIBTreeNode = _RIBTreeNode()
@@ -73,10 +73,10 @@ class test_TreeRoutingInformationBase(unittest.TestCase):
         tree.insert(Name('/ndn/ch/unibas/dmi/cn'), 2, 20)
         tree.insert(Name('/ndn/ch/unibe'), 3, 12)
         fib = tree.collapse()
-        self.assertIn(([b'local'], 0, 1), fib)
-        self.assertIn(([b'ndn', b'edu', b'ucla', b'ping'], 1, 42), fib)
-        self.assertIn(([b'ndn', b'ch', b'unibas'], 2, 10), fib)
-        self.assertIn(([b'ndn', b'ch', b'unibe'], 3, 12), fib)
+        self.assertIn(([b'local'], 0, 1, None), fib)
+        self.assertIn(([b'ndn', b'edu', b'ucla', b'ping'], 1, 42, None), fib)
+        self.assertIn(([b'ndn', b'ch', b'unibas'], 2, 10, None), fib)
+        self.assertIn(([b'ndn', b'ch', b'unibe'], 3, 12, None), fib)
         self.assertEqual(4, len(fib))
 
     def test_ageing(self):
@@ -106,12 +106,13 @@ class test_TreeRoutingInformationBase(unittest.TestCase):
 
     def test_iter_len(self):
         rib: BaseRoutingInformationBase = TreeRoutingInformationBase(self.manager)
-        rib.insert(Name('/foo/bar'), 0, 4, timeout=datetime.utcnow() + timedelta(hours=1))
+        timeout = datetime.utcnow() + timedelta(hours=1)
+        rib.insert(Name('/foo/bar'), 0, 4, timeout=timeout)
         rib.insert(Name('/ndn/ch/unibas/dmi'), 1, 2)
         rib.insert(Name('/ndn/ch/unibas/cs'), 1, 3)
         self.assertEqual(2, len(rib))
-        self.assertIn((Name('/foo/bar'), 0, 4), rib)
-        self.assertIn((Name('/ndn/ch/unibas'), 1, 2), rib)
+        self.assertIn((Name('/foo/bar'), 0, 4, timeout), rib)
+        self.assertIn((Name('/ndn/ch/unibas'), 1, 2, None), rib)
 
     def test_collapse_all_no_reduction(self):
         rib: BaseRoutingInformationBase = TreeRoutingInformationBase(self.manager, shortest_only=False)
