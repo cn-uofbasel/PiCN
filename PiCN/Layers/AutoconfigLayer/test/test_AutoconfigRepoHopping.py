@@ -114,9 +114,9 @@ class test_AutoconfigRepoHopping(unittest.TestCase):
         for e in [11, 12, 13, 21, 22, 23, 31, 32, 33]:
             self.nodes[e].autoconfiglayer._service_registration_prefixes = self.autoconfig_edgeprefix
             self.nodes[e].routinglayer._ageing_interval = 1.0
-            self.nodes[e].autoconfiglayer._service_registration_timeout = timedelta(seconds=5)
+            self.nodes[e].autoconfiglayer._service_registration_timeout = timedelta(seconds=15)
         # Set up repository directory.
-        os.makedirs('/tmp/test_hopping_repo')
+        os.makedirs('/tmp/test_hopping_repo', exist_ok=True)
         for c in [1, 2, 3, 4, 5, 6, 7, 8, 9]:
             with open(f'/tmp/test_hopping_repo/c{c}', 'w') as f:
                 f.write(f'This is test chunk {c}!')

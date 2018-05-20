@@ -26,9 +26,12 @@ class PendingInterstTableMemoryExact(BasePendingInterestTable):
         self._container.append(PendingInterestTableEntry(name, faceid, interest, local_app))
 
     def remove_pit_entry(self, name: Name):
+        to_remove = []
         for pit_entry in self._container:
-            if(pit_entry.name == name):
-                self._container.remove(pit_entry)
+            if pit_entry.name == name:
+                to_remove.append(pit_entry)
+        for r in to_remove:
+            self.container.remove(r)
 
     def find_pit_entry(self, name: Name) -> PendingInterestTableEntry:
         for pit_entry in self._container:
@@ -37,16 +40,22 @@ class PendingInterstTableMemoryExact(BasePendingInterestTable):
         return None
 
     def update_timestamp(self, pit_entry: PendingInterestTableEntry):
-        self._container.remove(pit_entry)
-        pit_entry.timestamp = time.time()
-        pit_entry.retransmits = 0
-        self._container.append(pit_entry)
+        try:
+            self._container.remove(pit_entry)
+            pit_entry.timestamp = time.time()
+            pit_entry.retransmits = 0
+            self._container.append(pit_entry)
+        except ValueError:
+            pass
 
     def add_used_fib_entry(self, name: Name, used_fib_entry: ForwardingInformationBaseEntry):
         pit_entry = self.find_pit_entry(name)
-        self._container.remove(pit_entry)
-        pit_entry.fib_entries_already_used.append(used_fib_entry)
-        self._container.append(pit_entry)
+        try:
+            self._container.remove(pit_entry)
+            pit_entry.fib_entries_already_used.append(used_fib_entry)
+            self._container.append(pit_entry)
+        except ValueError:
+            pass
 
     def get_already_used_pit_entries(self, name: Name):
         pit_entry = self.find_pit_entry(name)
