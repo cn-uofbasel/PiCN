@@ -93,7 +93,7 @@ class AutoconfigServerLayer(LayerProcess):
         self.logger.info('Service List requested')
         srvprefix = Name(interest.name.components[len(_AUTOCONFIG_SERVICE_LIST_PREFIX):])
         content = ''
-        now: datetime = datetime.now()
+        now: datetime = datetime.utcnow()
         for service, _, timeout in self._known_services:
             service: Name = service
             timeout: datetime = timeout
@@ -123,20 +123,27 @@ class AutoconfigServerLayer(LayerProcess):
         host, port = addr.split(':')
         srvaddr = (host, int(port))
         srvname = Name(interest.name.components[len(_AUTOCONFIG_SERVICE_REGISTRATION_PREFIX)+1:])
-        if len([prefix[0] for prefix in self._service_registration_prefixes
-                if len(prefix[0]) == 0 or prefix[0].is_prefix_of(srvname)]) == 0:
+        prefix_candidates = [prefix for prefix in self._service_registration_prefixes
+                             if len(prefix[0]) == 0 or prefix[0].is_prefix_of(srvname)]
+        if len(prefix_candidates) == 0:
             nack: Nack = Nack(interest.name, NackReason.NO_ROUTE)
             nack.interest = interest
             return nack
+
+        now = datetime.utcnow()
+        timeout = now + self._service_registration_timeout
+
         for i in range(len(self._known_services)):
-            service, addr, _ = self._known_services[i]
+            service, addr, srvtimeout = self._known_services[i]
+            if srvtimeout <= now:
+                continue
             if service == srvname:
                 if addr != srvaddr:
                     nack: Nack = Nack(interest.name, NackReason.DUPLICATE)
                     nack.interest = interest
                     return nack
                 else:
-                    self._known_services[i] = (service, addr, datetime.now() + self._service_registration_timeout)
+                    self._known_services[i] = (service, addr, timeout)
                     ack: Content = Content(interest.name,
                                            str(int(self._service_registration_timeout.total_seconds())) + '\n')
                     return ack
