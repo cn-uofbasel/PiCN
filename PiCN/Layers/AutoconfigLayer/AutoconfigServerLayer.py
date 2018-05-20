@@ -94,7 +94,7 @@ class AutoconfigServerLayer(LayerProcess):
         self.logger.info('Service List requested')
         srvprefix = Name(interest.name.components[len(_AUTOCONFIG_SERVICE_LIST_PREFIX):])
         content = ''
-        now: datetime = datetime.now()
+        now: datetime = datetime.utcnow()
         for service, _, timeout in self._known_services:
             service: Name = service
             timeout: datetime = timeout
@@ -134,10 +134,13 @@ class AutoconfigServerLayer(LayerProcess):
         prefix_candidates.sort(key=lambda p: len(p[0]), reverse=True)
         registration_prefix, local_only = prefix_candidates[0]
 
-        timeout = datetime.now() + self._service_registration_timeout
+        now = datetime.utcnow()
+        timeout = now + self._service_registration_timeout
 
         for i in range(len(self._known_services)):
-            service, addr, _ = self._known_services[i]
+            service, addr, srvtimeout = self._known_services[i]
+            if srvtimeout <= now:
+                continue
             if service == srvname:
                 if addr != srvaddr:
                     nack: Nack = Nack(interest.name, NackReason.DUPLICATE)
@@ -162,6 +165,6 @@ class AutoconfigServerLayer(LayerProcess):
             rib.build_fib(fib)
             self._data_structs['rib'] = rib
             self._data_structs['fib'] = fib
-        self._known_services.append((srvname, srvaddr, datetime.now() + self._service_registration_timeout))
+        self._known_services.append((srvname, srvaddr, datetime.utcnow() + self._service_registration_timeout))
         ack: Content = Content(interest.name, str(int(self._service_registration_timeout.total_seconds())) + '\n')
         return ack
