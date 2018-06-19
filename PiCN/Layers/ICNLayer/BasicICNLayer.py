@@ -27,7 +27,6 @@ class BasicICNLayer(LayerProcess):
         self._data_structs['cs'] = cs
         self._data_structs['pit'] = pit
         self._data_structs['fib'] = fib
-        self._cs_timeout: int = 10
         self._ageing_interval: int = 4
         self._interest_to_app: bool = False
 
@@ -170,32 +169,22 @@ class BasicICNLayer(LayerProcess):
         """Ageing the data structs"""
         try:
             self.logger.debug("Ageing")
+            #PIT ageing
             pit = self.pit
             retransmits = pit.ageing()
             for pit_entry in retransmits:
                 fib_entry = self.check_fib(pit_entry.name, pit_entry.fib_entries_already_used)
                 self.queue_to_lower.put([fib_entry.faceid, pit_entry.interest])
             self.pit = pit
-            self.cs_ageing()
+            #CS ageing
+            cs = self.cs
+            cs.ageing()
+            self.cs = cs
             t = threading.Timer(self._ageing_interval, self.ageing)
             t.setDaemon(True)
             t.start()
         except:
             pass
-
-    def cs_ageing(self):
-        """Aging the CS"""
-        cur_time = time.time()
-        remove = []
-        cs = self.cs
-        for cs_entry in cs.container:
-            if cs_entry.static is True:
-                continue
-            if cs_entry.timestamp + self._cs_timeout < cur_time:
-                remove.append(cs_entry)
-        for cs_entry in remove:
-            cs.remove_content_object(cs_entry.content.name)
-        self.cs = cs
 
     def add_to_cs(self, content: Content, static=False):
         """Add an entry to the Content Store

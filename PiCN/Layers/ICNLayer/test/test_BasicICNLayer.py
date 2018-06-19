@@ -19,7 +19,7 @@ class test_BasicICNLayer(unittest.TestCase):
         #setup icn_layer
         self.icn_layer = BasicICNLayer()
         self.manager = multiprocessing.Manager()
-        self.cs = ContentStoreMemoryExact()
+        self.cs = ContentStoreMemoryExact(cs_timeout=2)
         self.fib = ForwardingInformationBaseMemoryPrefix()
         self.pit = PendingInterstTableMemoryExact(pit_timeout=2, pit_retransmits=2)
         self.icn_layer.cs = self.cs
@@ -312,8 +312,6 @@ class test_BasicICNLayer(unittest.TestCase):
     def test_ICNLayer_ageing_cs(self):
         """Test CS ageing and static entries"""
 
-        self.icn_layer._cs_timeout = 2
-
         self.icn_layer.start_process()
         name1 = Name("/test/data")
         content1 = Content(name1, "HelloWorld")
@@ -329,14 +327,14 @@ class test_BasicICNLayer(unittest.TestCase):
         self.assertEqual(self.icn_layer.cs.container[1].content, content2)
 
         #Test aging 1
-        self.icn_layer.cs_ageing()
+        self.icn_layer.ageing()
         self.assertEqual(len(self.icn_layer.cs.container), 2)
         self.assertEqual(self.icn_layer.cs.container[0].content, content1)
         self.assertEqual(self.icn_layer.cs.container[1].content, content2)
 
         time.sleep(2)
         # Test aging 2
-        self.icn_layer.cs_ageing()
+        self.icn_layer.ageing()
         self.assertEqual(len(self.icn_layer.cs.container), 1)
         self.assertEqual(self.icn_layer.cs.container[0].content, content2)
 

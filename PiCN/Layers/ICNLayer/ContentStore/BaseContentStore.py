@@ -46,10 +46,13 @@ class ContentStoreEntry(object):
         return self._content == other._content
 
 class BaseContentStore(object):
-    """Abstract BaseContentStore for usage in BasicICNLayer"""
+    """Abstract BaseContentStore for usage in BasicICNLayer
+    :param cs_timeout: Time interval in which a CS entry will be cached
+    """
 
-    def __init__(self):
+    def __init__(self, cs_timeout: int=10):
         self._container: List[ContentStoreEntry] = []
+        self._cs_timeout = cs_timeout
 
     @abc.abstractmethod
     def add_content_object(self, content: Content, static: bool=False):
