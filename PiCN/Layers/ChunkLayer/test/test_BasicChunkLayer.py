@@ -18,7 +18,7 @@ class test_BasicChunkLayer(unittest.TestCase):
 
     def setUp(self):
         self.chunkifyer = SimpleContentChunkifyer()
-        self.chunkLayer: BasicChunkLayer = BasicChunkLayer(self.chunkifyer)
+        self.chunkLayer: BasicChunkLayer = BasicChunkLayer(self.chunkifyer, log_level=255)
 
         self.q1_to_lower = multiprocessing.Queue()
         self.q1_to_higher = multiprocessing.Queue()
@@ -269,6 +269,8 @@ class test_BasicChunkLayer(unittest.TestCase):
         self.chunkLayer._request_table.append(RequestTableEntry(i.name))
         self.chunkLayer.queue_from_higher.put([0, i])
         time.sleep(1)
+        res = self.chunkLayer.queue_to_lower.get()
+        self.assertEqual(res[1], i)
         self.assertTrue(self.chunkLayer.queue_to_lower.empty())
         self.assertEqual(self.chunkLayer._request_table[0], RequestTableEntry(i.name))
 
