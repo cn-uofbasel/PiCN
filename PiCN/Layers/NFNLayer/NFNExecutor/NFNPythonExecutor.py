@@ -3,7 +3,7 @@
 from typing import List
 from types import FunctionType, CodeType
 
-from PiCN.Layers.NFNLayer.NFNEvaluator.NFNExecutor import BaseNFNExecutor
+from PiCN.Layers.NFNLayer.NFNExecutor import BaseNFNExecutor
 
 class NFNPythonExecutor(BaseNFNExecutor):
 

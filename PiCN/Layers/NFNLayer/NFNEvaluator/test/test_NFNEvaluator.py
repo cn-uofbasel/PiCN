@@ -6,8 +6,8 @@ import unittest
 
 from PiCN.Packets import Interest, Content, Name, Nack, NackReason
 from PiCN.Layers.NFNLayer.NFNEvaluator import NFNEvaluator
-from PiCN.Layers.NFNLayer.NFNEvaluator.NFNOptimizer import ToDataFirstOptimizer
-from PiCN.Layers.NFNLayer.NFNEvaluator.NFNExecutor import NFNPythonExecutor
+from PiCN.Layers.NFNLayer.NFNOptimizer import ToDataFirstOptimizer
+from PiCN.Layers.NFNLayer.NFNExecutor import NFNPythonExecutor
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseMemoryPrefix
 from PiCN.Layers.ICNLayer.PendingInterestTable import PendingInterstTableMemoryExact
@@ -21,7 +21,7 @@ class testNFNEvaluator(unittest.TestCase):
         self.data_structs['cs'] = ContentStoreMemoryExact()
         self.data_structs['fib'] = ForwardingInformationBaseMemoryPrefix()
         self.data_structs['pit'] = PendingInterstTableMemoryExact()
-        self.optimizer = ToDataFirstOptimizer(None, self.data_structs)
+        self.optimizer = ToDataFirstOptimizer(self.data_structs)
         self.executor = NFNPythonExecutor
         self.rewrite_table = self.manager.dict()
         self.evaluator = NFNEvaluator(None, self.data_structs, self.rewrite_table)

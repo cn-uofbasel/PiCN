@@ -2,7 +2,7 @@
 
 import unittest
 
-from PiCN.Layers.NFNLayer.NFNEvaluator.NFNExecutor import NFNPythonExecutor
+from PiCN.Layers.NFNLayer.NFNExecutor import NFNPythonExecutor
 
 class test_NFNPythonExecutor(unittest.TestCase):
     """Tests for the NFNPythonExecutor"""

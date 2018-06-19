@@ -3,7 +3,7 @@
 import multiprocessing
 
 from PiCN.LayerStack import LayerStack
-from PiCN.Layers.NFNLayer import BasicNFNLayer
+from PiCN.Layers.NFNLayer import BasicNFNLayer_deprecated
 from PiCN.Layers.ChunkLayer import BasicChunkLayer
 from PiCN.Layers.ICNLayer import BasicICNLayer
 from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
@@ -45,7 +45,6 @@ class NFNForwarder(object):
         self.data_structs['cs'] = ContentStoreMemoryExact()
         self.data_structs['fib'] = ForwardingInformationBaseMemoryPrefix()
         self.data_structs['pit'] = PendingInterstTableMemoryExact()
-        self.data_structs['lock'] = manager.Lock()
 
         self.icnlayer._data_structs = self.data_structs
 
@@ -56,8 +55,8 @@ class NFNForwarder(object):
 
         # setup nfn
         self.icnlayer._interest_to_app = True
-        self.executors = {"PYTHON": NFNPythonExecutor()}
-        self.nfnlayer = BasicNFNLayer(self.icnlayer._data_structs, self.executors,
+        self.executors = {"PYTHON": NFNPythonExecutor}
+        self.nfnlayer = BasicNFNLayer_deprecated(manager, self.icnlayer._data_structs, self.executors,
                                                  log_level=log_level)
 
         self.lstack: LayerStack = LayerStack([

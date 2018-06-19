@@ -35,7 +35,7 @@ class Token(object):
         if stopChars == "":
             self._stopChars = None
 
-    def getToken(self, input) -> (TokenType, str):
+    def getToken(self, input: str) -> (TokenType, str):
         res: str = ""
         if len(input) < 1 or not self._startChars.match(input[0]):
             return (TokenType.NONE, "")

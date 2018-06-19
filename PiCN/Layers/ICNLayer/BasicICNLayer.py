@@ -41,7 +41,7 @@ class BasicICNLayer(LayerProcess):
             if cs_entry is not None:
                 self.queue_to_higher.put([high_level_id, cs_entry.content])
                 return
-            pit_entry = self.pit.find_pit_entry(packet.name)
+            pit_entry = self.pit.find_pit_entry(packet.name) #fixme, must me removed or manipulated, local app must be true!!!
             self.add_to_pit(packet.name, high_level_id, packet, local_app=True)
             fib_entry = self.fib.find_fib_entry(packet.name)
             if fib_entry is not None:
@@ -109,7 +109,7 @@ class BasicICNLayer(LayerProcess):
         if new_face_id is not None:
             self.logger.info("Found in FIB, forwarding")
             self.add_to_pit(interest.name, face_id, interest, local_app=from_local)
-            self.add_used_fib_entry_to_pit(interest.name, new_face_id)
+            #self.add_used_fib_entry_to_pit(interest.name, new_face_id) #disabled, should only be applied if nack is received.
             to_lower.put([new_face_id.faceid, interest])
             return
         self.logger.info("No FIB entry, sending Nack")
@@ -153,7 +153,7 @@ class BasicICNLayer(LayerProcess):
                         re_add = True
                 self.remove_pit_entry(pit_entry.name)
                 for i in range(0, len(pit_entry.faceids)):
-                    if to_higher and pit_entry.local_app[i]:
+                    if to_higher is not None and pit_entry.local_app[i]:
                         to_higher.put([face_id, nack])
                         del pit_entry.face_id[i]
                         del pit_entry.local_app[i]

@@ -11,7 +11,7 @@ class ContentStoreEntry(object):
     """Entry of the content store"""
     def __init__(self, content: Content, static: bool=False):
         self._content: Content = content
-        self._static: bool = static
+        self._static: bool = static #if true: do not remove this content object from CS by ageing
         self._timestamp = time.time()
 
     @property

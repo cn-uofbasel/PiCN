@@ -4,17 +4,19 @@ from typing import Dict
 
 from PiCN.Packets import Name
 from PiCN.Layers.NFNLayer.Parser.AST import *
-from PiCN.Layers.NFNLayer.NFNEvaluator.NFNOptimizer import BaseNFNOptimizer
-from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
-from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
+from PiCN.Layers.NFNLayer.NFNOptimizer import BaseNFNOptimizer
+
 
 class ToDataFirstOptimizer(BaseNFNOptimizer):
 
-    def __init__(self, prefix: Name, data_structs: Dict) -> None:
-        super().__init__(prefix, data_structs)
+    def __init__(self, data_structs: Dict) -> None:
+        super().__init__(data_structs)
 
-    def compute_local(self, ast: AST) -> bool:
-        if self.cs.find_content_object(self.prefix):
+    def required_data(self, prepended_prefix: Name, ast: AST):
+        return []
+
+    def compute_local(self, prepended_prefix: Name, ast: AST) -> bool:
+        if self.cs.find_content_object(prepended_prefix):
             return True
         names = self._get_names_from_ast(ast)
         functions = self._get_functions_from_ast(ast)
@@ -32,8 +34,12 @@ class ToDataFirstOptimizer(BaseNFNOptimizer):
             return False
         return True
 
-    def compute_fwd(self, ast: AST) -> bool:
-        if self.cs.find_content_object(self.prefix):
+    def compute_fwd(self, prepended_prefix: Name, ast: AST) -> bool:
+        if prepended_prefix is None:
+            names = self._get_functions_from_ast(ast)
+            if names != []:
+                prepended_prefix = names[0]
+        if self.cs.find_content_object(prepended_prefix):
             return False
         names = self._get_names_from_ast(ast)
         functions = self._get_functions_from_ast(ast)
@@ -51,7 +57,7 @@ class ToDataFirstOptimizer(BaseNFNOptimizer):
             return False
         return True
 
-    def rewrite(self, ast: AST):
+    def rewrite(self, prepended_prefix: Name, ast: AST) -> List[str]:
         names = self._get_names_from_ast(ast)
         functions = self._get_functions_from_ast(ast)
         names_in_fib = []
@@ -74,7 +80,7 @@ class ToDataFirstOptimizer(BaseNFNOptimizer):
         return rewrites
 
 
-    def _set_prepended_name(self, ast: AST, name: Name, root: AST):
+    def _set_prepended_name(self, ast: AST, name: Name, root: AST) -> str:
         if isinstance(ast, AST_FuncCall) or isinstance(ast, AST_Name):
             if name == Name(ast._element):
                 ast._prepend = True
