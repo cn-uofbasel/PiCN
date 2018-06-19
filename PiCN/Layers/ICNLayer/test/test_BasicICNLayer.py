@@ -21,7 +21,7 @@ class test_BasicICNLayer(unittest.TestCase):
         self.manager = multiprocessing.Manager()
         self.cs = ContentStoreMemoryExact()
         self.fib = ForwardingInformationBaseMemoryPrefix()
-        self.pit = PendingInterstTableMemoryExact()
+        self.pit = PendingInterstTableMemoryExact(pit_timeout=2, pit_retransmits=2)
         self.icn_layer.cs = self.cs
         self.icn_layer.fib = self.fib
         self.icn_layer.pit = self.pit
@@ -253,10 +253,6 @@ class test_BasicICNLayer(unittest.TestCase):
     def test_ICNLayer_ageing_pit(self):
         """Test PIT ageing"""
 
-        #set smaller values for test
-        self.icn_layer._pit_timeout = 2
-        self.icn_layer._pit_retransmits = 2
-
         self.icn_layer.start_process()
         from_face_id_1 = 1
         to_face_id = 2
@@ -269,7 +265,7 @@ class test_BasicICNLayer(unittest.TestCase):
         self.assertEqual(self.icn_layer.pit.container[0].name, name)
 
         #test retransmit 1
-        self.icn_layer.pit_ageing()
+        self.icn_layer.ageing()
         time.sleep(0.1)
         self.assertFalse(self.icn_layer.queue_to_lower.empty())
         try:
@@ -281,7 +277,7 @@ class test_BasicICNLayer(unittest.TestCase):
         self.assertEqual(rinterest, interest)
 
         # test retransmit 2
-        self.icn_layer.pit_ageing()
+        self.icn_layer.ageing()
         time.sleep(0.1)
         self.assertFalse(self.icn_layer.queue_to_lower.empty())
         try:
@@ -296,7 +292,7 @@ class test_BasicICNLayer(unittest.TestCase):
         time.sleep(2)
 
         # test retransmit 3 to get number of retransmit
-        self.icn_layer.pit_ageing()
+        self.icn_layer.ageing()
         time.sleep(0.1)
         self.assertFalse(self.icn_layer.queue_to_lower.empty())
         try:
@@ -307,8 +303,9 @@ class test_BasicICNLayer(unittest.TestCase):
         self.assertEqual(rface_id, to_face_id)
         self.assertEqual(rinterest, interest)
 
+
         # test remove pit entry
-        self.icn_layer.pit_ageing()
+        self.icn_layer.ageing()
         self.assertTrue(self.icn_layer.queue_to_lower.empty())
         self.assertEqual(len(self.icn_layer.pit.container), 0)
 

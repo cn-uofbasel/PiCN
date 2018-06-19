@@ -67,6 +67,10 @@ class BaseContentStore(object):
     def update_timestamp(self, cs_entry: ContentStoreEntry):
         """Update Timestamp of a ContentStoreEntry"""
 
+    @abc.abstractmethod
+    def ageing(self):
+        """Update the entries periodically"""
+
     @property
     def container(self):
         return self._container

@@ -86,10 +86,14 @@ class PendingInterestTableEntry(object):
 
 
 class BasePendingInterestTable(object):
-    """Abstract BasePendingInterestaTable for usage in BasicICNLayer"""
+    """Abstract BasePendingInterestaTable for usage in BasicICNLayer
+    :param pit_timeout: timeout for a pit entry when calling the ageing function
+    """
 
-    def __init__(self):
+    def __init__(self, pit_timeout: int=10, pit_retransmits: int=3):
         self._container: List[PendingInterestTableEntry] = []
+        self._pit_timeout = pit_timeout
+        self._pit_retransmits = pit_retransmits
 
     @abc.abstractmethod
     def add_pit_entry(self, name: Name, faceid: int, interest: Interest = None, local_app: bool = False):
@@ -110,6 +114,12 @@ class BasePendingInterestTable(object):
     @abc.abstractmethod
     def add_used_fib_entry(self, name: Name, used_fib_entry: ForwardingInformationBaseEntry):
         """Add a used fib entry to the already used fib entries"""
+
+    @abc.abstractmethod
+    def ageing(self) -> List[PendingInterestTableEntry]:
+        """Update the entries periodically
+        :return List of PIT entries to be retransmitted
+        """
 
     def get_already_used_pit_entries(self, name: Name):
         """Get already used fib entries"""

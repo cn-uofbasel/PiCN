@@ -28,8 +28,6 @@ class BasicICNLayer(LayerProcess):
         self._data_structs['pit'] = pit
         self._data_structs['fib'] = fib
         self._cs_timeout: int = 10
-        self._pit_timeout: int = 10
-        self._pit_retransmits: int = 3
         self._ageing_interval: int = 4
         self._interest_to_app: bool = False
 
@@ -172,35 +170,18 @@ class BasicICNLayer(LayerProcess):
         """Ageing the data structs"""
         try:
             self.logger.debug("Ageing")
-            self.pit_ageing()
+            pit = self.pit
+            retransmits = pit.ageing()
+            for pit_entry in retransmits:
+                fib_entry = self.check_fib(pit_entry.name, pit_entry.fib_entries_already_used)
+                self.queue_to_lower.put([fib_entry.faceid, pit_entry.interest])
+            self.pit = pit
             self.cs_ageing()
             t = threading.Timer(self._ageing_interval, self.ageing)
             t.setDaemon(True)
             t.start()
         except:
             pass
-
-    def pit_ageing(self):
-        """Ageing the PIT"""
-        cur_time = time.time()
-        remove = []
-        updated = []
-        for pit_entry in self.pit.container:
-            if pit_entry.timestamp + self._pit_timeout < cur_time and pit_entry.retransmits > self._pit_retransmits:
-                remove.append(pit_entry)
-            else:
-                pit_entry.retransmits = pit_entry.retransmits + 1
-                updated.append(pit_entry)
-                new_face_id = self.check_fib(pit_entry.name, pit_entry.fib_entries_already_used)
-                if new_face_id is not None:
-                    self.queue_to_lower.put([new_face_id.faceid, pit_entry.interest])
-        for pit_entry in remove:
-            self.remove_pit_entry(pit_entry.name)
-        for pit_entry in updated:
-            self.remove_pit_entry(pit_entry.name)
-            pit = self.pit
-            pit.container.append(pit_entry)
-            self.pit = pit
 
     def cs_ageing(self):
         """Aging the CS"""
