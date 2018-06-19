@@ -14,7 +14,7 @@ from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvE
 class cases_ICNDataRepository(object):
     """Test the ICN Data Repository using fetch"""
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def get_encoder(self):
         """returns the encoder to be used """
 
