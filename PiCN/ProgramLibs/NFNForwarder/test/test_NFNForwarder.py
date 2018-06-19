@@ -4,7 +4,6 @@ import abc
 import socket
 import time
 import unittest
-from random import randint
 
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
 from PiCN.Packets import Content, Interest, Name

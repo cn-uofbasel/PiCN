@@ -52,7 +52,7 @@ linked to it.
 * Forwarding rule from `9001` to [NDN testbed](https://named-data.net/ndn-testbed) for prefix `/ndn/ch/unibas`
 
 
-![Configuration fwd_to_testbed](https://raw.githubusercontent.com/cn-uofbasel/PiCN/master/doc/img/configuration_fwd_to_testbed.png "Configuration fwd_to_testbed")
+![Configuration fwd_to_testbed](https://raw.githubusercontent.com/cn-uofbasel/PiCN/master/docs/img/configuration_fwd_to_testbed.png "Configuration fwd_to_testbed")
 
 
 ### More Configurations..

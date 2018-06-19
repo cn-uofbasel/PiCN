@@ -110,7 +110,7 @@ class Name(object):
         """
         Checks if self has a certain prefix
         :param name: prefix
-        :return: true if self has given prefix, false otherwi
+        :return: true if self has given prefix, false otherwise
         """
         return name.is_prefix_of(self)
 

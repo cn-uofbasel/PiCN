@@ -1,11 +1,10 @@
 """ A in memory Forwarding Information Base using longest matching"""
 
-import multiprocessing
 from typing import List
 
 from PiCN.Layers.ICNLayer.ForwardingInformationBase.BaseForwardingInformationBase import BaseForwardingInformationBase, \
     ForwardingInformationBaseEntry
-from PiCN.Packets import Name, Interest
+from PiCN.Packets import Name
 
 
 class ForwardingInformationBaseMemoryPrefix(BaseForwardingInformationBase):

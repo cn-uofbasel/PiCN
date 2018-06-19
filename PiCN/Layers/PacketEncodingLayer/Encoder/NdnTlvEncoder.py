@@ -1,6 +1,5 @@
 """NDN TLV Encoder"""
 
-from PiCN.Logger import Logger
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
 from PiCN.Packets import Packet, Content, Interest, Nack, NackReason, Name, UnknownPacket
 
@@ -91,16 +90,28 @@ class NdnTlvEncoder(BasicEncoder):
         # print("got %d bytes to decode" % len(wire_data))
         if(self.is_content(wire_data)):
             self.logger.info("Decode content object")
-            (name, payload) = self.decode_data(wire_data)
-            return Content(name, payload, wire_data)
+            try:
+                (name, payload) = self.decode_data(wire_data)
+                return Content(name, payload, wire_data)
+            except:
+                self.logger.info("Decoding failed (malformed packet)")
+                return UnknownPacket(wire_format=wire_data)
         if(self.is_interest(wire_data)):
             self.logger.info("Decode interest")
-            name = self.decode_interest(wire_data)
-            return Interest(name, wire_data)
+            try:
+                name = self.decode_interest(wire_data)
+                return Interest(name, wire_data)
+            except:
+                self.logger.info("Decoding failed (malformed packet)")
+                return UnknownPacket(wire_format=wire_data)
         if(self.is_nack(wire_data)):
             self.logger.info("Decode NACK")
-            (name, reason) = self.decode_nack(wire_data)
-            return Nack(name, reason, wire_format=wire_data)
+            try:
+                (name, reason) = self.decode_nack(wire_data)
+                return Nack(name, reason, wire_format=wire_data)
+            except:
+                self.logger.info("Decoding failed (malformed packet)")
+                return UnknownPacket(wire_format=wire_data)
         else:
             self.logger.info("Decode failed (unknown packet type)")
             return UnknownPacket(wire_format=wire_data)
@@ -289,7 +300,10 @@ class NdnTlvEncoder(BasicEncoder):
         :param input:  Packet in NDN-TLV wire format
         :return: True if content object
         """
-        return input[0] == Tlv.Data
+        try:
+            return input[0] == Tlv.Data
+        except:
+            return False
 
     def is_interest(self, input: bytearray) -> bool:
         """
@@ -297,7 +311,10 @@ class NdnTlvEncoder(BasicEncoder):
         :param input:  Packet in NDN-TLV wire format
         :return: True if interest
         """
-        return input[0] == Tlv.Interest
+        try:
+            return input[0] == Tlv.Interest
+        except:
+            return False
 
     def is_nack(selfself, input: bytearray) -> bool:
         """
@@ -305,4 +322,7 @@ class NdnTlvEncoder(BasicEncoder):
         :param input:  Packet in NDN-TLV wire format
         :return: True if NACK
         """
-        return input[0] == 0x64 and input[3] == 0x03 and input[4] == 0x20
+        try:
+            return input[0] == 0x64 and input[3] == 0x03 and input[4] == 0x20
+        except:
+            return False

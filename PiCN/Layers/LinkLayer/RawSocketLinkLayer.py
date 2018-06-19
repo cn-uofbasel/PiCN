@@ -1,7 +1,7 @@
 """ Link Layer Inferface using RAW Sockets for Communication """
 
 from PiCN.Processes import LayerProcess
-import multiprocessing, select, socket, time, AF_PACKET, SOCK_RAW, htonl
+import multiprocessing, socket, time, AF_PACKET, SOCK_RAW, htonl
 
 class EthernetLinkLayer(LayerProcess):
     """ Link Layer Inferface using RAW Sockets for Communication """

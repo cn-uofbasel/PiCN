@@ -1,7 +1,6 @@
 """Abstract BaseContentStore for usage in BasicICNLayer"""
 
 import abc
-import multiprocessing
 import time
 from typing import List
 

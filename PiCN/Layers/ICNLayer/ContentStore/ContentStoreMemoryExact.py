@@ -1,6 +1,6 @@
 """ An in-memory content store with exact matching"""
 
-import multiprocessing, time, sys
+import time
 
 from PiCN.Packets import Content, Name
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore, ContentStoreEntry

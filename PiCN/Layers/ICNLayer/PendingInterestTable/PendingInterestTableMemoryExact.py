@@ -1,6 +1,6 @@
 """in-memory Pending Interest Table using exact prefix matching"""
 
-import multiprocessing, time
+import time
 
 from PiCN.Layers.ICNLayer.PendingInterestTable.BasePendingInterestTable import BasePendingInterestTable, \
     PendingInterestTableEntry

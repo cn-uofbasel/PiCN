@@ -1,7 +1,6 @@
-""" Data structure to organize content objects in a tree reflecting their namespace hierarchy """
+""" Data structure to organize named objects in a tree reflecting their namespace hierarchy """
 
-from PiCN.Packets import Content, Name
-from PiCN.Layers.ICNLayer.ContentStore import ContentStoreEntry
+from PiCN.Packets import Name
 
 from functools import reduce
 from collections import defaultdict
@@ -9,17 +8,20 @@ import operator
 import json
 from typing import List
 
-class ContentTree():
+
+def Tree(named_object=None):
+    return {"subtree": defaultdict(Tree), "leaf": named_object}
+
+class NamedObjectTree():
     """
-    Data structure to organize content objects in a tree reflecting their namespace hierarchy.
+    Data structure to organize objects with property 'name' (of type PiCN.Packets.Name) in a tree reflecting their
+    namespace hierarchy (e.g. Content, ContentStoreEntry). Exact and prefix lookup is possible.
     """
 
     def __init__(self):
         """
        Create empty tree
         """
-        def Tree(content_object=None):
-            return {"subtree": defaultdict(Tree), "leaf": content_object}
         self.__tree = Tree()
 
     def __get_subtree(self, path: List[str]):
@@ -39,19 +41,19 @@ class ContentTree():
         """
         return json.dumps(self.__tree)
 
-    def insert(self, content: Content) -> None:
+    def insert(self, named_object) -> None:
         """
-        Insert a content object
-        :param content: Content object to insert
+        Insert an object
+        :param named_object: Object to insert (must have a property 'name' of type PiCN.Packets.Name)
         :return: None
         """
-        path = content.name.components
-        (self.__get_subtree(path[:-1])[path[-1]])["leaf"] = content
+        path = named_object.name.components
+        (self.__get_subtree(path[:-1])[path[-1]])["leaf"] = named_object
 
     def remove(self, name: Name) -> None:
         """
-        Remove a content object
-        :param name: Name of content object to remove
+        Remove an object
+        :param name: Name of object to remove
         :return: None
         """
         # TODO: this only removes the leaf (=value) but not nodes (=nested dicts) which are no longer used (if any).
@@ -62,7 +64,7 @@ class ContentTree():
         """
         Lookup (only exact matches are returned)
         :param name: Name to lookup
-        :return: Content Object or None
+        :return: Named object or None
         """
         path = name.components
         try:
@@ -70,11 +72,11 @@ class ContentTree():
         except KeyError:
             return None
 
-    def prefix_lookup(self, name: Name) -> Content:
+    def prefix_lookup(self, name: Name):
         """
-        Find any content object which has a given prefix (or exact match)
+        Find any object which has a given prefix (or exact match)
         :param name: name/prefix
-        :return: Content Object or None
+        :return: Named object or None
         """
         def traverse(tree):
             if tree["leaf"] is not None:

@@ -5,7 +5,6 @@ import socket
 import time
 import unittest
 
-
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
 from PiCN.Packets import Content, Interest, Name
 from PiCN.ProgramLibs.ICNForwarder import ICNForwarder

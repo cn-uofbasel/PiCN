@@ -1,7 +1,5 @@
 """A extrem simple Packet Encoder for the BasicPacketEncodingLayer"""
 
-from PiCN.Logger import Logger
-
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
 from PiCN.Packets import Packet, Content, Interest, Name, Nack, NackReason, UnknownPacket
 
