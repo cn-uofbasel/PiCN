@@ -16,7 +16,7 @@ class PendingInterstTableMemoryExact(BasePendingInterestTable):
     def add_pit_entry(self, name, faceid: int, interest: Interest = None, local_app = False):
         for pit_entry in self._container:
             if pit_entry.name == name:
-                if faceid in pit_entry.face_id:
+                if faceid in pit_entry.face_id and local_app == pit_entry.local_app:
                     return
                 self._container.remove(pit_entry)
                 pit_entry._faceids.append(faceid)

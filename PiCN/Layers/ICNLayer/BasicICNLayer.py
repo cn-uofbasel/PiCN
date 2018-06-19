@@ -153,8 +153,6 @@ class BasicICNLayer(LayerProcess):
                         re_add = True
                 self.remove_pit_entry(pit_entry.name)
                 for i in range(0, len(pit_entry.faceids)):
-                    print(to_higher)
-                    print(pit_entry.local_app[i], pit_entry.name)
                     if to_higher is not None and pit_entry.local_app[i]:
                         to_higher.put([face_id, nack])
                         del pit_entry.face_id[i]

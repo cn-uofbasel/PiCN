@@ -96,7 +96,7 @@ class BasePendingInterestTable(object):
         """Add an new entry"""
 
     @abc.abstractmethod
-    def find_pit_entry(self, name: Name) -> int:
+    def find_pit_entry(self, name: Name) -> PendingInterestTableEntry:
         """Find an entry in the PIT"""
 
     @abc.abstractmethod
