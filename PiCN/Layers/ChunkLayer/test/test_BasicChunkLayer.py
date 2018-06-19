@@ -117,7 +117,6 @@ class test_BasicChunkLayer(unittest.TestCase):
         self.assertTrue(entry1)
         self.assertFalse(entry2)
         self.assertTrue(entry3)
-
         rt_entry = self.chunkLayer.get_request_table_entry(Name("/test/data/c1"))
         self.chunkLayer._request_table.remove(rt_entry)
         rt_entry = self.chunkLayer.remove_chunk_name_from_request_table_entry(rt_entry, Name("/test/data/c1"))

@@ -45,7 +45,7 @@ class BasicChunkLayer(LayerProcess):
         packet = data[1]
         if isinstance(packet, Interest):
             self.logger.info("Packet is Interest " + str(packet.name))
-            requestentry = self.get_requesttableentry(packet.name)
+            requestentry = self.get_request_table_entry(packet.name)
             if requestentry is None:
                 self._request_table.append(RequestTableEntry(packet.name))
             to_lower.put([faceid, packet])
@@ -67,7 +67,7 @@ class BasicChunkLayer(LayerProcess):
                     if c.name not in self._chunk_table:
                         self._chunk_table[c.name] = (c, time.time())
         if isinstance(packet, Nack):
-            requestentry = self.get_requesttableentry(packet.name)
+            requestentry = self.get_request_table_entry(packet.name)
             if requestentry is not None:
                 self._request_table.remove(requestentry)
             to_lower.put([faceid, packet])
@@ -86,7 +86,7 @@ class BasicChunkLayer(LayerProcess):
             return
         if isinstance(packet, Content):
             self.logger.info("Packet is Content")
-            request_table_entry = self.get_requesttableentry(packet.name)
+            request_table_entry = self.get_request_table_entry(packet.name)
             if request_table_entry is None:
                 return
             self._request_table.remove(request_table_entry)
@@ -104,7 +104,7 @@ class BasicChunkLayer(LayerProcess):
                     return #deletes entry if data was completed
             self._request_table.append(request_table_entry)
         if isinstance(packet, Nack):
-            requestentry = self.get_requesttableentry(packet.name)
+            requestentry = self.get_request_table_entry(packet.name)
             if requestentry is not None:
                 self._request_table.remove(requestentry)
             to_higher.put([faceid, packet])
@@ -155,7 +155,7 @@ class BasicChunkLayer(LayerProcess):
                 res.append(self._chunk_table[name][0])
         return res
 
-    def get_requesttableentry(self, name: Name) -> RequestTableEntry:
+    def get_request_table_entry(self, name: Name) -> RequestTableEntry:
         """check if a name is in the chunktable"""
         for entry in self._request_table:
             if entry.name == name or name in entry.requested_chunks or name in entry.requested_md:
