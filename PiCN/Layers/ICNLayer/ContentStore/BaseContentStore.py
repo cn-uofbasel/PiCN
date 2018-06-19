@@ -56,23 +56,44 @@ class BaseContentStore(object):
 
     @abc.abstractmethod
     def add_content_object(self, content: Content, static: bool=False):
-        """check if there is already a content object stored, otherwise store it in the container"""
+        """
+        Insert content object
+        :param content: content object to insert
+        :param static: if true the conent object will not be considered by ageing
+        :return: None
+        """
 
     @abc.abstractmethod
     def find_content_object(self, name: Name) -> ContentStoreEntry:
-        """check if there is a matching content object"""
+        """
+        Lookup a content object
+        :param name:  Name
+        :return:      Matching Content Object or None
+        """
 
     @abc.abstractmethod
     def remove_content_object(self, name: Name):
-        """Remove a content object from CS"""
+        """
+        Remove content object
+        :param name: Name (exact)
+        :return: None
+        """
 
     @abc.abstractmethod
     def update_timestamp(self, cs_entry: ContentStoreEntry):
+        """
+        Update timestamp
+        :param cs_entry: content store entry
+        :return: None
+        """
         """Update Timestamp of a ContentStoreEntry"""
 
     @abc.abstractmethod
     def ageing(self):
-        """Update the entries periodically"""
+        """
+        Update the entries periodically
+        :return: None
+        """
 
     @property
     def container(self):

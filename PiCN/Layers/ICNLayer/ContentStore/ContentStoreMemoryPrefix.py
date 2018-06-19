@@ -48,3 +48,10 @@ class ContentStoreMemoryPrefix(BaseContentStore):
         self._container.remove(cs_entry.name)
         cs_entry.timestamp = time.time()
         self._container.insert(cs_entry)
+
+    def ageing(self):
+        """
+        Update the entries periodically
+        :return: None
+        """
+        raise NotImplemented()
