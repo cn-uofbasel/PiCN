@@ -26,7 +26,7 @@ config_PiCN = {
                  'PiCN.Executable', 'PiCN.Logger', 'PiCN.Layers.ChunkLayer', 'PiCN.Layers.ChunkLayer.Chunkifyer',
                  'PiCN.Layers.RepositoryLayer', 'PiCN.Layers.RepositoryLayer.Repository',
                  'PiCN.ProgramLibs.ICNDataRepository', 'PiCN.Layers.NFNLayer', 'PiCN.Layers.NFNLayer.Parser',
-                 'PiCN.Layers.NFNLayer.NFNEvaluator', 'PiCN.Layers.NFNLayer.NFNOptimizer',
+                 'PiCN.Layers.NFNLayer.NFNOptimizer',
                  'PiCN.Layers.NFNLayer.NFNExecutor', 'PiCN.ProgramLibs.NFNForwarder'],
     'scripts': [],
     'test_suite': 'nose2.collector.collector',
