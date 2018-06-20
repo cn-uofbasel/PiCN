@@ -12,7 +12,7 @@ from PiCN.ProgramLibs.ICNForwarder import ICNForwarder
 class cases_ICNForwarder(object):
     """Test the ICN Forwarder"""
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def get_encoder(self):
         """returns the encoder to be used """
 
@@ -51,7 +51,7 @@ class cases_ICNForwarder(object):
         #create test content
         name = Name("/test/data/object")
         test_content = Content(name, content="HelloWorld")
-        cs_fwd1 = self.forwarder1.data_structs.get('cs')
+        cs_fwd1 = self.forwarder1.icnlayer.cs
         self.assertEqual(cs_fwd1.find_content_object(name).content, test_content)
 
         #create interest
@@ -103,7 +103,7 @@ class cases_ICNForwarder(object):
         #create test content
         name = Name("/test/data/object")
         test_content = Content(name, content="HelloWorld")
-        cs_fwd2 = self.forwarder2.data_structs.get('cs')
+        cs_fwd2 = self.forwarder2.icnlayer.cs
         self.assertEqual(cs_fwd2.find_content_object(name).content, test_content)
 
         #create interest
@@ -117,7 +117,7 @@ class cases_ICNForwarder(object):
         content = self.encoder.decode(encoded_content)
         self.assertEqual(content, test_content)
         time.sleep(2)
-        self.assertEqual(len(self.forwarder1.icnlayer.pit.container), 0)
+        self.assertEqual(self.forwarder1.icnlayer.pit.get_container_size(), 0)
 
 
 

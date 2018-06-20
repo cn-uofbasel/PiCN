@@ -42,9 +42,9 @@ class ICNForwarder(object):
         synced_data_struct_factory.register("pit", PendingInterstTableMemoryExact)
         synced_data_struct_factory.create_manager()
 
-        cs = synced_data_struct_factory.manager.cs
-        fib = synced_data_struct_factory.manager.fib
-        pit = synced_data_struct_factory.manager.pit
+        cs = synced_data_struct_factory.manager.cs()
+        fib = synced_data_struct_factory.manager.fib()
+        pit = synced_data_struct_factory.manager.pit()
 
         self.lstack: LayerStack = LayerStack([
             self.icnlayer,
@@ -60,7 +60,7 @@ class ICNForwarder(object):
         self.routing = BasicRouting(self.icnlayer.pit, None, log_level=log_level) #TODO NOT IMPLEMENTED YET
 
         # mgmt
-        self.mgmt = Mgmt(self.data_structs, self.linklayer, self.linklayer.get_port(), self.stop_forwarder,
+        self.mgmt = Mgmt(cs, fib, pit, self.linklayer, self.linklayer.get_port(), self.stop_forwarder,
                          log_level=log_level)
 
     def start_forwarder(self):
