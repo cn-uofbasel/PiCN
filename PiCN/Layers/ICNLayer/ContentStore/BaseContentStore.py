@@ -101,6 +101,13 @@ class BaseContentStore(object):
         """
         return len(self._container)
 
+    def get_container(self) -> List:
+        """get the container storing the content objects
+        :return: the container storing the content objects
+        """
+        return self._container
+
+
     def set_cs_timeout(self, timeout: float):
         """set the timeout intervall for a CS entry
         :param timeout: the timeout intervall to be set

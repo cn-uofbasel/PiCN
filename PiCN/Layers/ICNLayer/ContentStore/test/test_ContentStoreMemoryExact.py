@@ -19,7 +19,7 @@ class test_ContentStoreMemoryExact(unittest.TestCase):
         c = Content("/test/data", "Hello World")
         self.cs.add_content_object(c)
         entry = self.cs._container[0]
-        self.assertTrue(entry in self.cs.container)
+        self.assertIsNotNone(self.cs.find_content_object(entry.name))
         self.assertEqual(entry.content, c)
 
     def test_add_multiple_content_to_cs(self):
@@ -29,10 +29,10 @@ class test_ContentStoreMemoryExact(unittest.TestCase):
         self.cs.add_content_object(c1)
         self.cs.add_content_object(c2)
         entry1 = self.cs._container[0]
-        self.assertTrue(entry1 in self.cs.container)
+        self.assertIsNotNone(self.cs.find_content_object(entry1.name))
         self.assertEqual(entry1.content, c1)
         entry2 = self.cs._container[1]
-        self.assertTrue(entry2 in self.cs.container)
+        self.assertIsNotNone(self.cs.find_content_object(entry2.name))
         self.assertEqual(entry2.content, c2)
 
     def test_find_content_to_cs(self):
@@ -51,10 +51,10 @@ class test_ContentStoreMemoryExact(unittest.TestCase):
         self.cs.add_content_object(c1)
         self.cs.add_content_object(c2)
         entry1 = self.cs._container[0]
-        self.assertTrue(entry1 in self.cs.container)
+        self.assertTrue(entry1 in self.cs.get_container())
         self.assertEqual(entry1.content, c1)
         entry2 = self.cs._container[1]
-        self.assertTrue(entry2 in self.cs.container)
+        self.assertTrue(entry2 in self.cs.get_container())
         self.assertEqual(entry2.content, c2)
 
         fc1 = self.cs.find_content_object(c1.name)
@@ -79,6 +79,6 @@ class test_ContentStoreMemoryExact(unittest.TestCase):
         self.cs.add_content_object(c)
         entry = self.cs._container[0].content
         self.assertEqual(entry, c)
-        self.assertEqual(len(self.cs.container), 1)
+        self.assertEqual(len(self.cs.get_container()), 1)
         self.cs.remove_content_object(c.name)
-        self.assertEqual(len(self.cs.container), 0)
+        self.assertEqual(len(self.cs.get_container()), 0)
