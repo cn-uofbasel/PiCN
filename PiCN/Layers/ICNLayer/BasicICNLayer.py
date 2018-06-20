@@ -33,7 +33,7 @@ class BasicICNLayer(LayerProcess):
         high_level_id = data[0]
         packet = data[1]
         if isinstance(packet, Interest):
-            cs_entry = self.cs.find_content_object(packet)
+            cs_entry = self.cs.find_content_object(packet.name)
             if cs_entry is not None:
                 self.queue_to_higher.put([high_level_id, cs_entry.content])
                 return
@@ -156,9 +156,7 @@ class BasicICNLayer(LayerProcess):
                     elif not re_add:
                         to_lower.put([pit_entry.faceids[i], nack])
                 if re_add:
-                    pit = self.pit
-                    pit.container.append(pit_entry)
-                    self.pit = pit
+                    self.pit.append(pit_entry)
             else:
                 self.logger.info("Try using next FIB path")
                 self.pit.add_used_fib_entry(nack.name, fib_entry)

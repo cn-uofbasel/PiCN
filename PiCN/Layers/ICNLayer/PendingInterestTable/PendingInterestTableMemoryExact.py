@@ -56,6 +56,9 @@ class PendingInterstTableMemoryExact(BasePendingInterestTable):
         pit_entry = self.find_pit_entry(name)
         return pit_entry.fib_entries_already_used
 
+    def append(self, entry):
+        self._container.append(entry)
+
     def ageing(self) -> List[PendingInterestTableEntry]:
         cur_time = time.time()
         remove = []

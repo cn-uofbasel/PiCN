@@ -121,6 +121,12 @@ class BasePendingInterestTable(object):
         :return List of PIT entries to be retransmitted
         """
 
+    @abc.abstractmethod
+    def append(self, entry):
+        """append an pit_entry to the pit container
+        :param entry: entry to be appended
+        """
+
     def get_already_used_pit_entries(self, name: Name):
         """Get already used fib entries"""
 

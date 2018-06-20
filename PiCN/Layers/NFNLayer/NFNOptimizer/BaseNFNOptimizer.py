@@ -7,11 +7,14 @@ from PiCN.Packets import Name
 from PiCN.Layers.NFNLayer.Parser import AST
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
 from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
+from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
 
 class BaseNFNOptimizer(object):
     """Base class for the NFN Optimizers"""
-    def __init__(self, data_structs: Dict):
-        self._data_structs = data_structs
+    def __init__(self, cs: BaseContentStore, fib: BaseForwardingInformationBase, pit: BasePendingInterestTable):
+        self.cs = cs
+        self.fib = fib
+        self.pit = pit
 
     @abc.abstractmethod
     def required_data(self, prepended_prefix: Name, ast: AST) -> List[Name]:
@@ -45,27 +48,4 @@ class BaseNFNOptimizer(object):
         :return List of computation strings, including a marker which name should be prepended.
         """
 
-    @property
-    def cs(self):
-        return self._data_structs.get('cs')
-
-    @cs.setter
-    def cs(self, cs):
-        self._data_structs['cs'] = cs
-
-    @property
-    def fib(self):
-        return self._data_structs.get('fib')
-
-    @fib.setter
-    def fib(self, fib):
-        self._data_structs['fib'] = fib
-
-    @property
-    def pit(self):
-        return self._data_structs.get('pit')
-
-    @pit.setter
-    def pit(self, pit):
-        self._data_structs['pit'] = pit
 

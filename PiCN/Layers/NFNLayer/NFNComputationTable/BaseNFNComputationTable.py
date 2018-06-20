@@ -171,7 +171,7 @@ class BaseNFNComputationTable(object):
     def get_computation(self, name: Name) -> NFNComputationTableEntry:
         """Find a NFNComputationTableEntry
         :param name: Name of the computation for which a Entry should be returned
-        :return The NFNComputationEntry corresponding to the name
+        :return The NFNComputationEntry corresponding to the name, none if no matching entry
         """
 
     @abc.abstractmethod
@@ -225,3 +225,14 @@ class BaseNFNComputationTable(object):
         self.remove_computation(name)
         c.add_name_to_await_list(awaiting_name)
         self.append_computation(c)
+
+    def get_container_size(self):
+        """Number of active computations
+        :return: return number of active computaitons
+        """
+        return len(self.container)
+
+    def get_container(self):
+        """returns the data container
+        :return: data container"""
+        return self.container

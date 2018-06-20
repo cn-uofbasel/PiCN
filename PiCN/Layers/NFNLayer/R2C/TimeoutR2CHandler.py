@@ -53,6 +53,6 @@ class TimeoutR2CHandler(BaseR2CHandler):
 
     def R2C_handle_request(self, name: Name, computationTable: BaseNFNComputationTable):
         n = self.R2C_get_original_message(name)
-        if n in list(map(lambda n: n.original_name, computationTable.container)):
+        if computationTable.get_computation(n) is not None:
             return Content(name, "Running")
         return None

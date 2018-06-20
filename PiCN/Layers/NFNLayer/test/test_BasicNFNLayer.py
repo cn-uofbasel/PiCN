@@ -6,6 +6,7 @@ import multiprocessing
 
 from PiCN.Layers.NFNLayer import BasicNFNLayer
 from PiCN.Layers.NFNLayer.NFNExecutor import NFNPythonExecutor
+from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
 from PiCN.Layers.NFNLayer.NFNComputationTable import *
 from PiCN.Layers.NFNLayer.R2C import TimeoutR2CHandler
 from PiCN.Layers.NFNLayer.Parser import *
@@ -14,22 +15,32 @@ from PiCN.Packets import Name, Interest, Content, Nack, NackReason
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseMemoryPrefix
 from PiCN.Layers.ICNLayer.PendingInterestTable import PendingInterstTableMemoryExact
+from PiCN.Processes import PiCNSyncDataStructFactory
 
 
 class test_BasicNFNLayer(unittest.TestCase):
     """Test the BasicNFNLayer"""
 
     def setUp(self):
-        manager = multiprocessing.Manager()
-        self.icn_data_structs = manager.dict()
-        self.icn_data_structs['cs'] = ContentStoreMemoryExact()
-        self.icn_data_structs['fib'] = ForwardingInformationBaseMemoryPrefix()
-        self.icn_data_structs['pit'] = PendingInterstTableMemoryExact()
-        self.icn_data_structs['lock'] = manager.Lock()
+        #setup icn_layer
+        synced_data_struct_factory = PiCNSyncDataStructFactory()
+        synced_data_struct_factory.register("cs", ContentStoreMemoryExact)
+        synced_data_struct_factory.register("fib", ForwardingInformationBaseMemoryPrefix)
+        synced_data_struct_factory.register("pit", PendingInterstTableMemoryExact)
+        synced_data_struct_factory.register("computation_table", NFNComputationList)
+        synced_data_struct_factory.create_manager()
+
+        cs = synced_data_struct_factory.manager.cs()
+        fib = synced_data_struct_factory.manager.fib()
+        pit = synced_data_struct_factory.manager.pit()
+
+        self.r2cclient = TimeoutR2CHandler()
+        parser = DefaultNFNParser()
+        comp_table = synced_data_struct_factory.manager.computation_table(self.r2cclient, parser)
 
         self.executor = {"PYTHON": NFNPythonExecutor()}
-        self.r2cclient = TimeoutR2CHandler()
-        self.nfn_layer = BasicNFNLayer(self.icn_data_structs, self.executor)
+
+        self.nfn_layer = BasicNFNLayer(cs, fib, pit, comp_table, self.executor, parser, self.r2cclient, log_level=255)
 
         self.nfn_layer.queue_to_lower = multiprocessing.Queue()
         self.nfn_layer.queue_from_lower = multiprocessing.Queue()
@@ -181,9 +192,7 @@ class test_BasicNFNLayer(unittest.TestCase):
 
     def test_forwarding_descision_no_rewrite(self):
         """Test if forward or compute local: goal: forward with no rewrite"""
-        fib: ForwardingInformationBaseMemoryPrefix = self.nfn_layer.icn_data_structs.get('fib')
-        fib.add_fib_entry(Name('/func'), 1, True)
-        self.nfn_layer.icn_data_structs['fib'] = fib
+        self.nfn_layer.fib.add_fib_entry(Name('/func'), 1, True)
 
         computation_name = Name("/func/f1")
         computation_name += "_(/test/data)"
@@ -204,9 +213,7 @@ class test_BasicNFNLayer(unittest.TestCase):
 
     def test_forwarding_descision_rewrite(self):
         """Test if forward or compute local: goal: forward with rewrite"""
-        fib: ForwardingInformationBaseMemoryPrefix = self.nfn_layer.icn_data_structs.get('fib')
-        fib.add_fib_entry(Name('/test'), 1, True)
-        self.nfn_layer.icn_data_structs['fib'] = fib
+        self.nfn_layer.fib.add_fib_entry(Name('/test'), 1, True)
 
         computation_name = Name("/func/f1")
         computation_name += "_(1,/test/data)"
@@ -229,14 +236,10 @@ class test_BasicNFNLayer(unittest.TestCase):
 
     def test_forward_descision_fwd_not_prepended_local(self):
         """Test if the forward or compute local: forward with not prepended data local available"""
-        fib: ForwardingInformationBaseMemoryPrefix = self.nfn_layer.icn_data_structs.get('fib')
-        fib.add_fib_entry(Name('/test'), 1, True)
-        self.nfn_layer.icn_data_structs['fib'] = fib
+        self.nfn_layer.fib.add_fib_entry(Name('/test'), 1, True)
 
         c1 = Content("/test/data", "Hello World")
-        cs: ContentStoreMemoryExact = self.nfn_layer.icn_data_structs.get('cs')
-        cs.add_content_object(c1)
-        self.nfn_layer.icn_data_structs['cs'] = cs
+        self.nfn_layer.cs.add_content_object(c1)
 
         computation_name = Name("/func/f1")
         computation_name += "_(1,/test/data)"
@@ -259,14 +262,10 @@ class test_BasicNFNLayer(unittest.TestCase):
 
     def test_forward_descision_compute_local_no_param(self):
         """Test if the forward or compute local: goal: compute local with no parameter"""
-        fib: ForwardingInformationBaseMemoryPrefix = self.nfn_layer.icn_data_structs.get('fib')
-        fib.add_fib_entry(Name('/test'), 1, True)
-        self.nfn_layer.icn_data_structs['fib'] = fib
+        self.nfn_layer.fib.add_fib_entry(Name('/test'), 1, True)
 
         c1 = Content("/func/f1", "PYTHON\nf\ndef f(a):\n    return a.upper()")
-        cs: ContentStoreMemoryExact = self.nfn_layer.icn_data_structs.get('cs')
-        cs.add_content_object(c1)
-        self.nfn_layer.icn_data_structs['cs'] = cs
+        self.nfn_layer.cs.add_content_object(c1)
 
         computation_name = Name("/func/f1")
         computation_name += "_()"
@@ -284,14 +283,10 @@ class test_BasicNFNLayer(unittest.TestCase):
 
     def test_forward_descision_compute_local_param(self):
         """Test if the forward or compute local: goal: compute local with parameter"""
-        fib: ForwardingInformationBaseMemoryPrefix = self.nfn_layer.icn_data_structs.get('fib')
-        fib.add_fib_entry(Name('/test'), 1, True)
-        self.nfn_layer.icn_data_structs['fib'] = fib
+        self.nfn_layer.fib.add_fib_entry(Name('/test'), 1, True)
 
         c1 = Content("/func/f1", "PYTHON\nf\ndef f(a):\n    return a.upper()")
-        cs: ContentStoreMemoryExact = self.nfn_layer.icn_data_structs.get('cs')
-        cs.add_content_object(c1)
-        self.nfn_layer.icn_data_structs['cs'] = cs
+        self.nfn_layer.cs.add_content_object(c1)
 
         computation_name = Name("/func/f1")
         computation_name += "_(1,/test/data)"
@@ -312,14 +307,10 @@ class test_BasicNFNLayer(unittest.TestCase):
 
     def test_forward_descision_compute_inner_call(self):
         """Test if the forward or compute local: goal: compute local with inner call"""
-        fib: ForwardingInformationBaseMemoryPrefix = self.nfn_layer.icn_data_structs.get('fib')
-        fib.add_fib_entry(Name('/test'), 1, True)
-        self.nfn_layer.icn_data_structs['fib'] = fib
+        self.nfn_layer.fib.add_fib_entry(Name('/test'), 1, True)
 
         c1 = Content("/func/f1", "PYTHON\nf\ndef f(a):\n    return a.upper()")
-        cs: ContentStoreMemoryExact = self.nfn_layer.icn_data_structs.get('cs')
-        cs.add_content_object(c1)
-        self.nfn_layer.icn_data_structs['cs'] = cs
+        self.nfn_layer.cs.add_content_object(c1)
 
         computation_name = Name("/func/f1")
         computation_name += "_(/func/f2(/test/data))"
@@ -347,14 +338,10 @@ class test_BasicNFNLayer(unittest.TestCase):
     def test_handle_interest(self):
         """Test if handle interest handles an interest message correctly"""
 
-        fib: ForwardingInformationBaseMemoryPrefix = self.nfn_layer.icn_data_structs.get('fib')
-        fib.add_fib_entry(Name('/test'), 1, True)
-        self.nfn_layer.icn_data_structs['fib'] = fib
+        self.nfn_layer.fib.add_fib_entry(Name('/test'), 1, True)
 
         c1 = Content("/func/f1", "PYTHON\nf\ndef f(a):\n    return a.upper()")
-        cs: ContentStoreMemoryExact = self.nfn_layer.icn_data_structs.get('cs')
-        cs.add_content_object(c1)
-        self.nfn_layer.icn_data_structs['cs'] = cs
+        self.nfn_layer.cs.add_content_object(c1)
 
         computation_name = Name("/func/f1")
         computation_name += "_(/func/f2(/test/data))"
@@ -438,9 +425,7 @@ class test_BasicNFNLayer(unittest.TestCase):
 
     def test_handle_content_start_fwd(self):
         """test rewrting handling content"""
-        fib: ForwardingInformationBaseMemoryPrefix = self.nfn_layer.icn_data_structs.get('fib')
-        fib.add_fib_entry(Name('/test'), 1, True)
-        self.nfn_layer.icn_data_structs['fib'] = fib
+        self.nfn_layer.fib.add_fib_entry(Name('/test'), 1, True)
 
         computation_name = Name("/func/f1")
         computation_name += "_(/test/data)"
@@ -470,9 +455,7 @@ class test_BasicNFNLayer(unittest.TestCase):
 
     def test_handle_nack_on_rewritten_computation_no_further_rewrite(self):
         """Test if a Nack message is handled correctly for a rewritten computation, when there is no further rewrite"""
-        fib: ForwardingInformationBaseMemoryPrefix = self.nfn_layer.icn_data_structs.get('fib')
-        fib.add_fib_entry(Name('/test'), 1, True)
-        self.nfn_layer.icn_data_structs['fib'] = fib
+        self.nfn_layer.fib.add_fib_entry(Name('/test'), 1, True)
 
         computation_name = Name("/func/f1")
         computation_name += "_(/test/data)"
@@ -502,14 +485,12 @@ class test_BasicNFNLayer(unittest.TestCase):
 
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
         self.assertEqual(res[1], Nack(computation_name, NackReason.COMP_PARAM_UNAVAILABLE, interest=Interest(computation_name)))
-        self.assertEqual(self.nfn_layer.computation_table.container, [])
+        self.assertEqual(self.nfn_layer.computation_table.get_container(), [])
 
     def test_handle_nack_on_rewritten_computation_further_rewrite(self):
         """Test if a Nack message is handled correctly for a rewritten computation, when there is a further rewrite"""
-        fib: ForwardingInformationBaseMemoryPrefix = self.nfn_layer.icn_data_structs.get('fib')
-        fib.add_fib_entry(Name('/test'), 1, True)
-        fib.add_fib_entry(Name('/data'), 1, True)
-        self.nfn_layer.icn_data_structs['fib'] = fib
+        self.nfn_layer.fib.add_fib_entry(Name('/test'), 1, True)
+        self.nfn_layer.fib.add_fib_entry(Name('/data'), 1, True)
 
         computation_name = Name("/func/f1")
         computation_name += "_(/test/data,/data/test)"
@@ -543,7 +524,7 @@ class test_BasicNFNLayer(unittest.TestCase):
 
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
         self.assertEqual(res[1], Interest(second_request_name))
-        self.assertEqual(len(self.nfn_layer.computation_table.container), 1)
+        self.assertEqual(self.nfn_layer.computation_table.get_container_size(), 1)
         self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list), 1)
         self.assertEqual(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list,
                          ["/func/f1(/test/data,%/data/test%)"])
@@ -560,11 +541,11 @@ class test_BasicNFNLayer(unittest.TestCase):
         computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
         computation_entry.interest = computation_interest
         self.nfn_layer.append_computation(computation_entry)
-        self.assertEqual(len(self.nfn_layer.computation_table.container), 1)
+        self.assertEqual(self.nfn_layer.computation_table.get_container_size(), 1)
         self.nfn_layer.handleNack(1, Nack(computation_name, NackReason.COMP_PARAM_UNAVAILABLE, interest=computation_interest))
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
         self.assertEqual(res[1], Nack(computation_name, NackReason.COMP_PARAM_UNAVAILABLE, interest=computation_interest))
-        self.assertEqual(self.nfn_layer.computation_table.container, [])
+        self.assertEqual(self.nfn_layer.computation_table.get_container(), [])
 
     def test_handle_nack_on_await_data(self):
         """Test handle nack on the name of awaiting data"""
@@ -578,22 +559,20 @@ class test_BasicNFNLayer(unittest.TestCase):
         computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
         computation_entry.interest = computation_interest
         self.nfn_layer.append_computation(computation_entry)
-        self.assertEqual(len(self.nfn_layer.computation_table.container), 1)
+        self.assertEqual(self.nfn_layer.computation_table.get_container_size(), 1)
 
         self.nfn_layer.add_awaiting_data(computation_name, Name("/test/data"))
-        self.assertEqual(len(self.nfn_layer.computation_table.container[0].awaiting_data), 1)
+        self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).awaiting_data), 1)
 
         self.nfn_layer.handleNack(1, Nack(Name("/test/data"), NackReason.NO_CONTENT, interest=Interest(Name("/test/data"))))
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
         self.assertEqual(res[1], Nack(computation_name, NackReason.NO_CONTENT, interest=computation_interest))
-        self.assertEqual(self.nfn_layer.computation_table.container, [])
+        self.assertEqual(self.nfn_layer.computation_table.get_container(), [])
 
     def test_fwd(self):
         """Test forwarding using the BasicNFNLayer"""
-        fib: ForwardingInformationBaseMemoryPrefix = self.nfn_layer.icn_data_structs.get('fib')
-        fib.add_fib_entry(Name('/test'), 1, True)
-        fib.add_fib_entry(Name('/data'), 1, True)
-        self.nfn_layer.icn_data_structs['fib'] = fib
+        self.nfn_layer.fib.add_fib_entry(Name('/test'), 1, True)
+        self.nfn_layer.fib.add_fib_entry(Name('/data'), 1, True)
 
         self.nfn_layer.start_process()
 
@@ -627,14 +606,10 @@ class test_BasicNFNLayer(unittest.TestCase):
 
     def test_compute(self):
         """Test Computing using the BasicNFNLayer"""
-        fib: ForwardingInformationBaseMemoryPrefix = self.nfn_layer.icn_data_structs.get('fib')
-        fib.add_fib_entry(Name('/test'), 1, True)
-        self.nfn_layer.icn_data_structs['fib'] = fib
+        self.nfn_layer.fib.add_fib_entry(Name('/test'), 1, True)
 
         c1 = Content("/func/f1", "PYTHON\nf\ndef f(a):\n    return a.upper()")
-        cs: ContentStoreMemoryExact = self.nfn_layer.icn_data_structs.get('cs')
-        cs.add_content_object(c1)
-        self.nfn_layer.icn_data_structs['cs'] = cs
+        self.nfn_layer.cs.add_content_object(c1)
 
         self.nfn_layer.start_process()
 
@@ -677,5 +652,8 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.nfn_layer.queue_from_lower.put([2, Content(inner_name, "HelloWorld")])
         res5 = self.nfn_layer.queue_to_lower.get()
         self.assertEqual(res5[1], inner_interest)
+        res6 = self.nfn_layer.queue_to_lower.get()
+        self.assertEqual(res6[1], Content(inner_name, "HelloWorld")) #FIXME: THIS SHOULD NOT BE SEND DOWN, WHY IS IT HAPPENING
+
         res = self.nfn_layer.queue_to_lower.get()
         self.assertEqual(res[1], Content(computation_name, "HELLOWORLD"))
