@@ -157,7 +157,7 @@ class BaseNFNComputationTable(object):
         :param id: ID given from layer communication
         :param interest: the original interest message
         :param AST: abstract syntax tree of the computation
-        :return True if entry was added, false if it was already available and timestamp was updated
+        :return True if entry was added, False if it was already available and timestamp was updated
         """
 
     @abc.abstractmethod

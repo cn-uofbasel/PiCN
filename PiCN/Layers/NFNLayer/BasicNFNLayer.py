@@ -61,7 +61,7 @@ class BasicNFNLayer(LayerProcess):
             c = self.r2cclient.R2C_handle_request(interest.name, self.computation_table)
             if c is not None:
                 if packet_id < 0:
-                    self.push_data(c) #local request
+                    self.computation_table.push_data(c) #local request
                 else:
                     self.queue_to_lower.put([packet_id, c])
             return
@@ -72,13 +72,13 @@ class BasicNFNLayer(LayerProcess):
         nfn_str, prepended_name = self.parser.network_name_to_nfn_str(interest.name)
         ast = self.parser.parse(nfn_str)
 
-        if self.add_computation(interest.name, packet_id, interest, ast) == False:
+        if self.computation_table.add_computation(interest.name, packet_id, interest, ast) == False:
             return
 
         #request required data
         required_optimizer_data = self.optimizer.required_data(interest.name, ast)
 
-        self.update_status(interest.name, NFNComputationState.FWD)
+        self.computation_table.update_status(interest.name, NFNComputationState.FWD)
         if required_optimizer_data != []: # Optimizer requires additional data
             raise NotImplemented("Global Optimizing not implemeted yet")
             #TODO add to await list, send messages to reqeust data
@@ -92,12 +92,12 @@ class BasicNFNLayer(LayerProcess):
         :param packet_id: id of the computation
         :param content: content that arrived
         """
-        used = self.push_data(content)
+        used = self.computation_table.push_data(content)
         if not used:
             self.queue_to_lower.put([packet_id, content])
             return
 
-        ready_comps = self.get_ready_computations()
+        ready_comps = self.computation_table.get_ready_computations()
         for comp in ready_comps:
             if comp.comp_state == NFNComputationState.FWD:
                 self.forwarding_descision(comp.interest)
@@ -112,7 +112,7 @@ class BasicNFNLayer(LayerProcess):
         """
         remove_list = []
         for e in self.computation_table.get_container():
-            self.remove_computation(e.original_name)
+            self.computation_table.remove_computation(e.original_name)
             #check next rewrite if current is nack-ed TODO this is a code duplication with ageing in ComputationTableEntry
             if e.comp_state == NFNComputationState.REWRITE and\
                     e.rewrite_list != [] and\
@@ -130,11 +130,11 @@ class BasicNFNLayer(LayerProcess):
                 for a in e.awaiting_data:
                     if nack.name == a.name:
                         remove_list.append(e.original_name)
-            self.append_computation(e)
+            self.computation_table.append_computation(e)
         #remove all computation that are nack-ed and forward nack
         for r in remove_list:
             e = self.computation_table.get_computation(r)
-            self.remove_computation(r)
+            self.computation_table.remove_computation(r)
             new_nack = Nack(e.original_name, nack.reason, interest=e.interest)
             self.queue_to_lower.put([e.id, new_nack])
             self.handleNack(e.id, new_nack)
@@ -149,17 +149,17 @@ class BasicNFNLayer(LayerProcess):
         if self.optimizer.compute_fwd(prepended_name, entry.ast):
             self.logger.info("FWD")
             rewritten_names = self.optimizer.rewrite(interest.name, entry.ast)
-            self.remove_computation(interest.name)
+            self.computation_table.remove_computation(interest.name)
             entry.comp_state = NFNComputationState.REWRITE
             entry.rewrite_list = rewritten_names
             request = self.parser.nfn_str_to_network_name(rewritten_names[0])
             self.queue_to_lower.put([entry.id, Interest(request)])
 #            self.handleInterest([entry.id, Interest(request)]) #TODO required?
-            self.append_computation(entry)
+            self.computation_table.append_computation(entry)
 
         if self.optimizer.compute_local(prepended_name, entry.ast):
             self.logger.info("Compute Local")
-            self.remove_computation(interest.name)
+            self.computation_table.remove_computation(interest.name)
             entry.comp_state = NFNComputationState.EXEC
             if not isinstance(entry.ast, AST_FuncCall):
                 return
@@ -182,7 +182,7 @@ class BasicNFNLayer(LayerProcess):
                     continue
                 entry.add_name_to_await_list(name)
 
-            self.append_computation(entry)
+            self.computation_table.append_computation(entry)
             if(entry.awaiting_data == []):
                 self.compute(interest)
 
@@ -199,7 +199,9 @@ class BasicNFNLayer(LayerProcess):
         """
         params = []
         entry = self.computation_table.get_computation(interest.name)
-        self.remove_computation(interest.name)
+        if entry is None:
+            return
+        self.computation_table.remove_computation(interest.name)
         if entry.comp_state == NFNComputationState.WRITEBACK:
             name = self.parser.nfn_str_to_network_name(entry.rewrite_list[0])
             res = entry.available_data[name]
@@ -264,52 +266,3 @@ class BasicNFNLayer(LayerProcess):
             self.queue_to_lower.put([0, nack])
         self.computation_table = ct
 
-    def add_computation(self, name: Name, id: int, interest: Interest, ast: AST = None):
-        """add a computation to the Computation table (i.e. start a new computation)
-        :param name: icn-name of the computation
-        :param id: ID given from layer communication
-        :param interest: the original interest message
-        :param AST: abstract syntax tree of the computation
-        """
-        self.computation_table.add_computation(name, id, interest, ast)
-
-    def update_status(self, name: Name, status: NFNComputationState):
-        """Update the status of a computation giving a name
-        :param name: Name of the computation entry to be updated
-        :param status: The new Status
-        """
-        self.computation_table.update_status(name, status)
-
-    def push_data(self, content: Content) -> bool:
-        """add received data to running computations
-        :param content: content to be added
-        :return True if the content was required, else False
-        """
-        res = self.computation_table.push_data(content)
-        return res
-
-    def get_ready_computations(self) -> List[NFNComputationTableEntry]:
-        """get all computations that are ready to continue
-        :return List of all NFNComputationTableEntrys which are ready
-        """
-        res = self.computation_table.get_ready_computations()
-        return res
-
-    def remove_computation(self, name: Name):
-        """Removes a NFNComputationEntry from the container
-        :param name: Name of the Computation to be removed
-        """
-        self.computation_table.remove_computation(name)
-
-    def append_computation(self, entry: NFNComputationTableEntry):
-        """Appends a NFNComputationTableEntry if it is not already available in the container
-        :param entry: the NFNComputationTableEntry to be appended
-        """
-        self.computation_table.append_computation(entry)
-
-    def add_awaiting_data(self, name: Name, awaiting_name: Name):
-        """Add a name to the await list of a existing computation
-        :param name: Name of the existing computation
-        "param awaiting_name: Name to be added to the await list.
-        """
-        self.computation_table.add_awaiting_data(name, awaiting_name)

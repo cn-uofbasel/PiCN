@@ -48,7 +48,8 @@ class NFNComputationList(BaseNFNComputationTable):
 
     def remove_computation(self, name: Name):
         c = self.get_computation(name)
-        self.container.remove(c)
+        if c is not None:
+            self.container.remove(c)
 
     def append_computation(self, entry: NFNComputationTableEntry):
         if entry not in self.container:

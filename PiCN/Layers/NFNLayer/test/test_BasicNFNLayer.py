@@ -61,7 +61,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
         computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
 
-        self.nfn_layer.append_computation(computation_entry)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
 
         self.nfn_layer.compute(computation_interest)
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
@@ -80,7 +80,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
         computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
 
-        self.nfn_layer.append_computation(computation_entry)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
 
         self.nfn_layer.compute(computation_interest)
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
@@ -99,7 +99,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
         computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
 
-        self.nfn_layer.append_computation(computation_entry)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
 
         self.nfn_layer.compute(computation_interest)
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
@@ -118,7 +118,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
         computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
 
-        self.nfn_layer.append_computation(computation_entry)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
 
         self.nfn_layer.compute(computation_interest)
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
@@ -138,7 +138,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
         computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
 
-        self.nfn_layer.append_computation(computation_entry)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
 
         self.nfn_layer.compute(computation_interest)
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
@@ -160,7 +160,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
         computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
 
-        self.nfn_layer.append_computation(computation_entry)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
 
         self.nfn_layer.compute(computation_interest)
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
@@ -184,7 +184,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
         computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
 
-        self.nfn_layer.append_computation(computation_entry)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
 
         self.nfn_layer.compute(computation_interest)
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
@@ -202,7 +202,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         computation_entry = NFNComputationTableEntry(computation_name)
         computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
         computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
-        self.nfn_layer.append_computation(computation_entry)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
 
         self.nfn_layer.forwarding_descision(computation_interest)
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
@@ -223,7 +223,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         computation_entry = NFNComputationTableEntry(computation_name)
         computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
         computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
-        self.nfn_layer.append_computation(computation_entry)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
 
         self.nfn_layer.forwarding_descision(computation_interest)
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
@@ -249,7 +249,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         computation_entry = NFNComputationTableEntry(computation_name)
         computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
         computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
-        self.nfn_layer.append_computation(computation_entry)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
 
         self.nfn_layer.forwarding_descision(computation_interest)
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
@@ -275,7 +275,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         computation_entry = NFNComputationTableEntry(computation_name)
         computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
         computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
-        self.nfn_layer.append_computation(computation_entry)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
 
         self.nfn_layer.forwarding_descision(computation_interest)
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
@@ -296,7 +296,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         computation_entry = NFNComputationTableEntry(computation_name)
         computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
         computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
-        self.nfn_layer.append_computation(computation_entry)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
 
         self.nfn_layer.forwarding_descision(computation_interest)
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
@@ -326,7 +326,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         computation_entry = NFNComputationTableEntry(computation_name)
         computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
         computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
-        self.nfn_layer.append_computation(computation_entry)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
 
         self.nfn_layer.forwarding_descision(computation_interest)
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
@@ -357,7 +357,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         computation_entry = NFNComputationTableEntry(computation_name)
         computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
         computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
-        self.nfn_layer.append_computation(computation_entry)
+        #self.nfn_layer.computation_table.append_computation(computation_entry) #TODO what does this line? reactive?
 
         self.nfn_layer.handleInterest(0, computation_interest)
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
@@ -385,7 +385,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
         computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
         computation_entry.add_name_to_await_list(awaiting_name)
-        self.nfn_layer.append_computation(computation_entry)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
 
         self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).awaiting_data), 1)
         self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).available_data), 0)
@@ -412,7 +412,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         computation_entry.add_name_to_await_list(awaiting_name)
         computation_entry.add_name_to_await_list(func_name)
         computation_entry.comp_state = NFNComputationState.EXEC
-        self.nfn_layer.append_computation(computation_entry)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
 
         self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).awaiting_data), 2)
         self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).available_data), 0)
@@ -436,7 +436,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
         computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
         computation_entry.interest = computation_interest
-        self.nfn_layer.append_computation(computation_entry)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
 
         compare_name = Name("/test/data")
         compare_name += "/func/f1(_)"
@@ -466,7 +466,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
         computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
         computation_entry.interest = computation_interest
-        self.nfn_layer.append_computation(computation_entry)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
 
         compare_name = Name("/test/data")
         compare_name += "/func/f1(_)"
@@ -501,7 +501,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
         computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
         computation_entry.interest = computation_interest
-        self.nfn_layer.append_computation(computation_entry)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
 
         nack_name = Name("/test/data")
         nack_name += "/func/f1(_,/data/test)"
@@ -540,7 +540,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
         computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
         computation_entry.interest = computation_interest
-        self.nfn_layer.append_computation(computation_entry)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
         self.assertEqual(self.nfn_layer.computation_table.get_container_size(), 1)
         self.nfn_layer.handleNack(1, Nack(computation_name, NackReason.COMP_PARAM_UNAVAILABLE, interest=computation_interest))
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
@@ -558,10 +558,10 @@ class test_BasicNFNLayer(unittest.TestCase):
         computation_str, prepended = self.nfn_layer.parser.network_name_to_nfn_str(computation_name)
         computation_entry.ast = self.nfn_layer.parser.parse(computation_str)
         computation_entry.interest = computation_interest
-        self.nfn_layer.append_computation(computation_entry)
+        self.nfn_layer.computation_table.append_computation(computation_entry)
         self.assertEqual(self.nfn_layer.computation_table.get_container_size(), 1)
 
-        self.nfn_layer.add_awaiting_data(computation_name, Name("/test/data"))
+        self.nfn_layer.computation_table.add_awaiting_data(computation_name, Name("/test/data"))
         self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).awaiting_data), 1)
 
         self.nfn_layer.handleNack(1, Nack(Name("/test/data"), NackReason.NO_CONTENT, interest=Interest(Name("/test/data"))))
@@ -650,10 +650,5 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.assertEqual(res4[1], Content(r2c_name, 'Running'))
 
         self.nfn_layer.queue_from_lower.put([2, Content(inner_name, "HelloWorld")])
-        res5 = self.nfn_layer.queue_to_lower.get()
-        self.assertEqual(res5[1], inner_interest)
-        res6 = self.nfn_layer.queue_to_lower.get()
-        self.assertEqual(res6[1], Content(inner_name, "HelloWorld")) #FIXME: THIS SHOULD NOT BE SEND DOWN, WHY IS IT HAPPENING
-
         res = self.nfn_layer.queue_to_lower.get()
         self.assertEqual(res[1], Content(computation_name, "HELLOWORLD"))
