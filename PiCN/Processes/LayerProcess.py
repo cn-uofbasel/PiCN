@@ -58,15 +58,15 @@ class LayerProcess(PiCNProcess):
 
     @abc.abstractmethod
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
-        """ handle incomming data from the lower layer """
+        """ handle incoming data from the lower layer """
 
     @abc.abstractmethod
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
-        """ handle incomming data from the higher layer """
+        """ handle incoming data from the higher layer """
 
     def _run_poll(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
             to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):
-        """ Process loop, handle incomming packets, use poll if many file descripors are required
+        """ Process loop, handle incoming packets, use poll if many file descriptors are required
             :param from_lower: Queue to receive data from lower Layer
             :param from_higher: Queue to receive data from higher Layer
             :param to_lower: Queue to send data to lower Layer
@@ -88,7 +88,7 @@ class LayerProcess(PiCNProcess):
 
     def _run_select(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
              to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):
-        """ Process loop, handle incomming packets, use select if few file descriptors are required
+        """ Process loop, handle incoming packets, use select if few file descriptors are required
             :param from_lower: Queue to receive data from lower Layer
             :param from_higher: Queue to receive data from higher Layer
             :param to_lower: Queue to send data to lower Layer
@@ -111,7 +111,7 @@ class LayerProcess(PiCNProcess):
 
     def _run_sleep(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
                    to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):
-        """ Process loop, handle incomming packets, use round-robin, required for NT since MS POSIX api do not support
+        """ Process loop, handle incoming packets, use round-robin, required for NT since MS POSIX api do not support
             select on file descriptors nor polling
             :param from_lower: Queue to receive data from lower Layer
             :param from_higher: Queue to receive data from higher Layer
@@ -131,7 +131,7 @@ class LayerProcess(PiCNProcess):
     def _run(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
              to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):
         """
-        Initalize the execution loop. Switch between NT, Unix and Unittest. Use select for Unix, Use poll for
+        Initialize the execution loop. Switch between NT, Unix and Unittest. Use select for Unix, Use poll for
         unittest, since select cannot handle more than 1024 File Descriptors.
         :param from_lower: Queue to receive data from lower Layer
         :param from_higher: Queue to receive data from higher Layer
@@ -146,7 +146,7 @@ class LayerProcess(PiCNProcess):
             self._run_select(from_lower, from_higher, to_lower, to_higher)
 
     def start_process(self):
-        """Start the Layerprocess"""
+        """Start the Layer Process"""
         self.process = multiprocessing.Process(target=self._run, args=[self._queue_from_lower,
                                                                             self._queue_from_higher,
                                                                             self._queue_to_lower,
@@ -155,7 +155,7 @@ class LayerProcess(PiCNProcess):
         self.process.start()
 
     def stop_process(self):
-        """Stop the Layerprocess"""
+        """Stop the Layer Process"""
         if self.process:
             self.process.terminate()
             self.process.join()
