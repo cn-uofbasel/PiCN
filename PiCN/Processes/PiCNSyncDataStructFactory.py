@@ -1,16 +1,14 @@
-"""Sync Manager for PICN to create synced Datastructs such as PIT, FIB, CS"""
+"""Sync Datastruct Factory for PICN to create synced Datastructs such as PIT, FIB, CS"""
 
 from multiprocessing.managers import BaseManager
 
-class PiCNSyncManager(object):
-    """Sync Manager for PICN to sync Datastructs such as PIT, FIB, CS"""
-
+class PiCNSyncDataStructFactory(object):
+    """Sync Datastruct Factory for PICN to create synced Datastructs such as PIT, FIB, CS"""
 
     def __init__(self):
         self.manager = None
         self.names = []
         pass
-
 
     def register(self, name: str, data_struct):
         """register a new data_struct to the manager
@@ -25,6 +23,7 @@ class PiCNSyncManager(object):
     def create_manager(self):
         """create a manager. call is after all data structs are registered"""
         self.manager = BaseManager()
+        self.manager.start()
 
     def get_manager(self) -> BaseManager:
         """get or create and get a Manager
@@ -34,14 +33,3 @@ class PiCNSyncManager(object):
             self.create_manager()
         return self.manager
 
-    def get_data_struct(self, name: str):
-        """returns a synced data structure given a name
-        :param name: name of the requested datastruct
-        :return: None if name not in the Manager
-        :return: Datastruct that was created
-        """
-        ret = None
-        if name not in self.names:
-            return None
-        exec("ret = self.manager." + name + "()")
-        return ret

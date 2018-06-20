@@ -124,18 +124,21 @@ class BasePendingInterestTable(object):
     def get_already_used_pit_entries(self, name: Name):
         """Get already used fib entries"""
 
-    @property
-    def container(self):
-        return self._container
+    def set_pit_timeout(self, timeout: float):
+        """set the timeout intervall for a pit entry
+        :param timeout: timout value to be set
+        """
+        self._pit_timeout = timeout
 
-    @container.setter
-    def container(self, container):
-        self._container = container
+    def set_pit_retransmits(self, retransmits: int):
+        """set the max number of retransmits for a pit entry
+        :param retransmits: retransmit value to be set
+        """
+        self._pit_retransmits = retransmits
 
-    @property
-    def manager(self):
-        return self._manager
+    def get_container_size(self) -> int:
+        """get the current number of pit entries
+        ":return: number of pit entries
+        """
+        return len(self._container)
 
-    @manager.setter
-    def manager(self, manager: multiprocessing.Manager):
-        self._manager = manager

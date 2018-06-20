@@ -61,18 +61,8 @@ class BaseForwardingInformationBase(object):
             ->ForwardingInformationBaseEntry:
         """Find an entry in the PIT"""
 
-    @property
-    def container(self):
-        return self._container
-
-    @container.setter
-    def container(self, container):
-        self._container = container
-
-    @property
-    def manager(self):
-        return self._manager
-
-    @manager.setter
-    def manager(self, manager: multiprocessing.Manager):
-        self._manager = manager
+    def get_container_size(self) -> int:
+        """get the current number of fit entries
+        ":return: number of fit entries
+        """
+        return len(self._container)
