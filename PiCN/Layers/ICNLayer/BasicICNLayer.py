@@ -33,7 +33,7 @@ class BasicICNLayer(LayerProcess):
             if cs_entry is not None:
                 self.queue_to_higher.put([high_level_id, cs_entry.content])
                 return
-            pit_entry = self.pit.find_pit_entry(packet.name) #fixme, must me removed or manipulated, local app must be true!!!
+            pit_entry = self.pit.find_pit_entry(packet.name)
             self.pit.add_pit_entry(packet.name, high_level_id, packet, local_app=True)
             fib_entry = self.fib.find_fib_entry(packet.name)
             if fib_entry is not None:
