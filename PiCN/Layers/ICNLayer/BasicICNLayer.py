@@ -17,10 +17,8 @@ class BasicICNLayer(LayerProcess):
     """
 
     def __init__(self, cs: BaseContentStore=None, pit: BasePendingInterestTable=None,
-                 fib: BaseForwardingInformationBase=None, log_level=255, manager: multiprocessing.Manager=None):
+                 fib: BaseForwardingInformationBase=None, log_level=255):
         super().__init__(logger_name="ICNLayer", log_level=log_level)
-        if manager is None:
-            manager = multiprocessing.Manager()
         # Store CS, FIB, PIT here to sync over processes.
         # Note: Datastruct must be stored in a local var to access and be written back to the dict to sync!
         self.cs = cs
