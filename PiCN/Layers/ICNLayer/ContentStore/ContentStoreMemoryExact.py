@@ -37,7 +37,7 @@ class ContentStoreMemoryExact(BaseContentStore):
     def ageing(self):
         cur_time = time.time()
         remove = []
-        for cs_entry in self.container:
+        for cs_entry in self._container:
             if cs_entry.static is True:
                 continue
             if cs_entry.timestamp + self._cs_timeout < cur_time:

@@ -17,16 +17,11 @@ class BasicICNLayer(LayerProcess):
     """
 
     def __init__(self, cs: BaseContentStore=None, pit: BasePendingInterestTable=None,
-                 fib: BaseForwardingInformationBase=None, log_level=255, manager: multiprocessing.Manager=None):
+                 fib: BaseForwardingInformationBase=None, log_level=255):
         super().__init__(logger_name="ICNLayer", log_level=log_level)
-        if manager is None:
-            manager = multiprocessing.Manager()
-        # Store CS, FIB, PIT here to sync over processes.
-        # Note: Datastruct must be stored in a local var to access and be written back to the dict to sync!
-        self._data_structs = manager.dict()
-        self._data_structs['cs'] = cs
-        self._data_structs['pit'] = pit
-        self._data_structs['fib'] = fib
+        self.cs = cs
+        self.pit = pit
+        self.fib = fib
         self._ageing_interval: int = 4
         self._interest_to_app: bool = False
 
@@ -34,15 +29,15 @@ class BasicICNLayer(LayerProcess):
         high_level_id = data[0]
         packet = data[1]
         if isinstance(packet, Interest):
-            cs_entry = self.check_cs(packet)
+            cs_entry = self.cs.find_content_object(packet.name)
             if cs_entry is not None:
                 self.queue_to_higher.put([high_level_id, cs_entry.content])
                 return
-            pit_entry = self.pit.find_pit_entry(packet.name) #fixme, must me removed or manipulated, local app must be true!!!
-            self.add_to_pit(packet.name, high_level_id, packet, local_app=True)
+            pit_entry = self.pit.find_pit_entry(packet.name)
+            self.pit.add_pit_entry(packet.name, high_level_id, packet, local_app=True)
             fib_entry = self.fib.find_fib_entry(packet.name)
             if fib_entry is not None:
-                self.add_used_fib_entry_to_pit(packet.name, fib_entry)
+                self.pit.add_used_fib_entry(packet.name, fib_entry)
                 to_lower.put([fib_entry.faceid, packet])
             else:
                 self.logger.info("No FIB entry, sending Nack")
@@ -85,27 +80,27 @@ class BasicICNLayer(LayerProcess):
         self.logger.info("Handling Interest")
         #if to_higher is not None: #TODO check if app layer accepted the data, and change handling
 
-        cs_entry = self.check_cs(interest)
+        cs_entry = self.cs.find_content_object(interest.name)
         if cs_entry is not None:
             self.logger.info("Found in content store")
             to_lower.put([face_id, cs_entry.content])
-            self.update_timestamp_in_cs(cs_entry)
+            self.cs.update_timestamp(cs_entry)
             return
-        pit_entry = self.check_pit(interest.name)
+        pit_entry = self.pit.find_pit_entry(interest.name)
         if pit_entry is not None:
             self.logger.info("Found in PIT, appending")
-            self.update_timestamp_in_pit(pit_entry)
-            self.add_to_pit(interest.name, face_id, interest, local_app=from_local)
+            self.pit.update_timestamp(pit_entry)
+            self.pit.add_pit_entry(interest.name, face_id, interest, local_app=from_local)
             return
         if self._interest_to_app is True and to_higher is not None: #App layer support
             self.logger.info("Sending to higher Layer")
-            self.add_to_pit(interest.name, face_id, interest, local_app=from_local)
+            self.pit.add_pit_entry(interest.name, face_id, interest, local_app=from_local)
             self.queue_to_higher.put([face_id, interest])
             return
-        new_face_id = self.check_fib(interest.name, None)
+        new_face_id = self.fib.find_fib_entry(interest.name, None)
         if new_face_id is not None:
             self.logger.info("Found in FIB, forwarding")
-            self.add_to_pit(interest.name, face_id, interest, local_app=from_local)
+            self.pit.add_pit_entry(interest.name, face_id, interest, local_app=from_local)
             #self.add_used_fib_entry_to_pit(interest.name, new_face_id) #disabled, should only be applied if nack is received.
             to_lower.put([new_face_id.faceid, interest])
             return
@@ -119,7 +114,7 @@ class BasicICNLayer(LayerProcess):
     def handle_content(self, face_id: int, content: Content, to_lower: multiprocessing.Queue,
                        to_higher: multiprocessing.Queue, from_local: bool = False):
         self.logger.info("Handling Content " + str(content.name) + " " + str(content.content))
-        pit_entry = self.check_pit(content.name)
+        pit_entry = self.pit.find_pit_entry(content.name)
         if pit_entry is None:
             self.logger.info("No PIT entry for content object available, dropping")
             #todo NACK??
@@ -130,25 +125,25 @@ class BasicICNLayer(LayerProcess):
                     to_higher.put([face_id, content])
                 else:
                     to_lower.put([pit_entry.faceids[i], content])
-            self.remove_pit_entry(pit_entry.name)
-            self.add_to_cs(content)
+            self.pit.remove_pit_entry(pit_entry.name)
+            self.cs.add_content_object(content)
 
     def handle_nack(self, face_id: int, nack: Nack, to_lower: multiprocessing.Queue,
                     to_higher: multiprocessing.Queue, from_local: bool = False):
         self.logger.info("Handling NACK")
-        pit_entry = self.check_pit(nack.name)
+        pit_entry = self.pit.find_pit_entry(nack.name)
         if pit_entry is None:
             self.logger.info("No PIT entry for NACK available, dropping")
             return
         else:
-            fib_entry = self.check_fib(nack.name, pit_entry.fib_entries_already_used)
+            fib_entry = self.fib.find_fib_entry(nack.name, pit_entry.fib_entries_already_used)
             if fib_entry is None:
                 self.logger.info("Sending NACK to previous node(s)")
                 re_add = False
                 for i in range(0, len(pit_entry.faceids)):
                     if pit_entry.local_app[i] == True: #Go with NACK first only to app layer if it was requested
                         re_add = True
-                self.remove_pit_entry(pit_entry.name)
+                self.pit.remove_pit_entry(pit_entry.name)
                 for i in range(0, len(pit_entry.faceids)):
                     if to_higher is not None and pit_entry.local_app[i]:
                         to_higher.put([face_id, nack])
@@ -157,12 +152,10 @@ class BasicICNLayer(LayerProcess):
                     elif not re_add:
                         to_lower.put([pit_entry.faceids[i], nack])
                 if re_add:
-                    pit = self.pit
-                    pit.container.append(pit_entry)
-                    self.pit = pit
+                    self.pit.append(pit_entry)
             else:
                 self.logger.info("Try using next FIB path")
-                self.add_used_fib_entry_to_pit(nack.name, fib_entry)
+                self.pit.add_used_fib_entry(nack.name, fib_entry)
                 to_lower.put([fib_entry.faceid, pit_entry.interest])
 
     def ageing(self):
@@ -173,114 +166,13 @@ class BasicICNLayer(LayerProcess):
             pit = self.pit
             retransmits = pit.ageing()
             for pit_entry in retransmits:
-                fib_entry = self.check_fib(pit_entry.name, pit_entry.fib_entries_already_used)
+                fib_entry = self.fib.find_fib_entry(pit_entry.name, pit_entry.fib_entries_already_used)
                 self.queue_to_lower.put([fib_entry.faceid, pit_entry.interest])
             self.pit = pit
             #CS ageing
-            cs = self.cs
-            cs.ageing()
-            self.cs = cs
+            self.cs.ageing()
             t = threading.Timer(self._ageing_interval, self.ageing)
             t.setDaemon(True)
             t.start()
         except:
             pass
-
-    def add_to_cs(self, content: Content, static=False):
-        """Add an entry to the Content Store
-        :param content: Content Object to be added
-        :param static: If True, content will not be removed from CS by timeout
-        """
-        cs = self.cs
-        cs.add_content_object(content, static)
-        self.cs = cs
-
-    def add_to_pit(self, name: Name, faceid: int, interest: Interest, local_app: bool):
-        """Add an entry to the PIT
-        :param name: Name of the PIT entry
-        :param faceid: Faceid the PIT entry should point to (required to route the content back on its trace)
-        :param interest: The original interest message
-        :param local_app: indicates if the request was issued by a higher layer
-        """
-        pit = self.pit
-        pit.add_pit_entry(name, faceid, interest, local_app)
-        self.pit = pit
-
-    def add_to_fib(self, name: Name, to_faceid: int, static: bool=False):
-        """Add en entry to the FIB
-        :param name: Name to match the FIB entry
-        :param to_faceid: Face ID of the FIB entry
-        :param static: Optional, if True, FIB entry is persistent
-        """
-        fib = self.fib
-        fib.add_fib_entry(name, to_faceid, static)
-        self.fib = fib
-
-    def remove_pit_entry(self, name: Name):
-        """Remove an entry from the PIT
-        :param name: Name to identify the PIT entry to be removed
-        """
-        pit = self.pit
-        pit.remove_pit_entry(name)
-        self.pit = pit
-
-    def add_used_fib_entry_to_pit(self, name: Name, used_fib_entry: ForwardingInformationBaseEntry):
-        """Add a entry to the pit, that indicates that a certain forwarding rule was already used
-        :param name: Name is used to identify the PIT entry
-        :param used_fib_entry: the FIB entry that was used for the forwarding process
-        """
-        pit = self.pit
-        pit.add_used_fib_entry(name, used_fib_entry)
-        self.pit = pit
-
-    def update_timestamp_in_cs(self, cs_entry: ContentStoreEntry):
-        """update the timestamp of an CS entry
-        :param cs_entry: The CS entry to be updated
-        """
-        cs = self.cs
-        cs.update_timestamp(cs_entry)
-        self.cs = cs
-
-    def update_timestamp_in_pit(self, pit_entry: PendingInterestTableEntry):
-        """update the timestamp of an PIT entry
-        :param pit_entry: to be updated
-        """
-        pit = self.pit
-        pit.update_timestamp(pit_entry)
-        self.pit = pit
-
-    def check_cs(self, interest: Interest) -> Content:
-        return self.cs.find_content_object(interest.name)
-
-    def check_pit(self, name: Name) -> PendingInterestTableEntry:
-        return self.pit.find_pit_entry(name)
-
-    def check_fib(self, name: Name, already_used: List[ForwardingInformationBaseEntry]) -> ForwardingInformationBaseEntry:
-        return self.fib.find_fib_entry(name, already_used=already_used)
-
-    @property
-    def cs(self) -> BaseContentStore:
-        """The Content Store"""
-        return self._data_structs.get('cs')
-
-    @cs.setter
-    def cs(self, cs: BaseContentStore):
-        self._data_structs['cs'] = cs
-
-    @property
-    def fib(self) -> BaseForwardingInformationBase:
-        """The Forwarding Information Base"""
-        return self._data_structs.get('fib')
-
-    @fib.setter
-    def fib(self, fib: BaseForwardingInformationBase):
-        self._data_structs['fib'] = fib
-
-    @property
-    def pit(self) -> BasePendingInterestTable:
-        """The Pending Interest Table"""
-        return self._data_structs.get('pit')
-
-    @pit.setter
-    def pit(self, pit: BasePendingInterestTable):
-        self._data_structs['pit'] = pit

@@ -95,10 +95,22 @@ class BaseContentStore(object):
         :return: None
         """
 
-    @property
-    def container(self):
+    def get_container_size(self) -> int:
+        """get the current number of content objects in the CS
+        ":return: number of content objects in the CS
+        """
+        return len(self._container)
+
+    def get_container(self) -> List:
+        """get the container storing the content objects
+        :return: the container storing the content objects
+        """
         return self._container
 
-    @container.setter
-    def container(self, container):
-        self._container = container
+
+    def set_cs_timeout(self, timeout: float):
+        """set the timeout intervall for a CS entry
+        :param timeout: the timeout intervall to be set
+        """
+        self._cs_timeout = timeout
+

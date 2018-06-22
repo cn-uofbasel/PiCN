@@ -32,7 +32,7 @@ class PendingInterstTableMemoryExact(BasePendingInterestTable):
             if(pit_entry.name == name):
                 to_remove.append(pit_entry)
         for r in to_remove:
-            self.container.remove(r)
+            self._container.remove(r)
 
     def find_pit_entry(self, name: Name) -> PendingInterestTableEntry:
         for pit_entry in self._container:
@@ -56,11 +56,14 @@ class PendingInterstTableMemoryExact(BasePendingInterestTable):
         pit_entry = self.find_pit_entry(name)
         return pit_entry.fib_entries_already_used
 
+    def append(self, entry):
+        self._container.append(entry)
+
     def ageing(self) -> List[PendingInterestTableEntry]:
         cur_time = time.time()
         remove = []
         updated = []
-        for pit_entry in self.container:
+        for pit_entry in self._container:
             if pit_entry.timestamp + self._pit_timeout < cur_time and pit_entry.retransmits > self._pit_retransmits:
                 remove.append(pit_entry)
             else:
@@ -70,5 +73,5 @@ class PendingInterstTableMemoryExact(BasePendingInterestTable):
             self.remove_pit_entry(pit_entry.name)
         for pit_entry in updated:
             self.remove_pit_entry(pit_entry.name)
-            self.container.append(pit_entry)
+            self._container.append(pit_entry)
         return updated

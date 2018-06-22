@@ -157,7 +157,7 @@ class BaseNFNComputationTable(object):
         :param id: ID given from layer communication
         :param interest: the original interest message
         :param AST: abstract syntax tree of the computation
-        :return True if entry was added, false if it was already available and timestamp was updated
+        :return True if entry was added, False if it was already available and timestamp was updated
         """
 
     @abc.abstractmethod
@@ -171,7 +171,7 @@ class BaseNFNComputationTable(object):
     def get_computation(self, name: Name) -> NFNComputationTableEntry:
         """Find a NFNComputationTableEntry
         :param name: Name of the computation for which a Entry should be returned
-        :return The NFNComputationEntry corresponding to the name
+        :return The NFNComputationEntry corresponding to the name, none if no matching entry
         """
 
     @abc.abstractmethod
@@ -225,3 +225,14 @@ class BaseNFNComputationTable(object):
         self.remove_computation(name)
         c.add_name_to_await_list(awaiting_name)
         self.append_computation(c)
+
+    def get_container_size(self):
+        """Number of active computations
+        :return: return number of active computaitons
+        """
+        return len(self.container)
+
+    def get_container(self):
+        """returns the data container
+        :return: data container"""
+        return self.container
