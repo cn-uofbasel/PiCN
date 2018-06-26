@@ -4,7 +4,10 @@ import abc
 
 
 class AddressInfo(object):
-    """Addressinfo describes how to send a packet using an address and an Interface"""
+    """Addressinfo describes how to send a packet using an address and an Interface
+    :param address: address information to send the packet. this information depend strongly on the interface type
+    :param interface: interface corresponding to the address that should be used for sending
+    """
     def __init__(self, address, interface):
         self.address = address
         self.inferface = interface
