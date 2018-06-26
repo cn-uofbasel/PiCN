@@ -86,3 +86,35 @@ class test_FaceIDDict(unittest.TestCase):
         self.assertEqual(r1, None)
         r2 = self.faceidtable.get_address_info(faceid1)
         self.assertEqual(r2, addr_info1)
+
+
+    def test_get_or_create_faceid(self):
+        """test adding a face and automatically adding a faceid"""
+        faceid1 = 1
+        addr_info1 = AddressInfo("127.0.0.1", "Interface")
+        r1 = self.faceidtable.get_or_create_faceid(addr_info1)
+        self.assertEqual(r1, faceid1)
+        r2 = self.faceidtable.get_address_info(faceid1)
+        self.assertEqual(r2, addr_info1)
+
+        r3 = self.faceidtable.get_or_create_faceid(addr_info1)
+        self.assertEqual(r3, faceid1)
+
+    def test_remove_oldest(self):
+        """test that datastructure removes oldest entry if there is not enough space"""
+        entries = []
+        for i in range(0,self.faceidtable.max_entries*5):
+            addr_info = AddressInfo("127.0.0.1", "Interface" + str(i))
+            fid = self.faceidtable.get_or_create_faceid(addr_info)
+            entries.append((fid, addr_info))
+
+        self.assertEqual(len(self.faceidtable.faceids), self.faceidtable.max_entries)
+        self.assertEqual(len(self.faceidtable.addrinfo_to_faceid), self.faceidtable.max_entries)
+        self.assertEqual(len(self.faceidtable.faceid_to_addrinfo), self.faceidtable.max_entries)
+
+        for i in range(4*self.faceidtable.max_entries,5*self.faceidtable.max_entries):
+            addr_info = self.faceidtable.get_address_info(entries[i][0])
+            self.assertEqual(addr_info, entries[i][1])
+
+
+
