@@ -203,7 +203,7 @@ class BaseNFNComputationTable(object):
     def ageing(self) -> (List[Name], List[NFNComputationTableEntry]):
         """age the running computations.
         Removes entries which timed out and tells for which entries a timeout request must be sent
-        :return List of Names for which Timeout Reqest must be sent and List of NFNComputationTableEntrys for which nacks must be sent.
+        :return List of Names for which Timeout Request must be sent and List of NFNComputationTableEntrys for which nacks must be sent.
         """
 
     def update_status(self, name: Name, status: NFNComputationState):
