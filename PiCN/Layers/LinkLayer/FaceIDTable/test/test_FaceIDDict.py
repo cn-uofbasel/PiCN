@@ -3,7 +3,7 @@
 import unittest
 
 from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
-from PiCN.Layers.LinkLayer.FaceIDTable import AddressInfo
+from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
 
 class test_FaceIDDict(unittest.TestCase):
     """Test the FaceIDDict"""

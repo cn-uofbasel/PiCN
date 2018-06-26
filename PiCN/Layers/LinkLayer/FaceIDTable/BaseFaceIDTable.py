@@ -2,15 +2,7 @@
 
 import abc
 
-
-class AddressInfo(object):
-    """Addressinfo describes how to send a packet using an address and an Interface"""
-
-    def __init__(self, address, interface):
-        self.address = address
-        self.inferface = interface
-
-
+from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
 
 class BaseFaceIDTable(object):
     """Abstract superclass for FaceID Tables"""

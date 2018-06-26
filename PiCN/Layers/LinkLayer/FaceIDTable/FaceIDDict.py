@@ -3,7 +3,7 @@
 from typing import Dict
 
 from PiCN.Layers.LinkLayer.FaceIDTable import BaseFaceIDTable
-from PiCN.Layers.LinkLayer.FaceIDTable import AddressInfo
+from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
 
 
 class FaceIDDict(BaseFaceIDTable):
