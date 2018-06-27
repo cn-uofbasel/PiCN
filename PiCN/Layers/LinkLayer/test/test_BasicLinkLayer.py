@@ -62,15 +62,16 @@ class test_BasicLinkLayer(unittest.TestCase):
         faceid = data[0]
         content = data[1].decode()
         self.assertEqual("HelloWorld", content)
-        self.assertEqual(self.linklayer1.faeidtable.get_num_entries(), 1)
-        self.assertEqual(self.linklayer1.faeidtable.get_address_info(1).address[1], self.test_port)
-        self.assertEqual(self.linklayer1.faeidtable.get_address_info(1).inferface.file_descriptor.getsockname(),
-                         self.udp4interface1.file_descriptor.getsockname())
+        self.assertEqual(self.linklayer1.faceidtable.get_num_entries(), 1)
+        self.assertEqual(self.linklayer1.faceidtable.get_address_info(0).address[1], self.test_port)
+        self.assertEqual(self.linklayer1.faceidtable.get_address_info(0).inferface_id, 0)
 
     def test_sending_a_packet(self):
         """Test if a packet is sent correctly"""
         self.linklayer1.start_process()
-        fid = self.linklayer1.faeidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.test_port), self.udp4interface1))
+        fid = self.linklayer1.faceidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.test_port),
+                                                                           self.linklayer1.interfaces.index(
+                                                                              self.udp4interface1)))
         self.linklayer1.queue_from_higher.put([fid, "HelloWorld".encode()])
 
         data, addr = self.testSock.recvfrom(8192)
@@ -81,14 +82,16 @@ class test_BasicLinkLayer(unittest.TestCase):
         self.linklayer1.start_process()
         self.linklayer2.start_process()
 
-        fid = self.linklayer1.faeidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.udp4interface2.get_port()),
-                                                                          self.udp4interface1))
+        fid = self.linklayer1.faceidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.udp4interface2.get_port()),
+                                                                           self.linklayer1.interfaces.index(
+                                                                              self.udp4interface1)))
         self.linklayer1.queue_from_higher.put([fid, "HelloWorld".encode()])
 
         data = self.linklayer2.queue_to_higher.get(timeout=2.0)
         faceid = data[0]
         packet = data[1]
 
+        self.assertEqual(faceid, 0)
         self.assertEqual(packet.decode(), "HelloWorld")
 
     def test_sending_and_receiving_packets(self):
@@ -97,13 +100,15 @@ class test_BasicLinkLayer(unittest.TestCase):
         self.linklayer1.start_process()
         self.linklayer2.start_process()
 
-        fid1 = self.linklayer1.faeidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.udp4interface2.get_port()),
-                                                                          self.udp4interface1))
+        fid1 = self.linklayer1.faceidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.udp4interface2.get_port()),
+                                                                            self.linklayer1.interfaces.index(
+                                                                               self.udp4interface1)))
         self.linklayer1.start_process()
         self.linklayer2.start_process()
 
-        fid2 = self.linklayer2.faeidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.udp4interface1.get_port()),
-                                                                          self.udp4interface2))
+        fid2 = self.linklayer2.faceidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.udp4interface1.get_port()),
+                                                                            self.linklayer2.interfaces.index(
+                                                                               self.udp4interface2)))
 
         for i in range(1,int(1e3)):
             str1 = "HelloWorld" + str(i)
@@ -144,13 +149,13 @@ class test_BasicLinkLayer(unittest.TestCase):
         self.linklayer2.start_process()
         self.linklayer3.start_process()
 
-        fid1_2 = self.linklayer1.faeidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.udp4interface2.get_port()), self.udp4interface1))
-        fid1_3 = self.linklayer1.faeidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.udp4interface3.get_port()), self.udp4interface1))
+        fid1_2 = self.linklayer1.faceidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.udp4interface2.get_port()), self.linklayer1.interfaces.index(self.udp4interface1)))
+        fid1_3 = self.linklayer1.faceidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.udp4interface3.get_port()), self.linklayer1.interfaces.index(self.udp4interface1)))
 
-        fid2_1 = self.linklayer2.faeidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.udp4interface1.get_port()), self.udp4interface2))
+        fid2_1 = self.linklayer2.faceidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.udp4interface1.get_port()), self.linklayer2.interfaces.index(self.udp4interface2)))
 
-        fid3_1 = self.linklayer3.faeidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.udp4interface1.get_port()), self.udp4interface3))
-        fid3_2 = self.linklayer3.faeidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.udp4interface2.get_port()), self.udp4interface3))
+        fid3_1 = self.linklayer3.faceidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.udp4interface1.get_port()), self.linklayer3.interfaces.index(self.udp4interface3)))
+        fid3_2 = self.linklayer3.faceidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.udp4interface2.get_port()), self.linklayer3.interfaces.index(self.udp4interface3)))
 
         for i in range(1, 100):
             str1 = "Node1" + str(i)

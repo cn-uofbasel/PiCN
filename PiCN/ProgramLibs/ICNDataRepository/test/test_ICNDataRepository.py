@@ -38,7 +38,7 @@ class cases_ICNDataRepository(object):
 
         self.ICNRepo: ICNDataRepository = ICNDataRepository("/tmp/repo_unit_test", Name("/test/data"), 0,
                                                             encoder=self.get_encoder(), log_level=255)
-        self.repo_port = self.ICNRepo.linklayer.get_port()
+        self.repo_port = self.ICNRepo.linklayer.interfaces[0].get_port()
         self.fetch = Fetch("127.0.0.1", self.repo_port, encoder=self.get_encoder())
 
     def tearDown(self):

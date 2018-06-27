@@ -8,7 +8,10 @@ from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
 from PiCN.Layers.RepositoryLayer import BasicRepositoryLayer
 
 from PiCN.Layers.ChunkLayer.Chunkifyer import SimpleContentChunkifyer
-from PiCN.Layers.LinkLayer import UDP4LinkLayer
+from PiCN.Layers.LinkLayer import BasicLinkLayer
+from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
+from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface
+from PiCN.Processes.PiCNSyncDataStructFactory import PiCNSyncDataStructFactory
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
 from PiCN.Layers.RepositoryLayer.Repository import SimpleFileSystemRepository
@@ -40,7 +43,14 @@ class ICNDataRepository(object):
         self.repo = SimpleFileSystemRepository(foldername, prefix, logger)
 
         #initialize layers
-        self.linklayer = UDP4LinkLayer(port, log_level=log_level)
+        synced_data_struct_factory = PiCNSyncDataStructFactory()
+        synced_data_struct_factory.register("faceidtable", FaceIDDict)
+        synced_data_struct_factory.create_manager()
+        faceidtable = synced_data_struct_factory.manager.faceidtable()
+
+        interface = UDP4Interface(port)
+
+        self.linklayer = BasicLinkLayer(interface, faceidtable, log_level=log_level)
         self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
         self.chunklayer = BasicChunkLayer(self.chunkifyer, log_level=log_level)
         self.repolayer = BasicRepositoryLayer(self.repo, log_level=log_level)
@@ -53,7 +63,7 @@ class ICNDataRepository(object):
         ])
 
         # mgmt
-        self.mgmt = Mgmt(None, None, None, self.linklayer, self.linklayer.get_port(),
+        self.mgmt = Mgmt(None, None, None, self.linklayer, self.linklayer.interfaces[0].get_port(),
                          self.start_repo, repo_path=foldername,
                          repo_prfx=prefix, log_level=log_level)
 

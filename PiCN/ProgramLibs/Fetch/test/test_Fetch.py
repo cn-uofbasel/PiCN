@@ -41,14 +41,14 @@ class cases_Fetch(object):
                                                             encoder=self.get_encoder(), log_level=255)
         self.forwarder: ICNForwarder = ICNForwarder(port=0, encoder=self.get_encoder(), log_level=255)
 
-        self.repo_port = self.ICNRepo.linklayer.get_port()
-        self.forwarder_port = self.forwarder.linklayer.get_port()
+        self.repo_port = self.ICNRepo.linklayer.interfaces[0].get_port()
+        self.forwarder_port = self.forwarder.linklayer.interfaces[0].get_port()
         self.fetch = Fetch("127.0.0.1", self.forwarder_port, encoder=self.get_encoder())
 
     def add_face_and_forwadingrule(self):
         #create new face
         self.mgmtClient = MgmtClient(self.forwarder_port)
-        self.mgmtClient.add_face("127.0.0.1", self.repo_port)
+        self.mgmtClient.add_face("127.0.0.1", self.repo_port, 0)
         self.mgmtClient.add_forwarding_rule(Name("/test"), faceid=0)
 
     def tearDown(self):
@@ -102,14 +102,14 @@ class cases_Fetch(object):
 
         #check for nack on first route
         self.mgmtClient = MgmtClient(self.forwarder_port)
-        self.mgmtClient.add_face("127.0.0.1", self.forwarder2.linklayer.get_port())
+        self.mgmtClient.add_face("127.0.0.1", self.forwarder2.linklayer.interfaces[0].get_port(), 0)
         data = self.mgmtClient.add_forwarding_rule(Name("/test/data"), 0)
         nack = self.fetch.fetch_data(Name("/test/data/f3"))
         self.assertEqual(nack, "Received Nack: " + NackReason.NO_ROUTE.value)
         time.sleep(0.1)
 
         #install second forwarding rule and check for result.
-        data = self.mgmtClient.add_face("127.0.0.1", self.repo_port)
+        data = self.mgmtClient.add_face("127.0.0.1", self.repo_port, 0)
         self.mgmtClient.add_forwarding_rule(Name("/test"), 2)
         time.sleep(0.1)
         fetch2 = Fetch("127.0.0.1", self.forwarder_port)

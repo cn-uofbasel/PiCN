@@ -21,7 +21,7 @@ class BasicLinkLayer(LayerProcess):
         super().__init__(logger_name="LinkLayer", log_level=log_level)
         self.interfaces = []
         self.interfaces.append(interface)
-        self.faeidtable = faceidtable
+        self.faceidtable = faceidtable
 
     def data_from_lower(self, interface: BaseInterface, to_higher: multiprocessing.Queue, data):
         """In the Linklayer, it handles received data, to lower is the network interface
@@ -32,8 +32,9 @@ class BasicLinkLayer(LayerProcess):
         packet = data[0]
         addr = data[1]
 
-        addr_info = AddressInfo(addr, interface)
-        faceid = self.faeidtable.get_or_create_faceid(addr_info)
+
+        addr_info = AddressInfo(addr, self.interfaces.index(interface))
+        faceid = self.faceidtable.get_or_create_faceid(addr_info)
         to_higher.put([faceid, packet])
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
@@ -45,8 +46,8 @@ class BasicLinkLayer(LayerProcess):
         faceid = data[0]
         packet = data[1]
 
-        addr_info = self.faeidtable.get_address_info(faceid)
-        addr_info.inferface.send(packet, addr_info.address)
+        addr_info = self.faceidtable.get_address_info(faceid)
+        self.interfaces[addr_info.interface_id].send(packet, addr_info.address)
 
     def _run_poll(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
                   to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):

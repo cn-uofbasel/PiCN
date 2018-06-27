@@ -40,7 +40,7 @@ def main(args, help_string):
             sys.exit(-2)
 
         try:
-            data = mgmt_client.add_face(resolved_hostname, args.parameters.split(":")[1])
+            data = mgmt_client.add_face(resolved_hostname, args.parameters.split(":")[1], args.parametes.split(":")[2])
         except:
             print(help_string)
 

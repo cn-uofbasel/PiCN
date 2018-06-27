@@ -8,10 +8,17 @@ class AddressInfo(object):
     :param address: address information to send the packet. this information depend strongly on the interface type
     :param interface: interface corresponding to the address that should be used for sending
     """
-    def __init__(self, address, interface: BaseInterface):
+    def __init__(self, address, interface_id: int):
         self.address = address
-        self.inferface = interface
+        self.interface_id = interface_id
 
+    def __eq__(self, other):
+        return self.address[0] == other.address[0] \
+               and self.address[1] == other.address[1]\
+               and self.interface_id == other.interface_id
+
+    def __hash__(self):
+        return hash(self.address[0]) ^ hash(self.address[1]) ^ hash(self.interface_id)
 
 class BaseInterface(object):
     """Abstract Superclass for a PiCN Interface"""

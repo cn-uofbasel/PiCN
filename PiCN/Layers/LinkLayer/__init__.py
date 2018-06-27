@@ -4,5 +4,4 @@
     * Since the link layer interacts with sockets, there is no queue to or from lower
     """
 
-from .UDP4LinkLayer import UDP4LinkLayer
 from .BasicLinkLayer import BasicLinkLayer

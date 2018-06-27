@@ -11,9 +11,9 @@ class MgmtClient(object):
         self.target_port = port
         self.target_ip = "127.0.0.1"
 
-    def add_face(self, ip_addr: str, port: int):
+    def add_face(self, ip_addr: str, port: int, if_num: int):
         """add a new face"""
-        param = ip_addr + ":" + str(port)
+        param = ip_addr + ":" + str(port) + ":" + str(if_num)
         return self.layercommand("linklayer", "newface", param)
 
     def add_forwarding_rule(self, name: Name, faceid: int):

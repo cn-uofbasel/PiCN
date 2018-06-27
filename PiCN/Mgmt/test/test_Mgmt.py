@@ -8,9 +8,10 @@ from random import randint
 
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseMemoryPrefix
 from PiCN.Layers.ICNLayer.PendingInterestTable import PendingInterstTableMemoryExact
-
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
-from PiCN.Layers.LinkLayer import UDP4LinkLayer
+from PiCN.Layers.LinkLayer import BasicLinkLayer
+from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
+from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface, AddressInfo
 from PiCN.Mgmt import Mgmt
 from PiCN.Mgmt import MgmtClient
 from PiCN.Packets import Name
@@ -20,22 +21,27 @@ from PiCN.Processes import PiCNSyncDataStructFactory
 class test_Mgmt(unittest.TestCase):
 
     def setUp(self):
-        self.manager = multiprocessing.Manager()
-        self.linklayer = UDP4LinkLayer(0)
-        self.linklayerport = self.linklayer.get_port()
-        self.q1 = multiprocessing.Queue()
-        self.linklayer.queue_from_higher = self.q1
+
 
 
         synced_data_struct_factory = PiCNSyncDataStructFactory()
         synced_data_struct_factory.register("cs", ContentStoreMemoryExact)
         synced_data_struct_factory.register("fib", ForwardingInformationBaseMemoryPrefix)
         synced_data_struct_factory.register("pit", PendingInterstTableMemoryExact)
+        synced_data_struct_factory.register("faceidtable", FaceIDDict)
         synced_data_struct_factory.create_manager()
 
         cs = synced_data_struct_factory.manager.cs()
         fib = synced_data_struct_factory.manager.fib()
         pit = synced_data_struct_factory.manager.pit()
+        faceidtable = synced_data_struct_factory.manager.faceidtable()
+
+        interface = UDP4Interface(0)
+
+        self.linklayer = BasicLinkLayer(interface, faceidtable)
+        self.linklayerport = self.linklayer.interfaces[0].get_port()
+        self.q1 = multiprocessing.Queue()
+        self.linklayer.queue_from_higher = self.q1
 
         self.mgmt = Mgmt(cs, fib, pit, self.linklayer, self.linklayerport)
         self.testMgmtSock1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -57,17 +63,16 @@ class test_Mgmt(unittest.TestCase):
         self.mgmt.start_process()
 
         self.testMgmtSock1.connect(("127.0.0.1", self.linklayerport))
-        self.testMgmtSock1.send("GET /linklayer/newface/127.0.0.1:9000 HTTP/1.1\r\n\r\n".encode())
+        self.testMgmtSock1.send("GET /linklayer/newface/127.0.0.1:9000:0 HTTP/1.1\r\n\r\n".encode())
         data = self.testMgmtSock1.recv(1024)
         self.testMgmtSock1.close()
 
         self.assertEqual(data.decode(),
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newface OK:0\r\n")
 
-        self.assertEqual(len(self.linklayer._ip_to_fid), 1)
-        self.assertEqual(len(self.linklayer._fids_to_ip), 1)
-        self.assertEqual(self.linklayer._ip_to_fid[("127.0.0.1", 9000)], 0)
-        self.assertEqual(self.linklayer._fids_to_ip[0], ("127.0.0.1", 9000))
+        self.assertEqual(self.linklayer.faceidtable.get_num_entries(), 1)
+        self.assertEqual(self.linklayer.faceidtable.get_face_id(AddressInfo(("127.0.0.1", 9000), 0)), 0)
+        self.assertEqual(self.linklayer.faceidtable.get_address_info(0), AddressInfo(("127.0.0.1", 9000), 0))
 
 
     def test_mgmt_multiple_new_face(self):
@@ -76,7 +81,7 @@ class test_Mgmt(unittest.TestCase):
         self.mgmt.start_process()
 
         self.testMgmtSock1.connect(("127.0.0.1", self.linklayerport))
-        self.testMgmtSock1.send("GET /linklayer/newface/127.0.0.1:9000 HTTP/1.1\r\n\r\n".encode())
+        self.testMgmtSock1.send("GET /linklayer/newface/127.0.0.1:9000:0 HTTP/1.1\r\n\r\n".encode())
         data = self.testMgmtSock1.recv(1024)
         self.testMgmtSock1.close()
 
@@ -84,7 +89,7 @@ class test_Mgmt(unittest.TestCase):
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newface OK:0\r\n")
 
         self.testMgmtSock2.connect(("127.0.0.1",self.linklayerport))
-        self.testMgmtSock2.send("GET /linklayer/newface/127.0.0.1:8000 HTTP/1.1\r\n\r\n".encode())
+        self.testMgmtSock2.send("GET /linklayer/newface/127.0.0.1:8000:0 HTTP/1.1\r\n\r\n".encode())
         data = self.testMgmtSock2.recv(1024)
         self.testMgmtSock2.close()
 
@@ -93,7 +98,7 @@ class test_Mgmt(unittest.TestCase):
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newface OK:1\r\n")
 
         self.testMgmtSock3.connect(("127.0.0.1", self.linklayerport))
-        self.testMgmtSock3.send("GET /linklayer/newface/127.0.0.1:9000 HTTP/1.1\r\n\r\n".encode())
+        self.testMgmtSock3.send("GET /linklayer/newface/127.0.0.1:9000:0 HTTP/1.1\r\n\r\n".encode())
         data = self.testMgmtSock3.recv(1024)
         self.testMgmtSock3.close()
 
@@ -101,12 +106,10 @@ class test_Mgmt(unittest.TestCase):
         self.assertEqual(data.decode(),
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newface OK:0\r\n")
 
-        self.assertEqual(len(self.linklayer._ip_to_fid), 2)
-        self.assertEqual(len(self.linklayer._fids_to_ip), 2)
-        self.assertEqual(self.linklayer._ip_to_fid[("127.0.0.1", 9000)], 0)
-        self.assertEqual(self.linklayer._fids_to_ip[0], ("127.0.0.1", 9000))
-        self.assertEqual(self.linklayer._ip_to_fid[("127.0.0.1", 8000)], 1)
-        self.assertEqual(self.linklayer._fids_to_ip[1], ("127.0.0.1", 8000))
+        self.assertEqual(self.linklayer.faceidtable.get_num_entries(), 2)
+
+        self.assertEqual(self.linklayer.faceidtable.get_face_id(AddressInfo(("127.0.0.1", 9000), 0)), 0)
+        self.assertEqual(self.linklayer.faceidtable.get_face_id(AddressInfo(("127.0.0.1", 8000), 0)), 1)
 
     def test_mgmt_add_forwaring_rule(self):
         """Test adding Forwarding rules"""
@@ -163,12 +166,11 @@ class test_Mgmt(unittest.TestCase):
         """Test adding a face using the mgmtclient"""
         self.linklayer.start_process()
         self.mgmt.start_process()
-        data = self.mgmt_client.add_face("127.0.0.1", 9000)
+        data = self.mgmt_client.add_face("127.0.0.1", 9000, 0)
         self.assertEqual(data, "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newface OK:0\r\n")
-        self.assertEqual(len(self.linklayer._ip_to_fid), 1)
-        self.assertEqual(len(self.linklayer._fids_to_ip), 1)
-        self.assertEqual(self.linklayer._ip_to_fid[("127.0.0.1", 9000)], 0)
-        self.assertEqual(self.linklayer._fids_to_ip[0], ("127.0.0.1", 9000))
+        self.assertEqual(self.linklayer.faceidtable.get_num_entries(), 1)
+        self.assertEqual(self.linklayer.faceidtable.get_address_info(0), AddressInfo(("127.0.0.1", 9000), 0))
+        self.assertEqual(self.linklayer.faceidtable.get_face_id(AddressInfo(("127.0.0.1", 9000), 0)), 0)
 
     def test_add_forwarding_rule_mgmt_client(self):
         """Test adding forwarding rule using MgmtClient"""

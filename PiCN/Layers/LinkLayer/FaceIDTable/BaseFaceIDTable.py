@@ -8,9 +8,8 @@ class BaseFaceIDTable(object):
     """Abstract superclass for FaceID Tables"""
 
     def __init__(self):
-        self.current_face_id = 0
+        self.next_face_id = -1
         self.max_entries = int(1e4)
-
 
     @abc.abstractmethod
     def get_address_info(self, faceid: int) -> AddressInfo:
@@ -61,6 +60,6 @@ class BaseFaceIDTable(object):
         if fid is not None:
             return fid
         self.remove_oldest()
-        self.current_face_id += 1
-        self.add(self.current_face_id, address_info)
-        return  self.current_face_id
+        self.next_face_id += 1
+        self.add(self.next_face_id, address_info)
+        return self.next_face_id

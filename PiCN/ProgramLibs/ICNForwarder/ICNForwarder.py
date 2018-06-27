@@ -10,7 +10,9 @@ from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
 from PiCN.Processes import PiCNSyncDataStructFactory
 
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
-from PiCN.Layers.LinkLayer import UDP4LinkLayer
+from PiCN.Layers.LinkLayer import BasicLinkLayer
+from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface, AddressInfo
+from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder, SimpleStringEncoder
 from PiCN.Logger import Logger
 from PiCN.Mgmt import Mgmt
@@ -30,21 +32,28 @@ class ICNForwarder(object):
             encoder.set_log_level(log_level)
             self.encoder = encoder
 
-        # initialize layers
-        self.linklayer = UDP4LinkLayer(port, log_level=log_level)
-        self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
-        self.icnlayer = BasicICNLayer(log_level=log_level)
-
         # setup data structures
         synced_data_struct_factory = PiCNSyncDataStructFactory()
         synced_data_struct_factory.register("cs", ContentStoreMemoryExact)
         synced_data_struct_factory.register("fib", ForwardingInformationBaseMemoryPrefix)
         synced_data_struct_factory.register("pit", PendingInterstTableMemoryExact)
+        synced_data_struct_factory.register("faceidtable", FaceIDDict)
         synced_data_struct_factory.create_manager()
 
         cs = synced_data_struct_factory.manager.cs()
         fib = synced_data_struct_factory.manager.fib()
         pit = synced_data_struct_factory.manager.pit()
+        faceidtable = synced_data_struct_factory.manager.faceidtable()
+
+        #default interface
+        default_interface = UDP4Interface(port)
+
+        # initialize layers
+        self.linklayer = BasicLinkLayer(default_interface, faceidtable, log_level=log_level)
+        self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
+        self.icnlayer = BasicICNLayer(log_level=log_level)
+
+
 
         self.lstack: LayerStack = LayerStack([
             self.icnlayer,
@@ -60,7 +69,7 @@ class ICNForwarder(object):
         self.routing = BasicRouting(self.icnlayer.pit, None, log_level=log_level) #TODO NOT IMPLEMENTED YET
 
         # mgmt
-        self.mgmt = Mgmt(cs, fib, pit, self.linklayer, self.linklayer.get_port(), self.stop_forwarder,
+        self.mgmt = Mgmt(cs, fib, pit, self.linklayer, default_interface.get_port(), self.stop_forwarder,
                          log_level=log_level)
 
     def start_forwarder(self):

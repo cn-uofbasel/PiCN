@@ -4,7 +4,10 @@ from PiCN.LayerStack import LayerStack
 from PiCN.Layers.ChunkLayer import BasicChunkLayer
 from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
 from PiCN.Layers.ChunkLayer.Chunkifyer import SimpleContentChunkifyer
-from PiCN.Layers.LinkLayer import UDP4LinkLayer
+from PiCN.Layers.LinkLayer import BasicLinkLayer
+from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
+from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface, AddressInfo
+from PiCN.Processes.PiCNSyncDataStructFactory import PiCNSyncDataStructFactory
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
 from PiCN.Packets import Content, Name, Interest, Nack
@@ -23,8 +26,16 @@ class Fetch(object):
             self.encoder = encoder
         self.chunkifyer = SimpleContentChunkifyer()
 
+        # initialize layers
+        synced_data_struct_factory = PiCNSyncDataStructFactory()
+        synced_data_struct_factory.register("faceidtable", FaceIDDict)
+        synced_data_struct_factory.create_manager()
+        faceidtable = synced_data_struct_factory.manager.faceidtable()
+
+        interface = UDP4Interface(0)
+
         # create layers
-        self.linklayer = UDP4LinkLayer(0, log_level=log_level)
+        self.linklayer = BasicLinkLayer(interface, faceidtable, log_level=log_level)
         self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
         self.chunklayer = BasicChunkLayer(self.chunkifyer, log_level=log_level)
 
@@ -35,7 +46,7 @@ class Fetch(object):
         ])
 
         # setup communication
-        self.fid = self.linklayer.create_new_fid((ip, port), True)
+        self.fid = self.linklayer.faceidtable.get_or_create_faceid(AddressInfo((ip, port), 0))
 
         # send packet
         self.lstack.start_all()

@@ -60,7 +60,7 @@ you@machine:~$ picn-relay --format ndntlv --port 9000 &
 
 Configure a forwarding rule from the forwarder to the repository:
 ```console
-you@machine:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newface 127.0.0.1:10000
+you@machine:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newface 127.0.0.1:10000:0
 you@machine:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newforwardingrule /the:0
 ...
 ```

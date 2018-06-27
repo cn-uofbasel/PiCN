@@ -41,14 +41,14 @@ class test_FaceIDDict(unittest.TestCase):
         """Test the getting functions of the faceidtable"""
         r1 = self.faceidtable.get_address_info(3)
         self.assertIsNone(r1)
-        r2 = self.faceidtable.get_face_id(AddressInfo("127.0.0.1", "Interface"))
+        r2 = self.faceidtable.get_face_id(AddressInfo("127.0.0.1", 1))
         self.assertIsNone(r2)
 
         faceid1 = 3
-        addr_info1 = AddressInfo("127.0.0.1", "Interface")
+        addr_info1 = AddressInfo("127.0.0.1", 1)
         self.faceidtable.add(faceid1, addr_info1)
         faceid2 = 7
-        addr_info2 = AddressInfo("192.168.2.1", "Ethernet")
+        addr_info2 = AddressInfo("192.168.2.1", 2)
         self.faceidtable.add(faceid2, addr_info2)
 
         r3 = self.faceidtable.get_face_id(addr_info1)
@@ -67,11 +67,11 @@ class test_FaceIDDict(unittest.TestCase):
     def test_remove_entry(self):
         """Test the remove function"""
         faceid1 = 3
-        addr_info1 = AddressInfo("127.0.0.1", "Interface")
+        addr_info1 = AddressInfo("127.0.0.1", 1)
         self.faceidtable.add(faceid1, addr_info1)
 
         faceid2 = 7
-        addr_info2 = AddressInfo("192.168.2.1", "Ethernet")
+        addr_info2 = AddressInfo("192.168.2.1", 2)
         self.faceidtable.add(faceid2, addr_info2)
 
         self.assertEqual(len(self.faceidtable.addrinfo_to_faceid), 2)
@@ -90,8 +90,8 @@ class test_FaceIDDict(unittest.TestCase):
 
     def test_get_or_create_faceid(self):
         """test adding a face and automatically adding a faceid"""
-        faceid1 = 1
-        addr_info1 = AddressInfo("127.0.0.1", "Interface")
+        faceid1 = 0
+        addr_info1 = AddressInfo("127.0.0.1", 1)
         r1 = self.faceidtable.get_or_create_faceid(addr_info1)
         self.assertEqual(r1, faceid1)
         r2 = self.faceidtable.get_address_info(faceid1)
@@ -104,7 +104,7 @@ class test_FaceIDDict(unittest.TestCase):
         """test that datastructure removes oldest entry if there is not enough space"""
         entries = []
         for i in range(0,self.faceidtable.max_entries*5):
-            addr_info = AddressInfo("127.0.0.1", "Interface" + str(i))
+            addr_info = AddressInfo("127.0.0.1", i)
             fid = self.faceidtable.get_or_create_faceid(addr_info)
             entries.append((fid, addr_info))
 

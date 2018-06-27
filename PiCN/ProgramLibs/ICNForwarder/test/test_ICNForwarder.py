@@ -8,6 +8,7 @@ import unittest
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
 from PiCN.Packets import Content, Interest, Name
 from PiCN.ProgramLibs.ICNForwarder import ICNForwarder
+from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
 
 class cases_ICNForwarder(object):
     """Test the ICN Forwarder"""
@@ -20,8 +21,8 @@ class cases_ICNForwarder(object):
         self.encoder = self.get_encoder()
         self.forwarder1 = ICNForwarder(0, encoder=self.get_encoder(), log_level=255)
         self.forwarder2 = ICNForwarder(0, encoder=self.get_encoder(), log_level=255)
-        self.forwarder1_port = self.forwarder1.linklayer.get_port()
-        self.forwarder2_port = self.forwarder2.linklayer.get_port()
+        self.forwarder1_port = self.forwarder1.linklayer.interfaces[0].get_port()
+        self.forwarder2_port = self.forwarder2.linklayer.interfaces[0].get_port()
 
         self.testSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.testSock.bind(("0.0.0.0", 0))
@@ -74,12 +75,12 @@ class cases_ICNForwarder(object):
         testMgmtSock1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         testMgmtSock1.connect(("127.0.0.1", self.forwarder1_port))
         port_to = self.forwarder2_port
-        testMgmtSock1.send(("GET /linklayer/newface/127.0.0.1:" + str(port_to) + " HTTP/1.1\r\n\r\n").encode())
+        testMgmtSock1.send(("GET /linklayer/newface/127.0.0.1:" + str(port_to) + ":0 HTTP/1.1\r\n\r\n").encode())
         data = testMgmtSock1.recv(1024)
         testMgmtSock1.close()
         self.assertEqual(data.decode(),
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newface OK:0\r\n")
-        self.assertEqual(self.forwarder1.linklayer._ip_to_fid[("127.0.0.1", self.forwarder2_port)], 0)
+        self.assertEqual(self.forwarder1.linklayer.faceidtable.get_face_id(AddressInfo(("127.0.0.1", self.forwarder2_port), 0)), 0)
 
         #register a prefix
         testMgmtSock2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

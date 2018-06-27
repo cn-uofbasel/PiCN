@@ -43,22 +43,22 @@ class cases_FetchNFN(object):
         self.forwarder1: NFNForwarder = NFNForwarder(0, log_level=255, encoder=self.get_encoder())
         self.forwarder2: NFNForwarder = NFNForwarder(0, log_level=255, encoder=self.get_encoder())
 
-        self.repo_port = self.ICNRepo.linklayer.get_port()
-        self.fwd_port1 = self.forwarder1.linklayer.get_port()
-        self.fwd_port2 = self.forwarder2.linklayer.get_port()
+        self.repo_port = self.ICNRepo.linklayer.interfaces[0].get_port()
+        self.fwd_port1 = self.forwarder1.linklayer.interfaces[0].get_port()
+        self.fwd_port2 = self.forwarder2.linklayer.interfaces[0].get_port()
 
         self.fetch = Fetch("127.0.0.1", self.fwd_port1, encoder=self.get_encoder())
 
     def add_face_and_forwadingrule(self):
         #create new face
         self.mgmtClient1 = MgmtClient(self.fwd_port1)
-        self.mgmtClient1.add_face("127.0.0.1", self.fwd_port2)
+        self.mgmtClient1.add_face("127.0.0.1", self.fwd_port2, 0)
         self.mgmtClient1.add_forwarding_rule(Name("/lib"), 0)
-        self.mgmtClient1.add_face("127.0.0.1", self.repo_port)
+        self.mgmtClient1.add_face("127.0.0.1", self.repo_port, 0)
         self.mgmtClient1.add_forwarding_rule(Name("/test"), 0)
 
         self.mgmtClient2 = MgmtClient(self.fwd_port2)
-        self.mgmtClient2.add_face("127.0.0.1", self.repo_port)
+        self.mgmtClient2.add_face("127.0.0.1", self.repo_port, 0)
         self.mgmtClient2.add_forwarding_rule(Name("/test"), 0)
 
     def tearDown(self):

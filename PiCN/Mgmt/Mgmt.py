@@ -14,6 +14,7 @@ from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
 from PiCN.Packets import Content, Name
 from PiCN.Processes import LayerProcess
 from PiCN.Processes import PiCNProcess
+from PiCN.Layers.LinkLayer.Interfaces import AddressInfo, BaseInterface
 
 
 class Mgmt(PiCNProcess):
@@ -90,9 +91,10 @@ class Mgmt(PiCNProcess):
     def ll_mgmt(self, command, params, replysock):
         # newface expects /linklayer/newface/ip:port
         if (command == "newface"):
-            ip, port = params.split(":", 1)
+            ip, port, if_num = params.split(":", 2)
             port = int(port)
-            fid = self._linklayer.get_or_create_fid((ip, port), static=True)
+            if_num = int(if_num)
+            fid = self._linklayer.faceidtable.get_or_create_faceid(AddressInfo((ip, port), if_num))
             reply = "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newface OK:" + str(fid) + "\r\n"
             replysock.send(reply.encode())
             self.logger.info("New Face added " + ip + "|" + str(port) + ", FaceID: " + str(fid))
