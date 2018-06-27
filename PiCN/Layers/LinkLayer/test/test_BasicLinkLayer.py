@@ -32,6 +32,15 @@ class test_BasicLinkLayer(unittest.TestCase):
         self.linklayer2.queue_to_higher = multiprocessing.Queue()
         self.linklayer2.queue_from_higher = multiprocessing.Queue()
 
+        self.udp4interface3 = UDP4Interface(0)
+        synced_data_struct_factory3 = PiCNSyncDataStructFactory()
+        synced_data_struct_factory3.register("faceidtable", FaceIDDict)
+        synced_data_struct_factory3.create_manager()
+        self.faceidtable3 = synced_data_struct_factory3.manager.faceidtable()
+        self.linklayer3 = BasicLinkLayer(self.udp4interface3, self.faceidtable3)
+        self.linklayer3.queue_to_higher = multiprocessing.Queue()
+        self.linklayer3.queue_from_higher = multiprocessing.Queue()
+
         self.testSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.testSock.bind(("0.0.0.0", 0))
 
@@ -128,3 +137,59 @@ class test_BasicLinkLayer(unittest.TestCase):
             self.assertEqual(packet1, str1)
             self.assertEqual(packet2, str2)
 
+
+    def test_sending_and_receiving_pacets_three_nodes(self):
+        """Testing sending/receiving packets with three nodes"""
+        self.linklayer1.start_process()
+        self.linklayer2.start_process()
+        self.linklayer3.start_process()
+
+        fid1_2 = self.linklayer1.faeidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.udp4interface2.get_port()), self.udp4interface1))
+        fid1_3 = self.linklayer1.faeidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.udp4interface3.get_port()), self.udp4interface1))
+
+        fid2_1 = self.linklayer2.faeidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.udp4interface1.get_port()), self.udp4interface2))
+
+        fid3_1 = self.linklayer3.faeidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.udp4interface1.get_port()), self.udp4interface3))
+        fid3_2 = self.linklayer3.faeidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.udp4interface2.get_port()), self.udp4interface3))
+
+        for i in range(1, 100):
+            str1 = "Node1" + str(i)
+            str2 = "Node2" + str(i)
+            str3 = "Node3" + str(i)
+
+            # Node 1 ---> Node 2
+            self.linklayer1.queue_from_higher.put([fid1_2, str1.encode()])
+            try:
+                data1_2 = self.linklayer2.queue_to_higher.get(timeout=2.0)
+            except:
+                self.fail()
+            # Node 1 ---> Node 3
+            self.linklayer1.queue_from_higher.put([fid1_3, str1.encode()])
+            try:
+                data1_3 = self.linklayer3.queue_to_higher.get(timeout=2.0)
+            except:
+                self.fail()
+            # Node 2 ---> Node 1
+            self.linklayer2.queue_from_higher.put([fid2_1, str2.encode()])
+            try:
+                data2_1 = self.linklayer1.queue_to_higher.get(timeout=2.0)
+            except:
+                self.fail()
+            # Node 3 ---> Node 1
+            self.linklayer3.queue_from_higher.put([fid3_1, str3.encode()])
+            try:
+                data3_1 = self.linklayer1.queue_to_higher.get(timeout=2.0)
+            except:
+                self.fail()
+            # Node 3 ---> Node 2
+            self.linklayer3.queue_from_higher.put([fid3_2, str3.encode()])
+            try:
+                data3_2 = self.linklayer2.queue_to_higher.get(timeout=2.0)
+            except:
+                self.fail()
+
+            self.assertEqual(data1_2[1].decode(), str1)
+            self.assertEqual(data1_3[1].decode(), str1)
+            self.assertEqual(data2_1[1].decode(), str2)
+            self.assertEqual(data3_1[1].decode(), str3)
+            self.assertEqual(data3_2[1].decode(), str3)
