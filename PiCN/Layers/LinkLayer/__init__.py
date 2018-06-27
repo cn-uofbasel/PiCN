@@ -5,3 +5,4 @@
     """
 
 from .UDP4LinkLayer import UDP4LinkLayer
+from .BasicLinkLayer import BasicLinkLayer

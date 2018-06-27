@@ -44,3 +44,6 @@ class FaceIDDict(BaseFaceIDTable):
         if len(self.faceids) < self.max_entries or len(self.faceids) <= 0:
             return
         self.remove(self.faceids[0])
+
+    def get_num_entries(self):
+        return len(self.faceids)

@@ -45,6 +45,13 @@ class BaseFaceIDTable(object):
     def remove_oldest(self):
         """removes the oldest entry if no space is left in the datastruct"""
 
+    @abc.abstractmethod
+    def get_num_entries(self):
+        """returns the current number of entries in the table
+        @:return: current number of entries in the table
+        """
+
+
     def get_or_create_faceid(self, address_info: AddressInfo) -> int:
         """adds and entry and automatically selects a faceid or if an entry exits select that entry
         :param address_info: address info of the new entry
