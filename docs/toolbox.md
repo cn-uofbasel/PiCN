@@ -101,7 +101,7 @@ optional arguments:
 #### Management Commands and Parameters
 
 ##### Create new face
-`newface < ip >:< targetport >`
+`newface < ip >:< targetport >:< interface id >`
 
 ##### Attach forwarding rule to existing face
 `newforwardingrule < name >:< faceid >`
