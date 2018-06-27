@@ -96,3 +96,17 @@ class BasicLinkLayer(LayerProcess):
         super()._run_sleep(from_lower, from_higher, to_lower, to_higher)
         #TODO this is not implemented
         raise NotImplemented()
+
+
+    def stop_process(self):
+        for i in self.interfaces:
+            i.close()
+        if self.process:
+            self.process.terminate()
+            self.process.join()
+        if self.queue_to_higher:
+            self.queue_to_higher.close()
+        if self.queue_from_higher:
+            self.queue_from_higher.close()
+
+

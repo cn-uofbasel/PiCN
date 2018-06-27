@@ -64,7 +64,7 @@ class test_BasicLinkLayer(unittest.TestCase):
         self.assertEqual("HelloWorld", content)
         self.assertEqual(self.linklayer1.faceidtable.get_num_entries(), 1)
         self.assertEqual(self.linklayer1.faceidtable.get_address_info(0).address[1], self.test_port)
-        self.assertEqual(self.linklayer1.faceidtable.get_address_info(0).inferface_id, 0)
+        self.assertEqual(self.linklayer1.faceidtable.get_address_info(0).interface_id, 0)
 
     def test_sending_a_packet(self):
         """Test if a packet is sent correctly"""
