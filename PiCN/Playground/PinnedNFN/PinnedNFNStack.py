@@ -18,7 +18,7 @@ from PiCN.Logger import Logger
 
 
 class PinnedNFNStack(object):
-    def __init__(self, port=9500, log_level=255, encoder: BasicEncoder = NdnTlvEncoder):
+    def __init__(self, replica_id, port=9500, log_level=255, encoder: BasicEncoder = NdnTlvEncoder):
         # debug level
         logger = Logger("Repo", log_level)
 
@@ -43,7 +43,7 @@ class PinnedNFNStack(object):
         self.link_layer = BasicLinkLayer(UDP4Interface(port), face_id_table, log_level=log_level)
         self.packet_encoding_layer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
         self.icn_layer = BasicICNLayer(log_level=log_level)
-        self.pinned_computation_layer = PinnedComputationLayer(log_level=log_level)
+        self.pinned_computation_layer = PinnedComputationLayer(replica_id, log_level=log_level)
 
         # tell icn_layer that there is a higher layer which might satisfy interests
         self.icn_layer._interest_to_app = True  # TODO -- decide here if it should be forwarded upwards or not
