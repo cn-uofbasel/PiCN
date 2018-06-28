@@ -54,7 +54,7 @@ class PinnedComputationLayer(LayerProcess):
 
     def pinned_function_square(self, params):
         # TODO -- check if params contains valid parameters
-        return pow(int(params[0]), 2)
+        return int(pow(int(params[0]), 2))
 
     def ageing(self):
         pass  # ageing not necessary
