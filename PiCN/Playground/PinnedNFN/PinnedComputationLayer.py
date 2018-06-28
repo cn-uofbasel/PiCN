@@ -29,7 +29,6 @@ class PinnedComputationLayer(LayerProcess):
 
     def handleInterest(self, packet_id: int, interest: Interest):
         components = interest.name.components
-        self.logger.info(components[-1])
         if components[-1] == b"pNFN":
             num_params = int(components[-2]) # TODO -- error handling
             params = components[-num_params-2:-2] # TODO -- error handling
