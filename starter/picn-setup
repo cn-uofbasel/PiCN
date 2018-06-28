@@ -86,13 +86,13 @@ function config_fwd_to_testbed {
     sleep .1
 
     # Face and fwd rule from 9000 to 9001  (default)
-    tmux send-keys -t $SESSION:0 'picn-mgmt --port ' $INITPORT ' newface 127.0.0.1:' $(($INITPORT+1)) C-m
+    tmux send-keys -t $SESSION:0 'picn-mgmt --port ' $INITPORT ' newface 127.0.0.1:' $(($INITPORT+1)) ':0' C-m
     sleep .1
     tmux send-keys -t $SESSION:0 'picn-mgmt --port ' $INITPORT ' newforwardingrule /ndn/ch/unibas:0' C-m
     sleep .1
 
     # Face and fwd rule form 9001 to testbed (default)
-    tmux send-keys -t $SESSION:0 'picn-mgmt --port ' $(($INITPORT+1)) ' newface ' $NDNTESTBED ':6363' C-m
+    tmux send-keys -t $SESSION:0 'picn-mgmt --port ' $(($INITPORT+1)) ' newface ' $NDNTESTBED ':6363:0' C-m
     sleep .1
     tmux send-keys -t $SESSION:0 'picn-mgmt --port ' $(($INITPORT+1)) ' newforwardingrule /ndn/ch/unibas:0' C-m
     sleep .1
