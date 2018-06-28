@@ -33,11 +33,16 @@ class PinnedComputationLayer(LayerProcess):
     def handleInterest(self, packet_id: int, interest: Interest):
         components = interest.name.components
         if components[-1] == b"pNFN":
-            num_params = int(components[-2])  # TODO -- error handling
-            params = components[-num_params - 2:-2]  # TODO -- error handling
-            params = list(map(lambda x: x.decode('utf-8'), params))
-            function_name = components[:-num_params - 2]
-            function_name = "/" + "/".join(list(map(lambda x: x.decode('utf-8'), function_name)))
+            try:
+                num_params = int(components[-2])
+                params = components[-num_params - 2:-2]
+                params = list(map(lambda x: x.decode('utf-8'), params))
+                function_name = components[:-num_params - 2]
+                function_name = "/" + "/".join(list(map(lambda x: x.decode('utf-8'), function_name)))
+            except:
+                self.return_nack(packet_id, interest)
+                self.logger.info("Invalid computation expression. Return NACK.")
+                return
             if function_name == "/the/prefix/square":
                 result = self.pinned_function_square(params)
                 self.return_result(packet_id, Content(interest.name, str(result)))  # QUESTION -- return as string?
