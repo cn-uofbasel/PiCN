@@ -40,7 +40,7 @@ class PinnedNFNStack(object):
         face_id_table = synced_data_struct_factory.manager.face_id_table()
 
         # initialize layers
-        self.link_layer = BasicLinkLayer(UDP4Interface(port), face_id_table, log_level=log_level)
+        self.link_layer = BasicLinkLayer([UDP4Interface(port)], face_id_table, log_level=log_level)
         self.packet_encoding_layer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
         self.icn_layer = BasicICNLayer(log_level=log_level)
         self.pinned_computation_layer = PinnedComputationLayer(replica_id, log_level=log_level)

@@ -33,14 +33,14 @@ class cases_BasicPacketEncodingLayer(object):
         synced_data_struct_factory1.register("faceidtable", FaceIDDict)
         synced_data_struct_factory1.create_manager()
         self.faceidtable1 = synced_data_struct_factory1.manager.faceidtable()
-        self.linkLayer1 = BasicLinkLayer(self.udp4interface1, self.faceidtable1)
+        self.linkLayer1 = BasicLinkLayer([self.udp4interface1], self.faceidtable1)
 
         self.udp4interface2 = UDP4Interface(0)
         synced_data_struct_factory2 = PiCNSyncDataStructFactory()
         synced_data_struct_factory2.register("faceidtable", FaceIDDict)
         synced_data_struct_factory2.create_manager()
         self.faceidtable2 = synced_data_struct_factory2.manager.faceidtable()
-        self.linkLayer2 = BasicLinkLayer(self.udp4interface2, self.faceidtable2)
+        self.linkLayer2 = BasicLinkLayer([self.udp4interface2], self.faceidtable2)
         self.port1 = self.linkLayer1.interfaces[0].get_port()
         self.port2 = self.linkLayer2.interfaces[0].get_port()
 
