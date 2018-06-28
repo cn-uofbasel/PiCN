@@ -35,3 +35,6 @@ class UDP4Interface(BaseInterface):
 
     def close(self):
         self.sock.close()
+
+    def __eq__(self, other):
+        return self.get_port() == other.get_port()
