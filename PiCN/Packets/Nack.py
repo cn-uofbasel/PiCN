@@ -10,7 +10,7 @@ class Nack(Packet):
     Internal representation of an NACK (negative acknowledgement) packet
     """
 
-    def __init__(self, name: Name, reason: NackReason, wire_format=None, interest=None):
+    def __init__(self, name: Name, reason: NackReason, interest, wire_format=None):
         """
         New negative acknowledgement (NACK) object
         :param name: Name of interest for which this NACK is generated

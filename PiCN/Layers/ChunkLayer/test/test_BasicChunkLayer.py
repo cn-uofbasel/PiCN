@@ -410,7 +410,7 @@ class test_BasicChunkLayer(unittest.TestCase):
     def test_nack_from_lower(self):
         """Test nack from lower"""
         self.chunkLayer.start_process()
-        nack1 = Nack("/test/data", NackReason.NO_CONTENT)
+        nack1 = Nack("/test/data", NackReason.NO_CONTENT, None)
         self.chunkLayer.queue_from_lower.put([1, nack1])
         try:
             data = self.chunkLayer.queue_to_higher.get(timeout=2.0)
