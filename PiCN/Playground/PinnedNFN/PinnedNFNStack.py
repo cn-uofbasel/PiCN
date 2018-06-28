@@ -8,7 +8,7 @@ from PiCN.Layers.ICNLayer import BasicICNLayer
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder, NdnTlvEncoder
 from PiCN.Processes import PiCNSyncDataStructFactory
 
-from PiCN.Layers.ICNLayer.PendingInterestTable import PendingInterestTableMemoryExact
+from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseMemoryPrefix
 
@@ -30,7 +30,7 @@ class PinnedNFNStack(object):
         synced_data_struct_factory = PiCNSyncDataStructFactory()
         synced_data_struct_factory.register("cs", ContentStoreMemoryExact)
         synced_data_struct_factory.register("fib", ForwardingInformationBaseMemoryPrefix)
-        synced_data_struct_factory.register("pit", PendingInterestTableMemoryExact)
+        synced_data_struct_factory.register("pit", BasePendingInterestTable)
         synced_data_struct_factory.register("face_id_table", FaceIDDict)
         synced_data_struct_factory.create_manager()
 
