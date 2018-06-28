@@ -40,7 +40,7 @@ class FetchStack(object):
 
         # create layers
 
-        self.link_layer = BasicLinkLayer(UDP4Interface(0), faceidtable, log_level=log_level)
+        self.link_layer = BasicLinkLayer([UDP4Interface(0)], faceidtable, log_level=log_level)
         self.packet_encoding_layer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
         self.fetch_layer = FetchLayer(log_level)
 

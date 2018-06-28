@@ -3,6 +3,8 @@ import multiprocessing
 import select
 import socket
 
+from typing import List
+
 from PiCN.Processes import LayerProcess
 
 from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
@@ -12,15 +14,14 @@ from PiCN.Layers.LinkLayer.FaceIDTable import BaseFaceIDTable
 
 class BasicLinkLayer(LayerProcess):
     """Default Link Layer implementation for PiCN
-    :param interface: preconfigured interface used to start the link layer
+    :param interface: preconfigured interfaces used by the link layer
     :param faceidtable: faceidtable, that maintains the mapping between IDs and Interfaces
     :param log_level: Loglevel used in the Linklayer
     """
 
-    def __init__(self, interface: BaseInterface, faceidtable: BaseFaceIDTable, log_level=255):
+    def __init__(self, interfaces: List[BaseInterface], faceidtable: BaseFaceIDTable, log_level=255):
         super().__init__(logger_name="LinkLayer", log_level=log_level)
-        self.interfaces = []
-        self.interfaces.append(interface)
+        self.interfaces = interfaces
         self.faceidtable = faceidtable
 
     def data_from_lower(self, interface: BaseInterface, to_higher: multiprocessing.Queue, data):

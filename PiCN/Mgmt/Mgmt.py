@@ -98,13 +98,6 @@ class Mgmt(PiCNProcess):
             reply = "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newface OK:" + str(fid) + "\r\n"
             replysock.send(reply.encode())
             self.logger.info("New Face added " + ip + "|" + str(port) + ", FaceID: " + str(fid))
-        if(command == "newUDPdevice"):
-            listenport = int(params)
-            deviceid = len(self._linklayer.interfaces)
-            self._linklayer.interfaces.append(UDP4Interface(listenport))
-            reply = "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newUDPdevice OK:" + str(deviceid) + "\r\n"
-            replysock.send(reply.encode())
-            self.logger.info("New UDP Device added: Listen on Port" + str(port) + " Device ID: " + str(deviceid))
         else:
             self.unknown_command(replysock)
             return

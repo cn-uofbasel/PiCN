@@ -46,10 +46,10 @@ class ICNForwarder(object):
         faceidtable = synced_data_struct_factory.manager.faceidtable()
 
         #default interface
-        default_interface = UDP4Interface(port)
+        interfaces = [UDP4Interface(port)]
 
         # initialize layers
-        self.linklayer = BasicLinkLayer(default_interface, faceidtable, log_level=log_level)
+        self.linklayer = BasicLinkLayer(interfaces, faceidtable, log_level=log_level)
         self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
         self.icnlayer = BasicICNLayer(log_level=log_level)
 
@@ -69,7 +69,7 @@ class ICNForwarder(object):
         self.routing = BasicRouting(self.icnlayer.pit, None, log_level=log_level) #TODO NOT IMPLEMENTED YET
 
         # mgmt
-        self.mgmt = Mgmt(cs, fib, pit, self.linklayer, default_interface.get_port(), self.stop_forwarder,
+        self.mgmt = Mgmt(cs, fib, pit, self.linklayer, interfaces[0].get_port(), self.stop_forwarder,
                          log_level=log_level)
 
     def start_forwarder(self):

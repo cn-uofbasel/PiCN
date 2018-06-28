@@ -32,10 +32,10 @@ class Fetch(object):
         synced_data_struct_factory.create_manager()
         faceidtable = synced_data_struct_factory.manager.faceidtable()
 
-        interface = UDP4Interface(0)
+        interfaces = [UDP4Interface(0)]
 
         # create layers
-        self.linklayer = BasicLinkLayer(interface, faceidtable, log_level=log_level)
+        self.linklayer = BasicLinkLayer(interfaces, faceidtable, log_level=log_level)
         self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
         self.chunklayer = BasicChunkLayer(self.chunkifyer, log_level=log_level)
 

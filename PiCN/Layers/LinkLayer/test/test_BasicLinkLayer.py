@@ -19,7 +19,7 @@ class test_BasicLinkLayer(unittest.TestCase):
         synced_data_struct_factory1.register("faceidtable", FaceIDDict)
         synced_data_struct_factory1.create_manager()
         self.faceidtable1 = synced_data_struct_factory1.manager.faceidtable()
-        self.linklayer1 = BasicLinkLayer(self.udp4interface1, self.faceidtable1)
+        self.linklayer1 = BasicLinkLayer([self.udp4interface1], self.faceidtable1)
         self.linklayer1.queue_to_higher = multiprocessing.Queue()
         self.linklayer1.queue_from_higher = multiprocessing.Queue()
 
@@ -28,7 +28,7 @@ class test_BasicLinkLayer(unittest.TestCase):
         synced_data_struct_factory2.register("faceidtable", FaceIDDict)
         synced_data_struct_factory2.create_manager()
         self.faceidtable2 = synced_data_struct_factory2.manager.faceidtable()
-        self.linklayer2 = BasicLinkLayer(self.udp4interface2, self.faceidtable2)
+        self.linklayer2 = BasicLinkLayer([self.udp4interface2], self.faceidtable2)
         self.linklayer2.queue_to_higher = multiprocessing.Queue()
         self.linklayer2.queue_from_higher = multiprocessing.Queue()
 
@@ -37,7 +37,7 @@ class test_BasicLinkLayer(unittest.TestCase):
         synced_data_struct_factory3.register("faceidtable", FaceIDDict)
         synced_data_struct_factory3.create_manager()
         self.faceidtable3 = synced_data_struct_factory3.manager.faceidtable()
-        self.linklayer3 = BasicLinkLayer(self.udp4interface3, self.faceidtable3)
+        self.linklayer3 = BasicLinkLayer([self.udp4interface3], self.faceidtable3)
         self.linklayer3.queue_to_higher = multiprocessing.Queue()
         self.linklayer3.queue_from_higher = multiprocessing.Queue()
 

@@ -30,7 +30,7 @@ class RepoStack(object):
         face_id_table = synced_data_struct_factory1.manager.face_id_table()
 
         # initialize layers
-        self.link_layer = BasicLinkLayer(UDP4Interface(port), face_id_table, log_level=log_level)
+        self.link_layer = BasicLinkLayer([UDP4Interface(port)], face_id_table, log_level=log_level)
         self.packet_encoding_layer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
         self.repo_layer = RepoLayer(log_level=log_level)
 

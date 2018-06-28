@@ -21,14 +21,6 @@ class MgmtClient(object):
         param = ip_addr + ":" + str(port) + ":" + str(if_num)
         return self.layercommand("linklayer", "newface", param)
 
-    def add_upd_device(self, port) -> str:
-        """creates a new device using a udp socket
-        :param port: the port on which the device is listening
-        :return: reply message of the relay
-        """
-        param = str(port)
-        return self.layercommand("linklayer", "newUDPdevice", param)
-
     def add_forwarding_rule(self, name: Name, faceid: int) -> str:
         """adding a new forwarding rule to a face
         :param name: name for the forwarding rule which should be bound to the face

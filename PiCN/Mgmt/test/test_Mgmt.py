@@ -38,7 +38,7 @@ class test_Mgmt(unittest.TestCase):
 
         interface = UDP4Interface(0)
 
-        self.linklayer = BasicLinkLayer(interface, faceidtable)
+        self.linklayer = BasicLinkLayer([interface], faceidtable)
         self.linklayerport = self.linklayer.interfaces[0].get_port()
         self.q1 = multiprocessing.Queue()
         self.linklayer.queue_from_higher = self.q1
@@ -208,18 +208,3 @@ class test_Mgmt(unittest.TestCase):
         self.mgmt.start_process()
         data = self.mgmt_client.shutdown()
         self.assertEqual(data, "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n shutdown\r\n")
-
-
-    @unittest.skipIf("interfaces not synced yet, no idea how to do that")
-    def test_mgmt_new_udp_device_client(self):
-        """test if a new udp device is added correctly using the mgmt client"""
-        self.linklayer.start_process()
-        self.mgmt.start_process()
-        test_port = 9008
-        data = self.mgmt_client.add_upd_device(test_port)
-        self.assertEqual(data, "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newUDPdevice OK:1\r\n")
-        self.assertEqual(len(self.linklayer.interfaces), 2)
-        self.assertEqual(self.linklayer.interfaces[0].file_descriptor.getsockname()[1], self.linklayer.interfaces[0].get_port())
-        self.assertEqual(self.linklayer.interfaces[1].file_descriptor.getsockname()[1], test_port)
-
-

@@ -60,10 +60,10 @@ class NFNForwarder(object):
         self.chunkifier = SimpleContentChunkifyer()
 
         # default interface
-        default_interface = UDP4Interface(port)
+        interfaces = [UDP4Interface(port)]
 
         # initialize layers
-        self.linklayer = BasicLinkLayer(default_interface, faceidtable, log_level=log_level)
+        self.linklayer = BasicLinkLayer(interfaces, faceidtable, log_level=log_level)
         self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
         self.icnlayer = BasicICNLayer(log_level=log_level)
         self.chunklayer = BasicChunkLayer(self.chunkifier, log_level=log_level)
