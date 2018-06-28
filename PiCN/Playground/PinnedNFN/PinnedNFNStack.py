@@ -8,7 +8,7 @@ from PiCN.Layers.ICNLayer import BasicICNLayer
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder, NdnTlvEncoder
 from PiCN.Processes import PiCNSyncDataStructFactory
 
-from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
+from PiCN.Layers.ICNLayer.PendingInterestTable import PendingInterstTableMemoryExact
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseMemoryPrefix
 
@@ -30,7 +30,7 @@ class PinnedNFNStack(object):
         synced_data_struct_factory = PiCNSyncDataStructFactory()
         synced_data_struct_factory.register("cs", ContentStoreMemoryExact)
         synced_data_struct_factory.register("fib", ForwardingInformationBaseMemoryPrefix)
-        synced_data_struct_factory.register("pit", BasePendingInterestTable)
+        synced_data_struct_factory.register("pit", PendingInterstTableMemoryExact)
         synced_data_struct_factory.register("face_id_table", FaceIDDict)
         synced_data_struct_factory.create_manager()
 
@@ -42,8 +42,11 @@ class PinnedNFNStack(object):
         # initialize layers
         self.link_layer = BasicLinkLayer(UDP4Interface(port), face_id_table, log_level=log_level)
         self.packet_encoding_layer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
-        self.icn_layer = BasicICNLayer()
-        self.pinned_computation_layer = PinnedComputationLayer()
+        self.icn_layer = BasicICNLayer(log_level=log_level)
+        self.pinned_computation_layer = PinnedComputationLayer(log_level=log_level)
+
+        # tell icn_layer that there is a higher layer which might satisfy interests
+        self.icn_layer._interest_to_app = True  # TODO -- decide here if it should be forwarded upwards or not
 
         # setup stack
         self.stack: LayerStack = LayerStack([
