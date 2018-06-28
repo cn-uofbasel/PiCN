@@ -24,9 +24,15 @@ class PinnedComputationLayer(LayerProcess):
             return
 
     def handleInterest(self, packet_id: int, interest: Interest):
-        result = Content(interest.name, "there should the result be inserted.")
-        self.queue_to_lower.put([packet_id, result])
-        self.logger.info("Result successfully generated, return.")
+        components = interest.name.components
+        self.logger.info(components[-1])
+        if components[-1] == b"pNFN":
+            num_params = int(components[-2]) # TODO -- error handling
+            params = components[-num_params-2:-2] # TODO -- error handling
+            function_name = components[:-num_params-2]
+            # TODO -- execute according to function_name and params
+        else:
+            self.logger.info("Received interest does not contain a computation expression")
         return
 
     def ageing(self):
