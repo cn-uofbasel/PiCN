@@ -2,12 +2,12 @@ import multiprocessing
 from math import pow
 
 from PiCN.Processes import LayerProcess
-from PiCN.Packets import Interest, Content
+from PiCN.Packets import Name, Interest, Content, Nack, NackReason
 
 
 class PinnedComputationLayer(LayerProcess):
     def __init__(self, replica_id, log_level=255):
-        super().__init__(logger_name="PinnedNFNLayer (" + str(replica_id) +")", log_level=log_level)
+        super().__init__(logger_name="PinnedNFNLayer (" + str(replica_id) + ")", log_level=log_level)
         self.storage = None
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
@@ -27,22 +27,26 @@ class PinnedComputationLayer(LayerProcess):
     def return_result(self, packet_id, content: Content):
         self.queue_to_lower.put([packet_id, content])
 
+    def return_nack(self, packet_id, interest: Interest):
+        self.queue_to_lower.put([packet_id, Nack(interest.name, reason=NackReason.NOT_SET, interest=interest)])  # TODO -- choose an appropriate NACK reason
+
     def handleInterest(self, packet_id: int, interest: Interest):
         components = interest.name.components
         if components[-1] == b"pNFN":
-            num_params = int(components[-2]) # TODO -- error handling
-            params = components[-num_params-2:-2] # TODO -- error handling
+            num_params = int(components[-2])  # TODO -- error handling
+            params = components[-num_params - 2:-2]  # TODO -- error handling
             params = list(map(lambda x: x.decode('utf-8'), params))
-            function_name = components[:-num_params-2]
+            function_name = components[:-num_params - 2]
             function_name = "/" + "/".join(list(map(lambda x: x.decode('utf-8'), function_name)))
             if function_name == "/the/prefix/square":
                 result = self.pinned_function_square(params)
-                self.return_result(packet_id, Content(interest.name, str(result))) # QUESTION -- return as string?
+                self.return_result(packet_id, Content(interest.name, str(result)))  # QUESTION -- return as string?
                 self.logger.info("Result returned")
                 return
             else:
-                self.logger.info("Pinned function not available.")
-                # TODO -- return NACK
+                self.return_nack(packet_id, interest)
+                self.logger.info("Pinned function not available. Return NACK.")
+                return
 
         else:
             self.logger.info("Received interest does not contain a computation expression")
