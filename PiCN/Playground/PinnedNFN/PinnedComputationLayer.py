@@ -37,6 +37,7 @@ class PinnedComputationLayer(LayerProcess):
                 num_params = int(components[-2])
                 params = components[-num_params - 2:-2]
                 params = list(map(lambda x: x.decode('utf-8'), params))
+                assert(num_params < len(interest.name.components)-2)
                 function_name = components[:-num_params - 2]
                 function_name = "/" + "/".join(list(map(lambda x: x.decode('utf-8'), function_name)))
             except:
