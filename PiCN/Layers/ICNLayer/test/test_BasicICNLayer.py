@@ -469,7 +469,7 @@ class test_BasicICNLayer(unittest.TestCase):
         queue_from_higher = multiprocessing.Queue()
         self.icn_layer.queue_to_higher = queue_to_higher
         self.icn_layer.queue_from_higher = queue_from_higher
-        self.icn_layer._interest_to_app = True
+        self.icn_layer._interest_to_app = lambda x: True
         self.icn_layer.start_process()
         face_id = 1
         from_face_id = 2

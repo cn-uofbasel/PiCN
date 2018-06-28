@@ -23,7 +23,7 @@ class BasicICNLayer(LayerProcess):
         self.pit = pit
         self.fib = fib
         self._ageing_interval: int = 4
-        self._interest_to_app: bool = False
+        self._interest_to_app = lambda interest: False
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         high_level_id = data[0]
@@ -92,7 +92,7 @@ class BasicICNLayer(LayerProcess):
             self.pit.update_timestamp(pit_entry)
             self.pit.add_pit_entry(interest.name, face_id, interest, local_app=from_local)
             return
-        if self._interest_to_app is True and to_higher is not None: #App layer support
+        if self._interest_to_app(interest) is True and to_higher is not None: #App layer support
             self.logger.info("Sending to higher Layer")
             self.pit.add_pit_entry(interest.name, face_id, interest, local_app=from_local)
             self.queue_to_higher.put([face_id, interest])
@@ -141,8 +141,8 @@ class BasicICNLayer(LayerProcess):
                 self.logger.info("Sending NACK to previous node(s)")
                 re_add = False
                 for i in range(0, len(pit_entry.faceids)):
-                    if pit_entry.local_app[i] == True: #Go with NACK first only to app layer if it was requested
-                        re_add = True
+                    if pit_entry.local_app[i] == True: #Go with NACK first only to app layer if it app layer issued it
+                        re_add = True # This strategy enables app layer to react on the nack
                 self.pit.remove_pit_entry(pit_entry.name)
                 for i in range(0, len(pit_entry.faceids)):
                     if to_higher is not None and pit_entry.local_app[i]:

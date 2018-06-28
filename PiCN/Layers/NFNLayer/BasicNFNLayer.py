@@ -64,7 +64,7 @@ class BasicNFNLayer(LayerProcess):
                     self.queue_to_lower.put([packet_id, c])
             return
         if interest.name.components[-1] != b"NFN": #send non NFN interests back
-            self.queue_to_lower.put([packet_id, interest])
+           # self.queue_to_lower.put([packet_id, interest])
             return
         #parse interest and create computation
         nfn_str, prepended_name = self.parser.network_name_to_nfn_str(interest.name)

@@ -69,7 +69,7 @@ class NFNForwarder(object):
         self.chunklayer = BasicChunkLayer(self.chunkifier, log_level=log_level)
 
         # setup nfn
-        self.icnlayer._interest_to_app = True
+        self.icnlayer._interest_to_app = lambda interest: interest.name.components[-1] == b"NFN" or interest.name.components[-1].startswith(b"c") or interest.name.components[-1].startswith(b"m")
         self.executors = {"PYTHON": NFNPythonExecutor()}
         self.parser = DefaultNFNParser()
         self.r2cclient = TimeoutR2CHandler()
