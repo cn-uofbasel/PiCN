@@ -24,6 +24,7 @@ def main(args):
 
     # Info
     logger.info("Starting a PinnedNFN Server...")
+    logger.info("Replica ID:     " + str(args.id))
     logger.info("UDP Port:       " + str(args.port))
     logger.info("Log Level:      " + args.logging)
     logger.info("Packet Format:  " + args.format)
@@ -32,13 +33,14 @@ def main(args):
     encoder = NdnTlvEncoder(log_level) if args.format == 'ndntlv' else SimpleStringEncoder
 
     # Start
-    server = PiCN.Playground.PinnedNFN.PinnedNFNStack(args.port, log_level=log_level, encoder=encoder)
+    server = PiCN.Playground.PinnedNFN.PinnedNFNStack(replica_id=args.id, port=args.port, log_level=log_level, encoder=encoder)
     server.start_forwarder()
     server.link_layer.process.join()
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Pinned NFN Server')
+    parser.add_argument('-i', '--id', type=int, help="ID of this replica", required=True)
     parser.add_argument('-p', '--port', type=int, default=3000,
                         help="UDP port (default: 3000)")
     parser.add_argument('-f', '--format', choices=['ndntlv', 'simple'], type=str, default='ndntlv',

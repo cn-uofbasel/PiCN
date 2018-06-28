@@ -10,6 +10,7 @@ from PiCN.Packets import Name
 def main(args, help_string):
 
     mgmt_client = MgmtClient(args.port)
+    data = None
 
     if args.command == "shutdown":
         try:
