@@ -9,11 +9,10 @@ class PinnedComputationLayer(LayerProcess):
         self.storage = None
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
-        pass # this is already the highest layer.
+        pass  # this is already the highest layer.
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
-        pass # TODO
-
+        pass  # TODO
 
     def ageing(self):
         pass  # data should not be removed from cache

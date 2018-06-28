@@ -1,4 +1,4 @@
-"""Repository Stack"""
+"""Pinned NFN Stack"""
 
 from PiCN.Playground.PinnedNFN import PinnedComputationLayer
 from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
@@ -21,7 +21,7 @@ class PinnedNFNStack(object):
         encoder.set_log_level(log_level)
         self.encoder = encoder
 
-        #create datastruct
+        # create datastruct
         synced_data_struct_factory1 = PiCNSyncDataStructFactory()
         synced_data_struct_factory1.register("face_id_table", FaceIDDict)
         synced_data_struct_factory1.create_manager()
