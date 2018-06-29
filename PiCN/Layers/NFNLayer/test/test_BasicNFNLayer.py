@@ -481,10 +481,12 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.assertEqual(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list[0],
                          "/func/f1(%/test/data%)")
 
-        self.nfn_layer.handleNack(res[1], Nack(compare_name, NackReason.COMP_PARAM_UNAVAILABLE, interest=Interest(compare_name)))
+        self.nfn_layer.handleNack(res[1], Nack(compare_name, NackReason.COMP_PARAM_UNAVAILABLE,
+                                               interest=Interest(compare_name)))
 
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
-        self.assertEqual(res[1], Nack(computation_name, NackReason.COMP_PARAM_UNAVAILABLE, interest=Interest(computation_name)))
+        self.assertEqual(res[1],
+                         Nack(computation_name, NackReason.COMP_PARAM_UNAVAILABLE, interest=Interest(computation_name)))
         self.assertEqual(self.nfn_layer.computation_table.get_container(), [])
 
     def test_handle_nack_on_rewritten_computation_further_rewrite(self):
@@ -516,7 +518,8 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.assertEqual(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list,
                          ["/func/f1(%/test/data%,/data/test)", "/func/f1(/test/data,%/data/test%)"])
 
-        self.nfn_layer.handleNack(res[1], Nack(nack_name, NackReason.COMP_PARAM_UNAVAILABLE, interest=Interest(nack_name)))
+        self.nfn_layer.handleNack(res[1],
+                                  Nack(nack_name, NackReason.COMP_PARAM_UNAVAILABLE, interest=Interest(nack_name)))
 
         second_request_name = Name("/data/test")
         second_request_name += "/func/f1(/test/data,_)"
@@ -542,9 +545,11 @@ class test_BasicNFNLayer(unittest.TestCase):
         computation_entry.interest = computation_interest
         self.nfn_layer.computation_table.append_computation(computation_entry)
         self.assertEqual(self.nfn_layer.computation_table.get_container_size(), 1)
-        self.nfn_layer.handleNack(1, Nack(computation_name, NackReason.COMP_PARAM_UNAVAILABLE, interest=computation_interest))
+        self.nfn_layer.handleNack(1, Nack(computation_name, NackReason.COMP_PARAM_UNAVAILABLE,
+                                          interest=computation_interest))
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
-        self.assertEqual(res[1], Nack(computation_name, NackReason.COMP_PARAM_UNAVAILABLE, interest=computation_interest))
+        self.assertEqual(res[1],
+                         Nack(computation_name, NackReason.COMP_PARAM_UNAVAILABLE, interest=computation_interest))
         self.assertEqual(self.nfn_layer.computation_table.get_container(), [])
 
     def test_handle_nack_on_await_data(self):
@@ -564,7 +569,8 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.nfn_layer.computation_table.add_awaiting_data(computation_name, Name("/test/data"))
         self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).awaiting_data), 1)
 
-        self.nfn_layer.handleNack(1, Nack(Name("/test/data"), NackReason.NO_CONTENT, interest=Interest(Name("/test/data"))))
+        self.nfn_layer.handleNack(1, Nack(Name("/test/data"), NackReason.NO_CONTENT,
+                                          interest=Interest(Name("/test/data"))))
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
         self.assertEqual(res[1], Nack(computation_name, NackReason.NO_CONTENT, interest=computation_interest))
         self.assertEqual(self.nfn_layer.computation_table.get_container(), [])

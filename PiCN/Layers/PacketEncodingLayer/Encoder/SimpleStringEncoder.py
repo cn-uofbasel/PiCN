@@ -43,7 +43,7 @@ class SimpleStringEncoder(BasicEncoder):
             self.logger.info("Decode NACK")
             name = data.split(":")[1]
             reason = NackReason(data.split(":")[3])
-            return Nack(self.unescape_name(Name(name)), reason)
+            return Nack(self.unescape_name(Name(name)), reason, None)
         else:
             self.logger.info("Decode failed (unknown packet type)")
             return UnknownPacket(wire_format=wire_data)

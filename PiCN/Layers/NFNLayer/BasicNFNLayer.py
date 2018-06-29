@@ -210,12 +210,13 @@ class BasicNFNLayer(LayerProcess):
         function_name = Name(entry.ast._element)
         function_code = entry.available_data.get(function_name)
         if function_code is None:
-            self.queue_to_lower.put([entry.id, Nack(entry.original_name,
-                                                    NackReason.COMP_PARAM_UNAVAILABLE, interest=entry.interest)])
+            self.queue_to_lower.put([entry.id, Nack(entry.original_name, NackReason.COMP_PARAM_UNAVAILABLE,
+                                                    interest=entry.interest)])
             return
         executor: BaseNFNExecutor = self.executors.get(self.get_nf_code_language(function_code))
         if executor is None:
-            self.queue_to_lower.put([entry.id, Nack(entry.original_name, NackReason.COMP_EXCEPTION, interest=entry.interest)])
+            self.queue_to_lower.put([entry.id,
+                                     Nack(entry.original_name, NackReason.COMP_EXCEPTION, interest=entry.interest)])
         for e in entry.ast.params:
             if isinstance(e, AST_Name):
                 param = entry.available_data.get(Name(e._element))
@@ -234,8 +235,8 @@ class BasicNFNLayer(LayerProcess):
 
         res = executor.execute(function_code=function_code, params=params)
         if res is None:
-            self.queue_to_lower.put([entry.id, Nack(entry.original_name, NackReason.COMP_EXCEPTION,
-                                                    interest=entry.interest)])
+            self.queue_to_lower.put([entry.id,
+                                     Nack(entry.original_name, NackReason.COMP_EXCEPTION, interest=entry.interest)])
         content_res: Content = Content(entry.original_name, str(res)) #TODO typed results
         self.queue_to_lower.put([entry.id, content_res])
 
