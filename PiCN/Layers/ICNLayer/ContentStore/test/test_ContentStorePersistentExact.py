@@ -37,15 +37,15 @@ class test_ContentStoreMemoryExact(unittest.TestCase):
         fc = self.cs.find_content_object(c.name)
         self.assertEqual(fc, None)
 
-        def test_restored(self):
-            """Test adding and searching data to CS"""
-            c = Content("/test/data", "Hello World")
-            self.cs.add_content_object(c)
-            fc = self.cs.find_content_object(c.name)
-            self.assertEqual(fc.content, c)
-            # close and restore
-            db_path = self.cs.db_path
-            self.cs.close_cs()
-            restored_cs = ContentStorePersistentExact(db_path=db_path)
-            restored_content = restored_cs.find_content_object(c.name)
-            self.assertEqual(restored_cs.content, c)
+    def test_restored(self):
+        """Test adding and searching data to CS"""
+        c = Content("/test/data", "Hello World")
+        self.cs.add_content_object(c)
+        fc = self.cs.find_content_object(c.name)
+        self.assertEqual(fc.content, c)
+        # close and restore
+        db_path = self.cs.db_path
+        self.cs.close_cs()
+        restored_cs = ContentStorePersistentExact(db_path=db_path)
+        restored_content = restored_cs.find_content_object(c.name).content # TODO
+        self.assertEqual(restored_content, c)
