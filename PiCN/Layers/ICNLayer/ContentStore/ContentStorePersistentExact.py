@@ -12,7 +12,7 @@ from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore, ContentStoreEntr
 class ContentStorePersistentExact(BaseContentStore):
     """ A persistent content store with exact matching"""
 
-    def __init__(self, cs_timeout: int = 10, db_path:str=None):
+    def __init__(self, cs_timeout: int = 10, db_path: str = None):
         if db_path is None:
             self.db_path = "/tmp/" + ''.join(random.choice(string.ascii_lowercase) for x in range(9)) + ".db"
         else:
@@ -20,8 +20,8 @@ class ContentStorePersistentExact(BaseContentStore):
         self._container = shelve.open(self.db_path)
         self._cs_timeout = cs_timeout
 
-    def close(self):
-        self._container.clear()
+    def close_cs(self):
+        self._container.close()
 
     def get_db_path(self) -> str:
         return self.db_path
