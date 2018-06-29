@@ -14,11 +14,11 @@ class PiCNProcess(object):
         self.__logger_name = logger_name
         self.__log_level = log_level
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def start_process(self):
         """Init and start the process"""
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def stop_process(self):
         """Stop the process"""
 
