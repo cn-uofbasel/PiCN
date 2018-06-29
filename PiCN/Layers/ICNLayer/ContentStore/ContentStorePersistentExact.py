@@ -2,6 +2,8 @@
 
 import time
 import shelve
+import random
+import string
 
 from PiCN.Packets import Content, Name
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore, ContentStoreEntry
@@ -10,13 +12,19 @@ from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore, ContentStoreEntr
 class ContentStorePersistentExact(BaseContentStore):
     """ A persistent content store with exact matching"""
 
-    def __init__(self, cs_timeout: int = 10):
-        self.db_path = "/tmp/database.db"  # TODO
+    def __init__(self, cs_timeout: int = 10, db_path:str=None):
+        if db_path is None:
+            self.db_path = "/tmp/" + ''.join(random.choice(string.ascii_lowercase) for x in range(9)) + ".db"
+        else:
+            self.db_path = db_path
         self._container = shelve.open(self.db_path)
         self._cs_timeout = cs_timeout
 
     def close(self):
         self._container.clear()
+
+    def get_db_path(self) -> str:
+        return self.db_path
 
     def find_content_object(self, name: Name) -> ContentStoreEntry:
         if name.to_string() in self._container.keys():
