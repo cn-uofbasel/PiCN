@@ -30,6 +30,7 @@ class BasicLinkLayer(LayerProcess):
         :param to_higher: queue to the higher layer
         :param data: received data
         """
+        self.logger.info("Got data from Network")
         packet = data[0]
         addr = data[1]
 
@@ -44,6 +45,7 @@ class BasicLinkLayer(LayerProcess):
         :param to_higher: queue to the higher layer
         :param data: data to be send
         """
+        self.logger.info("Got data from Higher Layer")
         faceid = data[0]
         packet = data[1]
 

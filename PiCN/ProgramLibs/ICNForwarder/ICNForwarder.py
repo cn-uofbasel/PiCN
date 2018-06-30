@@ -2,6 +2,8 @@
 
 import multiprocessing
 
+from typing import List
+
 from PiCN.LayerStack.LayerStack import LayerStack
 from PiCN.Layers.ICNLayer import BasicICNLayer
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseMemoryPrefix
@@ -11,7 +13,7 @@ from PiCN.Processes import PiCNSyncDataStructFactory
 
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
 from PiCN.Layers.LinkLayer import BasicLinkLayer
-from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface, AddressInfo
+from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface, AddressInfo, BaseInterface
 from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder, SimpleStringEncoder
 from PiCN.Logger import Logger
@@ -21,13 +23,13 @@ from PiCN.Routing import BasicRouting
 class ICNForwarder(object):
     """A ICN Forwarder using PiCN"""
 
-    def __init__(self, port=9000, log_level=255, encoder: BasicEncoder=None):
+    def __init__(self, port=9000, log_level=255, encoder: BasicEncoder=None, interfaces: List[BaseInterface] = None):
         # debug level
         logger = Logger("ICNForwarder", log_level)
 
         # packet encoder
         if encoder is None:
-            self.encoder = SimpleStringEncoder
+            self.encoder = SimpleStringEncoder()
         else:
             encoder.set_log_level(log_level)
             self.encoder = encoder
@@ -46,7 +48,12 @@ class ICNForwarder(object):
         faceidtable = synced_data_struct_factory.manager.faceidtable()
 
         #default interface
-        interfaces = [UDP4Interface(port)]
+        if interfaces is not None:
+            self.interfaces = interfaces
+            mgmt_port = port
+        else:
+            interfaces = [UDP4Interface(port)]
+            mgmt_port = interfaces[0].get_port()
 
         # initialize layers
         self.linklayer = BasicLinkLayer(interfaces, faceidtable, log_level=log_level)
@@ -69,7 +76,7 @@ class ICNForwarder(object):
         self.routing = BasicRouting(self.icnlayer.pit, None, log_level=log_level) #TODO NOT IMPLEMENTED YET
 
         # mgmt
-        self.mgmt = Mgmt(cs, fib, pit, self.linklayer, interfaces[0].get_port(), self.stop_forwarder,
+        self.mgmt = Mgmt(cs, fib, pit, self.linklayer, mgmt_port, self.stop_forwarder,
                          log_level=log_level)
 
     def start_forwarder(self):

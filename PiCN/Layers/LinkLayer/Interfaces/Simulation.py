@@ -15,6 +15,7 @@ from PiCN.Layers.LinkLayer.Interfaces import BaseInterface
 class SimulationInterface(BaseInterface):
     """A Simulation Interface manages the communication between a PiCN Forwarder and the Simulation Bus
     It can contain multiple parameter for packet loss or delay.
+    :param address: addr used by the interface
     """
 
     def __init__(self, address: str):
@@ -27,53 +28,67 @@ class SimulationInterface(BaseInterface):
 
         self.queue_from_linklayer = multiprocessing.Queue()
 
+    @property
     def file_descriptor(self):
         return self.queue_from_bus._reader
 
-    def send(self, data, addr):
-        self.queue_from_bus.put([addr, data])
+    def send(self, data, addr, src = "relay"):
+        if src == "relay":
+            self.queue_from_linklayer.put([addr, data])
+        elif src == "bus":
+            self.queue_from_bus.put([addr, data])
 
-    def receive(self):
-        return self.queue_from_linklayer.get(), self.address()
+    def receive(self, dst = "relay"):
+        if dst == "relay":
+            data = self.queue_from_bus.get()
+        elif dst == "bus":
+            data = self.queue_from_linklayer.get()
+        addr = data[0]
+        packet = data[1]
+        return (packet, addr)
 
     def address(self):
-        return self.address()
+        return self._address
+
+    def close(self):
+        self.queue_from_linklayer.close()
+        self.queue_from_bus.close()
 
 
 
 class SimulationBus(PiCNProcess):
     """Simulation Bus that dispatches the communication between nodes in a Simulation"""
 
-    def __init__(self, interfacetable):
-        self.interfacetable: Dict[SimulationInterface] = interfacetable
+    def __init__(self, ifacetable):
+        self.interfacetable: Dict[SimulationInterface] = {}# ifacetable
 
     def start_process(self):
-        super().start_process()
+        self.process = multiprocessing.Process(target=self._run)
+        self.process.daemon = True
+        self.process.start()
 
     def stop_process(self):
-        super().stop_process()
+        if self.process:
+            self.process.terminate()
 
-    def run(self):
+    def _run(self):
+        """Run the main loop of the Simulation Bus"""
         while True:
             poller = select.poll()
             READ_ONLY = select.POLLIN | select.POLLPRI | select.POLLHUP | select.POLLERR
-            fds = list(map((lambda x: x.file_descriptor), list(self.interfacetable.values())))
+            fds = list(map((lambda x: x.queue_from_linklayer._reader), list(self.interfacetable.values())))
             for fd in fds:
                 poller.register(fd, READ_ONLY)
 
             ready_fds = poller.poll()
             for fd in ready_fds:
-                interfaces = list(filter(lambda x: x.file_descriptor.fileno() == fd[0], self.interfaces.values()))
-
-            interfaces = list(filter(lambda x: x.file_descriptor.fileno() == fd[0], self.interfaces))
+                interfaces = list(filter(lambda x: x.queue_from_linklayer._reader.fileno() == fd[0], self.interfacetable.values()))
             try:
                 interface = interfaces[0]
             except:
                 return
-            data = interface.receive()
+            packet, dst_addr = interface.receive("bus")
             src_addr = interface.address()
-            dst_addr = data[0]
-            packet = data[1]
 
             if dst_addr not in self.interfacetable:
                 continue
@@ -81,7 +96,15 @@ class SimulationBus(PiCNProcess):
             #TODO delay(use thread timer) and packet loss (just continue)
 
             dst_interface: SimulationInterface = self.interfacetable.get(dst_addr)
-            dst_interface.send(packet, src_addr)
+            dst_interface.send(packet, src_addr, "bus")
 
+    def add_interface(self, addr):
+        """create a new interface given a addr and adds it to the
+        :param addr: address to be used for the interface
+        :return interface that was created.
 
+        """
+        iface = SimulationInterface(addr)
+        self.interfacetable[addr] = iface
+        return self.interfacetable.get(addr)
 
