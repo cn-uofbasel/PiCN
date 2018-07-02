@@ -6,6 +6,7 @@ which can be used as identify for a Face in the LinkLayer.
 import multiprocessing
 import select
 import threading
+import time
 
 from typing import Dict
 
@@ -17,13 +18,15 @@ class SimulationInterface(BaseInterface):
     """A Simulation Interface manages the communication between a PiCN Forwarder and the Simulation Bus
     It can contain multiple parameter for packet loss or delay.
     :param address: addr used by the interface
+    :param delay_func: lambda-function, gets a packet as parameter and returns a delay value in seconds
+    :param packet_loss_func: gets a packet as parameter and returns if the packet was lost (true) or not (false)
     """
 
-    def __init__(self, address: str):
+    def __init__(self, address: str, delay_func=lambda packet: 0, packet_loss_func=lambda packet: False):
         self._address = address
 
-        self.delay = lambda packet: 0  #Delay in microseconds
-        self.packet_loss = lambda  packet: False  #False if packet is not lost
+        self.delay = delay_func #Delay in microseconds
+        self.packet_loss = packet_loss_func  #False if packet is not lost
 
         self.queue_from_bus = multiprocessing.Queue()
 
@@ -39,11 +42,17 @@ class SimulationInterface(BaseInterface):
         elif src == "bus":
             self.queue_from_bus.put([addr, data])
 
-    def receive(self, dst = "relay"):
+    def receive(self, dst = "relay", timeout=0):
         if dst == "relay":
-            data = self.queue_from_bus.get()
+            if timeout > 0:
+                data = self.queue_from_bus.get(timeout=timeout)
+            else:
+                data = self.queue_from_bus.get()
         elif dst == "bus":
-            data = self.queue_from_linklayer.get()
+            if timeout > 0:
+                data = self.queue_from_linklayer.get(timeout=timeout)
+            else:
+                data = self.queue_from_linklayer.get()
         addr = data[0]
         packet = data[1]
         return (packet, addr)
@@ -104,13 +113,17 @@ class SimulationBus(PiCNProcess):
             t.setDaemon(True)
             t.start()
 
-    def add_interface(self, addr):
+            #time.sleep(delay)
+            #dst_interface.send(packet, src_addr, "bus")
+
+    def add_interface(self, addr, delay_func=lambda packet: 0, packet_loss_func=lambda packet: False):
         """create a new interface given a addr and adds it to the
         :param addr: address to be used for the interface
         :return interface that was created.
-
+        :param delay_func: lambda-function, gets a packet as parameter and returns a delay value in seconds
+        :param packet_loss_func: gets a packet as parameter and returns if the packet was lost (true) or not (false)
         """
-        iface = SimulationInterface(addr)
+        iface = SimulationInterface(addr, delay_func, packet_loss_func)
         self.interfacetable[addr] = iface
         return self.interfacetable.get(addr)
 
