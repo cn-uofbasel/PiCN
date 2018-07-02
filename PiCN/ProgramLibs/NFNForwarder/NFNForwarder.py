@@ -2,6 +2,8 @@
 
 import multiprocessing
 
+from typing import List
+
 from PiCN.LayerStack import LayerStack
 from PiCN.Layers.NFNLayer import BasicNFNLayer
 from PiCN.Layers.ChunkLayer import BasicChunkLayer
@@ -23,13 +25,13 @@ from PiCN.Mgmt import Mgmt
 from PiCN.Processes import PiCNSyncDataStructFactory
 from PiCN.Routing import BasicRouting
 from PiCN.Layers.LinkLayer import BasicLinkLayer
-from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface, AddressInfo
+from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface, AddressInfo, BaseInterface
 from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
 
 class NFNForwarder(object):
     """NFN Forwarder for PICN"""
     # TODO add chunking layer
-    def __init__(self, port=9000, log_level=255, encoder: BasicEncoder=None):
+    def __init__(self, port=9000, log_level=255, encoder: BasicEncoder=None, interfaces: List[BaseInterface]=None):
         # debug level
         logger = Logger("NFNForwarder", log_level)
         logger.info("Start PiCN NFN Forwarder on port " + str(port))
@@ -60,7 +62,12 @@ class NFNForwarder(object):
         self.chunkifier = SimpleContentChunkifyer()
 
         # default interface
-        interfaces = [UDP4Interface(port)]
+        if interfaces is not None:
+            self.interfaces = interfaces
+            mgmt_port = port
+        else:
+            interfaces = [UDP4Interface(port)]
+            mgmt_port = interfaces[0].get_port()
 
         # initialize layers
         self.linklayer = BasicLinkLayer(interfaces, faceidtable, log_level=log_level)
@@ -93,7 +100,7 @@ class NFNForwarder(object):
 
         # mgmt
         self.mgmt = Mgmt(self.icnlayer.cs, self.icnlayer.fib, self.icnlayer.pit, self.linklayer,
-                         self.linklayer.interfaces[0].get_port(), self.stop_forwarder,
+                         mgmt_port, self.stop_forwarder,
                          log_level=log_level)
 
     def start_forwarder(self):

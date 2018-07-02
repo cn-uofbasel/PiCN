@@ -1,6 +1,7 @@
 """A ICN Repository using PiCN"""
 
 import multiprocessing
+from typing import List
 
 from PiCN.LayerStack.LayerStack import LayerStack
 from PiCN.Layers.ChunkLayer import BasicChunkLayer
@@ -10,7 +11,7 @@ from PiCN.Layers.RepositoryLayer import BasicRepositoryLayer
 from PiCN.Layers.ChunkLayer.Chunkifyer import SimpleContentChunkifyer
 from PiCN.Layers.LinkLayer import BasicLinkLayer
 from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
-from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface
+from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface, BaseInterface
 from PiCN.Processes.PiCNSyncDataStructFactory import PiCNSyncDataStructFactory
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
@@ -25,7 +26,7 @@ class ICNDataRepository(object):
     """A ICN Forwarder using PiCN"""
 
     def __init__(self, foldername: str, prefix: Name,
-                 port=9000, log_level=255, encoder: BasicEncoder = None):
+                 port=9000, log_level=255, encoder: BasicEncoder = None, interfaces: List[BaseInterface]=None):
 
         logger = Logger("ICNRepo", log_level)
         logger.info("Start PiCN Data Repository")
@@ -48,7 +49,12 @@ class ICNDataRepository(object):
         synced_data_struct_factory.create_manager()
         faceidtable = synced_data_struct_factory.manager.faceidtable()
 
-        interfaces = [UDP4Interface(port)]
+        if interfaces is not None:
+            self.interfaces = interfaces
+            mgmt_port = port
+        else:
+            interfaces = [UDP4Interface(port)]
+            mgmt_port = interfaces[0].get_port()
 
         self.linklayer = BasicLinkLayer(interfaces, faceidtable, log_level=log_level)
         self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
@@ -63,7 +69,7 @@ class ICNDataRepository(object):
         ])
 
         # mgmt
-        self.mgmt = Mgmt(None, None, None, self.linklayer, self.linklayer.interfaces[0].get_port(),
+        self.mgmt = Mgmt(None, None, None, self.linklayer, mgmt_port,
                          self.start_repo, repo_path=foldername,
                          repo_prfx=prefix, log_level=log_level)
 
