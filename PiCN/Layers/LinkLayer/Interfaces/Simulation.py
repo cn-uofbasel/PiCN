@@ -104,14 +104,16 @@ class SimulationBus(PiCNProcess):
                 continue
 
             #TODO improve logging
-            print("Sending packet from '" + src_addr + "' to '" + dst_addr + "': '" + packet.decode() + "'")
+            print("Sending packet from '" + src_addr + "' to '" + dst_addr + "': '" + packet.decode().replace("\n", " ") + "'" , end="")
 
             dst_interface: SimulationInterface = self.interfacetable.get(dst_addr)
 
             if dst_interface.packet_loss(packet):
+                print(" ... LOST")
                 return
 
             delay = dst_interface.delay(packet)
+            print(" (delay: " + str(delay) + ")")
             t = threading.Timer(delay, dst_interface.send, args=[packet, src_addr, "bus"])
             t.setDaemon(True)
             t.start()

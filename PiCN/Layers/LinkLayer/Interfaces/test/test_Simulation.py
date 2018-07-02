@@ -8,6 +8,7 @@ from PiCN.Layers.LinkLayer.Interfaces import SimulationBus
 from PiCN.Layers.LinkLayer.Interfaces import SimulationInterface
 from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
 from PiCN.ProgramLibs.ICNForwarder import ICNForwarder
+from PiCN.ProgramLibs.NFNForwarder import NFNForwarder
 from PiCN.ProgramLibs.Fetch import Fetch
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 from PiCN.Packets import Content, Interest, Name
@@ -111,7 +112,7 @@ class test_Simulation(unittest.TestCase):
             self.fail()
 
     def test_creation_of_simulation_face_mgmt(self):
-        """Test the creation of a simulation face using a """
+        """Test the creation of a simulation face using a mgmt client"""
         self.icn_forwarder1.start_forwarder()
         self.icn_forwarder2.start_forwarder()
 
@@ -133,3 +134,34 @@ class test_Simulation(unittest.TestCase):
         self.assertEqual(src, "icnfwd1")
         c = self.encoder.decode(res)
         self.assertEqual(c, Content("/test/data", "HelloWorld"))
+
+    def test_single_nfn_interest(self):
+        """Test simulation with NFN nodes and a single packet """
+
+        self.icn_forwarder1 = NFNForwarder(port=0, interfaces=[self.simulation_bus.add_interface("icnfwd1")])
+        self.icn_forwarder2 = NFNForwarder(port=0, interfaces=[self.simulation_bus.add_interface("icnfwd2")])
+        self.icn_forwarder1.start_forwarder()
+        self.icn_forwarder2.start_forwarder()
+        self.simulation_bus.start_process()
+
+        mgmt_client1 = MgmtClient(self.icn_forwarder1.mgmt.mgmt_sock.getsockname()[1])
+        mgmt_client1.add_face("icnfwd2", None, 0)
+        mgmt_client1.add_forwarding_rule(Name("/test"), 0)
+        mgmt_client1.add_new_content(Name("/func/f1"), "PYTHON\nf\ndef f(a):\n    return a.upper()")
+
+        mgmt_client2 = MgmtClient(self.icn_forwarder2.mgmt.mgmt_sock.getsockname()[1])
+        mgmt_client2.add_new_content(Name("/test/data"), "HelloWorld")
+        mgmt_client2.add_face("icnfwd1", None, 0)
+        mgmt_client2.add_forwarding_rule(Name("/func"), 0)
+
+        interest = Interest("/test/data")
+        interest.name += "/func/f1(_)"
+        interest.name += "NFN"
+        wire_data = self.encoder.encode(interest)
+
+        self.fetchiface.send(wire_data, "icnfwd1")
+
+        res, src = self.fetchiface.receive()
+        self.assertEqual(src, "icnfwd1")
+        c = self.encoder.decode(res)
+        self.assertEqual(c, Content(interest.name, "HELLOWORLD"))
