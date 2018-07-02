@@ -105,7 +105,7 @@ class test_Simulation(unittest.TestCase):
         self.fetchiface.send(wire_data, "icnfwd1")
         try:
             self.fetchiface.receive(timeout=4)
-        except queue.Empty as e:
+        except queue.Empty:
             pass
         else:
             self.fail()
