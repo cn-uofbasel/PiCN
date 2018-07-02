@@ -103,6 +103,9 @@ class SimulationBus(PiCNProcess):
             if dst_addr not in self.interfacetable:
                 continue
 
+            #TODO improve logging
+            print("Sending packet from '" + src_addr + "' to '" + dst_addr + "': '" + packet.decode() + "'")
+
             dst_interface: SimulationInterface = self.interfacetable.get(dst_addr)
 
             if dst_interface.packet_loss(packet):

@@ -51,6 +51,7 @@ class BasicLinkLayer(LayerProcess):
 
         addr_info = self.faceidtable.get_address_info(faceid)
         self.interfaces[addr_info.interface_id].send(packet, addr_info.address)
+        self.logger.info("Send packet to: " + str(addr_info.address))
 
     def _run_poll(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
                   to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):

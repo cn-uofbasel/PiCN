@@ -92,9 +92,13 @@ class Mgmt(PiCNProcess):
         # newface expects /linklayer/newface/ip:port
         if (command == "newface"):
             ip, port, if_num = params.split(":", 2)
-            port = int(port)
+            if port != 'None':
+                port = int(port)
             if_num = int(if_num)
-            fid = self._linklayer.faceidtable.get_or_create_faceid(AddressInfo((ip, port), if_num))
+            if port != 'None':
+                fid = self._linklayer.faceidtable.get_or_create_faceid(AddressInfo((ip, port), if_num))
+            else:
+                fid = self._linklayer.faceidtable.get_or_create_faceid(AddressInfo(ip, if_num))
             reply = "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newface OK:" + str(fid) + "\r\n"
             replysock.send(reply.encode())
             self.logger.info("New Face added " + ip + "|" + str(port) + ", FaceID: " + str(fid))

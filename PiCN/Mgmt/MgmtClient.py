@@ -14,7 +14,7 @@ class MgmtClient(object):
     def add_face(self, ip_addr: str, port: int, if_num: int) -> str:
         """add a new face
         :param ip_addr: id address on which the face points to
-        :param port: port the face points to
+        :param port: port the face points to. if address requires no port (simulation!) use None
         :param if_num: identify of the interface the face is using
         :return: reply message of the relay
         """

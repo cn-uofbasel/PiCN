@@ -21,8 +21,8 @@ class test_Simulation(unittest.TestCase):
 
         self.fetchiface = self.simulation_bus.add_interface("fetch")
         self.encoder = SimpleStringEncoder()
-        self.icn_forwarder1 = ICNForwarder(port=0, interfaces=[self.simulation_bus.add_interface("icnfwd1")])
-        self.icn_forwarder2 = ICNForwarder(port=0, interfaces=[self.simulation_bus.add_interface("icnfwd2")])
+        self.icn_forwarder1 = ICNForwarder(port=0, interfaces=[self.simulation_bus.add_interface("icnfwd1")], log_level=255)
+        self.icn_forwarder2 = ICNForwarder(port=0, interfaces=[self.simulation_bus.add_interface("icnfwd2")], log_level=255)
 
         #self.simulation_bus.start_process()
 
@@ -109,3 +109,27 @@ class test_Simulation(unittest.TestCase):
             pass
         else:
             self.fail()
+
+    def test_creation_of_simulation_face_mgmt(self):
+        """Test the creation of a simulation face using a """
+        self.icn_forwarder1.start_forwarder()
+        self.icn_forwarder2.start_forwarder()
+
+        self.simulation_bus.start_process()
+
+        mgmt_client1 = MgmtClient(self.icn_forwarder1.mgmt.mgmt_sock.getsockname()[1])
+
+        mgmt_client1.add_face("icnfwd2", None, 0)
+        mgmt_client1.add_forwarding_rule(Name("/test"), 0)
+
+        mgmt_client2 = MgmtClient(self.icn_forwarder2.mgmt.mgmt_sock.getsockname()[1])
+        mgmt_client2.add_new_content(Name("/test/data"), "HelloWorld")
+
+        interest = Interest("/test/data")
+        wire_data = self.encoder.encode(interest)
+        self.fetchiface.send(wire_data, "icnfwd1")
+
+        res, src = self.fetchiface.receive()
+        self.assertEqual(src, "icnfwd1")
+        c = self.encoder.decode(res)
+        self.assertEqual(c, Content("/test/data", "HelloWorld"))
