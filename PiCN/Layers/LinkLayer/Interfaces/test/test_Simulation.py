@@ -3,12 +3,14 @@
 import multiprocessing
 import queue
 import unittest
+import os
 
 from PiCN.Layers.LinkLayer.Interfaces import SimulationBus
 from PiCN.Layers.LinkLayer.Interfaces import SimulationInterface
 from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
 from PiCN.ProgramLibs.ICNForwarder import ICNForwarder
 from PiCN.ProgramLibs.NFNForwarder import NFNForwarder
+from PiCN.ProgramLibs.ICNDataRepository import ICNDataRepository
 from PiCN.ProgramLibs.Fetch import Fetch
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 from PiCN.Packets import Content, Interest, Name
@@ -28,9 +30,12 @@ class test_Simulation(unittest.TestCase):
         #self.simulation_bus.start_process()
 
     def tearDown(self):
-        self.simulation_bus.stop_process()
-        self.icn_forwarder1.stop_forwarder()
-        self.icn_forwarder2.stop_forwarder()
+        try:
+            self.simulation_bus.stop_process()
+            self.icn_forwarder1.stop_forwarder()
+            self.icn_forwarder2.stop_forwarder()
+        except:
+            pass
 
     def test_send_single_packet(self):
         """Test fetching a single content object over the simulation bus"""
@@ -165,3 +170,33 @@ class test_Simulation(unittest.TestCase):
         self.assertEqual(src, "icnfwd1")
         c = self.encoder.decode(res)
         self.assertEqual(c, Content(interest.name, "HELLOWORLD"))
+
+    def test_singl_interest_repo(self):
+        """Test simulation by requesting data from a repo"""
+        self.path = "/tmp/repo_unit_test"
+        try:
+            os.stat( self.path)
+        except:
+            os.mkdir( self.path)
+        with open( self.path + "/f1", 'w+') as content_file:
+            content_file.write("A"*20000)
+        self.icn_forwarder2 = ICNDataRepository(self.path, Name("/test/data"), 0, log_level=255,
+                                                interfaces=[self.simulation_bus.add_interface("icnfwd2")])
+
+
+        self.icn_forwarder1.start_forwarder()
+        self.icn_forwarder2.start_repo()
+        self.simulation_bus.start_process()
+
+        mgmt_client1 = MgmtClient(self.icn_forwarder1.mgmt.mgmt_sock.getsockname()[1])
+        mgmt_client1.add_face("icnfwd2", None, 0)
+        mgmt_client1.add_forwarding_rule(Name("/test"), 0)
+
+        interest = Interest("/test/data/f1")
+        wire_data = self.encoder.encode(interest)
+
+        self.fetchiface.send(wire_data, "icnfwd1")
+        res, src = self.fetchiface.receive()
+        self.assertEqual(src, "icnfwd1")
+        c = self.encoder.decode(res)
+        self.assertEqual(c, Content(interest.name, "mdo:/test/data/f1/c0;/test/data/f1/c1;/test/data/f1/c2;/test/data/f1/c3:/test/data/f1/m1"))
