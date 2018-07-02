@@ -5,6 +5,7 @@ which can be used as identify for a Face in the LinkLayer.
 
 import multiprocessing
 import select
+import threading
 
 from typing import Dict
 
@@ -93,10 +94,15 @@ class SimulationBus(PiCNProcess):
             if dst_addr not in self.interfacetable:
                 continue
 
-            #TODO delay(use thread timer) and packet loss (just continue)
-
             dst_interface: SimulationInterface = self.interfacetable.get(dst_addr)
-            dst_interface.send(packet, src_addr, "bus")
+
+            if dst_interface.packet_loss(packet):
+                return
+
+            delay = dst_interface.delay(packet)
+            t = threading.Timer(delay, dst_interface.send, args=[packet, src_addr, "bus"])
+            t.setDaemon(True)
+            t.start()
 
     def add_interface(self, addr):
         """create a new interface given a addr and adds it to the
