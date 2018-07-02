@@ -35,6 +35,7 @@ class test_Simulation(unittest.TestCase):
             self.icn_forwarder1.stop_forwarder()
             self.icn_forwarder2.stop_forwarder()
         except:
+            self.icn_forwarder2.stop_repo()
             pass
 
     def test_send_single_packet(self):
