@@ -256,7 +256,7 @@ class cases_Simulation():
         except:
             os.mkdir(self.path)
         with open(self.path + "/f1", 'w+') as content_file:
-            content_file.write("A" * 500000)
+            content_file.write("A" * 50000)
         self.icn_forwarder2 = ICNDataRepository(self.path, Name("/test/data"), 0, log_level=255,
                                                 encoder=self.encoder_type(),
                                                 interfaces=[self.simulation_bus.add_interface("icnfwd2")])
@@ -274,7 +274,7 @@ class cases_Simulation():
 
         res = self.fetchtool.fetch_data(Name("/test/data/f1"), 3)
 
-        self.assertEqual("A"*500000, res)
+        self.assertEqual("A"*50000, res)
 
         mgmt_client1.shutdown()
         self.fetchtool.stop_fetch()
