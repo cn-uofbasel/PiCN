@@ -1,4 +1,4 @@
-""" An persistent content store with exact matching"""
+""" An persistent content store with exact matching """
 
 import time
 import shelve
