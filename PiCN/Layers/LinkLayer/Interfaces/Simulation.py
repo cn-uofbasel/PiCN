@@ -8,6 +8,7 @@ import select
 import threading
 import time
 
+from sys import getsizeof
 from typing import Dict
 
 from PiCN.Processes import PiCNProcess
@@ -19,13 +20,15 @@ class SimulationInterface(BaseInterface):
     """A Simulation Interface manages the communication between a PiCN Forwarder and the Simulation Bus
     It can contain multiple parameter for packet loss or delay.
     :param address: addr used by the interface
+    :param bandwidth: maximum bandwidth for the interface, 0 for no limit
     :param delay_func: lambda-function, gets a packet as parameter and returns a delay value in seconds
     :param packet_loss_func: gets a packet as parameter and returns if the packet was lost (true) or not (false)
     """
 
-    def __init__(self, address: str, delay_func=lambda packet: 0, packet_loss_func=lambda packet: False):
+    def __init__(self, address: str, max_bandwidth: int=0, delay_func=lambda packet: 0, packet_loss_func=lambda packet: False):
         self._address = address
 
+        self.max_bandwidth = max_bandwidth #0 for infinite
         self.delay = delay_func #Delay in microseconds
         self.packet_loss = packet_loss_func  #False if packet is not lost
 
@@ -86,6 +89,9 @@ class SimulationBus(PiCNProcess):
 
     def _run(self):
         """Run the main loop of the Simulation Bus"""
+        time_interval = 3
+        data_amount = 0
+        timestamp = time.time()
         while True:
             poller = select.poll()
             READ_ONLY = select.POLLIN | select.POLLPRI | select.POLLHUP | select.POLLERR
@@ -106,8 +112,9 @@ class SimulationBus(PiCNProcess):
             if dst_addr not in self.interfacetable:
                 continue
 
-            #TODO improve logging
+
             dec_packet = self.packetencoder.decode(packet)
+            #TODO improve logging
             print("Sending packet from\t'" + src_addr + "'\tto\t'" + dst_addr + "':\t'" + str(type(dec_packet)) + "\t"+
                   str(dec_packet.name).replace("\n", " ") + "'" , end="")
 
@@ -116,6 +123,16 @@ class SimulationBus(PiCNProcess):
             if dst_interface.packet_loss(packet):
                 print("\t... LOST")
                 return
+
+            if dst_interface.max_bandwidth > 0: #TODO check and improve that
+                t = time.time()
+                if timestamp + time_interval > t:
+                    timestamp = time.time()
+                    data_amount = 0
+                elif data_amount * 1/time_interval > dst_interface.max_bandwidth:
+                    time.sleep(time_interval - (t - timestamp))
+                else:
+                    data_amount += getsizeof(packet)
 
             delay = dst_interface.delay(packet)
             print("\t(delay: " + str(delay) + ")")
@@ -126,14 +143,15 @@ class SimulationBus(PiCNProcess):
             #time.sleep(delay)
             #dst_interface.send(packet, src_addr, "bus")
 
-    def add_interface(self, addr, delay_func=lambda packet: 0, packet_loss_func=lambda packet: False):
+    def add_interface(self, addr, max_bandwidth: int=0, delay_func=lambda packet: 0, packet_loss_func=lambda packet: False):
         """create a new interface given a addr and adds it to the
         :param addr: address to be used for the interface
-        :return interface that was created.
+        :param max_bandwidth: Maximum bandwith for the interface
         :param delay_func: lambda-function, gets a packet as parameter and returns a delay value in seconds
         :param packet_loss_func: gets a packet as parameter and returns if the packet was lost (true) or not (false)
+        :return interface that was created.
         """
-        iface = SimulationInterface(addr, delay_func, packet_loss_func)
+        iface = SimulationInterface(addr, max_bandwidth=max_bandwidth, delay_func=delay_func, packet_loss_func=packet_loss_func)
         self.interfacetable[addr] = iface
         return self.interfacetable.get(addr)
 

@@ -147,6 +147,38 @@ class cases_Simulation():
         c = self.encoder.decode(res)
         self.assertEqual(c, Content("/test/data", "HelloWorld"))
 
+        mgmt_client1.shutdown()
+        mgmt_client2.shutdown()
+
+
+    def test_bandwidth_limit(self): #TODO better test here
+        """Simple Test for checking the bandwidth limit"""
+
+        self.icn_forwarder1.start_forwarder()
+        self.icn_forwarder2.start_forwarder()
+
+        self.simulation_bus.start_process()
+
+        mgmt_client1 = MgmtClient(self.icn_forwarder1.mgmt.mgmt_sock.getsockname()[1])
+
+        mgmt_client1.add_face("icnfwd2", None, 0)
+        mgmt_client1.add_forwarding_rule(Name("/test"), 0)
+
+        mgmt_client2 = MgmtClient(self.icn_forwarder2.mgmt.mgmt_sock.getsockname()[1])
+        mgmt_client2.add_new_content(Name("/test/data"), "HelloWorld")
+
+        interest = Interest("/test/data")
+        wire_data = self.encoder.encode(interest)
+        self.fetchiface.send(wire_data, "icnfwd1")
+
+        res, src = self.fetchiface.receive()
+        self.assertEqual(src, "icnfwd1")
+        c = self.encoder.decode(res)
+        self.assertEqual(c, Content("/test/data", "HelloWorld"))
+
+        mgmt_client1.shutdown()
+        mgmt_client2.shutdown()
+
     def test_single_nfn_interest(self):
         """Test simulation with NFN nodes and a single packet """
 
@@ -180,6 +212,9 @@ class cases_Simulation():
         c = self.encoder.decode(res)
         self.assertEqual(c, Content(interest.name, "HELLOWORLD"))
 
+        mgmt_client1.shutdown()
+        mgmt_client2.shutdown()
+
     def test_singl_interest_repo(self):
         """Test simulation by requesting data from a repo"""
         self.path = "/tmp/repo_unit_test"
@@ -209,6 +244,8 @@ class cases_Simulation():
         self.assertEqual(src, "icnfwd1")
         c = self.encoder.decode(res)
         self.assertEqual(c, Content(interest.name, "mdo:/test/data/f1/c0;/test/data/f1/c1;/test/data/f1/c2;/test/data/f1/c3:/test/data/f1/m1"))
+
+        mgmt_client1.shutdown()
 
 
 class test_Simulation_Simple_Packet_Encoder(cases_Simulation, unittest.TestCase):
