@@ -12,6 +12,7 @@ from typing import Dict
 
 from PiCN.Processes import PiCNProcess
 from PiCN.Layers.LinkLayer.Interfaces import BaseInterface
+from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder, SimpleStringEncoder
 
 
 class SimulationInterface(BaseInterface):
@@ -69,8 +70,10 @@ class SimulationInterface(BaseInterface):
 class SimulationBus(PiCNProcess):
     """Simulation Bus that dispatches the communication between nodes in a Simulation"""
 
-    def __init__(self, ifacetable):
-        self.interfacetable: Dict[SimulationInterface] = {}# ifacetable
+    def __init__(self, packetencoder: BasicEncoder=SimpleStringEncoder()):
+        self.interfacetable: Dict[SimulationInterface] = {}
+        self.packetencoder = packetencoder
+
 
     def start_process(self):
         self.process = multiprocessing.Process(target=self._run)
@@ -104,16 +107,18 @@ class SimulationBus(PiCNProcess):
                 continue
 
             #TODO improve logging
-            print("Sending packet from '" + src_addr + "' to '" + dst_addr + "': '" + packet.decode().replace("\n", " ") + "'" , end="")
+            dec_packet = self.packetencoder.decode(packet)
+            print("Sending packet from\t'" + src_addr + "'\tto\t'" + dst_addr + "':\t'" + str(type(dec_packet)) + "\t"+
+                  str(dec_packet.name).replace("\n", " ") + "'" , end="")
 
             dst_interface: SimulationInterface = self.interfacetable.get(dst_addr)
 
             if dst_interface.packet_loss(packet):
-                print(" ... LOST")
+                print("\t... LOST")
                 return
 
             delay = dst_interface.delay(packet)
-            print(" (delay: " + str(delay) + ")")
+            print("\t(delay: " + str(delay) + ")")
             t = threading.Timer(delay, dst_interface.send, args=[packet, src_addr, "bus"])
             t.setDaemon(True)
             t.start()
