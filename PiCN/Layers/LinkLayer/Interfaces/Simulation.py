@@ -114,9 +114,8 @@ class SimulationBus(PiCNProcess):
 
 
             dec_packet = self.packetencoder.decode(packet)
-            #TODO improve logging
             print("Sending packet from\t'" + src_addr + "'\tto\t'" + dst_addr + "':\t'" + str(type(dec_packet)) + "\t"+
-                  str(dec_packet.name).replace("\n", " ") + "'" , end="")
+                  str(dec_packet.name).replace("\n", " ") + "'" , end="") #TODO improve logging
 
             dst_interface: SimulationInterface = self.interfacetable.get(dst_addr)
 
