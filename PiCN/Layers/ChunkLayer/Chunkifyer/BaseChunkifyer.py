@@ -12,10 +12,10 @@ class BaseChunkifyer(object):
         self._chunksize = chunksize
         pass
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def chunk_data(self, packet: Packet) -> List[Packet]:
         """Split packet into chunk"""
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def reassamble_data(self, name: Name, chunks: List[Content]) -> Packet:
         """Reassamble chunks"""

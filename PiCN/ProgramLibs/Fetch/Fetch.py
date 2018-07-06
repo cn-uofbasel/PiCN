@@ -16,7 +16,7 @@ from PiCN.Packets import Content, Name, Interest, Nack
 class Fetch(object):
     """Fetch Tool for PiCN"""
 
-    def __init__(self, ip: str, port: int, log_level = 255, encoder: BasicEncoder=None):
+    def __init__(self, ip: str, port: int, log_level = 255, encoder: BasicEncoder=None, interfaces=None):
 
         # create encoder and chunkifyer
         if encoder is None:
@@ -32,7 +32,10 @@ class Fetch(object):
         synced_data_struct_factory.create_manager()
         faceidtable = synced_data_struct_factory.manager.faceidtable()
 
-        interfaces = [UDP4Interface(0)]
+        if interfaces is None:
+            interfaces = [UDP4Interface(0)]
+        else:
+            interfaces = interfaces
 
         # create layers
         self.linklayer = BasicLinkLayer(interfaces, faceidtable, log_level=log_level)
@@ -46,7 +49,10 @@ class Fetch(object):
         ])
 
         # setup communication
-        self.fid = self.linklayer.faceidtable.get_or_create_faceid(AddressInfo((ip, port), 0))
+        if port is None:
+            self.fid = self.linklayer.faceidtable.get_or_create_faceid(AddressInfo(ip, 0))
+        else:
+            self.fid = self.linklayer.faceidtable.get_or_create_faceid(AddressInfo((ip, port), 0))
 
         # send packet
         self.lstack.start_all()
