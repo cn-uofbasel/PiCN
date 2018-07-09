@@ -20,11 +20,15 @@ class ContentStorePersistentExact(BaseContentStore):
         self._container = shelve.open(self.db_path)
         self._cs_timeout = cs_timeout
 
+
     def close_cs(self):
         self._container.close()
 
     def get_db_path(self) -> str:
         return self.db_path
+
+    def delete_all(self):
+        self._container.clear()
 
     def find_content_object(self, name: Name) -> ContentStoreEntry:
         if name.to_string() in self._container.keys():
