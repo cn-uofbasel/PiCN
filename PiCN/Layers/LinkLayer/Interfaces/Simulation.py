@@ -114,7 +114,7 @@ class SimulationBus(PiCNProcess):
 
 
             dec_packet = self.packetencoder.decode(packet)
-            print(f"{time.process_time():.5f}" + "\tSending packet from\t'" + src_addr + "'\tto\t'" + dst_addr + "':\t'" + str(type(dec_packet)) + "\t"+
+            print(f"{time.time():.5f}" + "\tSending packet from\t'" + src_addr + "'\tto\t'" + dst_addr + "':\t'" + str(type(dec_packet)) + "\t"+
                   str(dec_packet.name).replace("\n", " ") + "'" , end="") #TODO improve logging
 
             dst_interface: SimulationInterface = self.interfacetable.get(dst_addr)
@@ -135,9 +135,11 @@ class SimulationBus(PiCNProcess):
 
             delay = dst_interface.delay(packet)
             print("\t(delay: " + str(delay) + ")")
-            t = threading.Timer(delay, dst_interface.send, args=[packet, src_addr, "bus"])
-            t.setDaemon(True)
-            t.start()
+            #t = threading.Timer(delay, dst_interface.send, args=[packet, src_addr, "bus"])
+            #t.setDaemon(True)
+            #t.start()
+            time.sleep(delay)
+            dst_interface.send(packet, src_addr, "bus")
 
     def add_interface(self, addr, max_bandwidth: int=0, delay_func=lambda packet: 0, packet_loss_func=lambda packet: False):
         """create a new interface given a addr and adds it to the
