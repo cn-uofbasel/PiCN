@@ -19,7 +19,7 @@ class cases_Simulation():
     """Test the PiCN Simulation System"""
 
     @abc.abstractmethod
-    def get_encoder(self) ->BasicEncoder:
+    def get_encoder(self) -> BasicEncoder:
         pass
 
     def setUp(self):
