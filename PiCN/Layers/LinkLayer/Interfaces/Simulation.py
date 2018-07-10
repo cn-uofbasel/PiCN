@@ -139,9 +139,6 @@ class SimulationBus(PiCNProcess):
             t.setDaemon(True)
             t.start()
 
-            #time.sleep(delay)
-            #dst_interface.send(packet, src_addr, "bus")
-
     def add_interface(self, addr, max_bandwidth: int=0, delay_func=lambda packet: 0, packet_loss_func=lambda packet: False):
         """create a new interface given a addr and adds it to the
         :param addr: address to be used for the interface
