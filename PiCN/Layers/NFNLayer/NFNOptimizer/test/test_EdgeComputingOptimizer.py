@@ -1,6 +1,5 @@
 """Testing the EdgeComputingOptimizers"""
 
-import multiprocessing
 import unittest
 
 from PiCN.Packets import Name, Content
@@ -40,7 +39,7 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
 
 
     def test_interest_fwd_comp_simple_interest(self):
-        """Test the edgecomputing forwarder"""
+        """Test the edgecomputing forwarder with an simple interest"""
         cmp_name = Name("/func/f1")
         cmp_name += "_()"
         cmp_name += "NFN"
@@ -50,3 +49,18 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         self.assertTrue(self.optimizer.compute_local(cmp_name, ast))
         rules = self.optimizer.rewrite(cmp_name, ast)
         self.assertEqual(rules, [])
+
+    def test_interest_fwd_comp_interest(self):
+        """Test the edgecomputing forwarder with an computation with parameter"""
+        cmp_name = Name("/test/data")
+        cmp_name += "/func/f1(_)"
+        cmp_name += "NFN"
+        workflow = "/func/f1(/test/data)"
+        fib = self.optimizer.fib
+        fib.add_fib_entry(Name("/test"), 1, False)
+        self.optimizer.fib = fib
+        ast = self.parser.parse(workflow)
+        self.assertTrue(self.optimizer.compute_fwd(cmp_name, ast))
+        self.assertTrue(self.optimizer.compute_local(cmp_name, ast))
+        rules = self.optimizer.rewrite(cmp_name, ast)
+        self.assertEqual(rules, ['/func/f1(%/test/data%)'])
