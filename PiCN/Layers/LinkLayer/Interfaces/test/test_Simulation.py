@@ -19,7 +19,7 @@ class cases_Simulation():
     """Test the PiCN Simulation System"""
 
     @abc.abstractmethod
-    def get_encoder(self) ->BasicEncoder:
+    def get_encoder(self) -> BasicEncoder:
         pass
 
     def setUp(self):
@@ -154,6 +154,13 @@ class cases_Simulation():
 
     def test_bandwidth_limit(self): #TODO better test here
         """Simple Test for checking the bandwidth limit"""
+
+        self.icn_forwarder1 = ICNForwarder(port=0, encoder=self.encoder_type(),
+                                           interfaces=[
+                                               self.simulation_bus.add_interface("icnfwd1", max_bandwidth=1)])
+        self.icn_forwarder2 = ICNForwarder(port=0, encoder=self.encoder_type(),
+                                           interfaces=[
+                                               self.simulation_bus.add_interface("icnfwd2", max_bandwidth=1)])
 
         self.icn_forwarder1.start_forwarder()
         self.icn_forwarder2.start_forwarder()

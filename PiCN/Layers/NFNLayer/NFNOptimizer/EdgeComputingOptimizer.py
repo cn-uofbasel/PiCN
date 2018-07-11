@@ -1,4 +1,4 @@
-"""Simple NFN Optimizer, always forwarding towards data"""
+"""Simple NFN Optimizer, for edge computing. Start computation at the edge and forward it in parallel"""
 
 from typing import Dict
 
@@ -9,7 +9,7 @@ from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInforma
 from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
 
-class ToDataFirstOptimizer(BaseNFNOptimizer):
+class EdgeComputingOptimizer(BaseNFNOptimizer):
 
     def __init__(self, cs: BaseContentStore, fib: BaseForwardingInformationBase, pit: BasePendingInterestTable) -> None:
         super().__init__(cs, fib, pit)
@@ -18,45 +18,9 @@ class ToDataFirstOptimizer(BaseNFNOptimizer):
         return []
 
     def compute_local(self, prepended_prefix: Name, ast: AST) -> bool:
-        if self.cs.find_content_object(prepended_prefix):
-            return True
-        names = self._get_names_from_ast(ast)
-        functions = self._get_functions_from_ast(ast)
-        names_in_fib = []
-        for n in names:
-            if self.fib.find_fib_entry(Name(n), []):
-                names_in_fib.append(Name(n))
-
-        functions_in_fib = []
-        for f in functions:
-            if self.fib.find_fib_entry(Name(f), []):
-                names_in_fib.append(Name(f))
-
-        if len(names_in_fib) > 0 or len(functions_in_fib) > 0:
-            return False
         return True
 
     def compute_fwd(self, prepended_prefix: Name, ast: AST) -> bool:
-        if prepended_prefix is None:
-            names = self._get_functions_from_ast(ast)
-            if names != []:
-                prepended_prefix = names[0]
-        if self.cs.find_content_object(prepended_prefix):
-            return False
-        names = self._get_names_from_ast(ast)
-        functions = self._get_functions_from_ast(ast)
-        names_in_fib = []
-        for n in names:
-            if self.fib.find_fib_entry(Name(n), []):
-                names_in_fib.append(Name(n))
-
-        functions_in_fib = []
-        for f in functions:
-            if self.fib.find_fib_entry(Name(f), []):
-                names_in_fib.append(Name(f))
-
-        if len(names_in_fib) == 0 and len(functions_in_fib) == 0:
-            return False
         return True
 
     def rewrite(self, prepended_prefix: Name, ast: AST) -> List[str]:
