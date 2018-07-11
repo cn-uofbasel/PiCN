@@ -145,7 +145,7 @@ class BasicNFNLayer(LayerProcess):
         entry = self.computation_table.get_computation(interest.name)
 
         if self.optimizer.compute_fwd(prepended_name, entry.ast):
-            self.logger.info("FWD")
+            self.logger.info("Forward Computation")
             rewritten_names = self.optimizer.rewrite(interest.name, entry.ast)
             self.computation_table.remove_computation(interest.name)
             entry.comp_state = NFNComputationState.REWRITE

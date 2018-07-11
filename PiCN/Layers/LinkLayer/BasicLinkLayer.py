@@ -50,6 +50,9 @@ class BasicLinkLayer(LayerProcess):
         packet = data[1]
 
         addr_info = self.faceidtable.get_address_info(faceid)
+        if not addr_info:
+            self.logger.error("No addr_info found")
+            return
         self.interfaces[addr_info.interface_id].send(packet, addr_info.address)
         self.logger.info("Send packet to: " + str(addr_info.address))
 
@@ -107,7 +110,6 @@ class BasicLinkLayer(LayerProcess):
             i.close()
         if self.process:
             self.process.terminate()
-            self.process.join()
         if self.queue_to_higher:
             self.queue_to_higher.close()
         if self.queue_from_higher:
