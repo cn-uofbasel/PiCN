@@ -39,13 +39,13 @@ def main(args):
         sys.exit(-1)
 
     # Wait
-    time_to_wait = int(encoder.encoder.decode_data(wire_packet_first)[1])
-    time.sleep(time * 1.2)
+    time_to_wait = int(encoder.decode_data(wire_packet_first)[1])
+    print("Waiting for result: " + str(time_to_wait))
+    time.sleep(time_to_wait * 1.2)
 
-    print("Waiting for result: " + time_to_wait)
 
     # Send second interest
-    new_components = args.name.to_string().split("/")[1:-1]
+    new_components = args.name.split("/")[1:-1]
     new_components.append("resultpNFN")
     new_name = "/" + '/'.join(new_components)
     second_interest: Interest = Interest(new_name)
