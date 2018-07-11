@@ -17,6 +17,7 @@ import os
 
 from PiCN.Layers.LinkLayer.Interfaces import SimulationBus
 from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
+from PiCN.Layers.NFNLayer.NFNOptimizer import EdgeComputingOptimizer
 from PiCN.ProgramLibs.ICNForwarder import ICNForwarder
 from PiCN.ProgramLibs.Fetch import Fetch
 from PiCN.ProgramLibs.NFNForwarder import NFNForwarder
@@ -46,6 +47,11 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
                                  interfaces=[self.simulation_bus.add_interface("rsu2")], log_level=255)
         self.rsu3 = NFNForwarder(port=0, encoder=self.encoder_type(),
                                  interfaces=[self.simulation_bus.add_interface("rsu3")], log_level=255)
+
+
+        self.rsu1.nfnlayer.optimizer = EdgeComputingOptimizer(self.rsu1.icnlayer.cs, self.rsu1.icnlayer.fib, self.rsu1.icnlayer.pit)
+        self.rsu2.nfnlayer.optimizer = EdgeComputingOptimizer(self.rsu2.icnlayer.cs, self.rsu2.icnlayer.fib, self.rsu2.icnlayer.pit)
+        self.rsu3.nfnlayer.optimizer = EdgeComputingOptimizer(self.rsu3.icnlayer.cs, self.rsu3.icnlayer.fib, self.rsu3.icnlayer.pit)
 
         self.mgmt_client1 = MgmtClient(self.rsu1.mgmt.mgmt_sock.getsockname()[1])
         self.mgmt_client2 = MgmtClient(self.rsu2.mgmt.mgmt_sock.getsockname()[1])

@@ -147,13 +147,14 @@ class BasicNFNLayer(LayerProcess):
         if self.optimizer.compute_fwd(prepended_name, entry.ast):
             self.logger.info("Forward Computation")
             rewritten_names = self.optimizer.rewrite(interest.name, entry.ast)
-            self.computation_table.remove_computation(interest.name)
-            entry.comp_state = NFNComputationState.REWRITE
-            entry.rewrite_list = rewritten_names
-            request = self.parser.nfn_str_to_network_name(rewritten_names[0])
-            self.queue_to_lower.put([entry.id, Interest(request)])
-#            self.handleInterest([entry.id, Interest(request)]) #TODO required?
-            self.computation_table.append_computation(entry)
+            if rewritten_names and len(rewritten_names) > 0:
+                self.computation_table.remove_computation(interest.name)
+                entry.comp_state = NFNComputationState.REWRITE
+                entry.rewrite_list = rewritten_names
+                request = self.parser.nfn_str_to_network_name(rewritten_names[0])
+                self.queue_to_lower.put([entry.id, Interest(request)])
+#               self.handleInterest([entry.id, Interest(request)]) #TODO required?
+                self.computation_table.append_computation(entry)
 
         if self.optimizer.compute_local(prepended_name, entry.ast):
             self.logger.info("Compute Local")
