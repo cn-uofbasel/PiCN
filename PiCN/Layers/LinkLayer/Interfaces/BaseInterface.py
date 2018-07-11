@@ -13,12 +13,11 @@ class AddressInfo(object):
         self.interface_id = interface_id
 
     def __eq__(self, other):
-        return self.address[0] == other.address[0] \
-               and self.address[1] == other.address[1]\
+        return self.address == other.address \
                and self.interface_id == other.interface_id
 
     def __hash__(self):
-        return hash(self.address[0]) ^ hash(self.address[1]) ^ hash(self.interface_id)
+        return hash(self.address)  ^ hash(self.interface_id)
 
 class BaseInterface(object):
     """Abstract Superclass for a PiCN Interface"""

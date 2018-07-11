@@ -139,7 +139,7 @@ class BasicICNLayer(LayerProcess):
             self.logger.info("No PIT entry for NACK available, dropping")
             return
         else:
-            fib_entry = self.fib.find_fib_entry(nack.name, pit_entry.fib_entries_already_used)
+            fib_entry = self.fib.find_fib_entry(nack.name, pit_entry.fib_entries_already_used, pit_entry.faceids)
             if fib_entry is None:
                 self.logger.info("Sending NACK to previous node(s)")
                 re_add = False

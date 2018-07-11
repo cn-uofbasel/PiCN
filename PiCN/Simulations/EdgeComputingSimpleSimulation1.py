@@ -77,14 +77,14 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
 
         self.mgmt_client1.add_face("rsu2", None, 0)
         self.mgmt_client1.add_forwarding_rule(Name("/rsu"), 0)
-        self.mgmt_client1.add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n    for i in range(0,50000000):\n        a.upper()\n    return a.upper() + ' RSU1'")
+        self.mgmt_client1.add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n    for i in range(0,30000000):\n        a.upper()\n    return a.upper() + ' RSU1'")
 
         #setup rsu2
         self.mgmt_client2.add_face("rsu1", None, 0)
         self.mgmt_client2.add_face("rsu3", None, 0)
         self.mgmt_client2.add_forwarding_rule(Name("/rsu"), 0)
         self.mgmt_client2.add_forwarding_rule(Name("/rsu"), 1)
-        self.mgmt_client2.add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n    for i in range(0,60000000):\n        a.upper()\n    return a.upper() + ' RSU2'")
+        self.mgmt_client2.add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n    for i in range(0,40000000):\n        a.upper()\n    return a.upper() + ' RSU2'")
 
         #setup rsu3
         self.mgmt_client3.add_face("rsu2", None, 0)
@@ -101,10 +101,10 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         name += "NFN"
         computation_name = Name("/func/f1")
 
-        res = self.fetch_tool1.fetch_data(name, timeout=10)
+        res = self.fetch_tool1.fetch_data(name, timeout=1000)
         self.assertEqual(res, "HELLOWORLD RSU1")
         print("Result at RSU1:", res)
-        res = self.fetch_tool2.fetch_data(name, timeout=10)
+        res = self.fetch_tool2.fetch_data(name, timeout=1000)
         print("Result as fetched from RSU2:", res)
         self.assertEqual(res, "HELLOWORLD RSU2") #since node 2 starts computation too, result is on 2 the one of 2
 
