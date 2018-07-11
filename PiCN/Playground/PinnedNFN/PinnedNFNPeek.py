@@ -66,7 +66,7 @@ def main(args):
     else:
         encoder = NdnTlvEncoder()
         if encoder.is_content(wire_packet_second):
-            sys.stdout.buffer.write(encoder.decode_data(wire_packet_second)[1])
+            sys.stdout.buffer.write(encoder.decode_data(wire_packet_second)[1] + b"\n")
         else:
             sys.exit(-2)
 
