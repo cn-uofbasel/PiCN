@@ -183,5 +183,6 @@ class Mgmt(PiCNProcess):
     def stop_process(self):
         if self.process:
             self.process.terminate()
+            self.process = None
         self.mgmt_sock.close()
 

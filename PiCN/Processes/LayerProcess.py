@@ -158,15 +158,20 @@ class LayerProcess(PiCNProcess):
         """Stop the Layer Process"""
         if self.process:
             self.process.terminate()
+            self.process.join()
         time.sleep(0.1)
         if self.queue_to_lower:
             self.queue_to_lower.close()
+            self.queue_to_lower.join_thread()
         if self.queue_from_lower:
             self.queue_from_lower.close()
+            self.queue_from_lower.join_thread()
         if self.queue_to_higher:
             self.queue_to_higher.close()
+            self.queue_to_higher.join_thread()
         if self.queue_from_higher:
             self.queue_from_higher.close()
+            self.queue_from_higher.join_thread()
         time.sleep(0.1)
 
     def in_unittest(self):

@@ -54,12 +54,9 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
     def tearDown(self):
         self.rsu1.stop_forwarder()
         self.rsu2.stop_forwarder()
-        self.rsu2.stop_forwarder()
-        self.simulation_bus.stop_process()
+        self.rsu3.stop_forwarder()
         self.fetch_tool.stop_fetch()
-        self.mgmt_client1.shutdown()
-        self.mgmt_client2.shutdown()
-        self.mgmt_client3.shutdown()
+        self.simulation_bus.stop_process()
 
     def setup_faces_and_connections(self):
         self.rsu1.start_forwarder()
@@ -98,8 +95,8 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         computation_name = Name("/func/f1")
 
         res = self.fetch_tool.fetch_data(name, timeout=10)
-        print(res)
         self.assertEqual(res, "HELLOWORLD")
+        print("Result:", res)
 
 
 
