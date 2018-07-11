@@ -38,7 +38,8 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         self.encoder_type = self.get_encoder()
         self.simulation_bus = SimulationBus(packetencoder=self.encoder_type())
 
-        self.fetch_tool = Fetch("rsu1", None, 255, self.encoder_type(), [self.simulation_bus.add_interface("fetchtool")])
+        self.fetch_tool1 = Fetch("rsu1", None, 255, self.encoder_type(), [self.simulation_bus.add_interface("fetchtool1")])
+        self.fetch_tool2 = Fetch("rsu2", None, 255, self.encoder_type(), [self.simulation_bus.add_interface("fetchtool2")])
 
         self.rsu1 = NFNForwarder(port=0, encoder=self.encoder_type(),
                                  interfaces=[self.simulation_bus.add_interface("rsu1")], log_level=255)
@@ -61,7 +62,8 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         self.rsu1.stop_forwarder()
         self.rsu2.stop_forwarder()
         self.rsu3.stop_forwarder()
-        self.fetch_tool.stop_fetch()
+        self.fetch_tool1.stop_fetch()
+        self.fetch_tool2.stop_fetch()
         self.simulation_bus.stop_process()
 
     def setup_faces_and_connections(self):
@@ -74,21 +76,20 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         #setup rsu1
 
         self.mgmt_client1.add_face("rsu2", None, 0)
-        #mgmt_client1.add_forwarding_rule(Name("/rsu"), 0)
-        self.mgmt_client1.add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n    for i in range(0,50000000):\n        a.upper()\n    return a.upper()")
+        self.mgmt_client1.add_forwarding_rule(Name("/rsu"), 0)
+        self.mgmt_client1.add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n    for i in range(0,50000000):\n        a.upper()\n    return a.upper() + ' RSU1'")
 
         #setup rsu2
-
         self.mgmt_client2.add_face("rsu1", None, 0)
         self.mgmt_client2.add_face("rsu3", None, 0)
         self.mgmt_client2.add_forwarding_rule(Name("/rsu"), 0)
         self.mgmt_client2.add_forwarding_rule(Name("/rsu"), 1)
-        self.mgmt_client2.add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n    for i in range(0,50000000):\n        a.upper()\n    return a.upper()")
+        self.mgmt_client2.add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n    for i in range(0,60000000):\n        a.upper()\n    return a.upper() + ' RSU2'")
 
         #setup rsu3
         self.mgmt_client3.add_face("rsu2", None, 0)
         self.mgmt_client3.add_forwarding_rule(Name("/rsu"), 0)
-        self.mgmt_client3.add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n    for i in range(0,50000000):\n        a.upper()\n    return a.upper()")
+        self.mgmt_client3.add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n    for i in range(0,50000000):\n        a.upper()\n    return a.upper() + ' RSU3'")
 
 
     def test_without_data_from_client(self):
@@ -100,9 +101,10 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         name += "NFN"
         computation_name = Name("/func/f1")
 
-        res = self.fetch_tool.fetch_data(name, timeout=10)
-        self.assertEqual(res, "HELLOWORLD")
-        print("Result:", res)
-
-
+        res = self.fetch_tool1.fetch_data(name, timeout=10)
+        self.assertEqual(res, "HELLOWORLD RSU1")
+        print("Result at RSU1:", res)
+        res = self.fetch_tool2.fetch_data(name, timeout=10)
+        print("Result as fetched from RSU2:", res)
+        self.assertEqual(res, "HELLOWORLD RSU1")
 
