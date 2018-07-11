@@ -106,5 +106,5 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         print("Result at RSU1:", res)
         res = self.fetch_tool2.fetch_data(name, timeout=10)
         print("Result as fetched from RSU2:", res)
-        self.assertEqual(res, "HELLOWORLD RSU1")
+        self.assertEqual(res, "HELLOWORLD RSU2") #since node 2 starts computation too, result is on 2 the one of 2
 

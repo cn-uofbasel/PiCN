@@ -35,7 +35,10 @@ class BasicICNLayer(LayerProcess):
                 return
             pit_entry = self.pit.find_pit_entry(packet.name)
             self.pit.add_pit_entry(packet.name, high_level_id, packet, local_app=True)
-            fib_entry = self.fib.find_fib_entry(packet.name)
+            if pit_entry:
+                fib_entry = self.fib.find_fib_entry(packet.name, incoming_faceids=pit_entry.face_id)
+            else:
+                fib_entry = self.fib.find_fib_entry(packet.name)
             if fib_entry is not None:
                 self.pit.add_used_fib_entry(packet.name, fib_entry)
                 to_lower.put([fib_entry.faceid, packet])
@@ -97,7 +100,7 @@ class BasicICNLayer(LayerProcess):
             self.pit.add_pit_entry(interest.name, face_id, interest, local_app=from_local)
             self.queue_to_higher.put([face_id, interest])
             return
-        new_face_id = self.fib.find_fib_entry(interest.name, None)
+        new_face_id = self.fib.find_fib_entry(interest.name, None, [face_id])
         if new_face_id is not None:
             self.logger.info("Found in FIB, forwarding")
             self.pit.add_pit_entry(interest.name, face_id, interest, local_app=from_local)
@@ -166,7 +169,7 @@ class BasicICNLayer(LayerProcess):
             pit = self.pit
             retransmits = pit.ageing()
             for pit_entry in retransmits:
-                fib_entry = self.fib.find_fib_entry(pit_entry.name, pit_entry.fib_entries_already_used)
+                fib_entry = self.fib.find_fib_entry(pit_entry.name, pit_entry.fib_entries_already_used, pit_entry.faceids)
                 self.queue_to_lower.put([fib_entry.faceid, pit_entry.interest])
             self.pit = pit
             #CS ageing
