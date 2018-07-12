@@ -37,10 +37,13 @@ class BasicNFNLayer(LayerProcess):
         packet_id = data[0]
         packet = data[1]
         if isinstance(packet, Interest):
+            self.logger.info("Got Interest from lower: " + str(packet.name))
             self.handleInterest(packet_id, packet)
         elif isinstance(packet, Content):
+            self.logger.info("Got Content from lower: " + str(packet.name))
             self.handleContent(packet_id, packet)
         elif isinstance(packet, Nack):
+            self.logger.info("Got Nack from lower: " + str(packet.name))
             self.handleNack(packet_id, packet)
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
@@ -176,6 +179,7 @@ class BasicNFNLayer(LayerProcess):
                     #p._prepend = True
                     name = self.parser.nfn_str_to_network_name((str(p)))
                     #p._prepend = False
+                    self.logger.info("Subcomputation: " + str(name))
                     self.handleInterest(entry.id, Interest(name))
                 else:
                     continue
@@ -196,6 +200,7 @@ class BasicNFNLayer(LayerProcess):
         """Compute a result, when all data are available
         :param interest: The original interest message to be handled (can be taken from computation table)
         """
+        self.logger.info("Start computation: " + str(interest.name))
         params = []
         entry = self.computation_table.get_computation(interest.name)
         if entry is None:
@@ -240,7 +245,8 @@ class BasicNFNLayer(LayerProcess):
                                      Nack(entry.original_name, NackReason.COMP_EXCEPTION, interest=entry.interest)])
         content_res: Content = Content(entry.original_name, str(res)) #TODO typed results
         self.queue_to_lower.put([entry.id, content_res])
-
+        self.computation_table.push_data(content_res)
+        self.logger.info("Finish Computation: " + str(content_res.name))
 
     def ageing(self):
         """Ageging of the computation queue etc"""

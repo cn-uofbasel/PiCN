@@ -22,7 +22,10 @@ class PendingInterestTableEntry(object):
         self._timestamp = time.time()
         self._retransmits = 0
         self._local_app: List[bool]= []
-        self._local_app.append(local_app)
+        if isinstance(local_app, List):
+            self._local_app.extend(local_app)
+        else:
+            self._local_app.append(local_app)
         self._interest = interest
         self._fib_entries_already_used: List[ForwardingInformationBaseEntry] = []
 
