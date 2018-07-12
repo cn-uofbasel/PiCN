@@ -1,6 +1,7 @@
 """Extended ICN Forwarding Layer (heartbeat)"""
 
 import multiprocessing
+import time
 
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore, ContentStoreEntry
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase, ForwardingInformationBaseEntry
@@ -44,40 +45,23 @@ class HeartbeatNetworkLayer(BasicICNLayer):
         elif isinstance(packet, Nack):
             self.handle_nack(face_id, packet, to_lower, to_higher, False)
         elif isinstance(packet, Heartbeat):
-            self.handle_heartbeat(face_id, packet, to_lower, to_higher, False)
+            self.handle_heartbeat(packet)
 
-    def handle_heartbeat(self, face_id: int, interest: Interest, to_lower: multiprocessing.Queue,
-                        to_higher: multiprocessing.Queue, from_local: bool = False):
+    def handle_heartbeat(self, heartbeat: Heartbeat):
         self.logger.info("Handling Heartbeat")
-        #if to_higher is not None: #TODO check if app layer accepted the data, and change handling
 
-        # cs_entry = self.cs.find_content_object(interest.name)
-        # if cs_entry is not None:
-        #     self.logger.info("Found in content store")
-        #     to_lower.put([face_id, cs_entry.content])
-        #     self.cs.update_timestamp(cs_entry)
-        #     return
-        # pit_entry = self.pit.find_pit_entry(interest.name)
-        # if pit_entry is not None:
-        #     self.logger.info("Found in PIT, appending")
-        #     self.pit.update_timestamp(pit_entry)
-        #     self.pit.add_pit_entry(interest.name, face_id, interest, local_app=from_local)
-        #     return
-        # if self._interest_to_app is True and to_higher is not None: #App layer support
-        #     self.logger.info("Sending to higher Layer")
-        #     self.pit.add_pit_entry(interest.name, face_id, interest, local_app=from_local)
-        #     self.queue_to_higher.put([face_id, interest])
-        #     return
-        # new_face_id = self.fib.find_fib_entry(interest.name, None, [face_id])
-        # if new_face_id is not None:
-        #     self.logger.info("Found in FIB, forwarding")
-        #     self.pit.add_pit_entry(interest.name, face_id, interest, local_app=from_local)
-        #     #self.add_used_fib_entry_to_pit(interest.name, new_face_id) #disabled, should only be applied if nack is received.
-        #     to_lower.put([new_face_id.faceid, interest])
-        #     return
-        # self.logger.info("No FIB entry, sending Nack")
-        # nack = Nack(interest.name, NackReason.NO_ROUTE, interest=interest)
-        # if from_local:
-        #     to_higher.put([face_id, nack])
-        # else:
-        #     to_lower.put([face_id, nack])
+        # check if there is matching PIT entry
+        pit_entry = self.pit.find_pit_entry(heartbeat.name)
+        if pit_entry is not None:
+            self.logger.info("Found PIT entry to update")
+            print("here:   " + str(time.time()))
+            print("before: " + str(pit_entry.timestamp))
+            self.pit.update_timestamp(pit_entry)
+            print("after:  " + str(self.pit.find_pit_entry(heartbeat.name).timestamp))
+            return
+        else:
+            self.logger.info("No PIT entry found")
+
+    def handle_nack(self, face_id: int, nack: Nack, to_lower: multiprocessing.Queue,
+                    to_higher: multiprocessing.Queue, from_local: bool = False):
+        pass

@@ -43,7 +43,7 @@ class HeartbeatForwarderStack(object):
 
         cs = synced_data_struct_factory.manager.cs()
         fib = synced_data_struct_factory.manager.fib()
-        pit = synced_data_struct_factory.manager.pit()
+        pit = synced_data_struct_factory.manager.pit(pit_timeout=60)
         face_id_table = synced_data_struct_factory.manager.face_id_table()
 
         #default interface
