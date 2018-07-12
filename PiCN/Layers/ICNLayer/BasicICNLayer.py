@@ -49,8 +49,8 @@ class BasicICNLayer(LayerProcess):
                     for i in range(0, len(pit_entry.faceids)):
                         if pit_entry._local_app[i]:
                             to_higher.put([high_level_id, nack])
-                        else:
-                            to_lower.put([pit_entry._faceids[i], nack])
+                    #    else:
+                    #       to_lower.put([pit_entry._faceids[i], nack])
                 else:
                     to_higher.put([high_level_id, nack])
         elif isinstance(packet, Content):
