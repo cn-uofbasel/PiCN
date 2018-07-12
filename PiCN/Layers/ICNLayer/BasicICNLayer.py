@@ -49,8 +49,8 @@ class BasicICNLayer(LayerProcess):
                     for i in range(0, len(pit_entry.faceids)):
                         if pit_entry._local_app[i]:
                             to_higher.put([high_level_id, nack])
-                        else:
-                            to_lower.put([pit_entry._faceids[i], nack])
+                    #    else:
+                    #       to_lower.put([pit_entry._faceids[i], nack])
                 else:
                     to_higher.put([high_level_id, nack])
         elif isinstance(packet, Content):
@@ -139,7 +139,7 @@ class BasicICNLayer(LayerProcess):
             self.logger.info("No PIT entry for NACK available, dropping")
             return
         else:
-            fib_entry = self.fib.find_fib_entry(nack.name, pit_entry.fib_entries_already_used)
+            fib_entry = self.fib.find_fib_entry(nack.name, pit_entry.fib_entries_already_used, pit_entry.faceids)
             if fib_entry is None:
                 self.logger.info("Sending NACK to previous node(s)")
                 re_add = False
