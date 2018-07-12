@@ -3,8 +3,8 @@
 import unittest
 
 from PiCN.Packets import Name
-from Playground.Heartbeats.Layers.PacketEncoding import ExtendedNdnTlvEncoder
-from Playground.Heartbeats.Layers.PacketEncoding import Heartbeat
+from PiCN.Playground.Heartbeats.Layers.PacketEncoding import ExtendedNdnTlvEncoder
+from PiCN.Playground.Heartbeats.Layers.PacketEncoding import Heartbeat
 
 
 class test_ExtendedNdnTlvEncoder(unittest.TestCase):
