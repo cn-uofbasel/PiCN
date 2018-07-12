@@ -15,7 +15,10 @@ class PendingInterestTableEntry(object):
     def __init__(self, name: Name, faceid: int, interest:Interest = None, local_app: bool=False):
         self.name = name
         self._faceids: List[int] = []
-        self._faceids.append(faceid)
+        if isinstance(faceid, list):
+            self._faceids = faceid
+        else:
+            self._faceids.append(faceid)
         self._timestamp = time.time()
         self._retransmits = 0
         self._local_app: List[bool]= []
