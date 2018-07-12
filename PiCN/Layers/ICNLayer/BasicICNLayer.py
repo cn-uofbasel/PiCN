@@ -166,12 +166,12 @@ class BasicICNLayer(LayerProcess):
         try:
             self.logger.debug("Ageing")
             #PIT ageing
-            pit = self.pit
-            retransmits = pit.ageing()
+            #pit = self.pit
+            retransmits = self.pit.ageing()
             for pit_entry in retransmits:
                 fib_entry = self.fib.find_fib_entry(pit_entry.name, pit_entry.fib_entries_already_used, pit_entry.faceids)
                 self.queue_to_lower.put([fib_entry.faceid, pit_entry.interest])
-            self.pit = pit
+            #self.pit = pit
             #CS ageing
             self.cs.ageing()
             t = threading.Timer(self._ageing_interval, self.ageing)
