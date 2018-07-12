@@ -20,6 +20,13 @@ class EdgeComputingOptimizer(BaseNFNOptimizer):
         return []
 
     def compute_local(self, prepended_prefix: Name, ast: AST) -> bool:
+        pit_entry = self.pit.find_pit_entry(prepended_prefix)
+        if not pit_entry:
+            return True
+        faceid = pit_entry.faceids[0]
+        addr_info = self.faceidtable.get_address_info(faceid)
+        if "rsu" in addr_info.address:
+            return False
         return True
 
     def compute_fwd(self, prepended_prefix: Name, ast: AST) -> bool:
