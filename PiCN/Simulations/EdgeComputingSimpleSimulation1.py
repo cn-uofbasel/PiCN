@@ -93,18 +93,35 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
 
 
     def test_without_data_from_client(self):
-
+        """execute a simple function on the rsus"""
         self.setup_faces_and_connections()
 
         name = Name("/rsu/func/f1")
         name += '_("helloworld")'
         name += "NFN"
-        computation_name = Name("/func/f1")
 
-        res = self.fetch_tool1.fetch_data(name, timeout=1000)
+        res = self.fetch_tool1.fetch_data(name, timeout=10)
         self.assertEqual(res, "HELLOWORLD RSU1")
         print("Result at RSU1:", res)
-        res = self.fetch_tool2.fetch_data(name, timeout=1000)
+        res = self.fetch_tool2.fetch_data(name, timeout=10)
         print("Result as fetched from RSU2:", res)
         self.assertEqual(res, "HELLOWORLD RSU2") #since node 2 starts computation too, result is on 2 the one of 2, killing forwarding rule on node one would fix that
 
+    def test_inner_call_without_data_from_client(self):
+        """execute one function on the first node and another function on the second node"""
+        self.setup_faces_and_connections()
+        self.mgmt_client2.add_new_content(Name("/rsu/func/f2"), "PYTHON\nf\ndef f(a):\n    return a[::-1]")
+
+        name1 = Name("/rsu/func/f1")
+        name1 += '_("helloworld")'
+        name1 += "NFN"
+
+        name2 = Name("/rsu/func/f2")
+        name2 += '_(/rsu/func/f1("helloworld"))'
+        name2 += "NFN"
+
+        #res1 = self.fetch_tool1.fetch_data(name1, timeout=10)
+        #print(res1)
+
+        res2 = self.fetch_tool2.fetch_data(name2, timeout=0)
+        print(res2)
