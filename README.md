@@ -43,6 +43,10 @@ Add the PiCN-tools to your PATH (bash):
 ```console
 you@machine:~$ PATH=$PATH:`pwd`/PiCN/starter
 ```
+or config python library:
+```console
+you@machine:~$ cd PiCN && export PYTHONPATH=${PYTHONPATH}:`pwd`
+```
 
 Prepare content for a repository:
 ```console

@@ -4,7 +4,7 @@ import logging
 import sys
 
 import PiCN.ProgramLibs.NFNForwarder
-
+from PiCN.Layers.NFNLayer.NFNOptimizer import EdgeComputingOptimizer
 
 def main(argv):
 
@@ -15,6 +15,12 @@ def main(argv):
         port = 9000
 
     forwarder = PiCN.ProgramLibs.NFNForwarder.NFNForwarder(port, logging.DEBUG)
+
+    if len(argv) == 3 and argv[2] == "EDGE":
+        print("Edge Computing Node")
+        forwarder.nfnlayer.optimizer = EdgeComputingOptimizer(forwarder.icnlayer.cs, forwarder.icnlayer.fib,
+                                                              forwarder.icnlayer.pit)
+
     forwarder.start_forwarder()
 
     forwarder.linklayer.process.join()
