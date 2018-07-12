@@ -2,7 +2,7 @@
 
 import unittest
 
-from PiCN.Packets import Name, Interest
+from PiCN.Packets import Name
 from PiCN.Playground.Heartbeats.Layers.PacketEncoding import ExtendedNdnTlvEncoder, Heartbeat
 
 
