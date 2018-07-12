@@ -42,9 +42,8 @@ class PendingInterstTableMemoryExact(BasePendingInterestTable):
 
     def update_timestamp(self, pit_entry: PendingInterestTableEntry):
         self._container.remove(pit_entry)
-        pit_entry.timestamp = time.time()
-        pit_entry.retransmits = 0
-        self._container.append(pit_entry)
+        new_entry = PendingInterestTableEntry(pit_entry.name, pit_entry.faceids, interest=pit_entry.interest, local_app=pit_entry.local_app)
+        self._container.append(new_entry)
 
     def add_used_fib_entry(self, name: Name, used_fib_entry: ForwardingInformationBaseEntry):
         pit_entry = self.find_pit_entry(name)

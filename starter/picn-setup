@@ -51,6 +51,9 @@ function main {
     elif [[ $1 == "dima_pinned_nfn" ]]
     then
 	config_dima_pinned_nfn
+    elif [[ $1 == "dima_heartbeat" ]]
+    then
+	config_dima_heartbeat
     else
         echo "Configuration not found."
         echo ""
@@ -138,6 +141,35 @@ function config_dima_pinned_nfn {
     sleep .2
     tmux send-keys -t $SESSION:0 'picn-mgmt --port 4000 newforwardingrule /the/prefix:1' C-m
     sleep .2
+}
+
+function config_dima_heartbeat {
+    # Relay on port 4000
+    tmux new-window -t $SESSION:1 -n 'Relay-4000'
+    tmux send-keys -t $SESSION:1 'picn-heartbeat-forwarder -l ' $LOGLEVEL ' --port 4000' C-m
+
+    # Relay on port 4001
+    tmux new-window -t $SESSION:2 -n 'Relay-4001'
+    tmux send-keys -t $SESSION:2 'picn-heartbeat-forwarder -l ' $LOGLEVEL ' --port 4001' C-m
+
+    # Start server on port 3000
+    tmux new-window -t $SESSION:3 -n 'Server0'
+    tmux send-keys -t $SESSION:3 'picn-heartbeat-forwarder -l ' $LOGLEVEL ' --port 3000' C-m
+
+    sleep .5
+
+    # Face and fwd rule from 4001 to 4000
+    tmux send-keys -t $SESSION:0 'picn-mgmt --port 4001 newface 127.0.0.1:4000:0' C-m
+    sleep .2
+    tmux send-keys -t $SESSION:0 'picn-mgmt --port 4001 newforwardingrule /the/prefix:0' C-m
+    sleep .2
+
+    # Face and fwd rule from 4000 to 3000
+    tmux send-keys -t $SESSION:0 'picn-mgmt --port 4000 newface 127.0.0.1:3000:0' C-m
+    sleep .2
+    tmux send-keys -t $SESSION:0 'picn-mgmt --port 4000 newforwardingrule /the/prefix:0' C-m
+    sleep .2
+
 }
 
 
