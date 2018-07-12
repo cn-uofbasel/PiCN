@@ -12,18 +12,13 @@ from PiCN.Layers.ICNLayer import BasicICNLayer
 
 
 class HeartbeatNetworkLayer(BasicICNLayer):
-
-    def __init__(self, cs: BaseContentStore=None, pit: BasePendingInterestTable=None,
-                 fib: BaseForwardingInformationBase=None, log_level=255):
+    def __init__(self, log_level=255, interest_to_app: bool = False):
         super().__init__(log_level=log_level)
         # self.cs = cs
         # self.pit = pit
         # self.fib = fib
         # self._ageing_interval: int = 4
-        # self._interest_to_app: bool = False
-
-    def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
-        pass # this is the highest payer
+        self._interest_to_app: bool = interest_to_app
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         if len(data) != 2:
@@ -61,7 +56,3 @@ class HeartbeatNetworkLayer(BasicICNLayer):
             return
         else:
             self.logger.info("No PIT entry found")
-
-    def handle_nack(self, face_id: int, nack: Nack, to_lower: multiprocessing.Queue,
-                    to_higher: multiprocessing.Queue, from_local: bool = False):
-        pass

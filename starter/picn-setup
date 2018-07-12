@@ -154,7 +154,7 @@ function config_dima_heartbeat {
 
     # Start server on port 3000
     tmux new-window -t $SESSION:3 -n 'Server0'
-    tmux send-keys -t $SESSION:3 'picn-heartbeat-forwarder -l ' $LOGLEVEL ' --port 3000' C-m
+    tmux send-keys -t $SESSION:3 'picn-heartbeat-server -l ' $LOGLEVEL ' --port 3000' C-m
 
     sleep .5
 

@@ -20,7 +20,7 @@ from PiCN.Playground.Heartbeats.Layers.PacketEncoding import HeartbeatPacketEnco
 from PiCN.Playground.Heartbeats.Layers.PacketEncoding import ExtendedNdnTlvEncoder
 
 class HeartbeatForwarderStack(object):
-    """A Extended ICN Forwarder"""
+    """A Extended ICN Nodes"""
 
     def __init__(self, port=9000, log_level=255, encoder: ExtendedNdnTlvEncoder=None, interfaces: List[BaseInterface] = None):
         # debug level
