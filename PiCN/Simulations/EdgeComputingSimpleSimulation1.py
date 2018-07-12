@@ -47,7 +47,7 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         self.rsu2 = NFNForwarder(port=0, encoder=self.encoder_type(),
                                  interfaces=[self.simulation_bus.add_interface("rsu2")], log_level=255)
         self.rsu3 = NFNForwarder(port=0, encoder=self.encoder_type(),
-                                 interfaces=[self.simulation_bus.add_interface("rsu3")], log_level=0)
+                                 interfaces=[self.simulation_bus.add_interface("rsu3")], log_level=255)
 
 
         self.rsu1.nfnlayer.optimizer = EdgeComputingOptimizer(self.rsu1.icnlayer.cs, self.rsu1.icnlayer.fib, self.rsu1.icnlayer.pit)
@@ -106,5 +106,5 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         print("Result at RSU1:", res)
         res = self.fetch_tool2.fetch_data(name, timeout=1000)
         print("Result as fetched from RSU2:", res)
-        self.assertEqual(res, "HELLOWORLD RSU2") #since node 2 starts computation too, result is on 2 the one of 2
+        self.assertEqual(res, "HELLOWORLD RSU2") #since node 2 starts computation too, result is on 2 the one of 2, killing forwarding rule on node one would fix that
 
