@@ -123,5 +123,5 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         res1 = self.fetch_tool1.fetch_data(name1, timeout=10)
         print(res1)
 
-        res2 = self.fetch_tool2.fetch_data(name2, timeout=0)
+        res2 = self.fetch_tool2.fetch_data(name2, timeout=10)
         print(res2)

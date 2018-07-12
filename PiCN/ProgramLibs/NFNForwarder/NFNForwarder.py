@@ -81,7 +81,7 @@ class NFNForwarder(object):
         self.parser = DefaultNFNParser()
         self.r2cclient = TimeoutR2CHandler()
         comp_table = synced_data_struct_factory.manager.computation_table(self.r2cclient, self.parser)
-        self.nfnlayer = BasicNFNLayer(cs, fib, pit, comp_table, self.executors, self.parser, self.r2cclient, log_level=log_level)
+        self.nfnlayer = BasicNFNLayer(cs, fib, pit, faceidtable, comp_table, self.executors, self.parser, self.r2cclient, log_level=log_level)
 
         self.lstack: LayerStack = LayerStack([
             self.nfnlayer,

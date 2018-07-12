@@ -8,11 +8,13 @@ from PiCN.Layers.NFNLayer.NFNOptimizer import BaseNFNOptimizer
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
 from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
+from PiCN.Layers.LinkLayer.FaceIDTable import BaseFaceIDTable
 
 class EdgeComputingOptimizer(BaseNFNOptimizer):
 
-    def __init__(self, cs: BaseContentStore, fib: BaseForwardingInformationBase, pit: BasePendingInterestTable) -> None:
-        super().__init__(cs, fib, pit)
+    def __init__(self, cs: BaseContentStore, fib: BaseForwardingInformationBase, pit: BasePendingInterestTable,
+                 faceidTable: BaseFaceIDTable) -> None:
+        super().__init__(cs, fib, pit, faceidTable)
 
     def required_data(self, prepended_prefix: Name, ast: AST):
         return []

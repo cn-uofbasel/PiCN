@@ -8,13 +8,17 @@ from PiCN.Layers.NFNLayer.Parser import *
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
 from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
+from PiCN.Layers.LinkLayer.FaceIDTable import BaseFaceIDTable
 
 class BaseNFNOptimizer(object):
     """Base class for the NFN Optimizers"""
-    def __init__(self, cs: BaseContentStore, fib: BaseForwardingInformationBase, pit: BasePendingInterestTable):
+
+    def __init__(self, cs: BaseContentStore, fib: BaseForwardingInformationBase, pit: BasePendingInterestTable,
+                 faceidtable: BaseFaceIDTable):
         self.cs = cs
         self.fib = fib
         self.pit = pit
+        self.faceidtable = faceidtable
 
     @abc.abstractmethod
     def required_data(self, prepended_prefix: Name, ast: AST) -> List[Name]:

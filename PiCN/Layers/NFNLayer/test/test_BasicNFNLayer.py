@@ -16,7 +16,7 @@ from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseMemoryPrefix
 from PiCN.Layers.ICNLayer.PendingInterestTable import PendingInterstTableMemoryExact
 from PiCN.Processes import PiCNSyncDataStructFactory
-
+from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
 
 class test_BasicNFNLayer(unittest.TestCase):
     """Test the BasicNFNLayer"""
@@ -28,11 +28,13 @@ class test_BasicNFNLayer(unittest.TestCase):
         synced_data_struct_factory.register("fib", ForwardingInformationBaseMemoryPrefix)
         synced_data_struct_factory.register("pit", PendingInterstTableMemoryExact)
         synced_data_struct_factory.register("computation_table", NFNComputationList)
+        synced_data_struct_factory.register("faceidtable", FaceIDDict)
         synced_data_struct_factory.create_manager()
 
         cs = synced_data_struct_factory.manager.cs()
         fib = synced_data_struct_factory.manager.fib()
         pit = synced_data_struct_factory.manager.pit()
+        faceidtable = synced_data_struct_factory.manager.faceidtable()
 
         self.r2cclient = TimeoutR2CHandler()
         parser = DefaultNFNParser()
@@ -40,7 +42,7 @@ class test_BasicNFNLayer(unittest.TestCase):
 
         self.executor = {"PYTHON": NFNPythonExecutor()}
 
-        self.nfn_layer = BasicNFNLayer(cs, fib, pit, comp_table, self.executor, parser, self.r2cclient, log_level=255)
+        self.nfn_layer = BasicNFNLayer(cs, fib, pit, faceidtable, comp_table, self.executor, parser, self.r2cclient, log_level=255)
 
         self.nfn_layer.queue_to_lower = multiprocessing.Queue()
         self.nfn_layer.queue_from_lower = multiprocessing.Queue()

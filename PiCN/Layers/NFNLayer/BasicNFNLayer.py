@@ -15,22 +15,25 @@ from PiCN.Layers.NFNLayer.R2C import BaseR2CHandler
 from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
+from PiCN.Layers.LinkLayer.FaceIDTable import BaseFaceIDTable
 
 class BasicNFNLayer(LayerProcess):
     """Basic NFN Layer Implementation"""
 
     def __init__(self, cs: BaseContentStore, fib: BaseForwardingInformationBase, pit: BasePendingInterestTable,
+                 faceidtable: BaseFaceIDTable,
                  comp_table: BaseNFNComputationTable, executors: Dict[str, type(BaseNFNExecutor)],
                  parser: DefaultNFNParser, r2c_client: BaseR2CHandler, log_level: int=255):
         super().__init__("NFN-Layer", log_level=log_level)
         self.cs = cs
         self.fib = fib
         self.pit = pit
+        self.faceidtable = faceidtable
         self.computation_table = comp_table
         self.executors = executors
         self.r2cclient = r2c_client
         self.parser: DefaultNFNParser = parser
-        self.optimizer: BaseNFNOptimizer = ToDataFirstOptimizer(self.cs, self.fib, self.pit)
+        self.optimizer: BaseNFNOptimizer = ToDataFirstOptimizer(self.cs, self.fib, self.pit, self.faceidtable)
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         """handle incomming data from the lower layer """

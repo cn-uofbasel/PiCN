@@ -12,6 +12,7 @@ from PiCN.Layers.NFNLayer.R2C import TimeoutR2CHandler
 from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
 from PiCN.Layers.NFNLayer.NFNOptimizer import EdgeComputingOptimizer
 from PiCN.Processes import PiCNSyncDataStructFactory
+from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
 
 
 class test_ToDataFirstOptimizer(unittest.TestCase):
@@ -24,18 +25,22 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         synced_data_struct_factory.register("cs", ContentStoreMemoryExact)
         synced_data_struct_factory.register("fib", ForwardingInformationBaseMemoryPrefix)
         synced_data_struct_factory.register("pit", PendingInterstTableMemoryExact)
+        synced_data_struct_factory.register("faceidtable", FaceIDDict)
         synced_data_struct_factory.register("computation_table", NFNComputationList)
         synced_data_struct_factory.create_manager()
 
         cs = synced_data_struct_factory.manager.cs()
         fib = synced_data_struct_factory.manager.fib()
         pit = synced_data_struct_factory.manager.pit()
+        faceidtable = synced_data_struct_factory.manager.faceidtable()
 
         self.r2cclient = TimeoutR2CHandler()
         parser = DefaultNFNParser()
         comp_table = synced_data_struct_factory.manager.computation_table(self.r2cclient, parser)
 
-        self.optimizer: EdgeComputingOptimizer = EdgeComputingOptimizer(cs, fib, pit)
+
+
+        self.optimizer: EdgeComputingOptimizer = EdgeComputingOptimizer(cs, fib, pit, faceidtable)
 
 
     def test_interest_fwd_comp_simple_interest(self):
