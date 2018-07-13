@@ -18,8 +18,8 @@ from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface
 from PiCN.Logger import Logger
 
 
-class HeartbeatNFNStack(object):
-    def __init__(self, replica_id, port=9500, log_level=255, encoder: ExtendedNdnTlvEncoder = ExtendedNdnTlvEncoder):
+class HeartbeatComputationStack(object):
+    def __init__(self, port=9500, log_level=255, encoder: ExtendedNdnTlvEncoder = ExtendedNdnTlvEncoder):
         # debug level
         logger = Logger("Server", log_level)
 
