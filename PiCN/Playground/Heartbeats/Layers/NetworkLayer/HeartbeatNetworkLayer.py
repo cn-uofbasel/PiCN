@@ -2,7 +2,7 @@
 
 import multiprocessing
 
-from PiCN.Packets import Name, Content, Interest, Packet, Nack, NackReason
+from PiCN.Packets import Content, Interest, Packet, Nack
 from PiCN.Playground.Heartbeats.Layers.PacketEncoding.Heartbeat import Heartbeat
 from PiCN.Layers.ICNLayer import BasicICNLayer
 
@@ -10,10 +10,6 @@ from PiCN.Layers.ICNLayer import BasicICNLayer
 class HeartbeatNetworkLayer(BasicICNLayer):
     def __init__(self, log_level=255, interest_to_app: bool = False):
         super().__init__(log_level=log_level)
-        # self.cs = cs
-        # self.pit = pit
-        # self.fib = fib
-        # self._ageing_interval: int = 4
         self._interest_to_app: bool = interest_to_app
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
@@ -36,7 +32,7 @@ class HeartbeatNetworkLayer(BasicICNLayer):
         elif isinstance(packet, Nack):
             self.handle_nack(face_id, packet, to_lower, to_higher, False)
         elif isinstance(packet, Heartbeat):
-            self.handle_heartbeat(packet)
+            self.handle_heartbeat(packet, to_lower)
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         high_level_id = data[0]
@@ -48,16 +44,17 @@ class HeartbeatNetworkLayer(BasicICNLayer):
         elif isinstance(packet, Nack):
             self.handle_nack(high_level_id, packet, to_lower, to_higher, True) #Nack handled same as for NACK from network
         elif isinstance(packet, Heartbeat):
-            self.handle_heartbeat(packet)
+            self.handle_heartbeat(packet, to_lower)
 
-    def handle_heartbeat(self, heartbeat: Heartbeat):
+    def handle_heartbeat(self, heartbeat: Heartbeat, to_lower:multiprocessing.Queue):
         self.logger.info("Handling Heartbeat")
         # check if there is matching PIT entry
         pit_entry = self.pit.find_pit_entry(heartbeat.name)
         if pit_entry is not None:
-            self.logger.info("Found PIT entry to update")
+            self.logger.info("PIT entry found: update timestamp and forward heartbeat")
             self.pit.update_timestamp(pit_entry)
-            # TODO -- forward heartbeat
+            for i in range(0, len(pit_entry.faceids)):
+                to_lower.put([pit_entry.faceids[i], heartbeat])
             return
         else:
-            self.logger.info("No PIT entry found")
+            self.logger.info("No PIT entry found. Drop heartbeat.")
