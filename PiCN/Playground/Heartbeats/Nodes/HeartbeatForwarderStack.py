@@ -56,7 +56,7 @@ class HeartbeatForwarderStack(object):
 
         # initialize layers
         self.link_layer = BasicLinkLayer(interfaces, face_id_table, log_level=log_level)
-        self.packet_encoding_layer = HeartbeatPacketEncodingLayer(self.encoder, log_level=log_level) # TODO -- exchange this layer
+        self.packet_encoding_layer = HeartbeatPacketEncodingLayer(self.encoder, log_level=log_level)
         self.icn_layer = HeartbeatNetworkLayer(log_level=log_level)
 
 

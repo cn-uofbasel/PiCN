@@ -1,10 +1,11 @@
 import multiprocessing
 import threading
-import time
 from math import pow
+import time
 
 from PiCN.Processes import LayerProcess
 from PiCN.Packets import Name, Interest, Content, Nack, NackReason
+from PiCN.Playground.Heartbeats.Layers.PacketEncoding.Heartbeat import Heartbeat
 
 
 class HeartbeatComputationLayer(LayerProcess):
@@ -66,16 +67,42 @@ class HeartbeatComputationLayer(LayerProcess):
             self.logger.info("Received interest does not contain a computation expression")
         return
 
+    def heartbeat(self, packet_id, name, interval, stop_event):
+        """
+        Send a periodic heartbeat
+        :param packet_id: Packet ID of original interest
+        :param name: Name of original interest
+        :param interval: Heartbeat interval (seconds)
+        :return:
+        """
+        while not stop_event.is_set():
+            self.logger.info("Send heartbeat for: " + name.to_string())
+            self.queue_to_lower.put([packet_id, Heartbeat(name)])
+            time.sleep(interval)
+
     ### defining some pinned functions
 
     def executePinnedFunction(self, packet_id, function, params, interest_name: Name):
+        # start heartbeat
+        self.logger.info("Start heartbeat for: " + interest_name.to_string())
+        heartbeat_interval = 2
+        stop_heartbeat_event = threading.Event()
+        arguments = [packet_id, interest_name, heartbeat_interval, stop_heartbeat_event]
+        t = threading.Thread(target=self.heartbeat, args=arguments)
+        t.setDaemon(True)
+        t.start()
+        # start computation
+        self.logger.info("Start computation for: " + interest_name.to_string())
         result = function(params)
         content_object = Content(interest_name, str(result))
+        # return result and stop heartbeat
         self.queue_to_lower.put([packet_id, content_object])
+        stop_heartbeat_event.set()
+        self.logger.info("Return result for: " + interest_name.to_string())
 
     def pinned_function_square(self, params):
         # TODO -- check if params contains valid parameters
-        # time.sleep(5)
+        time.sleep(10)
         return int(pow(int(params[0]), 2))
 
     def ageing(self):

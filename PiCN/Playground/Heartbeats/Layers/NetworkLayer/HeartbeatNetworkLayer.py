@@ -1,13 +1,9 @@
 """Extended ICN Forwarding Layer (heartbeat)"""
 
 import multiprocessing
-import time
 
-from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore, ContentStoreEntry
-from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase, ForwardingInformationBaseEntry
-from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable, PendingInterestTableEntry
 from PiCN.Packets import Name, Content, Interest, Packet, Nack, NackReason
-from PiCN.Playground.Heartbeats.Layers.PacketEncoding import Heartbeat
+from PiCN.Playground.Heartbeats.Layers.PacketEncoding.Heartbeat import Heartbeat
 from PiCN.Layers.ICNLayer import BasicICNLayer
 
 
@@ -42,6 +38,41 @@ class HeartbeatNetworkLayer(BasicICNLayer):
         elif isinstance(packet, Heartbeat):
             self.handle_heartbeat(packet)
 
+    def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
+        high_level_id = data[0]
+        packet = data[1]
+        if isinstance(packet, Interest):
+            cs_entry = self.cs.find_content_object(packet.name)
+            if cs_entry is not None:
+                self.queue_to_higher.put([high_level_id, cs_entry.content])
+                return
+            pit_entry = self.pit.find_pit_entry(packet.name)
+            self.pit.add_pit_entry(packet.name, high_level_id, packet, local_app=True)
+            if pit_entry:
+                fib_entry = self.fib.find_fib_entry(packet.name, incoming_faceids=pit_entry.face_id)
+            else:
+                fib_entry = self.fib.find_fib_entry(packet.name)
+            if fib_entry is not None:
+                self.pit.add_used_fib_entry(packet.name, fib_entry)
+                to_lower.put([fib_entry.faceid, packet])
+            else:
+                self.logger.info("No FIB entry, sending Nack")
+                nack = Nack(packet.name, NackReason.NO_ROUTE, interest=packet)
+                if pit_entry is not None: #if pit entry is available, consider it, otherwise assume interest came from higher
+                    for i in range(0, len(pit_entry.faceids)):
+                        if pit_entry._local_app[i]:
+                            to_higher.put([high_level_id, nack])
+                    #    else:
+                    #       to_lower.put([pit_entry._faceids[i], nack])
+                else:
+                    to_higher.put([high_level_id, nack])
+        elif isinstance(packet, Content):
+            self.handle_content(high_level_id, packet, to_lower, to_higher, True) #content handled same as for content from network
+        elif isinstance(packet, Nack):
+            self.handle_nack(high_level_id, packet, to_lower, to_higher, True) #Nack handled same as for NACK from network
+        elif isinstance(packet, Heartbeat):
+            self.handle_heartbeat(packet)
+
     def handle_heartbeat(self, heartbeat: Heartbeat):
         self.logger.info("Handling Heartbeat")
 
@@ -50,6 +81,7 @@ class HeartbeatNetworkLayer(BasicICNLayer):
         if pit_entry is not None:
             self.logger.info("Found PIT entry to update")
             self.pit.update_timestamp(pit_entry)
+            # TODO -- forward heartbeat
             return
         else:
             self.logger.info("No PIT entry found")
