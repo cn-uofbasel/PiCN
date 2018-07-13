@@ -49,10 +49,9 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         self.rsu3 = NFNForwarder(port=0, encoder=self.encoder_type(),
                                  interfaces=[self.simulation_bus.add_interface("rsu3")], log_level=255)
 
-
-        self.rsu1.nfnlayer.optimizer = EdgeComputingOptimizer(self.rsu1.icnlayer.cs, self.rsu1.icnlayer.fib, self.rsu1.icnlayer.pit)
-        self.rsu2.nfnlayer.optimizer = EdgeComputingOptimizer(self.rsu2.icnlayer.cs, self.rsu2.icnlayer.fib, self.rsu2.icnlayer.pit)
-        self.rsu3.nfnlayer.optimizer = EdgeComputingOptimizer(self.rsu3.icnlayer.cs, self.rsu3.icnlayer.fib, self.rsu3.icnlayer.pit)
+        self.rsu1.nfnlayer.optimizer = EdgeComputingOptimizer(self.rsu1.icnlayer.cs, self.rsu1.icnlayer.fib, self.rsu1.icnlayer.pit, self.rsu1.linklayer.faceidtable)
+        self.rsu2.nfnlayer.optimizer = EdgeComputingOptimizer(self.rsu2.icnlayer.cs, self.rsu2.icnlayer.fib, self.rsu2.icnlayer.pit, self.rsu2.linklayer.faceidtable)
+        self.rsu3.nfnlayer.optimizer = EdgeComputingOptimizer(self.rsu3.icnlayer.cs, self.rsu3.icnlayer.fib, self.rsu3.icnlayer.pit, self.rsu3.linklayer.faceidtable)
 
         self.mgmt_client1 = MgmtClient(self.rsu1.mgmt.mgmt_sock.getsockname()[1])
         self.mgmt_client2 = MgmtClient(self.rsu2.mgmt.mgmt_sock.getsockname()[1])
@@ -120,8 +119,8 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         name2 += '_(/rsu/func/f1("helloworld"))'
         name2 += "NFN"
 
-        #res1 = self.fetch_tool1.fetch_data(name1, timeout=10)
-        #print(res1)
+        res1 = self.fetch_tool1.fetch_data(name1, timeout=10)
+        print(res1)
 
-        res2 = self.fetch_tool2.fetch_data(name2, timeout=0)
+        res2 = self.fetch_tool2.fetch_data(name2, timeout=10)
         print(res2)

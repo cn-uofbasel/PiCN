@@ -8,16 +8,25 @@ from PiCN.Layers.NFNLayer.NFNOptimizer import BaseNFNOptimizer
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
 from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
+from PiCN.Layers.LinkLayer.FaceIDTable import BaseFaceIDTable
 
 class EdgeComputingOptimizer(BaseNFNOptimizer):
 
-    def __init__(self, cs: BaseContentStore, fib: BaseForwardingInformationBase, pit: BasePendingInterestTable) -> None:
-        super().__init__(cs, fib, pit)
+    def __init__(self, cs: BaseContentStore, fib: BaseForwardingInformationBase, pit: BasePendingInterestTable,
+                 faceidTable: BaseFaceIDTable) -> None:
+        super().__init__(cs, fib, pit, faceidTable)
 
     def required_data(self, prepended_prefix: Name, ast: AST):
         return []
 
     def compute_local(self, prepended_prefix: Name, ast: AST) -> bool:
+        pit_entry = self.pit.find_pit_entry(prepended_prefix)
+        if not pit_entry:
+            return True
+        faceid = pit_entry.faceids[0]
+        addr_info = self.faceidtable.get_address_info(faceid)
+        if "rsu" in addr_info.address:
+            return False
         return True
 
     def compute_fwd(self, prepended_prefix: Name, ast: AST) -> bool:

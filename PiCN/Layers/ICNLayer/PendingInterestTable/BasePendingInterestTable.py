@@ -22,7 +22,7 @@ class PendingInterestTableEntry(object):
         self._timestamp = time.time()
         self._retransmits = 0
         self._local_app: List[bool]= []
-        if isinstance(local_app, List):
+        if isinstance(local_app, list):
             self._local_app.extend(local_app)
         else:
             self._local_app.append(local_app)
