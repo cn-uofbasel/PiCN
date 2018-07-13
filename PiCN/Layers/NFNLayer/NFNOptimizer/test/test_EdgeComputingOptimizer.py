@@ -2,7 +2,7 @@
 
 import unittest
 
-from PiCN.Packets import Name, Content
+from PiCN.Packets import Name, Content, Interest
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseMemoryPrefix
 from PiCN.Layers.ICNLayer.PendingInterestTable import PendingInterstTableMemoryExact
@@ -50,8 +50,8 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         cmp_name += "NFN"
         workflow = "/func/f1()"
         ast = self.parser.parse(workflow)
-        self.assertTrue(self.optimizer.compute_fwd(cmp_name, ast))
-        self.assertTrue(self.optimizer.compute_local(cmp_name, ast))
+        self.assertTrue(self.optimizer.compute_fwd(cmp_name, ast, Interest(cmp_name)))
+        self.assertTrue(self.optimizer.compute_local(cmp_name, ast, Interest(cmp_name)))
         rules = self.optimizer.rewrite(cmp_name, ast)
         self.assertEqual(rules, [])
 
@@ -65,7 +65,7 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         fib.add_fib_entry(Name("/test"), 1, False)
         self.optimizer.fib = fib
         ast = self.parser.parse(workflow)
-        self.assertTrue(self.optimizer.compute_fwd(cmp_name, ast))
-        self.assertTrue(self.optimizer.compute_local(cmp_name, ast))
+        self.assertTrue(self.optimizer.compute_fwd(cmp_name, ast, Interest(cmp_name)))
+        self.assertTrue(self.optimizer.compute_local(cmp_name, ast, Interest(cmp_name)))
         rules = self.optimizer.rewrite(cmp_name, ast)
         self.assertEqual(rules, ['/func/f1(%/test/data%)'])

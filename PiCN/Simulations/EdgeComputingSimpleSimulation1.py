@@ -82,7 +82,7 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         self.mgmt_client2.add_face("rsu1", None, 0)
         self.mgmt_client2.add_face("rsu3", None, 0)
         self.mgmt_client2.add_forwarding_rule(Name("/rsu"), 0)
-        self.mgmt_client2.add_forwarding_rule(Name("/rsu"), 1)
+        #self.mgmt_client2.add_forwarding_rule(Name("/rsu"), 1)
         self.mgmt_client2.add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n    for i in range(0,40000000):\n        a.upper()\n    return a.upper() + ' RSU2'")
 
         #setup rsu3
@@ -122,5 +122,5 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         res1 = self.fetch_tool1.fetch_data(name1, timeout=10)
         print(res1)
 
-        res2 = self.fetch_tool2.fetch_data(name2, timeout=10)
-        print(res2)
+        #res2 = self.fetch_tool2.fetch_data(name2, timeout=10)
+        #print(res2)

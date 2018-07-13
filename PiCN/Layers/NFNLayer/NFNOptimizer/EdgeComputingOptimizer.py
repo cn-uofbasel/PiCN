@@ -9,6 +9,7 @@ from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInforma
 from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
 from PiCN.Layers.LinkLayer.FaceIDTable import BaseFaceIDTable
+from PiCN.Packets import Interest
 
 class EdgeComputingOptimizer(BaseNFNOptimizer):
 
@@ -19,8 +20,10 @@ class EdgeComputingOptimizer(BaseNFNOptimizer):
     def required_data(self, prepended_prefix: Name, ast: AST):
         return []
 
-    def compute_local(self, prepended_prefix: Name, ast: AST) -> bool:
-        pit_entry = self.pit.find_pit_entry(prepended_prefix)
+    def compute_local(self, prepended_prefix: Name, ast: AST, interest: Interest) -> bool:
+
+        pit = self.pit.get_container()
+        pit_entry = self.pit.find_pit_entry(interest.name)
         if not pit_entry:
             return True
         faceid = pit_entry.faceids[0]
@@ -29,7 +32,7 @@ class EdgeComputingOptimizer(BaseNFNOptimizer):
             return False
         return True
 
-    def compute_fwd(self, prepended_prefix: Name, ast: AST) -> bool:
+    def compute_fwd(self, prepended_prefix: Name, ast: AST, interest: Interest) -> bool:
         return True
 
     def rewrite(self, prepended_prefix: Name, ast: AST) -> List[str]:

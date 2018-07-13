@@ -5,7 +5,7 @@ import time
 from typing import List
 
 from PiCN.Packets import Content, Name
-
+from PiCN.Layers.ICNLayer import BaseICNDataStruct
 
 class ContentStoreEntry(object):
     """Entry of the content store"""
@@ -45,12 +45,13 @@ class ContentStoreEntry(object):
     def __eq__(self, other):
         return self._content == other._content
 
-class BaseContentStore(object):
+class BaseContentStore(BaseICNDataStruct):
     """Abstract BaseContentStore for usage in BasicICNLayer
     :param cs_timeout: Time interval in which a CS entry will be cached
     """
 
     def __init__(self, cs_timeout: int=10):
+        super().__init__()
         self._container: List[ContentStoreEntry] = []
         self._cs_timeout = cs_timeout
 
@@ -94,19 +95,6 @@ class BaseContentStore(object):
         Update the entries periodically
         :return: None
         """
-
-    def get_container_size(self) -> int:
-        """get the current number of content objects in the CS
-        ":return: number of content objects in the CS
-        """
-        return len(self._container)
-
-    def get_container(self) -> List:
-        """get the container storing the content objects
-        :return: the container storing the content objects
-        """
-        return self._container
-
 
     def set_cs_timeout(self, timeout: float):
         """set the timeout intervall for a CS entry

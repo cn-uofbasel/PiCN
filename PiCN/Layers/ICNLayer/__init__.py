@@ -6,4 +6,6 @@
     highlevelid on the queues to higher and from higher is a number ,
     that can be used to dispatch packets on the higher layer
 """
+
+from .BaseICNDataStruct import BaseICNDataStruct
 from .BasicICNLayer import BasicICNLayer

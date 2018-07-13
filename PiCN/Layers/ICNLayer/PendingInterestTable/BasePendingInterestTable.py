@@ -7,6 +7,7 @@ from typing import List
 
 from PiCN.Packets import Interest, Name
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseEntry
+from PiCN.Layers.ICNLayer import BaseICNDataStruct
 
 
 class PendingInterestTableEntry(object):
@@ -91,13 +92,14 @@ class PendingInterestTableEntry(object):
         self._fib_entries_already_used = fib_entries_already_used
 
 
-class BasePendingInterestTable(object):
+class BasePendingInterestTable(BaseICNDataStruct):
     """Abstract BasePendingInterestaTable for usage in BasicICNLayer
     :param pit_timeout: timeout for a pit entry when calling the ageing function
     """
 
     def __init__(self, pit_timeout: int=10, pit_retransmits: int=3):
-        self._container: List[PendingInterestTableEntry] = []
+        super().__init__()
+        self.container: List[PendingInterestTableEntry] = []
         self._pit_timeout = pit_timeout
         self._pit_retransmits = pit_retransmits
 
@@ -133,6 +135,7 @@ class BasePendingInterestTable(object):
         :param entry: entry to be appended
         """
 
+    @abc.abstractmethod
     def get_already_used_pit_entries(self, name: Name):
         """Get already used fib entries"""
 
@@ -148,9 +151,5 @@ class BasePendingInterestTable(object):
         """
         self._pit_retransmits = retransmits
 
-    def get_container_size(self) -> int:
-        """get the current number of pit entries
-        ":return: number of pit entries
-        """
-        return len(self._container)
+
 

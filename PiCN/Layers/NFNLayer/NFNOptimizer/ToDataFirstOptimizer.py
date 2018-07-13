@@ -2,7 +2,7 @@
 
 from typing import Dict
 
-from PiCN.Packets import Name
+from PiCN.Packets import Interest
 from PiCN.Layers.NFNLayer.Parser.AST import *
 from PiCN.Layers.NFNLayer.NFNOptimizer import BaseNFNOptimizer
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
@@ -19,7 +19,7 @@ class ToDataFirstOptimizer(BaseNFNOptimizer):
     def required_data(self, prepended_prefix: Name, ast: AST):
         return []
 
-    def compute_local(self, prepended_prefix: Name, ast: AST) -> bool:
+    def compute_local(self, prepended_prefix: Name, ast: AST, interest: Interest) -> bool:
         if self.cs.find_content_object(prepended_prefix):
             return True
         names = self._get_names_from_ast(ast)
@@ -38,7 +38,7 @@ class ToDataFirstOptimizer(BaseNFNOptimizer):
             return False
         return True
 
-    def compute_fwd(self, prepended_prefix: Name, ast: AST) -> bool:
+    def compute_fwd(self, prepended_prefix: Name, ast: AST, interest: Interest) -> bool:
         if prepended_prefix is None:
             names = self._get_functions_from_ast(ast)
             if names != []:
