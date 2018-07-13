@@ -9,6 +9,7 @@ from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInforma
 from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
 from PiCN.Layers.LinkLayer.FaceIDTable import BaseFaceIDTable
+from PiCN.Packets import Interest
 
 class BaseNFNOptimizer(object):
     """Base class for the NFN Optimizers"""
@@ -29,7 +30,7 @@ class BaseNFNOptimizer(object):
         """
 
     @abc.abstractmethod
-    def compute_local(self, prepended_prefix: Name, ast: AST) -> bool:
+    def compute_local(self, prepended_prefix: Name, ast: AST, interest: Interest) -> bool:
         """decide if the computation should be executed locally
         :param prepended_prefix: Prefix that was prepended to the interest
         :param ast: The Abstract Syntax Tree for the current computation
@@ -37,7 +38,7 @@ class BaseNFNOptimizer(object):
         """
 
     @abc.abstractmethod
-    def compute_fwd(self, prepended_prefix: Name, ast: AST) -> bool:
+    def compute_fwd(self, prepended_prefix: Name, ast: AST, interest: Interest) -> bool:
         """decide if the computation should be forwarded
         :param prepended_prefix: Prefix that was prepended to the interest
         :param ast: The Abstract Syntax Tree for the current computation

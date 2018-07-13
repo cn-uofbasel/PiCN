@@ -5,6 +5,7 @@ import multiprocessing
 from typing import List
 
 from PiCN.Packets import Name
+from PiCN.Layers.ICNLayer import BaseICNDataStruct
 
 
 class ForwardingInformationBaseEntry(object):
@@ -42,10 +43,11 @@ class ForwardingInformationBaseEntry(object):
     def static(self, static):
         self._static = static
 
-class BaseForwardingInformationBase(object):
+class BaseForwardingInformationBase(BaseICNDataStruct):
     """Abstract BaseForwardingInformationBase for usage in BasicICNLayer"""
 
     def __init__(self):
+        super().__init__()
         self._container: List[ForwardingInformationBaseEntry] = []
 
     @abc.abstractmethod
@@ -61,8 +63,4 @@ class BaseForwardingInformationBase(object):
             ->ForwardingInformationBaseEntry:
         """Find an entry in the PIT"""
 
-    def get_container_size(self) -> int:
-        """get the current number of fit entries
-        ":return: number of fit entries
-        """
-        return len(self._container)
+

@@ -3,7 +3,7 @@
 import multiprocessing
 import unittest
 
-from PiCN.Packets import Name, Content
+from PiCN.Packets import Name, Content, Interest
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseMemoryPrefix
 from PiCN.Layers.ICNLayer.PendingInterestTable import PendingInterstTableMemoryExact
@@ -48,8 +48,8 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         """Test, if ToDataFirstOptimizer works correctly with a single function call without parameter without fib"""
         workflow = "/func/f1()"
         ast = self.parser.parse(workflow)
-        self.assertFalse(self.optimizer.compute_fwd(None, ast))
-        self.assertTrue(self.optimizer.compute_local(None, ast))
+        self.assertFalse(self.optimizer.compute_fwd(None, ast, Interest(workflow)))
+        self.assertTrue(self.optimizer.compute_local(None, ast, Interest(workflow)))
         rules = self.optimizer.rewrite(None, ast)
         self.assertEqual(rules, [])
 
@@ -64,8 +64,8 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         fib.add_fib_entry(Name("/func"), 1, False)
         self.optimizer.fib = fib
         ast = self.parser.parse(workflow)
-        self.assertTrue(self.optimizer.compute_fwd(cmp_name, ast))
-        self.assertFalse(self.optimizer.compute_local(cmp_name, ast))
+        self.assertTrue(self.optimizer.compute_fwd(cmp_name, ast, Interest(cmp_name)))
+        self.assertFalse(self.optimizer.compute_local(cmp_name, ast, Interest(cmp_name)))
         rules = self.optimizer.rewrite(cmp_name, ast)
         self.assertEqual(rules, ['%/func/f1%()'])
 
@@ -85,8 +85,8 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         fib.add_fib_entry(Name("/func"), 1, False)
         self.optimizer.fib = fib
         ast = self.parser.parse(workflow)
-        self.assertTrue(self.optimizer.compute_fwd(None, ast))
-        self.assertFalse(self.optimizer.compute_local(None, ast))
+        self.assertTrue(self.optimizer.compute_fwd(None, ast, Interest(cmp_name)))
+        self.assertFalse(self.optimizer.compute_local(None, ast, Interest(cmp_name)))
         rules = self.optimizer.rewrite(cmp_name, ast)
         self.assertEqual(rules, ['%/func/f1%(/test/data)'])
         name = self.parser.nfn_str_to_network_name(rules[0])
@@ -111,8 +111,8 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
             Content(Name("/func/f1"), "PYTHON\nf\ndef f():\n    return 'Hello World'"),True)
         self.optimizer.cs = cs
         ast = self.parser.parse(workflow)
-        self.assertFalse(self.optimizer.compute_fwd(prefix, ast))
-        self.assertTrue(self.optimizer.compute_local(prefix, ast))
+        self.assertFalse(self.optimizer.compute_fwd(prefix, ast, Interest(cmp_name)))
+        self.assertTrue(self.optimizer.compute_local(prefix, ast, Interest(cmp_name)))
         rules = self.optimizer.rewrite(prefix, ast)
         self.assertEqual(rules, ['%/func/f1%(/test/data)'])
         name = self.parser.nfn_str_to_network_name(rules[0])
@@ -133,8 +133,8 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         self.optimizer.fib = fib
         self.optimizer.prefix = Name("/func/f1")
         ast = self.parser.parse(workflow)
-        self.assertTrue(self.optimizer.compute_fwd(None, ast))
-        self.assertFalse(self.optimizer.compute_local(None, ast))
+        self.assertTrue(self.optimizer.compute_fwd(None, ast, Interest(cmp_name)))
+        self.assertFalse(self.optimizer.compute_local(None, ast, Interest(cmp_name)))
 
 
     def test_simple_call_params_to_data(self):
@@ -147,8 +147,8 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         fib.add_fib_entry(Name("/test"), 1, False)
         self.optimizer.fib = fib
         ast = self.parser.parse(workflow)
-        self.assertTrue(self.optimizer.compute_fwd(None, ast))
-        self.assertFalse(self.optimizer.compute_local(None, ast))
+        self.assertTrue(self.optimizer.compute_fwd(None, ast, Interest(cmp_name)))
+        self.assertFalse(self.optimizer.compute_local(None, ast, Interest(cmp_name)))
         rules = self.optimizer.rewrite(None, ast)
         self.assertEqual(rules, ['/func/f1(%/test/data%)'])
         name = self.parser.nfn_str_to_network_name(rules[0])
@@ -171,8 +171,8 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         fib.add_fib_entry(Name("/func"), 2, False)
         self.optimizer.fib = fib
         ast = self.parser.parse(workflow)
-        self.assertTrue(self.optimizer.compute_fwd(None, ast))
-        self.assertFalse(self.optimizer.compute_local(None, ast))
+        self.assertTrue(self.optimizer.compute_fwd(None, ast, Interest(cmp_name1)))
+        self.assertFalse(self.optimizer.compute_local(None, ast, Interest(cmp_name1)))
         rules = self.optimizer.rewrite(None, ast)
         self.assertEqual(rules, ['/func/f1(%/test/data%)', '%/func/f1%(/test/data)'])
         name1 = self.parser.nfn_str_to_network_name(rules[0])
@@ -201,8 +201,8 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         fib.add_fib_entry(Name("/test"), 2, False)
         self.optimizer.fib = fib
         ast = self.parser.parse(workflow)
-        self.assertTrue(self.optimizer.compute_fwd(None, ast))
-        self.assertFalse(self.optimizer.compute_local(None, ast))
+        self.assertTrue(self.optimizer.compute_fwd(None, ast,  Interest(cmp_name1)))
+        self.assertFalse(self.optimizer.compute_local(None, ast, Interest(cmp_name1)))
         rules = self.optimizer.rewrite(None, ast)
         self.assertEqual(rules, ['/func/f1(%/test/data%,/lib/f2(2,/data/test))',
                                  '/func/f1(/test/data,%/lib/f2%(2,/data/test))'])
