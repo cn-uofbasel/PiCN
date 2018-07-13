@@ -3,7 +3,7 @@
 import argparse
 import logging
 
-import PiCN.Playground.Heartbeats.Nodes.HeartbeatForwarderStack
+import PiCN.Playground.Heartbeats.Nodes.HeartbeatComputationStack
 from PiCN.Logger import Logger
 from PiCN.Playground.Heartbeats.Layers.PacketEncoding import ExtendedNdnTlvEncoder
 
@@ -32,7 +32,7 @@ def main(args):
     encoder = ExtendedNdnTlvEncoder(log_level)
 
     # Start
-    server = PiCN.Playground.Heartbeats.Nodes.HeartbeatForwarderStack(port=args.port, log_level=log_level, encoder=encoder)
+    server = PiCN.Playground.Heartbeats.Nodes.HeartbeatComputationStack(port=args.port, log_level=log_level, encoder=encoder)
     server.start_forwarder()
     server.link_layer.process.join()
 

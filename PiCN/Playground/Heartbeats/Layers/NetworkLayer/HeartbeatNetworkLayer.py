@@ -49,10 +49,7 @@ class HeartbeatNetworkLayer(BasicICNLayer):
         pit_entry = self.pit.find_pit_entry(heartbeat.name)
         if pit_entry is not None:
             self.logger.info("Found PIT entry to update")
-            print("here:   " + str(time.time()))
-            print("before: " + str(pit_entry.timestamp))
             self.pit.update_timestamp(pit_entry)
-            print("after:  " + str(self.pit.find_pit_entry(heartbeat.name).timestamp))
             return
         else:
             self.logger.info("No PIT entry found")
