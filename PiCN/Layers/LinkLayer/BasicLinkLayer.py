@@ -1,12 +1,15 @@
 """Default Link Layer implementation for PiCN"""
 import multiprocessing
 import select
+import socket
+
 from typing import List
 
-from PiCN.Layers.LinkLayer.FaceIDTable import BaseFaceIDTable
+from PiCN.Processes import LayerProcess
+
 from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
 from PiCN.Layers.LinkLayer.Interfaces import BaseInterface
-from PiCN.Processes import LayerProcess
+from PiCN.Layers.LinkLayer.FaceIDTable import BaseFaceIDTable
 
 
 class BasicLinkLayer(LayerProcess):

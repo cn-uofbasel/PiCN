@@ -4,10 +4,10 @@ Fetch Content with resolved chunking
 
 import argparse
 
-from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
-from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 from PiCN.Packets import Name
 from PiCN.ProgramLibs.Fetch import Fetch
+from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
+from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 
 
 def main(args):

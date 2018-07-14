@@ -2,15 +2,15 @@
 
 from PiCN.LayerStack import LayerStack
 from PiCN.Layers.ChunkLayer import BasicChunkLayer
+from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
 from PiCN.Layers.ChunkLayer.Chunkifyer import SimpleContentChunkifyer
 from PiCN.Layers.LinkLayer import BasicLinkLayer
 from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
 from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface, AddressInfo
-from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
-from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
-from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
-from PiCN.Packets import Content, Name, Interest, Nack
 from PiCN.Processes.PiCNSyncDataStructFactory import PiCNSyncDataStructFactory
+from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
+from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
+from PiCN.Packets import Content, Name, Interest, Nack
 
 
 class Fetch(object):

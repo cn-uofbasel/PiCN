@@ -2,9 +2,9 @@
 
 import time
 
+from PiCN.Packets import Content, Name
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore, ContentStoreEntry
 from PiCN.Layers.ICNLayer.ContentStore.NamedObjectTree import NamedObjectTree
-from PiCN.Packets import Content, Name
 
 
 class ContentStoreMemoryPrefix(BaseContentStore):

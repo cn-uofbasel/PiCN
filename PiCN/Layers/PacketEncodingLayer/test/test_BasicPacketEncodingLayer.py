@@ -2,15 +2,17 @@
 
 import abc
 import unittest
+
 from multiprocessing import Queue
+
+from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
+from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
 
 from PiCN.Layers.LinkLayer import BasicLinkLayer
 from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
 from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface, AddressInfo
-from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
-from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
-from PiCN.Packets import Content, Interest
 from PiCN.Processes import PiCNSyncDataStructFactory
+from PiCN.Packets import Content, Interest
 
 
 class cases_BasicPacketEncodingLayer(object):

@@ -5,13 +5,15 @@ which can be used as identify for a Face in the LinkLayer.
 
 import multiprocessing
 import select
+import threading
 import time
+
 from sys import getsizeof
 from typing import Dict
 
+from PiCN.Processes import PiCNProcess
 from PiCN.Layers.LinkLayer.Interfaces import BaseInterface
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder, SimpleStringEncoder
-from PiCN.Processes import PiCNProcess
 
 
 class SimulationInterface(BaseInterface):

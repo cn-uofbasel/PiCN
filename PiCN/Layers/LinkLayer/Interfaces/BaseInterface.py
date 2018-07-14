@@ -1,6 +1,7 @@
 """Abstract Superclass for a PiCN Interface"""
 
 import abc
+from . import BaseInterface
 
 
 class AddressInfo(object):

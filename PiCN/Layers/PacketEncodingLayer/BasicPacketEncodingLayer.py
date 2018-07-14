@@ -1,7 +1,6 @@
 """ De- and Encoding Layer, using a predefined Encoder """
 
 import multiprocessing
-
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
 from PiCN.Processes import LayerProcess
 

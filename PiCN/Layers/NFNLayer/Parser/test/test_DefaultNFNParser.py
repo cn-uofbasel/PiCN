@@ -2,6 +2,7 @@
 
 import unittest
 
+from PiCN.Packets import Name
 from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
 from PiCN.Layers.NFNLayer.Parser.AST import *
 

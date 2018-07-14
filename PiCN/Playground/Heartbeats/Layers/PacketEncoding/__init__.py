@@ -1,3 +1,3 @@
 from .ExtendedNdnTlvEncoder import ExtendedNdnTlvEncoder
-from .Heartbeat import Heartbeat
 from .HeartbeatPacketEncodingLayer import HeartbeatPacketEncodingLayer
+from .Heartbeat import Heartbeat

@@ -1,11 +1,14 @@
 """Simple NFN Optimizer, for edge computing. Start computation at the edge and forward it in parallel"""
 
-from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
+from typing import Dict
+
+from PiCN.Packets import Name
+from PiCN.Layers.NFNLayer.Parser.AST import *
+from PiCN.Layers.NFNLayer.NFNOptimizer import BaseNFNOptimizer
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
 from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
+from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
 from PiCN.Layers.LinkLayer.FaceIDTable import BaseFaceIDTable
-from PiCN.Layers.NFNLayer.NFNOptimizer import BaseNFNOptimizer
-from PiCN.Layers.NFNLayer.Parser.AST import *
 from PiCN.Packets import Interest
 
 

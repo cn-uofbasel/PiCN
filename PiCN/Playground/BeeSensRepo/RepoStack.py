@@ -1,15 +1,16 @@
 """Repository Stack"""
 
+from PiCN.Playground.BeeSensRepo import StorageLayer, InterfaceLayer
+from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
 from PiCN.LayerStack.LayerStack import LayerStack
+from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
 from PiCN.Layers.ICNLayer.ContentStore import ContentStorePersistentExact
-from PiCN.Layers.LinkLayer import BasicLinkLayer
+from PiCN.Processes import PiCNSyncDataStructFactory
+from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder, NdnTlvEncoder
 from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
 from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface
-from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
-from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder, NdnTlvEncoder
+from PiCN.Layers.LinkLayer import BasicLinkLayer
 from PiCN.Logger import Logger
-from PiCN.Playground.BeeSensRepo import StorageLayer, InterfaceLayer
-from PiCN.Processes import PiCNSyncDataStructFactory
 
 
 class RepoStack(object):

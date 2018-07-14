@@ -1,2 +1,2 @@
-from .HeartbeatComputationStack import HeartbeatComputationStack
 from .HeartbeatForwarderStack import HeartbeatForwarderStack
+from .HeartbeatComputationStack import HeartbeatComputationStack

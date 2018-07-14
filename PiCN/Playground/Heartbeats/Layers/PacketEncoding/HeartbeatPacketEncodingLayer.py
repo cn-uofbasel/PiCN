@@ -1,5 +1,4 @@
 import multiprocessing
-
 from PiCN.Playground.Heartbeats.Layers.PacketEncoding import ExtendedNdnTlvEncoder
 from PiCN.Processes import LayerProcess
 

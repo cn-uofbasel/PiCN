@@ -2,8 +2,9 @@
 
 import multiprocessing
 
-from PiCN.Layers.ICNLayer import BasicICNLayer
 from PiCN.Packets import Content, Interest, Packet, Nack
+from PiCN.Layers.ICNLayer import BasicICNLayer
+
 from PiCN.Playground.Heartbeats.Layers.PacketEncoding.Heartbeat import Heartbeat
 
 

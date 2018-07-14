@@ -4,9 +4,9 @@ import argparse
 import socket
 import sys
 
+from PiCN.Playground.Heartbeats.Layers.PacketEncoding import ExtendedNdnTlvEncoder
 from PiCN.Layers.PacketEncodingLayer.Printer.NdnTlvPrinter import NdnTlvPrinter
 from PiCN.Packets import Interest
-from PiCN.Playground.Heartbeats.Layers.PacketEncoding import ExtendedNdnTlvEncoder
 
 
 def main(args):

@@ -1,14 +1,14 @@
 """Repository Layer"""
 
-import hashlib
-import math
-import mmap
 import multiprocessing
+import mmap
+import math
+import hashlib
 
 from PiCN.Layers.ICNLayer.ContentStore.ContentStoreMemoryExact import ContentStoreMemoryExact
 from PiCN.Packets import Content, Interest, Packet, Nack, NackReason, Name
-from PiCN.Playground.AssistedSharing.SampleData import alice_index_schema, ac_wrapper_desc
 from PiCN.Processes import LayerProcess
+from PiCN.Playground.AssistedSharing.SampleData import alice_index_schema, ac_wrapper_desc
 
 
 class RepoLayer(LayerProcess):

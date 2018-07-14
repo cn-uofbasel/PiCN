@@ -1,5 +1,6 @@
 """Base Class for all ICN Data Structs"""
 
+import abc
 from typing import List
 
 

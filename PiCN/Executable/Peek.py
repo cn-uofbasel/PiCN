@@ -4,10 +4,10 @@ import argparse
 import socket
 import sys
 
-from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
+from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from PiCN.Layers.PacketEncodingLayer.Printer.NdnTlvPrinter import NdnTlvPrinter
-from PiCN.Packets import Interest
+from PiCN.Packets import Interest, Content
 
 
 def main(args):

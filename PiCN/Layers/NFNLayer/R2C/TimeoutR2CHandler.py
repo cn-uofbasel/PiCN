@@ -2,9 +2,9 @@
 
 from typing import List
 
+from PiCN.Layers.NFNLayer.R2C import BaseR2CHandler
 from PiCN.Layers.NFNLayer.NFNComputationTable import BaseNFNComputationTable
 from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
-from PiCN.Layers.NFNLayer.R2C import BaseR2CHandler
 from PiCN.Packets import Name, Content
 
 

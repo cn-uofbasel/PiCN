@@ -5,11 +5,11 @@ import abc
 import time
 from enum import Enum
 from typing import List, Dict
+from PiCN.Packets import Content, Name, Interest
 
-from PiCN.Layers.NFNLayer.Parser import AST
 from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
 from PiCN.Layers.NFNLayer.R2C import BaseR2CHandler, TimeoutR2CHandler
-from PiCN.Packets import Content, Name, Interest
+from PiCN.Layers.NFNLayer.Parser import AST
 
 
 class NFNComputationState(Enum):

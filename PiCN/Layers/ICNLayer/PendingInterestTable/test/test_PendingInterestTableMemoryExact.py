@@ -3,8 +3,8 @@
 import multiprocessing
 import unittest
 
-from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseEntry
 from PiCN.Layers.ICNLayer.PendingInterestTable.PendingInterestTableMemoryExact import PendingInterstTableMemoryExact
+from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseEntry
 from PiCN.Packets import Name
 
 

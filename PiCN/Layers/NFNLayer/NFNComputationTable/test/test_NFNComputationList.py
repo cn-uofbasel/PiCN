@@ -3,13 +3,13 @@
 import time
 import unittest
 
-from PiCN.Layers.NFNLayer.NFNComputationTable import NFNAwaitListEntry
+from PiCN.Packets import Name, Content, Interest
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationList
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationState
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationTableEntry
-from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
+from PiCN.Layers.NFNLayer.NFNComputationTable import NFNAwaitListEntry
 from PiCN.Layers.NFNLayer.R2C import TimeoutR2CHandler
-from PiCN.Packets import Name, Content, Interest
+from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
 
 
 class test_NFNComputationList(unittest.TestCase):

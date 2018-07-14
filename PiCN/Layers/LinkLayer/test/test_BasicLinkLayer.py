@@ -4,9 +4,9 @@ import multiprocessing
 import socket
 import unittest
 
-from PiCN.Layers.LinkLayer import BasicLinkLayer
 from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
 from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface, AddressInfo
+from PiCN.Layers.LinkLayer import BasicLinkLayer
 from PiCN.Processes import PiCNSyncDataStructFactory
 
 

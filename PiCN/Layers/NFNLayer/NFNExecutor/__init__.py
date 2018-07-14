@@ -1,5 +1,5 @@
 """Executor Modules for PiCN NFN
-    REQUIRES SANDBOXING """
+    REQUIRE SANDBOXING """
 
 from .BaseNFNExecutor import BaseNFNExecutor
 from .NFNPythonExecutor import NFNPythonExecutor

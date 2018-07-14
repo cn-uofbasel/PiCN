@@ -4,8 +4,8 @@ import argparse
 import logging
 
 import PiCN.Playground.PinnedNFN.PinnedNFNStack
-from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
 from PiCN.Logger import Logger
+from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
 
 
 def main(args):

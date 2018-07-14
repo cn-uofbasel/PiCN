@@ -4,8 +4,8 @@ import abc
 import time
 from typing import List
 
-from PiCN.Layers.ICNLayer import BaseICNDataStruct
 from PiCN.Packets import Content, Name
+from PiCN.Layers.ICNLayer import BaseICNDataStruct
 
 
 class ContentStoreEntry(object):

@@ -4,8 +4,8 @@
 import os.path
 
 from PiCN.Layers.RepositoryLayer.Repository import BaseRepository
-from PiCN.Logger import Logger
 from PiCN.Packets import Content, Name
+from PiCN.Logger import Logger
 
 
 class SimpleFileSystemRepository(BaseRepository):

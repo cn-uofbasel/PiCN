@@ -1,8 +1,8 @@
 """Test the Abstract Class LayerProcess"""
 
 import unittest
-from multiprocessing import Queue
 
+from multiprocessing import Queue
 from PiCN.Processes import LayerProcess
 
 

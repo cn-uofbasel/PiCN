@@ -5,10 +5,10 @@ import socket
 import time
 import unittest
 
-from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
 from PiCN.Packets import Content, Interest, Name
 from PiCN.ProgramLibs.ICNForwarder import ICNForwarder
+from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
 
 
 class cases_ICNForwarder(object):

@@ -2,8 +2,8 @@
 
 import time
 
-from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore, ContentStoreEntry
 from PiCN.Packets import Content, Name
+from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore, ContentStoreEntry
 
 
 class ContentStoreMemoryExact(BaseContentStore):

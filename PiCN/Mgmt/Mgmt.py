@@ -5,14 +5,16 @@ import os
 import select
 import socket
 import time
+from typing import Dict
 
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
+
 from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
-from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
 from PiCN.Packets import Content, Name
 from PiCN.Processes import LayerProcess
 from PiCN.Processes import PiCNProcess
+from PiCN.Layers.LinkLayer.Interfaces import AddressInfo, BaseInterface, UDP4Interface
 
 
 class Mgmt(PiCNProcess):

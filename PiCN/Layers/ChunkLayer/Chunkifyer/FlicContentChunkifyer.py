@@ -1,5 +1,6 @@
 """FLIC Chunkifyer"""
 
+import abc
 from typing import List
 
 from PiCN.Packets import Packet, Name, Content
