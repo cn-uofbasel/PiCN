@@ -2,6 +2,7 @@
 
 from multiprocessing.managers import BaseManager
 
+
 class PiCNSyncDataStructFactory(object):
     """Sync Datastruct Factory for PICN to create synced Datastructs such as PIT, FIB, CS"""
 
@@ -32,4 +33,3 @@ class PiCNSyncDataStructFactory(object):
         if self.manager is None:
             self.create_manager()
         return self.manager
-

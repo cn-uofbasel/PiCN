@@ -6,6 +6,7 @@ import binascii
 import json
 import os
 
+
 class Name(object):
     """
     Internal representation of network name
@@ -31,7 +32,7 @@ class Name(object):
     def components_to_string(self) -> str:
         # FIXME: handle '/' as part of a component, and binary components
         if type(self._components[0]) is str:
-            s =  '/' + '/'.join([c for c in self._components])
+            s = '/' + '/'.join([c for c in self._components])
             return s
         s = '/' + '/'.join([c.decode('ascii') for c in self._components])
         return s
@@ -47,7 +48,7 @@ class Name(object):
         """encoded name as JSON"""
         n = {}
         n['suite'] = self.suite
-        n['comps'] = [ binascii.hexlify(c).decode('ascii') for c in self._components ]
+        n['comps'] = [binascii.hexlify(c).decode('ascii') for c in self._components]
         if self.digest:
             n['dgest'] = binascii.hexlify(self.digest).decode('ascii')
         return json.dumps(n)
@@ -55,14 +56,14 @@ class Name(object):
     def from_json(self, s: str) -> str:
         n = json.loads(s)
         self.suite = n['suite']
-        self._components = [ binascii.dehexlify(c) for c in n['comps'] ]
+        self._components = [binascii.dehexlify(c) for c in n['comps']]
         self.digest = binascii.dehexlify(n['dgest']) if 'dgest' in n else None
         return self
 
-    def setDigest(self, digest : str = None):
+    def setDigest(self, digest: str = None):
         self.digest = digest
         return self
-        
+
     def __str__(self) -> str:
         return self.to_string()
 
@@ -86,7 +87,7 @@ class Name(object):
                 else:
                     raise TypeError('Not a Name, str, List[str] or List[bytes]')
         elif type(other) is str:
-                components.append(other.encode('ascii'))
+            components.append(other.encode('ascii'))
         elif isinstance(other, Name):
             for comp in other._components:
                 components.append(comp)

@@ -28,10 +28,12 @@ from PiCN.Layers.LinkLayer import BasicLinkLayer
 from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface, AddressInfo, BaseInterface
 from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
 
+
 class NFNForwarder(object):
     """NFN Forwarder for PICN"""
+
     # TODO add chunking layer
-    def __init__(self, port=9000, log_level=255, encoder: BasicEncoder=None, interfaces: List[BaseInterface]=None):
+    def __init__(self, port=9000, log_level=255, encoder: BasicEncoder = None, interfaces: List[BaseInterface] = None):
         # debug level
         logger = Logger("NFNForwarder", log_level)
         logger.info("Start PiCN NFN Forwarder on port " + str(port))
@@ -43,7 +45,7 @@ class NFNForwarder(object):
             encoder.set_log_level(log_level)
             self.encoder = encoder
 
-       # setup data structures
+            # setup data structures
         synced_data_struct_factory = PiCNSyncDataStructFactory()
         synced_data_struct_factory.register("cs", ContentStoreMemoryExact)
         synced_data_struct_factory.register("fib", ForwardingInformationBaseMemoryPrefix)
@@ -58,7 +60,7 @@ class NFNForwarder(object):
         pit = synced_data_struct_factory.manager.pit()
         faceidtable = synced_data_struct_factory.manager.faceidtable()
 
-        #setup chunkifier
+        # setup chunkifier
         self.chunkifier = SimpleContentChunkifyer()
 
         # default interface
@@ -81,7 +83,8 @@ class NFNForwarder(object):
         self.parser = DefaultNFNParser()
         self.r2cclient = TimeoutR2CHandler()
         comp_table = synced_data_struct_factory.manager.computation_table(self.r2cclient, self.parser)
-        self.nfnlayer = BasicNFNLayer(cs, fib, pit, faceidtable, comp_table, self.executors, self.parser, self.r2cclient, log_level=log_level)
+        self.nfnlayer = BasicNFNLayer(cs, fib, pit, faceidtable, comp_table, self.executors, self.parser,
+                                      self.r2cclient, log_level=log_level)
 
         self.lstack: LayerStack = LayerStack([
             self.nfnlayer,

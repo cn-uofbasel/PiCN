@@ -1,7 +1,7 @@
 import re
 
-class NdnTlvPrinter(object):
 
+class NdnTlvPrinter(object):
     """
     Formatted printing of a NDN TLV to stdout.
 
@@ -35,68 +35,66 @@ class NdnTlvPrinter(object):
     __has_blob_value = {8, 1, 10, 13, 14, 17, 12, 24, 25, 21, 23, 27, 29, 801}
 
     __known_type_names = {
-                           5: "Interest Packet",
-                           6: "Content Object Packet",
-                           7: "Name",
-                           8: "GenericNameComponent",
-                           1: "ImplicitSha256DigestComponent",
-                           9: "Selectors",
-                          10: "Nonce",
-                          12: "InterestLifetime",
-                          30: "ForwardingHint / Preference",
-                          13: "MinSuffixComponents",
-                          14: "MaxSuffixComponents",
-                          15: "PublisherPublicKeyLocator",
-                          16: "Exclude",
-                          17: "ChildSelector",
-                          18: "MustBeFresh",
-                          19: "Any",
-                          20: "MetaInfo",
-                          21: "Content",
-                          22: "SignatureInfo",
-                          23: "SignatureValue",
-                          24: "ContentType",
-                          25: "FreshnessPeriod",
-                          26: "FinalBlockId",
-                          27: "SignatureType",
-                          28: "KeyLocator",
-                          29: "KeyDigest",
-                          31: "Delegation",
-                          80: "Fragment (link protocol)",           # NDN Link Protocol v2
-                          81: "Sequence (link protocol)",           # NDN Link Protocol v2
-                          82: "FragIndex (link protocol)",          # NDN Link Protocol v2
-                          83: "FragCount (link protocol)",          # NDN Link Protocol v2
-                          84: "HopCount (link protocol)",           # NDN Link Protocol v2
-                          98: "PitToken (link protocol)",           # NDN Link Protocol v2
-                         100: "LpPacket (link protocol)",           # NDN Link Protocol v2
-                         800: "Nack (link protocol)",               # NDN Link Protocol v2
-                         801: "NackReason (link protocol)",         # NDN Link Protocol v2
-                         816: "NextHopFaceId (link protocol)",      # NDN Link Protocol v2
-                         817: "IncomingFaceId (link protocol)",     # NDN Link Protocol v2
-                         820: "CachePolicy (link protocol)",        # NDN Link Protocol v2
-                         821: "CachePolicyType (link protocol)",    # NDN Link Protocol v2
-                         832: "CongestionMark (link protocol)",     # NDN Link Protocol v2
-                         836: "Ack (link protocol)",                # NDN Link Protocol v2
-                         840: "TxSequence (link protocol)",         # NDN Link Protocol v2
-                         844: "NonDiscovery (link protocol)",       # NDN Link Protocol v2
-                         848: "PrefixAnnouncement (link protocol)"  # NDN Link Protocol v2
-                         }
+        5: "Interest Packet",
+        6: "Content Object Packet",
+        7: "Name",
+        8: "GenericNameComponent",
+        1: "ImplicitSha256DigestComponent",
+        9: "Selectors",
+        10: "Nonce",
+        12: "InterestLifetime",
+        30: "ForwardingHint / Preference",
+        13: "MinSuffixComponents",
+        14: "MaxSuffixComponents",
+        15: "PublisherPublicKeyLocator",
+        16: "Exclude",
+        17: "ChildSelector",
+        18: "MustBeFresh",
+        19: "Any",
+        20: "MetaInfo",
+        21: "Content",
+        22: "SignatureInfo",
+        23: "SignatureValue",
+        24: "ContentType",
+        25: "FreshnessPeriod",
+        26: "FinalBlockId",
+        27: "SignatureType",
+        28: "KeyLocator",
+        29: "KeyDigest",
+        31: "Delegation",
+        80: "Fragment (link protocol)",  # NDN Link Protocol v2
+        81: "Sequence (link protocol)",  # NDN Link Protocol v2
+        82: "FragIndex (link protocol)",  # NDN Link Protocol v2
+        83: "FragCount (link protocol)",  # NDN Link Protocol v2
+        84: "HopCount (link protocol)",  # NDN Link Protocol v2
+        98: "PitToken (link protocol)",  # NDN Link Protocol v2
+        100: "LpPacket (link protocol)",  # NDN Link Protocol v2
+        800: "Nack (link protocol)",  # NDN Link Protocol v2
+        801: "NackReason (link protocol)",  # NDN Link Protocol v2
+        816: "NextHopFaceId (link protocol)",  # NDN Link Protocol v2
+        817: "IncomingFaceId (link protocol)",  # NDN Link Protocol v2
+        820: "CachePolicy (link protocol)",  # NDN Link Protocol v2
+        821: "CachePolicyType (link protocol)",  # NDN Link Protocol v2
+        832: "CongestionMark (link protocol)",  # NDN Link Protocol v2
+        836: "Ack (link protocol)",  # NDN Link Protocol v2
+        840: "TxSequence (link protocol)",  # NDN Link Protocol v2
+        844: "NonDiscovery (link protocol)",  # NDN Link Protocol v2
+        848: "PrefixAnnouncement (link protocol)"  # NDN Link Protocol v2
+    }
 
     __nack_reason_names = {
-                            0: "None (reserved)",
-                           50: "Congestion",
-                          100: "Duplicate",
-                          150: "NoRoute"
-                          }
+        0: "None (reserved)",
+        50: "Congestion",
+        100: "Duplicate",
+        150: "NoRoute"
+    }
 
-
-    def __init__(self, wire_format:bytearray) -> None:
+    def __init__(self, wire_format: bytearray) -> None:
         """
         Formatted printing of a NDN TLV packet in wire format.
         :param wire_format: NDN TLV in wire format
         """
         self.__wire_format = wire_format
-
 
     def formatted_print(self) -> None:
         self.__position = 0
@@ -105,13 +103,11 @@ class NdnTlvPrinter(object):
         self.__print_tlv()
         print()
 
-
     def __get_type_name(self, n):
         try:
             return self.__known_type_names[n]
         except:
             return "UNKNOWN"
-
 
     def byte_to_hex(n) -> str:
         """
@@ -126,8 +122,7 @@ class NdnTlvPrinter(object):
         else:
             return as_hex.upper()
 
-
-    def print_without_newline(exp:str) -> None:
+    def print_without_newline(exp: str) -> None:
         """
         Print an expression without newline
         :param exp:   Expression to print
@@ -135,14 +130,12 @@ class NdnTlvPrinter(object):
         """
         print(exp, end="")
 
-
     def __print_indention(self) -> None:
         """
         Print indention
         :return: None
         """
         NdnTlvPrinter.print_without_newline(str(self.__position).zfill(4) + " | " + 3 * self.__indention_level * " ")
-
 
     def __print_tlv(self):
         print()
@@ -152,7 +145,6 @@ class NdnTlvPrinter(object):
         type_value_description = self.__get_type_name(type_value)
         NdnTlvPrinter.print_without_newline(" -- <type='{}', length={}>".format(type_value_description, length))
 
-
         self.__indention_level += 1
         if type_value_description == "UNKNOWN":
             NdnTlvPrinter.__print_blob(self, length)
@@ -161,10 +153,9 @@ class NdnTlvPrinter(object):
                 self.__print_blob(length)
             else:
                 next_tlv_start = self.__position + length
-                while(self.__position < next_tlv_start):
+                while (self.__position < next_tlv_start):
                     self.__print_tlv()
             self.__indention_level -= 1
-
 
     def __print_num(self) -> int:
         NdnTlvPrinter.print_without_newline(" ")
@@ -174,18 +165,17 @@ class NdnTlvPrinter(object):
             value = current_hex
             offset = 1
         else:
-            if current_hex == 253: offset =  3
-            if current_hex == 254: offset =  5
-            if current_hex == 255: offset =  9
+            if current_hex == 253: offset = 3
+            if current_hex == 254: offset = 5
+            if current_hex == 255: offset = 9
             value = 0
             for i in range(1, offset):
                 next_octet = self.__wire_format[self.__position + i]
                 NdnTlvPrinter.print_without_newline(" ")
                 NdnTlvPrinter.print_without_newline(NdnTlvPrinter.byte_to_hex(next_octet))
-                value += next_octet << (offset-1-i) * 8
+                value += next_octet << (offset - 1 - i) * 8
         self.__position += offset
         return value
-
 
     def __print_blob(self, len) -> None:
         """
@@ -194,7 +184,7 @@ class NdnTlvPrinter(object):
         :return: None
         """
         idx = 0
-        for e in self.__wire_format[self.__position:self.__position+len]:
+        for e in self.__wire_format[self.__position:self.__position + len]:
             if idx % 8 == 0:
                 print()
                 self.__print_indention()
@@ -206,6 +196,10 @@ class NdnTlvPrinter(object):
             NdnTlvPrinter.print_without_newline(NdnTlvPrinter.byte_to_hex(e))
             if idx % 8 == 0:
                 NdnTlvPrinter.print_without_newline("\t".expandtabs(50 - 3 * self.__indention_level))
-                NdnTlvPrinter.print_without_newline(re.sub(r'\s', '\xff', self.__wire_format[self.__position-8 : self.__position].decode('ascii', 'replace')))
+                NdnTlvPrinter.print_without_newline(re.sub(r'\s', '\xff', self.__wire_format[
+                                                                          self.__position - 8: self.__position].decode(
+                    'ascii', 'replace')))
         NdnTlvPrinter.print_without_newline("\t".expandtabs(50 + (8 - idx % 8) * 3 - 3 * self.__indention_level))
-        NdnTlvPrinter.print_without_newline(re.sub(r'\s', '\x00', self.__wire_format[self.__position - (idx % 8): self.__position].decode('ascii', 'replace')))
+        NdnTlvPrinter.print_without_newline(re.sub(r'\s', '\x00', self.__wire_format[
+                                                                  self.__position - (idx % 8): self.__position].decode(
+            'ascii', 'replace')))

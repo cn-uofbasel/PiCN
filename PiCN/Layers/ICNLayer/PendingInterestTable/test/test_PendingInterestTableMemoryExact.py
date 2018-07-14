@@ -9,7 +9,6 @@ from PiCN.Packets import Name
 
 
 class test_PendingInterstTableMemoryExact(unittest.TestCase):
-
     def setUp(self):
         self.manager = multiprocessing.Manager()
         self.pit: PendingInterstTableMemoryExact = PendingInterstTableMemoryExact()

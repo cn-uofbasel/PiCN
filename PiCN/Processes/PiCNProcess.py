@@ -5,6 +5,7 @@ import multiprocessing
 
 from PiCN.Logger import Logger
 
+
 class PiCNProcess(object):
     """Abstract Process for PiCN"""
 
@@ -38,5 +39,5 @@ class PiCNProcess(object):
         return d
 
     def __setstate__(self, d):
-        self.__dict__.update(d) #need to store logger parameter and recreate logger here, since it cannot be pickled
+        self.__dict__.update(d)  # need to store logger parameter and recreate logger here, since it cannot be pickled
         self.logger = Logger(self.__logger_name, self.__log_level)

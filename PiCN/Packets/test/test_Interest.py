@@ -3,8 +3,8 @@ import unittest
 
 from PiCN.Packets import Interest
 
-class TestContent(unittest.TestCase):
 
+class TestContent(unittest.TestCase):
     def setUp(self):
         pass
 

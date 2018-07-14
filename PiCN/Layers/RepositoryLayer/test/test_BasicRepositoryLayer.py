@@ -17,14 +17,14 @@ class test_BasicRepositoryLayer(unittest.TestCase):
     def setUp(self):
         self.path = "/tmp/repo_unit_test"
         try:
-            os.stat( self.path)
+            os.stat(self.path)
         except:
-            os.mkdir( self.path)
-        with open( self.path + "/f1", 'w+') as content_file:
+            os.mkdir(self.path)
+        with open(self.path + "/f1", 'w+') as content_file:
             content_file.write("data1")
-        with open( self.path + "/f2", 'w+') as content_file:
+        with open(self.path + "/f2", 'w+') as content_file:
             content_file.write("data2")
-        self.repository = SimpleFileSystemRepository( self.path, Name("/test/data"))
+        self.repository = SimpleFileSystemRepository(self.path, Name("/test/data"))
         self.repositoryLayer = BasicRepositoryLayer(self.repository)
 
         self.q1_from_lower = multiprocessing.Queue()
@@ -35,7 +35,7 @@ class test_BasicRepositoryLayer(unittest.TestCase):
 
     def tearDown(self):
         try:
-            shutil.rmtree( self.path)
+            shutil.rmtree(self.path)
             os.remove("/tmp/repo_unit_test")
         except:
             pass

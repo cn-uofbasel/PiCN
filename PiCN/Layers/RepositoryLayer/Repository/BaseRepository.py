@@ -4,13 +4,13 @@ import abc
 
 from PiCN.Packets import Content, Name
 
+
 class BaseRepository:
     """Base Class for PiCN Repositories"""
     pass
 
     def __init__(self):
         pass
-
 
     @abc.abstractclassmethod
     def is_content_available(self, icnname: Name) -> bool:

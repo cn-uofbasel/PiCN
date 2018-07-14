@@ -14,8 +14,8 @@ from PiCN.Packets import Name, NackReason
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
 from PiCN.ProgramLibs.ICNDataRepository import ICNDataRepository
 
-class cases_Fetch(object):
 
+class cases_Fetch(object):
     @abc.abstractmethod
     def get_encoder(self):
         """get the packet encoder to be used"""
@@ -46,7 +46,7 @@ class cases_Fetch(object):
         self.fetch = Fetch("127.0.0.1", self.forwarder_port, encoder=self.get_encoder())
 
     def add_face_and_forwadingrule(self):
-        #create new face
+        # create new face
         self.mgmtClient = MgmtClient(self.forwarder_port)
         self.mgmtClient.add_face("127.0.0.1", self.repo_port, 0)
         self.mgmtClient.add_forwarding_rule(Name("/test"), faceid=0)
@@ -95,12 +95,12 @@ class cases_Fetch(object):
 
     def test_fetching_content_from_second_repo_after_nack(self):
         """Test sending an interest to forwarder with no matching content, choose second route to fetch content"""
-        self.forwarder2: ICNForwarder = ICNForwarder(0,  encoder=self.get_encoder(), log_level=255)
+        self.forwarder2: ICNForwarder = ICNForwarder(0, encoder=self.get_encoder(), log_level=255)
         self.ICNRepo.start_repo()
         self.forwarder.start_forwarder()
         self.forwarder2.start_forwarder()
 
-        #check for nack on first route
+        # check for nack on first route
         self.mgmtClient = MgmtClient(self.forwarder_port)
         self.mgmtClient.add_face("127.0.0.1", self.forwarder2.linklayer.interfaces[0].get_port(), 0)
         data = self.mgmtClient.add_forwarding_rule(Name("/test/data"), 0)
@@ -108,7 +108,7 @@ class cases_Fetch(object):
         self.assertEqual(nack, "Received Nack: " + NackReason.NO_ROUTE.value)
         time.sleep(0.1)
 
-        #install second forwarding rule and check for result.
+        # install second forwarding rule and check for result.
         data = self.mgmtClient.add_face("127.0.0.1", self.repo_port, 0)
         self.mgmtClient.add_forwarding_rule(Name("/test"), 2)
         time.sleep(0.1)
@@ -128,12 +128,12 @@ class cases_Fetch(object):
         except:
             os.mkdir(self.path)
 
-        for i in range(1,1000):
+        for i in range(1, 1000):
             name = "/f" + str(i)
             with open(self.path + name, 'w+') as content_file:
                 content_file.write(self.data3)
 
-        for i in range(1,1000):
+        for i in range(1, 1000):
             fname = "/f" + str(i)
             icn_name = "/test/data" + name
             content = self.fetch.fetch_data(Name(icn_name))
@@ -142,10 +142,13 @@ class cases_Fetch(object):
 
 class test_Fetch_SimplePacketEncoder(cases_Fetch, unittest.TestCase):
     """Runs tests with the SimplePacketEncoder"""
+
     def get_encoder(self):
         return SimpleStringEncoder()
 
+
 class test_Fetch_NDNTLVPacketEncoder(cases_Fetch, unittest.TestCase):
     """Runs tests with the NDNTLVPacketEncoder"""
+
     def get_encoder(self):
         return NdnTlvEncoder()

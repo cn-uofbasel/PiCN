@@ -38,10 +38,7 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         parser = DefaultNFNParser()
         comp_table = synced_data_struct_factory.manager.computation_table(self.r2cclient, parser)
 
-
-
         self.optimizer: EdgeComputingOptimizer = EdgeComputingOptimizer(cs, fib, pit, faceidtable)
-
 
     def test_interest_fwd_comp_simple_interest(self):
         """Test the edgecomputing forwarder with an simple interest"""

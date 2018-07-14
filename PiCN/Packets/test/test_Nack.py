@@ -4,8 +4,8 @@ import unittest
 from PiCN.Packets import Nack, NackReason
 from PiCN.Packets import Interest
 
-class TestNack(unittest.TestCase):
 
+class TestNack(unittest.TestCase):
     def setUp(self):
         pass
 

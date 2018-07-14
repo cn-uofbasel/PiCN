@@ -6,19 +6,19 @@
 import binascii
 import copy
 import hashlib
-from   PiCN.Packets                                        import Name, Content
-from   PiCN.Layers.PacketEncodingLayer.Encoder             import NdnTlvEncoder
+from   PiCN.Packets import Name, Content
+from   PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from   PiCN.Layers.PacketEncodingLayer.Encoder.NdnTlvEncoder import TlvEncoder, TlvDecoder
 
-NDN_TYPE_MANIFEST             = 0x990
-NDN_TYPE_MANIFEST_INDEXTABLE  = 0x991
-NDN_TYPE_MANIFEST_DATAPTR     = 0x992
+NDN_TYPE_MANIFEST = 0x990
+NDN_TYPE_MANIFEST_INDEXTABLE = 0x991
+NDN_TYPE_MANIFEST_DATAPTR = 0x992
 NDN_TYPE_MANIFEST_MANIFESTPTR = 0x993
+
 
 # ----------------------------------------------------------------------
 
 class MkFlic():
-
     def __init__(self, icn, MTU=4000):
         self.icn = icn
         self.MTU = MTU
@@ -27,7 +27,7 @@ class MkFlic():
         # input: name, payload bytes
         # output: chunk bytes
         c = Content(name, data)
-        return NdnTlvEncoder().encode(c) # and sign
+        return NdnTlvEncoder().encode(c)  # and sign
 
     def bytesToManifest(self, name: Name, data: bytes) -> (Name, bytes):
         # input: byte array
@@ -61,7 +61,7 @@ class MkFlic():
         # -> DDDDDDM -> DDDDDM -> ...
         tables = []
         while len(ptrs) > 0:
-            tbl = b'' # index table
+            tbl = b''  # index table
             while len(ptrs) > 0:
                 # add an entry to the index table
                 e = TlvEncoder()
@@ -86,10 +86,10 @@ class MkFlic():
             m.writeBlobTlv(NDN_TYPE_MANIFEST_INDEXTABLE, tbl)
             m.writeTypeAndLength(NDN_TYPE_MANIFEST, len(m))
             if len(tables) == 1:
-                subname = name #copy.copy(name)
+                subname = name  # copy.copy(name)
                 # name.__add__([b'_'])
             c = Content(subname, m.getOutput())
-            chunk = NdnTlvEncoder().encode(c) # and sign
+            chunk = NdnTlvEncoder().encode(c)  # and sign
             self.icn.writeChunk(name, chunk)
             h = hashlib.sha256()
             h.update(chunk)
@@ -102,7 +102,6 @@ class MkFlic():
 # ----------------------------------------------------------------------
 
 class DeFlic():
-
     def __init__(self, icn, decoder=None):
         self.icn = icn
         self.decoder = decoder
@@ -146,12 +145,12 @@ class DeFlic():
     def bytesFromManifestName(self, name: Name):
         chunk = self.icn.readChunk(name)
         content = NdnTlvEncoder().decode(chunk)
-        name._components.pop() # drop the last component (e.g. '_')
+        name._components.pop()  # drop the last component (e.g. '_')
         return self._manifestToBytes(name, content.get_bytes())
 
-    # TODO:
-    # def iterFromName(self, name):
-    #    return DeFLIC_ITER(...)
+        # TODO:
+        # def iterFromName(self, name):
+        #    return DeFLIC_ITER(...)
 
 # class DeFLIC_ITER():
 #

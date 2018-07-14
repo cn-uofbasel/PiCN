@@ -14,29 +14,28 @@ class test_SimpleFileSystemRepository(unittest.TestCase):
     def setUp(self):
         self.path = "/tmp/repo_unit_test"
         try:
-            os.stat( self.path)
+            os.stat(self.path)
         except:
-            os.mkdir( self.path)
-        with open( self.path + "/f1", 'w+') as content_file:
+            os.mkdir(self.path)
+        with open(self.path + "/f1", 'w+') as content_file:
             content_file.write("data1")
-        with open( self.path + "/f2", 'w+') as content_file:
+        with open(self.path + "/f2", 'w+') as content_file:
             content_file.write("data2")
         with open("/tmp/f3", 'w+') as content_file:
             content_file.write("data3")
-        self.repository = SimpleFileSystemRepository( self.path, Name("/test/data"))
+        self.repository = SimpleFileSystemRepository(self.path, Name("/test/data"))
 
     def tearDown(self):
         try:
-            shutil.rmtree( self.path)
+            shutil.rmtree(self.path)
             os.remove("/tmp/repo_unit_test")
         except:
             pass
 
-
     def test_content_available(self):
         """Test if the function is_content_available works correct"""
         try:
-            os.remove("/tmp/repo_unit_test/f3") #ensure there is no f3
+            os.remove("/tmp/repo_unit_test/f3")  # ensure there is no f3
         except:
             pass
         self.assertTrue(self.repository.is_content_available(Name("/test/data/f1")))
@@ -86,7 +85,3 @@ class test_SimpleFileSystemRepository(unittest.TestCase):
         """test if the function get content do not return data from a invalid prefix"""
         c10 = self.repository.get_content(Name("/data/test/f1"))
         self.assertEqual(c10, None)
-
-
-
-

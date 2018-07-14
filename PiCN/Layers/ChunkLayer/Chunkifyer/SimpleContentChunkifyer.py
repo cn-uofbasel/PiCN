@@ -7,8 +7,7 @@ from PiCN.Packets import Content, Name
 
 
 class SimpleContentChunkifyer(BaseChunkifyer):
-
-    def __init__(self, chunksize: int=4096):
+    def __init__(self, chunksize: int = 4096):
         super().__init__(chunksize)
         self._num_of_names_in_metadata = 4
 
@@ -20,11 +19,11 @@ class SimpleContentChunkifyer(BaseChunkifyer):
         num_of_chunks = len(chunks)
         meta_data = []
         for i in range(0, num_of_chunks, self._num_of_names_in_metadata):
-            endindex = min(i+self._num_of_names_in_metadata, num_of_chunks)
-            md_num = int(i/self._num_of_names_in_metadata)
+            endindex = min(i + self._num_of_names_in_metadata, num_of_chunks)
+            md_num = int(i / self._num_of_names_in_metadata)
             next = 0
             if i + self._num_of_names_in_metadata < num_of_chunks:
-                next = int(i/4)+1
+                next = int(i / 4) + 1
             meta_data.append(self.generate_meta_data(i, endindex, md_num, next, packet.name))
 
         content = []
@@ -34,13 +33,11 @@ class SimpleContentChunkifyer(BaseChunkifyer):
 
         return meta_data, content
 
-
     def reassamble_data(self, name: Name, chunks: List[Content]) -> Content:
         data = ""
         for d in chunks:
             data = data + d.content
         return Content(name, data)
-
 
     def generate_meta_data(self, startindex: int, endindex: int, md_num: int, next: int, name: Name) -> Content:
         """Generate the meta data"""
@@ -54,7 +51,7 @@ class SimpleContentChunkifyer(BaseChunkifyer):
             metadata = metadata + name.to_string() + "/m" + str(next)
         md_name = name.to_string()
         if md_num > 0:
-            md_name = md_name +  "/m" + str(md_num)
+            md_name = md_name + "/m" + str(md_num)
         md_name_obj = Name(md_name)
         metadata_obj = Content(md_name_obj, metadata.encode('ascii'))
         return metadata_obj
@@ -69,5 +66,3 @@ class SimpleContentChunkifyer(BaseChunkifyer):
         if next_md != "":
             md = Name(next_md)
         return (md, names)
-
-

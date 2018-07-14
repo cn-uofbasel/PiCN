@@ -20,9 +20,9 @@ from PiCN.Layers.LinkLayer.Interfaces import AddressInfo, BaseInterface, UDP4Int
 class Mgmt(PiCNProcess):
     """Mgmt System for PiCN"""
 
-    def __init__(self, cs: BaseContentStore, fib: BaseForwardingInformationBase, pit:BasePendingInterestTable,
-                 linklayer: LayerProcess, port: int, shutdown = None,
-                 repo_prfx: str=None, repo_path: str=None, log_level=255):
+    def __init__(self, cs: BaseContentStore, fib: BaseForwardingInformationBase, pit: BasePendingInterestTable,
+                 linklayer: LayerProcess, port: int, shutdown=None,
+                 repo_prfx: str = None, repo_path: str = None, log_level=255):
         super().__init__("MgmtSys", log_level)
         self.cs = cs
         self.fib = fib
@@ -40,7 +40,7 @@ class Mgmt(PiCNProcess):
         self.mgmt_sock.listen(5)
         self._buffersize = 8192
         if os.name is not 'nt':
-            self.shutdown = shutdown #function pointer
+            self.shutdown = shutdown  # function pointer
         else:
             self.logger.critical("Shutdown not available on NT platform")
 
@@ -74,9 +74,9 @@ class Mgmt(PiCNProcess):
                 params = mgmt_request[3]
                 if (layer == "linklayer"):
                     self.ll_mgmt(command, params, replysock)
-                elif(layer == "icnlayer"):
+                elif (layer == "icnlayer"):
                     self.icnl_mgmt(command, params, replysock)
-                elif(layer == "repolayer"):
+                elif (layer == "repolayer"):
                     self.repol_mgmt(command, params, replysock)
             elif len(mgmt_request) == 2:
                 if mgmt_request[1] == "shutdown":
@@ -107,8 +107,8 @@ class Mgmt(PiCNProcess):
             return
 
     def icnl_mgmt(self, command, params, replysock):
-        if(self.cs == None or self.fib == None or
-                self.pit== None):
+        if (self.cs == None or self.fib == None or
+                    self.pit == None):
             reply = "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n Not a Forwarder OK\r\n"
             replysock.send(reply.encode())
         # newface expects /linklayer/newface/ip:port
@@ -122,7 +122,7 @@ class Mgmt(PiCNProcess):
             replysock.send(reply.encode())
             self.logger.info("New Forwardingrule added " + prefix + "|" + str(faceid))
             return
-        elif(command == "newcontent"):
+        elif (command == "newcontent"):
             prefix, content = params.split(":", 1)
             prefix = prefix.replace("%2F", "/")
             name = Name(prefix)
@@ -137,20 +137,19 @@ class Mgmt(PiCNProcess):
             return
 
     def repol_mgmt(self, command, params, replysock):
-        if(self._repo_path == None or self._repo_prfx == None):
+        if (self._repo_path == None or self._repo_prfx == None):
             reply = "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n Not a Repo OK\r\n"
             replysock.send(reply.encode())
-        elif(command == "getprefix"):
+        elif (command == "getprefix"):
             reply = "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n " + str(self._repo_prfx) + " OK\r\n"
             replysock.send(reply.encode())
-        elif(command =="getpath"):
+        elif (command == "getpath"):
             abs_path = os.path.abspath(str(self._repo_path))
             reply = "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n " + str(abs_path) + " OK\r\n"
             replysock.send(reply.encode())
         else:
             self.unknown_command(replysock)
             return
-
 
     def unknown_command(self, replysock):
         reply = "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n Unknown Command\r\n"
@@ -185,4 +184,3 @@ class Mgmt(PiCNProcess):
             self.process.terminate()
             self.process = None
         self.mgmt_sock.close()
-

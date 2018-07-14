@@ -2,12 +2,13 @@
 
 from .Name import Name
 
+
 class Packet(object):
     """
     Base class for internal representation of network packets
     """
 
-    def __init__(self, name: Name = None, wire_format = None):
+    def __init__(self, name: Name = None, wire_format=None):
         if type(name) == str:
             self._name = Name(name)
         else:
@@ -18,7 +19,7 @@ class Packet(object):
     def __eq__(self, other):
         if type(other) is not Packet:
             return False
-        return self.name == other.name #and self.name_payload == other.name_payload
+        return self.name == other.name  # and self.name_payload == other.name_payload
 
     def __hash__(self):
         return self._name.__hash__() + self._name_payload.__hash__()

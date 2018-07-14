@@ -10,14 +10,15 @@ from PiCN.Processes import LayerProcess
 class BasicRepositoryLayer(LayerProcess):
     """Basic implementation of the repository layer"""
 
-    def __init__(self, repository: BaseRepository, propagate_interest: bool=False, logger_name="RepoLayer", log_level=255):
+    def __init__(self, repository: BaseRepository, propagate_interest: bool = False, logger_name="RepoLayer",
+                 log_level=255):
         super().__init__(logger_name, log_level)
 
         self._repository: BaseRepository = repository
         self._proagate_interest: bool = propagate_interest
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data: Packet):
-        pass #do not expect this to happen, since repository is highest layer
+        pass  # do not expect this to happen, since repository is highest layer
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data: Packet):
         self.logger.info("Got Data from lower")
@@ -41,5 +42,3 @@ class BasicRepositoryLayer(LayerProcess):
                 return
         if isinstance(packet, Content):
             pass
-
-

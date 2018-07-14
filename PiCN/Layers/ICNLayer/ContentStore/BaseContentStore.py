@@ -7,11 +7,13 @@ from typing import List
 from PiCN.Packets import Content, Name
 from PiCN.Layers.ICNLayer import BaseICNDataStruct
 
+
 class ContentStoreEntry(object):
     """Entry of the content store"""
-    def __init__(self, content: Content, static: bool=False):
+
+    def __init__(self, content: Content, static: bool = False):
         self._content: Content = content
-        self._static: bool = static #if true: do not remove this content object from CS by ageing
+        self._static: bool = static  # if true: do not remove this content object from CS by ageing
         self._timestamp = time.time()
 
     @property
@@ -45,18 +47,19 @@ class ContentStoreEntry(object):
     def __eq__(self, other):
         return self._content == other._content
 
+
 class BaseContentStore(BaseICNDataStruct):
     """Abstract BaseContentStore for usage in BasicICNLayer
     :param cs_timeout: Time interval in which a CS entry will be cached
     """
 
-    def __init__(self, cs_timeout: int=10):
+    def __init__(self, cs_timeout: int = 10):
         super().__init__()
         self._container: List[ContentStoreEntry] = []
         self._cs_timeout = cs_timeout
 
     @abc.abstractmethod
-    def add_content_object(self, content: Content, static: bool=False):
+    def add_content_object(self, content: Content, static: bool = False):
         """
         Insert content object
         :param content: content object to insert
@@ -101,4 +104,3 @@ class BaseContentStore(BaseICNDataStruct):
         :param timeout: the timeout intervall to be set
         """
         self._cs_timeout = timeout
-

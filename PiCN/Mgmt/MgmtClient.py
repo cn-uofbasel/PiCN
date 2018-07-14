@@ -4,10 +4,11 @@ import socket
 
 from PiCN.Packets import Name
 
+
 class MgmtClient(object):
     """Client for The Mgmt of PiCN"""
 
-    def __init__(self, port = 9000):
+    def __init__(self, port=9000):
         self.target_port = port
         self.target_ip = "127.0.0.1"
 

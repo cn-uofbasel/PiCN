@@ -5,7 +5,6 @@ from PiCN.Packets import Name
 
 
 class TestContent(unittest.TestCase):
-
     def setUp(self):
         pass
 

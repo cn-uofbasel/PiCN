@@ -14,11 +14,11 @@ class ContentStoreMemoryExact(BaseContentStore):
 
     def find_content_object(self, name: Name) -> ContentStoreEntry:
         for c in self._container:
-            if c.content.name == name: #and c.content.name_payload == name_payload:
+            if c.content.name == name:  # and c.content.name_payload == name_payload:
                 return c
         return None
 
-    def add_content_object(self, content: Content, static: bool=False):
+    def add_content_object(self, content: Content, static: bool = False):
         for c in self._container:
             if content == c.content:
                 return

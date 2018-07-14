@@ -20,7 +20,6 @@ class ContentStorePersistentExact(BaseContentStore):
         self._container = shelve.open(self.db_path)
         self._cs_timeout = cs_timeout
 
-
     def close_cs(self):
         self._container.close()
 

@@ -9,7 +9,6 @@ from PiCN.Packets import Name
 
 
 def main(args, help_string):
-
     mgmt_client = MgmtClient(args.port)
     data = None
 
@@ -42,7 +41,8 @@ def main(args, help_string):
             sys.exit(-2)
 
         try:
-            data = mgmt_client.add_face(resolved_hostname, int(args.parameters.split(":")[1]), int(args.parameters.split(":")[2]))
+            data = mgmt_client.add_face(resolved_hostname, int(args.parameters.split(":")[1]),
+                                        int(args.parameters.split(":")[2]))
         except:
             print(help_string)
 
@@ -68,18 +68,20 @@ def main(args, help_string):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Management Tool for PiCN Forwarder and Repo')
     parser.add_argument('-i', '--ip', type=str, default='127.0.0.1',
-                            help="IP address or hostname of forwarder (default: 127.0.0.1)")
+                        help="IP address or hostname of forwarder (default: 127.0.0.1)")
     parser.add_argument('-p', '--port', type=int, default=9000, help="UDP port of forwarder(default: 9000)")
-    parser.add_argument('command', type=str, choices = ['shutdown', 'getrepoprefix', 'getrepopath', 'newface', 'newforwardingrule', 'newcontent'], help="Management Command")
+    parser.add_argument('command', type=str,
+                        choices=['shutdown', 'getrepoprefix', 'getrepopath', 'newface', 'newforwardingrule',
+                                 'newcontent'], help="Management Command")
     parser.add_argument('parameters', type=str, nargs='?', help="Command Parameter")
     args = parser.parse_args()
     help_string = parser.format_help()
     main(args, help_string)
 
 
-# print("\t\tshutdown")
-# print("\t\tgetrepopath")
-# print("\t\tgetrepoprefix")
-# print("\t\tnewface ip:port")
-# print("\t\tnewforwardingrule prefix:face")
-# print("\t\tnewcontent name:content")
+    # print("\t\tshutdown")
+    # print("\t\tgetrepopath")
+    # print("\t\tgetrepoprefix")
+    # print("\t\tnewface ip:port")
+    # print("\t\tnewforwardingrule prefix:face")
+    # print("\t\tnewcontent name:content")

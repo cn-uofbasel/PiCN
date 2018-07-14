@@ -15,6 +15,7 @@ from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder, SimpleStringEn
 from PiCN.Packets import Content, Interest, Name
 from PiCN.Mgmt import MgmtClient
 
+
 class cases_Simulation():
     """Test the PiCN Simulation System"""
 
@@ -34,7 +35,7 @@ class cases_Simulation():
         self.icn_forwarder2 = ICNForwarder(port=0, encoder=self.encoder_type(),
                                            interfaces=[self.simulation_bus.add_interface("icnfwd2")], log_level=255)
 
-        #self.simulation_bus.start_process()
+        # self.simulation_bus.start_process()
 
     def tearDown(self):
         try:
@@ -72,9 +73,11 @@ class cases_Simulation():
 
         self.fetchiface = self.simulation_bus.add_interface("fetch", delay_func=delay_func)
         self.icn_forwarder1 = ICNForwarder(port=0, encoder=self.encoder_type(),
-                                           interfaces=[self.simulation_bus.add_interface("icnfwd1", delay_func=delay_func)])
+                                           interfaces=[
+                                               self.simulation_bus.add_interface("icnfwd1", delay_func=delay_func)])
         self.icn_forwarder2 = ICNForwarder(port=0, encoder=self.encoder_type(),
-                                           interfaces=[self.simulation_bus.add_interface("icnfwd2", delay_func=delay_func)])
+                                           interfaces=[
+                                               self.simulation_bus.add_interface("icnfwd2", delay_func=delay_func)])
         self.simulation_bus.start_process()
 
         self.icn_forwarder1.start_forwarder()
@@ -101,9 +104,11 @@ class cases_Simulation():
 
         self.fetchiface = self.simulation_bus.add_interface("fetch", packet_loss_func=packet_loss_func)
         self.icn_forwarder1 = ICNForwarder(port=0, encoder=self.encoder_type(),
-                                           interfaces=[self.simulation_bus.add_interface("icnfwd1", packet_loss_func=packet_loss_func)])
+                                           interfaces=[self.simulation_bus.add_interface("icnfwd1",
+                                                                                         packet_loss_func=packet_loss_func)])
         self.icn_forwarder2 = ICNForwarder(port=0, encoder=self.encoder_type(),
-                                           interfaces=[self.simulation_bus.add_interface("icnfwd2", packet_loss_func=packet_loss_func)])
+                                           interfaces=[self.simulation_bus.add_interface("icnfwd2",
+                                                                                         packet_loss_func=packet_loss_func)])
         self.simulation_bus.start_process()
 
         self.icn_forwarder1.start_forwarder()
@@ -151,8 +156,7 @@ class cases_Simulation():
         mgmt_client1.shutdown()
         mgmt_client2.shutdown()
 
-
-    def test_bandwidth_limit(self): #TODO better test here
+    def test_bandwidth_limit(self):  # TODO better test here
         """Simple Test for checking the bandwidth limit"""
 
         self.icn_forwarder1 = ICNForwarder(port=0, encoder=self.encoder_type(),
@@ -227,14 +231,14 @@ class cases_Simulation():
         """Test simulation by requesting data from a repo"""
         self.path = "/tmp/repo_unit_test"
         try:
-            os.stat( self.path)
+            os.stat(self.path)
         except:
-            os.mkdir( self.path)
-        with open( self.path + "/f1", 'w+') as content_file:
-            content_file.write("A"*20000)
-        self.icn_forwarder2 = ICNDataRepository(self.path, Name("/test/data"), 0, log_level=255, encoder=self.encoder_type(),
+            os.mkdir(self.path)
+        with open(self.path + "/f1", 'w+') as content_file:
+            content_file.write("A" * 20000)
+        self.icn_forwarder2 = ICNDataRepository(self.path, Name("/test/data"), 0, log_level=255,
+                                                encoder=self.encoder_type(),
                                                 interfaces=[self.simulation_bus.add_interface("icnfwd2")])
-
 
         self.icn_forwarder1.start_forwarder()
         self.icn_forwarder2.start_repo()
@@ -251,7 +255,8 @@ class cases_Simulation():
         res, src = self.fetchiface.receive()
         self.assertEqual(src, "icnfwd1")
         c = self.encoder.decode(res)
-        self.assertEqual(c, Content(interest.name, "mdo:/test/data/f1/c0;/test/data/f1/c1;/test/data/f1/c2;/test/data/f1/c3:/test/data/f1/m1"))
+        self.assertEqual(c, Content(interest.name,
+                                    "mdo:/test/data/f1/c0;/test/data/f1/c1;/test/data/f1/c2;/test/data/f1/c3:/test/data/f1/m1"))
 
         mgmt_client1.shutdown()
 
@@ -268,8 +273,8 @@ class cases_Simulation():
                                                 encoder=self.encoder_type(),
                                                 interfaces=[self.simulation_bus.add_interface("icnfwd2")])
 
-
-        self.fetchtool = Fetch("icnfwd1", None, 255, self.encoder_type(), [self.simulation_bus.add_interface("fetchtool")])
+        self.fetchtool = Fetch("icnfwd1", None, 255, self.encoder_type(),
+                               [self.simulation_bus.add_interface("fetchtool")])
 
         self.icn_forwarder1.start_forwarder()
         self.icn_forwarder2.start_repo()
@@ -281,7 +286,7 @@ class cases_Simulation():
 
         res = self.fetchtool.fetch_data(Name("/test/data/f1"), 3)
 
-        self.assertEqual("A"*50000, res)
+        self.assertEqual("A" * 50000, res)
 
         mgmt_client1.shutdown()
         self.fetchtool.stop_fetch()
@@ -292,6 +297,7 @@ class test_Simulation_Simple_Packet_Encoder(cases_Simulation, unittest.TestCase)
 
     def get_encoder(self):
         return SimpleStringEncoder
+
 
 class test_Simulation_NDNTLV_Packet_Encoder(cases_Simulation, unittest.TestCase):
     """Test the PiCN Simulation System with the NDNTLV Packet Encoder"""

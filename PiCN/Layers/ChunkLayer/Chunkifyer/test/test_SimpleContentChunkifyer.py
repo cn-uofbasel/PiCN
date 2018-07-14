@@ -7,7 +7,6 @@ from PiCN.Packets import Content, Name
 
 
 class test_SimpleContentChunkifyer(unittest.TestCase):
-
     def setUp(self):
         self.chunkifyer = SimpleContentChunkifyer()
 
@@ -18,7 +17,7 @@ class test_SimpleContentChunkifyer(unittest.TestCase):
         """Test generating a simple metadata object"""
         name = Name("/test/data")
 
-        res = self.chunkifyer.generate_meta_data(2,4,0, 0,name)
+        res = self.chunkifyer.generate_meta_data(2, 4, 0, 0, name)
 
         self.assertEqual(res.name.to_string(), "/test/data")
         self.assertEqual(res.content, "mdo:/test/data/c2;/test/data/c3:")
@@ -27,7 +26,7 @@ class test_SimpleContentChunkifyer(unittest.TestCase):
         """Test generating a simple metadata object with one following"""
         name = Name("/test/data")
 
-        res = self.chunkifyer.generate_meta_data(2,4,0,1,name)
+        res = self.chunkifyer.generate_meta_data(2, 4, 0, 1, name)
 
         self.assertEqual(res.name.to_string(), "/test/data")
         self.assertEqual(res.content, "mdo:/test/data/c2;/test/data/c3:/test/data/m1")
@@ -36,7 +35,7 @@ class test_SimpleContentChunkifyer(unittest.TestCase):
         """Test generating a simple metadata object with two following"""
         name = Name("/test/data")
 
-        res = self.chunkifyer.generate_meta_data(2,4,1,2, name)
+        res = self.chunkifyer.generate_meta_data(2, 4, 1, 2, name)
 
         self.assertEqual(res.name.to_string(), "/test/data/m1")
         self.assertEqual(res.content, "mdo:/test/data/c2;/test/data/c3:/test/data/m2")
@@ -63,12 +62,11 @@ class test_SimpleContentChunkifyer(unittest.TestCase):
             self.assertEqual(content[i].name.to_string(), content_name_comp[i])
             self.assertEqual(content[i].content, content_data_comp[i])
 
-
     def test_chunk_multiple_metadata(self):
         """Test chunking metadata with three metadata objects and 10 chunks"""
         name = Name("/test/data")
-        string = "A"*4096 + "B"*4096 + "C"*4096 + "D"*4096 + "E"*4096 + "F"*4096 + "G"*4096 + "H"*4096 \
-                 + "I"*4096 + "J"*4000
+        string = "A" * 4096 + "B" * 4096 + "C" * 4096 + "D" * 4096 + "E" * 4096 + "F" * 4096 + "G" * 4096 + "H" * 4096 \
+                 + "I" * 4096 + "J" * 4000
         content = Content(name, string)
 
         md, chunked_content = self.chunkifyer.chunk_data(content)
@@ -81,9 +79,9 @@ class test_SimpleContentChunkifyer(unittest.TestCase):
         content_name_comp = ['/test/data/c0', '/test/data/c1', '/test/data/c2', '/test/data/c3', '/test/data/c4',
                              '/test/data/c5', '/test/data/c6', '/test/data/c7', '/test/data/c8', '/test/data/c9']
 
-        content_data_comp = ["A"*4096, "B"*4096, "C"*4096, "D"*4096, "E"*4096, "F"*4096, "G"*4096, "H"*4096,
-                             "I"*4096, "J"*4000]
-
+        content_data_comp = ["A" * 4096, "B" * 4096, "C" * 4096, "D" * 4096, "E" * 4096, "F" * 4096, "G" * 4096,
+                             "H" * 4096,
+                             "I" * 4096, "J" * 4000]
 
         for i in range(0, len(md)):
             self.assertEqual(md[i].name.to_string(), md_name_comp[i])
@@ -124,7 +122,6 @@ class test_SimpleContentChunkifyer(unittest.TestCase):
 
         reassembled_content = self.chunkifyer.reassamble_data(md[0].name, chunked_content)
         self.assertEqual(content, reassembled_content)
-
 
     def test_parse_metadata_next(self):
         """Test parse metadata with next metadata"""

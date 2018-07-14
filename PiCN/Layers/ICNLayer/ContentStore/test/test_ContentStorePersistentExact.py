@@ -7,7 +7,6 @@ from PiCN.Packets import Content
 
 
 class test_ContentStoreMemoryExact(unittest.TestCase):
-
     def setUp(self):
         self.cs = ContentStorePersistentExact()
 
@@ -47,5 +46,5 @@ class test_ContentStoreMemoryExact(unittest.TestCase):
         db_path = self.cs.db_path
         self.cs.close_cs()
         restored_cs = ContentStorePersistentExact(db_path=db_path)
-        restored_content = restored_cs.find_content_object(c.name).content # TODO
+        restored_content = restored_cs.find_content_object(c.name).content  # TODO
         self.assertEqual(restored_content, c)

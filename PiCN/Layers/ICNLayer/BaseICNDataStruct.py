@@ -3,8 +3,8 @@
 import abc
 from typing import List
 
-class BaseICNDataStruct(object):
 
+class BaseICNDataStruct(object):
     def __init__(self):
         self._container = None
 

@@ -5,6 +5,7 @@ import unittest
 from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
 from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
 
+
 class test_FaceIDDict(unittest.TestCase):
     """Test the FaceIDDict"""
 
@@ -13,7 +14,6 @@ class test_FaceIDDict(unittest.TestCase):
 
     def tearDown(self):
         pass
-
 
     def test_adding_entry_to_FaceIDTable(self):
         """test adding entries to the face table"""
@@ -35,7 +35,6 @@ class test_FaceIDDict(unittest.TestCase):
         self.assertEqual(self.faceidtable.faceid_to_addrinfo.get(faceid1), addr_info1)
         self.assertEqual(len(self.faceidtable.addrinfo_to_faceid), 2)
         self.assertEqual(len(self.faceidtable.faceid_to_addrinfo), 2)
-
 
     def test_get_functions(self):
         """Test the getting functions of the faceidtable"""
@@ -63,7 +62,6 @@ class test_FaceIDDict(unittest.TestCase):
         r6 = self.faceidtable.get_face_id(addr_info2)
         self.assertEqual(r6, faceid2)
 
-
     def test_remove_entry(self):
         """Test the remove function"""
         faceid1 = 3
@@ -82,11 +80,10 @@ class test_FaceIDDict(unittest.TestCase):
         self.assertEqual(len(self.faceidtable.addrinfo_to_faceid), 1)
         self.assertEqual(len(self.faceidtable.faceid_to_addrinfo), 1)
 
-        r1 =  self.faceidtable.get_face_id(addr_info2)
+        r1 = self.faceidtable.get_face_id(addr_info2)
         self.assertEqual(r1, None)
         r2 = self.faceidtable.get_address_info(faceid1)
         self.assertEqual(r2, addr_info1)
-
 
     def test_get_or_create_faceid(self):
         """test adding a face and automatically adding a faceid"""
@@ -103,7 +100,7 @@ class test_FaceIDDict(unittest.TestCase):
     def test_remove_oldest(self):
         """test that datastructure removes oldest entry if there is not enough space"""
         entries = []
-        for i in range(0,self.faceidtable.max_entries*5):
+        for i in range(0, self.faceidtable.max_entries * 5):
             addr_info = AddressInfo("127.0.0.1", i)
             fid = self.faceidtable.get_or_create_faceid(addr_info)
             entries.append((fid, addr_info))
@@ -112,9 +109,6 @@ class test_FaceIDDict(unittest.TestCase):
         self.assertEqual(len(self.faceidtable.addrinfo_to_faceid), self.faceidtable.max_entries)
         self.assertEqual(len(self.faceidtable.faceid_to_addrinfo), self.faceidtable.max_entries)
 
-        for i in range(4*self.faceidtable.max_entries,5*self.faceidtable.max_entries):
+        for i in range(4 * self.faceidtable.max_entries, 5 * self.faceidtable.max_entries):
             addr_info = self.faceidtable.get_address_info(entries[i][0])
             self.assertEqual(addr_info, entries[i][1])
-
-
-

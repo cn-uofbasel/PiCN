@@ -53,7 +53,6 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         rules = self.optimizer.rewrite(None, ast)
         self.assertEqual(rules, [])
 
-
     def test_simple_call_no_params_fib(self):
         """Test, if ToDataFirstOptimizer works correctly with a single function call without parameter"""
         cmp_name = Name("/func/f1")
@@ -108,7 +107,7 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         prefix = Name("/func/f1")
         cs = self.optimizer.cs
         cs.add_content_object(
-            Content(Name("/func/f1"), "PYTHON\nf\ndef f():\n    return 'Hello World'"),True)
+            Content(Name("/func/f1"), "PYTHON\nf\ndef f():\n    return 'Hello World'"), True)
         self.optimizer.cs = cs
         ast = self.parser.parse(workflow)
         self.assertFalse(self.optimizer.compute_fwd(prefix, ast, Interest(cmp_name)))
@@ -135,7 +134,6 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         ast = self.parser.parse(workflow)
         self.assertTrue(self.optimizer.compute_fwd(None, ast, Interest(cmp_name)))
         self.assertFalse(self.optimizer.compute_local(None, ast, Interest(cmp_name)))
-
 
     def test_simple_call_params_to_data(self):
         """Test, if ToDataFirstOptimizer works correctly with a single function call with parameter, to data"""
@@ -186,7 +184,6 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         self.assertEqual(name_str2, workflow)
         self.assertEqual(prepended2, Name("/func/f1"))
 
-
     def test_multiple_calls_params(self):
         """Test, if ToDataFirstOptimizer works correctly with multiple function calls with parameter"""
         cmp_name1 = Name("/test/data")
@@ -201,7 +198,7 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         fib.add_fib_entry(Name("/test"), 2, False)
         self.optimizer.fib = fib
         ast = self.parser.parse(workflow)
-        self.assertTrue(self.optimizer.compute_fwd(None, ast,  Interest(cmp_name1)))
+        self.assertTrue(self.optimizer.compute_fwd(None, ast, Interest(cmp_name1)))
         self.assertFalse(self.optimizer.compute_local(None, ast, Interest(cmp_name1)))
         rules = self.optimizer.rewrite(None, ast)
         self.assertEqual(rules, ['/func/f1(%/test/data%,/lib/f2(2,/data/test))',
@@ -210,13 +207,9 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         self.assertEqual(name1.to_string(), cmp_name1.to_string())
         name_str1, prepended1 = self.parser.network_name_to_nfn_str(name1)
         self.assertEqual(name_str1, workflow)
-        self.assertEqual(prepended1,  Name("/test/data"))
+        self.assertEqual(prepended1, Name("/test/data"))
         name2 = self.parser.nfn_str_to_network_name(rules[1])
         self.assertEqual(name2, cmp_name2)
         name_str2, prepended2 = self.parser.network_name_to_nfn_str(name2)
         self.assertEqual(name_str2, workflow)
         self.assertEqual(prepended2, Name("/lib/f2"))
-
-
-
-

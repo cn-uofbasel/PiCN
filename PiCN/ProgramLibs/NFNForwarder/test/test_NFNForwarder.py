@@ -10,6 +10,7 @@ from PiCN.Packets import Content, Interest, Name
 from PiCN.ProgramLibs.NFNForwarder import NFNForwarder
 from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface, AddressInfo
 
+
 class cases_NFNForwarder(object):
     """Test the ICN Forwarder"""
 
@@ -23,7 +24,6 @@ class cases_NFNForwarder(object):
         self.forwarder2 = NFNForwarder(0, encoder=self.get_encoder(), log_level=255)
         self.forwarder1_port = self.forwarder1.linklayer.interfaces[0].get_port()
         self.forwarder2_port = self.forwarder2.linklayer.interfaces[0].get_port()
-
 
         self.testSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.testSock.bind(("0.0.0.0", 0))
@@ -49,18 +49,18 @@ class cases_NFNForwarder(object):
         self.assertEqual(data.decode(),
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newcontent OK\r\n")
 
-        #create test content
+        # create test content
         name = Name("/test/data/object")
         test_content = Content(name, content="HelloWorld")
         cs_fwd1 = self.forwarder1.icnlayer.cs
         self.assertEqual(cs_fwd1.find_content_object(name).content, test_content)
 
-        #create interest
+        # create interest
         interest = Interest("/test/data/object")
         encoded_interest = self.encoder.encode(interest)
-        #send interest
+        # send interest
         self.testSock.sendto(encoded_interest, ("127.0.0.1", self.forwarder1_port))
-        #receive content
+        # receive content
         encoded_content, addr = self.testSock.recvfrom(8192)
         content = self.encoder.decode(encoded_content)
         self.assertEqual(content, test_content)
@@ -69,9 +69,9 @@ class cases_NFNForwarder(object):
         """Test a simple forwarding scenario with one additional node forwarding the data"""
         self.forwarder1.start_forwarder()
         self.forwarder2.start_forwarder()
-        #client <---> node1 <---> node2
+        # client <---> node1 <---> node2
 
-        #create a face
+        # create a face
         testMgmtSock1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         testMgmtSock1.connect(("127.0.0.1", self.forwarder1_port))
         port_to = self.forwarder2_port
@@ -80,9 +80,10 @@ class cases_NFNForwarder(object):
         testMgmtSock1.close()
         self.assertEqual(data.decode(),
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newface OK:0\r\n")
-        self.assertEqual(self.forwarder1.linklayer.faceidtable.get_face_id(AddressInfo(("127.0.0.1", self.forwarder2_port),0)), 0)
+        self.assertEqual(
+            self.forwarder1.linklayer.faceidtable.get_face_id(AddressInfo(("127.0.0.1", self.forwarder2_port), 0)), 0)
 
-        #register a prefix
+        # register a prefix
         testMgmtSock2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         testMgmtSock2.connect(("127.0.0.1", self.forwarder1_port))
         testMgmtSock2.send("GET /icnlayer/newforwardingrule/%2Ftest%2Fdata:0 HTTP/1.1\r\n\r\n".encode())
@@ -101,19 +102,19 @@ class cases_NFNForwarder(object):
         self.assertEqual(data.decode(),
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newcontent OK\r\n")
 
-        #create test content
+        # create test content
         name = Name("/test/data/object")
         test_content = Content(name, content="HelloWorld")
         cs_fwd2 = self.forwarder2.icnlayer.cs
         self.assertEqual(cs_fwd2.find_content_object(name).content, test_content)
 
-        #create interest
+        # create interest
         interest = Interest("/test/data/object")
         encoded_interest = self.encoder.encode(interest)
-        #send interest
+        # send interest
         self.testSock.sendto(encoded_interest, ("127.0.0.1", self.forwarder1_port))
 
-        #receive content
+        # receive content
         encoded_content, addr = self.testSock.recvfrom(8192)
         content = self.encoder.decode(encoded_content)
         self.assertEqual(content, test_content)
@@ -135,8 +136,8 @@ class cases_NFNForwarder(object):
         testMgmtSock1.close()
         self.assertEqual(data.decode(),
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newface OK:0\r\n")
-        self.assertEqual(self.forwarder1.linklayer.faceidtable.get_face_id(AddressInfo(("127.0.0.1", self.forwarder2_port),0)), 0)
-
+        self.assertEqual(
+            self.forwarder1.linklayer.faceidtable.get_face_id(AddressInfo(("127.0.0.1", self.forwarder2_port), 0)), 0)
 
         # register a prefix
         testMgmtSock2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -148,10 +149,11 @@ class cases_NFNForwarder(object):
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newforwardingrule OK:0\r\n")
         self.assertEqual(0, self.forwarder1.icnlayer.fib.find_fib_entry(Name("/lib/func")).faceid)
 
-        #add function
+        # add function
         testMgmtSock3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         testMgmtSock3.connect(("127.0.0.1", self.forwarder2_port))
-        testMgmtSock3.send("GET /icnlayer/newcontent/%2Flib%2Ffunc%2Ff1:PYTHON\nf\ndef f():\n    return 'Hello World' HTTP/1.1\r\n\r\n".encode())
+        testMgmtSock3.send(
+            "GET /icnlayer/newcontent/%2Flib%2Ffunc%2Ff1:PYTHON\nf\ndef f():\n    return 'Hello World' HTTP/1.1\r\n\r\n".encode())
         data = testMgmtSock3.recv(1024)
         testMgmtSock3.close()
         self.assertEqual(data.decode(),
@@ -179,8 +181,10 @@ class cases_NFNForwarder(object):
         # client <---> node1 <---> node2
 
         # create faces
-        fid1 = self.forwarder1.linklayer.faceidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.forwarder2_port), 0))
-        fid2 = self.forwarder2.linklayer.faceidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.forwarder1_port), 0))
+        fid1 = self.forwarder1.linklayer.faceidtable.get_or_create_faceid(
+            AddressInfo(("127.0.0.1", self.forwarder2_port), 0))
+        fid2 = self.forwarder2.linklayer.faceidtable.get_or_create_faceid(
+            AddressInfo(("127.0.0.1", self.forwarder1_port), 0))
 
         # register prefixes
         self.forwarder1.icnlayer.fib.add_fib_entry(Name("/lib/func"), fid1, True)
@@ -228,8 +232,10 @@ class cases_NFNForwarder(object):
         # client <---> node1 <---> node2
 
         # create faces
-        fid1 = self.forwarder1.linklayer.faceidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.forwarder2_port), 0))
-        fid2 = self.forwarder2.linklayer.faceidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.forwarder1_port), 0))
+        fid1 = self.forwarder1.linklayer.faceidtable.get_or_create_faceid(
+            AddressInfo(("127.0.0.1", self.forwarder2_port), 0))
+        fid2 = self.forwarder2.linklayer.faceidtable.get_or_create_faceid(
+            AddressInfo(("127.0.0.1", self.forwarder1_port), 0))
 
         # register prefixes
         self.forwarder1.icnlayer.fib.add_fib_entry(Name("/lib/func"), fid1, True)
@@ -286,8 +292,10 @@ class cases_NFNForwarder(object):
         # client <---> node1 <---> node2
 
         # create faces
-        fid1 = self.forwarder1.linklayer.faceidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.forwarder2_port), 0))
-        fid2 = self.forwarder2.linklayer.faceidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.forwarder1_port), 0))
+        fid1 = self.forwarder1.linklayer.faceidtable.get_or_create_faceid(
+            AddressInfo(("127.0.0.1", self.forwarder2_port), 0))
+        fid2 = self.forwarder2.linklayer.faceidtable.get_or_create_faceid(
+            AddressInfo(("127.0.0.1", self.forwarder1_port), 0))
         # register prefixes
         self.forwarder1.icnlayer.fib.add_fib_entry(Name("/lib/func"), fid1, True)
         self.forwarder2.icnlayer.fib.add_fib_entry(Name("/test"), fid2, True)
@@ -331,17 +339,23 @@ class cases_NFNForwarder(object):
         # receive content
         encoded_content, addr = self.testSock.recvfrom(8192)
         content: Content = self.encoder.decode(encoded_content)
-        self.assertEqual('mdo:/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/c0;/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/c1;/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/c2;/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/c3:/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/m1', content.content)
+        self.assertEqual(
+            'mdo:/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/c0;/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/c1;/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/c2;/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/c3:/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/m1',
+            content.content)
         self.assertEqual(name, content.name)
         time.sleep(4)
         self.assertEqual(self.forwarder1.icnlayer.pit.get_container_size(), 0)
 
+
 class test_NFNForwarder_SimplePacketEncoder(cases_NFNForwarder, unittest.TestCase):
     """Runs tests with the SimplePacketEncoder"""
+
     def get_encoder(self):
         return SimpleStringEncoder()
 
+
 class test_NFNForwarder_NDNTLVPacketEncoder(cases_NFNForwarder, unittest.TestCase):
     """Runs tests with the NDNTLVPacketEncoder"""
+
     def get_encoder(self):
         return NdnTlvEncoder()

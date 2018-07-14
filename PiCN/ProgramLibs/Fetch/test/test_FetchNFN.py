@@ -16,7 +16,6 @@ from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvE
 
 
 class cases_FetchNFN(object):
-
     @abc.abstractmethod
     def get_encoder(self):
         """get the packet encoder to be used"""
@@ -50,7 +49,7 @@ class cases_FetchNFN(object):
         self.fetch = Fetch("127.0.0.1", self.fwd_port1, encoder=self.get_encoder())
 
     def add_face_and_forwadingrule(self):
-        #create new face
+        # create new face
         self.mgmtClient1 = MgmtClient(self.fwd_port1)
         self.mgmtClient1.add_face("127.0.0.1", self.fwd_port2, 0)
         self.mgmtClient1.add_forwarding_rule(Name("/lib"), 0)
@@ -171,10 +170,13 @@ class cases_FetchNFN(object):
 
 class test_FetchNFN_SimplePacketEncoder(cases_FetchNFN, unittest.TestCase):
     """Runs tests with the SimplePacketEncoder"""
+
     def get_encoder(self):
         return SimpleStringEncoder()
 
+
 class test_FetchNFN_NDNTLVPacketEncoder(cases_FetchNFN, unittest.TestCase):
     """Runs tests with the NDNTLVPacketEncoder"""
+
     def get_encoder(self):
         return NdnTlvEncoder()

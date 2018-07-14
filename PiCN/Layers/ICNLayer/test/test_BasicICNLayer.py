@@ -17,7 +17,7 @@ class test_BasicICNLayer(unittest.TestCase):
 
     def setUp(self):
 
-        #setup icn_layer
+        # setup icn_layer
         self.icn_layer = BasicICNLayer(log_level=255)
 
         synced_data_struct_factory = PiCNSyncDataStructFactory()
@@ -37,11 +37,11 @@ class test_BasicICNLayer(unittest.TestCase):
         self.icn_layer.fib = fib
         self.icn_layer.pit = pit
 
-        #setup queues icn_routing layer
+        # setup queues icn_routing layer
         self.queue1_icn_routing_up = multiprocessing.Queue()
         self.queue1_icn_routing_down = multiprocessing.Queue()
 
-        #add queues to ICN layer
+        # add queues to ICN layer
         self.icn_layer.queue_from_lower = self.queue1_icn_routing_up
         self.icn_layer.queue_to_lower = self.queue1_icn_routing_down
 
@@ -55,23 +55,23 @@ class test_BasicICNLayer(unittest.TestCase):
         to_faceid = 1
         from_faceid = 2
 
-        #Add entry to the fib
+        # Add entry to the fib
         name = Name("/test/data")
         interest = Interest("/test/data")
         self.icn_layer.fib.add_fib_entry(name, to_faceid, static=True)
 
-        #forward entry
+        # forward entry
         self.queue1_icn_routing_up.put([from_faceid, interest])
         try:
             faceid, data = self.queue1_icn_routing_down.get(timeout=2.0)
         except:
             self.fail()
 
-        #check output
+        # check output
         self.assertEqual(faceid, to_faceid)
         self.assertEqual(data, interest)
 
-        #check data structures
+        # check data structures
         self.assertEqual(self.icn_layer.cs.get_container_size(), 0)
         self.assertEqual(self.icn_layer.fib.get_container_size(), 1)
         self.assertEqual(self.icn_layer.pit.get_container_size(), 1)
@@ -87,23 +87,23 @@ class test_BasicICNLayer(unittest.TestCase):
         to_face_id = 1
         from_face_id = 2
 
-        #Add entry to the fib
+        # Add entry to the fib
         name = Name("/test")
         interest = Interest("/test/data")
         self.icn_layer.fib.add_fib_entry(name, to_face_id, static=True)
 
-        #forward entry
+        # forward entry
         self.queue1_icn_routing_up.put([from_face_id, interest])
         try:
             face_id, data = self.queue1_icn_routing_down.get(timeout=2.0)
         except:
             self.fail()
 
-        #check output
+        # check output
         self.assertEqual(face_id, to_face_id)
         self.assertEqual(data, interest)
 
-        #check data structures
+        # check data structures
         self.assertEqual(self.icn_layer.cs.get_container_size(), 0)
         self.assertEqual(self.icn_layer.fib.get_container_size(), 1)
         self.assertEqual(self.icn_layer.pit.get_container_size(), 1)
@@ -142,7 +142,7 @@ class test_BasicICNLayer(unittest.TestCase):
         self.assertEqual(face_id, to_face_id)
         self.assertEqual(data, interest1)
 
-        time.sleep(0.3) # sleep required, since there is no blocking get before the checks
+        time.sleep(0.3)  # sleep required, since there is no blocking get before the checks
         # check data structures
         self.assertEqual(self.icn_layer.cs.get_container_size(), 0)
         self.assertEqual(self.icn_layer.fib.get_container_size(), 1)
@@ -160,14 +160,14 @@ class test_BasicICNLayer(unittest.TestCase):
         from_face_id = 2
         interest = Interest("/test/data")
 
-        #add content
+        # add content
         content = Content("/test/data")
         self.icn_layer.cs.add_content_object(content)
 
-        #request content
+        # request content
         self.queue1_icn_routing_up.put([from_face_id, interest])
 
-        #get content
+        # get content
         try:
             face_id, data = self.queue1_icn_routing_down.get(timeout=2.0)
         except:
@@ -186,14 +186,14 @@ class test_BasicICNLayer(unittest.TestCase):
         name = Name("/test/data")
         self.icn_layer.fib.add_fib_entry(name, to_face_id, static=True)
 
-        #add content
+        # add content
         content = Content("/test/data")
         self.icn_layer.cs.add_content_object(content)
 
-        #request content
+        # request content
         self.queue1_icn_routing_up.put([from_face_id, interest])
 
-        #get data from fib
+        # get data from fib
         try:
             face_id, data = self.queue1_icn_routing_down.get(timeout=2.0)
         except:
@@ -275,7 +275,7 @@ class test_BasicICNLayer(unittest.TestCase):
         self.assertEqual(self.icn_layer.pit.get_container_size(), 1)
         self.assertEqual(self.icn_layer.pit.find_pit_entry(name).name, name)
 
-        #test retransmit 1
+        # test retransmit 1
         self.icn_layer.ageing()
         time.sleep(0.1)
         self.assertFalse(self.icn_layer.queue_to_lower.empty())
@@ -299,7 +299,7 @@ class test_BasicICNLayer(unittest.TestCase):
         self.assertEqual(rface_id, to_face_id)
         self.assertEqual(rinterest, interest)
 
-        #Wait for timeout
+        # Wait for timeout
         time.sleep(2)
 
         # test retransmit 3 to get number of retransmit
@@ -313,7 +313,6 @@ class test_BasicICNLayer(unittest.TestCase):
         self.assertEqual(self.icn_layer.pit.get_container_size(), 1)
         self.assertEqual(rface_id, to_face_id)
         self.assertEqual(rinterest, interest)
-
 
         # test remove pit entry
         self.icn_layer.ageing()
@@ -337,7 +336,7 @@ class test_BasicICNLayer(unittest.TestCase):
         self.assertEqual(self.icn_layer.cs.find_content_object(name1).content, content1)
         self.assertEqual(self.icn_layer.cs.find_content_object(name2).content, content2)
 
-        #Test aging 1
+        # Test aging 1
         self.icn_layer.ageing()
         self.assertEqual(self.icn_layer.cs.get_container_size(), 2)
         self.assertEqual(self.icn_layer.cs.find_content_object(name1).content, content1)
@@ -395,7 +394,7 @@ class test_BasicICNLayer(unittest.TestCase):
         self.icn_layer.queue_from_lower.put([from_face_id, c])
         time.sleep(1)
         self.assertTrue(self.icn_layer.queue_to_higher.empty())
-        
+
     def test_ICNLayer_content_to_app_layer(self):
         """get content to app layer"""
         queue_to_higher = multiprocessing.Queue()
@@ -422,7 +421,7 @@ class test_BasicICNLayer(unittest.TestCase):
         queue_from_higher = multiprocessing.Queue()
         self.icn_layer.queue_to_higher = queue_to_higher
         self.icn_layer.queue_from_higher = queue_from_higher
-        self.icn_layer._interest_to_app=True
+        self.icn_layer._interest_to_app = True
         self.icn_layer.start_process()
         face_id = 1
         n = Name("/test/data")
@@ -444,7 +443,7 @@ class test_BasicICNLayer(unittest.TestCase):
         queue_from_higher = multiprocessing.Queue()
         self.icn_layer.queue_to_higher = queue_to_higher
         self.icn_layer.queue_from_higher = queue_from_higher
-        self.icn_layer._interest_to_app=True
+        self.icn_layer._interest_to_app = True
         self.icn_layer.start_process()
         face_id = 1
         from_face_id = 2
@@ -461,7 +460,7 @@ class test_BasicICNLayer(unittest.TestCase):
         self.assertEqual(to_face_id, face_id)
         self.assertEqual(i, data)
         self.assertEqual(self.icn_layer.pit.find_pit_entry(n).interest, i)
-        self.assertFalse(self.icn_layer.pit.find_pit_entry(n).local_app[0]) #Just forward, not from local app
+        self.assertFalse(self.icn_layer.pit.find_pit_entry(n).local_app[0])  # Just forward, not from local app
 
     def test_ICNLayer_interest_to_app_layer_no_pit(self):
         """Test sending and interest message from APP with no PIT entry"""
@@ -500,7 +499,7 @@ class test_BasicICNLayer(unittest.TestCase):
         self.icn_layer.pit.add_pit_entry(n, from_face_id, i, local_app=False)
         self.icn_layer.queue_from_lower.put([from_face_id, i])
         time.sleep(1)
-        self.assertTrue(self.icn_layer.queue_to_higher.empty()) #--> deduplication by pit entry
+        self.assertTrue(self.icn_layer.queue_to_higher.empty())  # --> deduplication by pit entry
 
     def test_ICNLayer_interest_to_app_layer_cs(self):
         """Test sending and interest message from APP with a CS entry"""
@@ -596,7 +595,7 @@ class test_BasicICNLayer(unittest.TestCase):
             self.fail()
         self.assertEqual(data[0], to_fib3)
         self.assertEqual(data[1], i1)
-        #check testing second path
+        # check testing second path
         self.icn_layer.queue_from_lower.put([to_fib3, nack_1])
         try:
             data = self.icn_layer.queue_to_lower.get(timeout=2.0)
@@ -604,7 +603,7 @@ class test_BasicICNLayer(unittest.TestCase):
             self.fail()
         self.assertEqual(data[0], to_fib2)
         self.assertEqual(data[1], i1)
-        #check no path left
+        # check no path left
         self.icn_layer.queue_from_lower.put([to_fib2, nack_1])
         try:
             data = self.icn_layer.queue_to_lower.get(timeout=2.0)

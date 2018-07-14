@@ -10,6 +10,7 @@ from PiCN.Packets import Content, Interest, Name
 from PiCN.ProgramLibs.ICNForwarder import ICNForwarder
 from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
 
+
 class cases_ICNForwarder(object):
     """Test the ICN Forwarder"""
 
@@ -33,7 +34,6 @@ class cases_ICNForwarder(object):
         self.testSock.close()
         pass
 
-
     def test_ICNForwarder_simple_find_content_one_node(self):
         """Test a simple forwarding scenario, getting content from a Node"""
         self.forwarder1.start_forwarder()
@@ -49,18 +49,18 @@ class cases_ICNForwarder(object):
         self.assertEqual(data.decode(),
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newcontent OK\r\n")
 
-        #create test content
+        # create test content
         name = Name("/test/data/object")
         test_content = Content(name, content="HelloWorld")
         cs_fwd1 = self.forwarder1.icnlayer.cs
         self.assertEqual(cs_fwd1.find_content_object(name).content, test_content)
 
-        #create interest
+        # create interest
         interest = Interest("/test/data/object")
         encoded_interest = self.encoder.encode(interest)
-        #send interest
+        # send interest
         self.testSock.sendto(encoded_interest, ("127.0.0.1", self.forwarder1_port))
-        #receive content
+        # receive content
         encoded_content, addr = self.testSock.recvfrom(8192)
         content = self.encoder.decode(encoded_content)
         self.assertEqual(content, test_content)
@@ -69,9 +69,9 @@ class cases_ICNForwarder(object):
         """Test a simple forwarding scenario with one additional node forwarding the data"""
         self.forwarder1.start_forwarder()
         self.forwarder2.start_forwarder()
-        #client <---> node1 <---> node2
+        # client <---> node1 <---> node2
 
-        #create a face
+        # create a face
         testMgmtSock1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         testMgmtSock1.connect(("127.0.0.1", self.forwarder1_port))
         port_to = self.forwarder2_port
@@ -80,9 +80,10 @@ class cases_ICNForwarder(object):
         testMgmtSock1.close()
         self.assertEqual(data.decode(),
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newface OK:0\r\n")
-        self.assertEqual(self.forwarder1.linklayer.faceidtable.get_face_id(AddressInfo(("127.0.0.1", self.forwarder2_port), 0)), 0)
+        self.assertEqual(
+            self.forwarder1.linklayer.faceidtable.get_face_id(AddressInfo(("127.0.0.1", self.forwarder2_port), 0)), 0)
 
-        #register a prefix
+        # register a prefix
         testMgmtSock2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         testMgmtSock2.connect(("127.0.0.1", self.forwarder1_port))
         testMgmtSock2.send("GET /icnlayer/newforwardingrule/%2Ftest%2Fdata:0 HTTP/1.1\r\n\r\n".encode())
@@ -101,19 +102,19 @@ class cases_ICNForwarder(object):
         self.assertEqual(data.decode(),
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newcontent OK\r\n")
 
-        #create test content
+        # create test content
         name = Name("/test/data/object")
         test_content = Content(name, content="HelloWorld")
         cs_fwd2 = self.forwarder2.icnlayer.cs
         self.assertEqual(cs_fwd2.find_content_object(name).content, test_content)
 
-        #create interest
+        # create interest
         interest = Interest("/test/data/object")
         encoded_interest = self.encoder.encode(interest)
-        #send interest
+        # send interest
         self.testSock.sendto(encoded_interest, ("127.0.0.1", self.forwarder1_port))
 
-        #receive content
+        # receive content
         encoded_content, addr = self.testSock.recvfrom(8192)
         content = self.encoder.decode(encoded_content)
         self.assertEqual(content, test_content)
@@ -121,13 +122,15 @@ class cases_ICNForwarder(object):
         self.assertEqual(self.forwarder1.icnlayer.pit.get_container_size(), 0)
 
 
-
 class test_ICNForwarder_SimplePacketEncoder(cases_ICNForwarder, unittest.TestCase):
     """Runs tests with the SimplePacketEncoder"""
+
     def get_encoder(self):
         return SimpleStringEncoder()
 
+
 class test_ICNForwarder_NDNTLVPacketEncoder(cases_ICNForwarder, unittest.TestCase):
     """Runs tests with the NDNTLVPacketEncoder"""
+
     def get_encoder(self):
         return NdnTlvEncoder()

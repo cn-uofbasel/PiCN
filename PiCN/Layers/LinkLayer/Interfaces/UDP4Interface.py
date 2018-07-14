@@ -11,7 +11,7 @@ class UDP4Interface(BaseInterface):
 
     """
 
-    def __init__(self, listen_port: int, buffersize: int=8192):
+    def __init__(self, listen_port: int, buffersize: int = 8192):
         self.listen_port = listen_port
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(("0.0.0.0", self.listen_port))

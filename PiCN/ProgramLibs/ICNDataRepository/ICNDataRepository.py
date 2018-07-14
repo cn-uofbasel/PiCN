@@ -20,30 +20,31 @@ from PiCN.Logger import Logger
 from PiCN.Packets import Name
 from PiCN.Mgmt import Mgmt
 
+
 # ----------------------------------------------------------------------
 
 class ICNDataRepository(object):
     """A ICN Forwarder using PiCN"""
 
     def __init__(self, foldername: str, prefix: Name,
-                 port=9000, log_level=255, encoder: BasicEncoder = None, interfaces: List[BaseInterface]=None):
+                 port=9000, log_level=255, encoder: BasicEncoder = None, interfaces: List[BaseInterface] = None):
 
         logger = Logger("ICNRepo", log_level)
         logger.info("Start PiCN Data Repository")
 
-        #packet encoder
+        # packet encoder
         if encoder == None:
-            self.encoder = SimpleStringEncoder(log_level = log_level)
+            self.encoder = SimpleStringEncoder(log_level=log_level)
         else:
             encoder.set_log_level(log_level)
             self.encoder = encoder
-        #chunkifyer
+        # chunkifyer
         self.chunkifyer = SimpleContentChunkifyer()
 
-        #repo
+        # repo
         self.repo = SimpleFileSystemRepository(foldername, prefix, logger)
 
-        #initialize layers
+        # initialize layers
         synced_data_struct_factory = PiCNSyncDataStructFactory()
         synced_data_struct_factory.register("faceidtable", FaceIDDict)
         synced_data_struct_factory.create_manager()
@@ -79,7 +80,7 @@ class ICNDataRepository(object):
         self.mgmt.start_process()
 
     def stop_repo(self):
-        #Stop processes
+        # Stop processes
         self.lstack.stop_all()
         self.lstack.close_all()
         self.mgmt.stop_process()

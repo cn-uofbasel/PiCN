@@ -7,7 +7,6 @@ from PiCN.Packets import Content
 
 
 class test_ContentStoreMemoryExact(unittest.TestCase):
-
     def setUp(self):
         self.cs = ContentStoreMemoryExact()
 

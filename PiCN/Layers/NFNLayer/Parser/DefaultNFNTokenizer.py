@@ -9,6 +9,7 @@ import _sre
 from enum import Enum
 from typing import List, Tuple
 
+
 class TokenType(Enum):
     NONE = 1,
     FUNCCALL = 2,
@@ -24,7 +25,7 @@ class TokenType(Enum):
 class Token(object):
     """A Token for the NFN Tokenizer"""
 
-    def __init__(self, type: TokenType, startChars:str, tokens:str, stopChars:str):
+    def __init__(self, type: TokenType, startChars: str, tokens: str, stopChars: str):
         self._startChars: _sre.SRE_Pattern = re.compile(startChars)
         self._tokens: _sre.SRE_Pattern = re.compile(tokens)
         self._stopChars: _sre.SRE_Pattern = re.compile(stopChars)
@@ -59,6 +60,7 @@ class Token(object):
             return (self._type, string)
         else:
             return (TokenType.NONE, "")
+
 
 class DefaultNFNTokenizer(object):
     """Default NFN Tokenizer"""
