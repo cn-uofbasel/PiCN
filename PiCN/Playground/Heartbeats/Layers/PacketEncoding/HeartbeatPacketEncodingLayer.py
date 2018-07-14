@@ -4,8 +4,7 @@ from PiCN.Processes import LayerProcess
 
 
 class HeartbeatPacketEncodingLayer(LayerProcess):
-
-    def __init__(self, encoder: ExtendedNdnTlvEncoder=None, log_level=255):
+    def __init__(self, encoder: ExtendedNdnTlvEncoder = None, log_level=255):
         LayerProcess.__init__(self, logger_name="PktEncLayer", log_level=log_level)
         self._encoder: ExtendedNdnTlvEncoder = encoder
 
@@ -53,5 +52,5 @@ class HeartbeatPacketEncodingLayer(LayerProcess):
         if type(data[0]) != int:
             self.logger.warning("PacketEncoding Layer expects first element to be a faceid (int)")
             return (None, None)
-        #TODO test if data[1] has type packet or bin data? howto?
+        # TODO test if data[1] has type packet or bin data? howto?
         return data[0], data[1]

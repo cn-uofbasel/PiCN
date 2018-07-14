@@ -32,7 +32,8 @@ def main(args):
     encoder = ExtendedNdnTlvEncoder(log_level)
 
     # Start
-    server = PiCN.Playground.Heartbeats.Nodes.HeartbeatComputationStack(port=args.port, log_level=log_level, encoder=encoder)
+    server = PiCN.Playground.Heartbeats.Nodes.HeartbeatComputationStack(port=args.port, log_level=log_level,
+                                                                        encoder=encoder)
     server.start_forwarder()
     server.link_layer.process.join()
 

@@ -9,7 +9,6 @@ from PiCN.Playground.Heartbeats.Layers.PacketEncoding import ExtendedNdnTlvEncod
 
 
 def main(args):
-
     # Log Level
     if args.logging == 'error':
         log_level = logging.ERROR
@@ -41,6 +40,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Heartbeat Nodes')
     parser.add_argument('-p', '--port', type=int, default=9000, help="UDP port (default: 9000)")
-    parser.add_argument('-l', '--logging', choices=['debug','info', 'warning', 'error', 'none'], type=str, default='info', help='Logging Level (default: info)')
+    parser.add_argument('-l', '--logging', choices=['debug', 'info', 'warning', 'error', 'none'], type=str,
+                        default='info', help='Logging Level (default: info)')
     args = parser.parse_args()
     main(args)

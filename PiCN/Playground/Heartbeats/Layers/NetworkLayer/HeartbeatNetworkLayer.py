@@ -3,8 +3,9 @@
 import multiprocessing
 
 from PiCN.Packets import Content, Interest, Packet, Nack
-from PiCN.Playground.Heartbeats.Layers.PacketEncoding.Heartbeat import Heartbeat
 from PiCN.Layers.ICNLayer import BasicICNLayer
+
+from PiCN.Playground.Heartbeats.Layers.PacketEncoding.Heartbeat import Heartbeat
 
 
 class HeartbeatNetworkLayer(BasicICNLayer):
@@ -40,13 +41,15 @@ class HeartbeatNetworkLayer(BasicICNLayer):
         if isinstance(packet, Interest):
             self.handle_interest_from_higher(high_level_id, packet, to_lower, to_higher)
         elif isinstance(packet, Content):
-            self.handle_content(high_level_id, packet, to_lower, to_higher, True) #content handled same as for content from network
+            self.handle_content(high_level_id, packet, to_lower, to_higher,
+                                True)  # content handled same as for content from network
         elif isinstance(packet, Nack):
-            self.handle_nack(high_level_id, packet, to_lower, to_higher, True) #Nack handled same as for NACK from network
+            self.handle_nack(high_level_id, packet, to_lower, to_higher,
+                             True)  # Nack handled same as for NACK from network
         elif isinstance(packet, Heartbeat):
             self.handle_heartbeat(packet, to_lower)
 
-    def handle_heartbeat(self, heartbeat: Heartbeat, to_lower:multiprocessing.Queue):
+    def handle_heartbeat(self, heartbeat: Heartbeat, to_lower: multiprocessing.Queue):
         self.logger.info("Handling Heartbeat")
         # check if there is matching PIT entry
         pit_entry = self.pit.find_pit_entry(heartbeat.name)

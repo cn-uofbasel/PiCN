@@ -32,7 +32,7 @@ def main(args):
         while True:
             time.sleep(args.interval)
             sock.sendto(encoded_heartbeat, (resolved_hostname, args.port))
-            print('.', end='',flush=True)
+            print('.', end='', flush=True)
 
 
 if __name__ == "__main__":

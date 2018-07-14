@@ -1,18 +1,18 @@
 """NDN TLV Encoder (Extended)"""
 
-from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
-from PiCN.Packets import Packet, Content, Interest, Name, Nack, UnknownPacket
 from PiCNExternal.pyndn.encoding.tlv.tlv.tlv_decoder import TlvDecoder
 from PiCNExternal.pyndn.encoding.tlv.tlv.tlv_encoder import TlvEncoder
+
+from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
+from PiCN.Packets import Packet, Content, Interest, Name, Nack, UnknownPacket
+
 from PiCN.Playground.Heartbeats.Layers.PacketEncoding.Heartbeat import Heartbeat
 
 
 class ExtendedNdnTlvEncoder(NdnTlvEncoder):
-
-
     def __init__(self, log_level=255):
         NdnTlvEncoder.__init__(self, log_level=log_level)
-        self.heartbeatTV = 0x02 # deliberately picked for this prototype :)
+        self.heartbeatTV = 0x02  # deliberately picked for this prototype :)
 
     def encode(self, packet: Packet) -> bytearray:
         if isinstance(packet, Interest):
@@ -45,7 +45,7 @@ class ExtendedNdnTlvEncoder(NdnTlvEncoder):
 
     def decode(self, wire_data) -> Packet:
         # print("got %d bytes to decode" % len(wire_data))
-        if(self.is_content(wire_data)):
+        if (self.is_content(wire_data)):
             self.logger.info("Decode content object")
             try:
                 (name, payload) = self.decode_data(wire_data)
@@ -53,7 +53,7 @@ class ExtendedNdnTlvEncoder(NdnTlvEncoder):
             except:
                 self.logger.info("Decoding failed (malformed packet)")
                 return UnknownPacket(wire_format=wire_data)
-        if(self.is_interest(wire_data)):
+        if (self.is_interest(wire_data)):
             self.logger.info("Decode interest")
             try:
                 name = self.decode_interest(wire_data)
@@ -61,7 +61,7 @@ class ExtendedNdnTlvEncoder(NdnTlvEncoder):
             except:
                 self.logger.info("Decoding failed (malformed packet)")
                 return UnknownPacket(wire_format=wire_data)
-        if(self.is_heartbeat(wire_data)):
+        if (self.is_heartbeat(wire_data)):
             self.logger.info("Decode heartbeat")
             try:
                 name = self.decode_heartbeat(wire_data)
@@ -69,7 +69,7 @@ class ExtendedNdnTlvEncoder(NdnTlvEncoder):
             except:
                 self.logger.info("Decoding failed (malformed packet)")
                 return UnknownPacket(wire_format=wire_data)
-        if(self.is_nack(wire_data)):
+        if (self.is_nack(wire_data)):
             self.logger.info("Decode NACK")
             try:
                 (name, reason) = self.decode_nack(wire_data)
@@ -80,7 +80,6 @@ class ExtendedNdnTlvEncoder(NdnTlvEncoder):
         else:
             self.logger.info("Decode failed (unknown packet type)")
             return UnknownPacket(wire_format=wire_data)
-
 
     def decode_heartbeat(self, input: bytearray) -> Name:
         """
