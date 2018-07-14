@@ -41,11 +41,11 @@ class LayerStack(object):
             self.queues.append(q_to_upper)
             self.queues.append(q_to_lower)
         # Append last layer to resource list
-        self.layers.append(layers[len(layers) - 1])
+        self.layers.append(layers[len(layers)-1])
         self.layers[0].queue_to_higher = self.queue_to_higher
         self.layers[0].queue_from_higher = self.queue_from_higher
-        self.layers[len(self.layers) - 1].queue_to_lower = self.queue_to_lower
-        self.layers[len(self.layers) - 1].queue_from_lower = self.queue_from_lower
+        self.layers[len(self.layers)-1].queue_to_lower = self.queue_to_lower
+        self.layers[len(self.layers)-1].queue_from_lower = self.queue_from_lower
 
     def insert(self, layer: LayerProcess, on_top_of: LayerProcess = None, below_of: LayerProcess = None):
         """
@@ -136,7 +136,7 @@ class LayerStack(object):
         if self.__started:
             raise multiprocessing.ProcessError('LayerStack should not be changed after its processes were started.')
         self.queue_to_lower = queue
-        self.layers[len(self.layers) - 1].queue_to_lower = queue
+        self.layers[len(self.layers)-1].queue_to_lower = queue
 
     @property
     def queue_from_lower(self):
@@ -147,7 +147,7 @@ class LayerStack(object):
         if self.__started:
             raise multiprocessing.ProcessError('LayerStack should not be changed after its processes were started.')
         self.queue_from_lower = queue
-        self.layers[len(self.layers) - 1].queue_from_lower = queue
+        self.layers[len(self.layers)-1].queue_from_lower = queue
 
     def __insert(self, layer: LayerProcess, at: int):
         # Get the layers between which to insert the new layer
@@ -183,5 +183,5 @@ class LayerStack(object):
         self.layers.insert(at, layer)
         self.layers[0].queue_to_higher = self.queue_to_higher
         self.layers[0].queue_from_higher = self.queue_from_higher
-        self.layers[len(self.layers) - 1].queue_to_lower = self.queue_to_lower
-        self.layers[len(self.layers) - 1].queue_from_lower = self.queue_from_lower
+        self.layers[len(self.layers)-1].queue_to_lower = self.queue_to_lower
+        self.layers[len(self.layers)-1].queue_from_lower = self.queue_from_lower

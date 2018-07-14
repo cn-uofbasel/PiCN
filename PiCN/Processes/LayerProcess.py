@@ -9,7 +9,6 @@ import time
 
 from PiCN.Processes import PiCNProcess
 
-
 class LayerProcess(PiCNProcess):
     """ Abstract Class defining a Process running on a layer"""
 
@@ -66,7 +65,7 @@ class LayerProcess(PiCNProcess):
         """ handle incoming data from the higher layer """
 
     def _run_poll(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
-                  to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):
+            to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):
         """ Process loop, handle incoming packets, use poll if many file descriptors are required
             :param from_lower: Queue to receive data from lower Layer
             :param from_higher: Queue to receive data from higher Layer
@@ -88,7 +87,7 @@ class LayerProcess(PiCNProcess):
                     self.data_from_higher(to_lower, to_higher, from_higher.get())
 
     def _run_select(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
-                    to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):
+             to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):
         """ Process loop, handle incoming packets, use select if few file descriptors are required
             :param from_lower: Queue to receive data from lower Layer
             :param from_higher: Queue to receive data from higher Layer
@@ -139,7 +138,7 @@ class LayerProcess(PiCNProcess):
         :param to_lower: Queue to send data to lower Layer
         :param to_higher: Queue to send data to higher Layer
         """
-        if os.name == 'nt':  # Exception for windows since MS POSIX api do not support select on File Descriptors
+        if os.name == 'nt': # Exception for windows since MS POSIX api do not support select on File Descriptors
             self._run_sleep(from_lower, from_higher, to_lower, to_higher)
         elif self.in_unittest():
             self._run_poll(from_lower, from_higher, to_lower, to_higher)
@@ -149,9 +148,9 @@ class LayerProcess(PiCNProcess):
     def start_process(self):
         """Start the Layer Process"""
         self.process = multiprocessing.Process(target=self._run, args=[self._queue_from_lower,
-                                                                       self._queue_from_higher,
-                                                                       self._queue_to_lower,
-                                                                       self._queue_to_higher])
+                                                                            self._queue_from_higher,
+                                                                            self._queue_to_lower,
+                                                                            self._queue_to_higher])
         self.process.daemon = True
         self.process.start()
 

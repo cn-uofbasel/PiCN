@@ -105,7 +105,7 @@ class test_ForwardingInformationBaseMemoryPrefix(unittest.TestCase):
         self.fib.add_fib_entry(n2, fid2)
         self.fib.add_fib_entry(n3, fid3)
         iname = Name("/test/data/content/object1")
-        # test best match
+        #test best match
         fib_entry = self.fib.find_fib_entry(iname)
         self.assertEqual(fib_entry.faceid, fid1)
         already_used.append(fib_entry)

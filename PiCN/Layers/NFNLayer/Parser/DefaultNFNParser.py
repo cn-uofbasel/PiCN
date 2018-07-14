@@ -34,7 +34,7 @@ class DefaultNFNParser(object):
         self.tokenizer.add_token(self.endFuncToken)
         self.tokenizer.add_token(self.paramSeparator)
 
-        self.tokenToAst: Dict[TokenType, type(AST)] = {}
+        self.tokenToAst:Dict[TokenType, type(AST)] = {}
         self.tokenToAst[TokenType.STRING] = AST_String
         self.tokenToAst[TokenType.INT] = AST_Int
         self.tokenToAst[TokenType.FLOAT] = AST_Float
@@ -67,27 +67,27 @@ class DefaultNFNParser(object):
                     for i in range(1, depth):
                         cur_element = cur_element.params[-1]
                     if not isinstance(cur_element, AST_FuncCall):
-                        return None  # Syntax error
+                        return None #Syntax error
                     cur_element.add_param(ast_element)
 
             if tokentype == TokenType.FUNCCALL:
-                depth += 1
+                depth+=1
             if tokentype == TokenType.ENDFUNCCALL:
-                depth -= 1
+                depth-=1
         if depth != 0:
-            return None  # Syntax error
+            return None #Syntax error
         return root
 
     def network_name_to_nfn_str(self, name: Name) -> str:
         if len(name.components) == 2:
             return name.string_components[0], None
-        if name.string_components[-1] != "NFN":
+        if name.string_components [-1] != "NFN":
             return None, None
         prepended_name = Name()
         prepended_name.string_components = name.string_components[:-2]
         nfn_comp = name.string_components[-2].replace("_", prepended_name.to_string())
         nfn_comp = nfn_comp.replace("\\", "/")
-        return nfn_comp, prepended_name
+        return  nfn_comp, prepended_name
 
     def nfn_str_to_network_name(self, nfn_str: str, prependmarker: str = "%") -> Name:
         if "NFN" in nfn_str:
@@ -103,3 +103,6 @@ class DefaultNFNParser(object):
         name = name + nfn_comp
         name = name + "NFN"
         return name
+
+
+

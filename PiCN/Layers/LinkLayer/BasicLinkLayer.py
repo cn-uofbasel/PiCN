@@ -34,6 +34,7 @@ class BasicLinkLayer(LayerProcess):
         packet = data[0]
         addr = data[1]
 
+
         addr_info = AddressInfo(addr, self.interfaces.index(interface))
         faceid = self.faceidtable.get_or_create_faceid(addr_info)
         to_higher.put([faceid, packet])
@@ -100,8 +101,9 @@ class BasicLinkLayer(LayerProcess):
     def _run_sleep(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
                    to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):
         super()._run_sleep(from_lower, from_higher, to_lower, to_higher)
-        # TODO this is not implemented
+        #TODO this is not implemented
         raise NotImplemented()
+
 
     def stop_process(self):
         for i in self.interfaces:
@@ -112,3 +114,5 @@ class BasicLinkLayer(LayerProcess):
             self.queue_to_higher.close()
         if self.queue_from_higher:
             self.queue_from_higher.close()
+
+

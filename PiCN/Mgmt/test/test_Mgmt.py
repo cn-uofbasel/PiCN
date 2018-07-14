@@ -19,7 +19,11 @@ from PiCN.Processes import PiCNSyncDataStructFactory
 
 
 class test_Mgmt(unittest.TestCase):
+
     def setUp(self):
+
+
+
         synced_data_struct_factory = PiCNSyncDataStructFactory()
         synced_data_struct_factory.register("cs", ContentStoreMemoryExact)
         synced_data_struct_factory.register("fib", ForwardingInformationBaseMemoryPrefix)
@@ -45,6 +49,7 @@ class test_Mgmt(unittest.TestCase):
         self.testMgmtSock3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.mgmt_client = MgmtClient(self.linklayerport)
 
+
     def tearDown(self):
         self.linklayer.stop_process()
         self.mgmt.stop_process()
@@ -69,6 +74,7 @@ class test_Mgmt(unittest.TestCase):
         self.assertEqual(self.linklayer.faceidtable.get_face_id(AddressInfo(("127.0.0.1", 9000), 0)), 0)
         self.assertEqual(self.linklayer.faceidtable.get_address_info(0), AddressInfo(("127.0.0.1", 9000), 0))
 
+
     def test_mgmt_multiple_new_face(self):
         """Test the mgmt interace to create multiple new faces with deduplication"""
         self.linklayer.start_process()
@@ -82,10 +88,11 @@ class test_Mgmt(unittest.TestCase):
         self.assertEqual(data.decode(),
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newface OK:0\r\n")
 
-        self.testMgmtSock2.connect(("127.0.0.1", self.linklayerport))
+        self.testMgmtSock2.connect(("127.0.0.1",self.linklayerport))
         self.testMgmtSock2.send("GET /linklayer/newface/127.0.0.1:8000:0 HTTP/1.1\r\n\r\n".encode())
         data = self.testMgmtSock2.recv(1024)
         self.testMgmtSock2.close()
+
 
         self.assertEqual(data.decode(),
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newface OK:1\r\n")
@@ -94,6 +101,7 @@ class test_Mgmt(unittest.TestCase):
         self.testMgmtSock3.send("GET /linklayer/newface/127.0.0.1:9000:0 HTTP/1.1\r\n\r\n".encode())
         data = self.testMgmtSock3.recv(1024)
         self.testMgmtSock3.close()
+
 
         self.assertEqual(data.decode(),
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newface OK:0\r\n")
@@ -152,6 +160,7 @@ class test_Mgmt(unittest.TestCase):
 
         self.assertEqual(self.mgmt.cs.find_content_object(Name("/test/data")).content.content, "HelloWorld")
         self.assertEqual(self.mgmt.cs.find_content_object(Name("/data/test")).content.content, "GoodBye")
+
 
     def test_add_face_mgmt_client(self):
         """Test adding a face using the mgmtclient"""

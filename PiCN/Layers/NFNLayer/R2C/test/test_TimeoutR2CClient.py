@@ -7,8 +7,8 @@ from PiCN.Layers.NFNLayer.R2C import TimeoutR2CHandler
 from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationList
 
-
 class test_TimeoutR2CClient(unittest.TestCase):
+
     def setUp(self):
         self.r2cClient = TimeoutR2CHandler()
 

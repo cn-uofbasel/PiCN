@@ -10,6 +10,7 @@ from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 
 
 def main(args):
+
     prefix = Name(args.icnprefix)
 
     log_level = logging.DEBUG
@@ -27,6 +28,7 @@ def main(args):
 
 
 if __name__ == "__main__":
+
     parser = argparse.ArgumentParser(description='ICN Data Repository')
     parser.add_argument('--format', default='ndntlv', type=str)
     parser.add_argument('datapath', type=str,

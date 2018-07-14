@@ -11,6 +11,7 @@ from PiCN.Packets import Interest, Content
 
 
 def main(args):
+
     # Packet encoder
     encoder = NdnTlvEncoder() if args.format == 'ndntlv' else SimpleStringEncoder
 
@@ -50,13 +51,10 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='PiCN Peek Tool')
-    parser.add_argument('-i', '--ip', type=str, default='127.0.0.1',
-                        help="IP address or hostname of forwarder (default: 127.0.0.1)")
+    parser.add_argument('-i', '--ip', type=str, default='127.0.0.1', help="IP address or hostname of forwarder (default: 127.0.0.1)")
     parser.add_argument('-p', '--port', type=int, default=9000, help="UDP port (default: 9000)")
-    parser.add_argument('-f', '--format', choices=['ndntlv', 'simple'], type=str, default='ndntlv',
-                        help='Packet Format (default: ndntlv)')
-    parser.add_argument('--plain', help="plain output (writes payload to stdout or returns -2 for NACK)",
-                        action="store_true")
+    parser.add_argument('-f', '--format', choices=['ndntlv','simple'], type=str, default='ndntlv', help='Packet Format (default: ndntlv)')
+    parser.add_argument('--plain', help="plain output (writes payload to stdout or returns -2 for NACK)", action="store_true")
     parser.add_argument('name', type=str, help="CCN name of the content object to fetch")
     args = parser.parse_args()
     main(args)

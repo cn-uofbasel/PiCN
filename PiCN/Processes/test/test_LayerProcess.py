@@ -5,10 +5,8 @@ import unittest
 from multiprocessing import Queue
 from PiCN.Processes import LayerProcess
 
-
 class LayerMock(LayerProcess):
     """ Mock implementation of a LayerProcess """
-
     def __init__(self):
         LayerProcess.__init__(self)
 
@@ -17,7 +15,6 @@ class LayerMock(LayerProcess):
 
     def data_from_higher(self, to_lower: Queue, to_higher: Queue, data):
         to_lower.put(data)
-
 
 class TestLayerProcess(unittest.TestCase):
     """Test the Abstract Class LayerProcess"""

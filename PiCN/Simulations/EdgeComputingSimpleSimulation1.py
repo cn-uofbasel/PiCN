@@ -38,10 +38,8 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         self.encoder_type = self.get_encoder()
         self.simulation_bus = SimulationBus(packetencoder=self.encoder_type())
 
-        self.fetch_tool1 = Fetch("rsu1", None, 255, self.encoder_type(),
-                                 [self.simulation_bus.add_interface("fetchtool1")])
-        self.fetch_tool2 = Fetch("rsu2", None, 255, self.encoder_type(),
-                                 [self.simulation_bus.add_interface("fetchtool2")])
+        self.fetch_tool1 = Fetch("rsu1", None, 255, self.encoder_type(), [self.simulation_bus.add_interface("fetchtool1")])
+        self.fetch_tool2 = Fetch("rsu2", None, 255, self.encoder_type(), [self.simulation_bus.add_interface("fetchtool2")])
 
         self.rsu1 = NFNForwarder(port=0, encoder=self.encoder_type(),
                                  interfaces=[self.simulation_bus.add_interface("rsu1")], log_level=255)
@@ -51,12 +49,9 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         self.rsu3 = NFNForwarder(port=0, encoder=self.encoder_type(),
                                  interfaces=[self.simulation_bus.add_interface("rsu3")], log_level=255)
 
-        self.rsu1.nfnlayer.optimizer = EdgeComputingOptimizer(self.rsu1.icnlayer.cs, self.rsu1.icnlayer.fib,
-                                                              self.rsu1.icnlayer.pit, self.rsu1.linklayer.faceidtable)
-        self.rsu2.nfnlayer.optimizer = EdgeComputingOptimizer(self.rsu2.icnlayer.cs, self.rsu2.icnlayer.fib,
-                                                              self.rsu2.icnlayer.pit, self.rsu2.linklayer.faceidtable)
-        self.rsu3.nfnlayer.optimizer = EdgeComputingOptimizer(self.rsu3.icnlayer.cs, self.rsu3.icnlayer.fib,
-                                                              self.rsu3.icnlayer.pit, self.rsu3.linklayer.faceidtable)
+        self.rsu1.nfnlayer.optimizer = EdgeComputingOptimizer(self.rsu1.icnlayer.cs, self.rsu1.icnlayer.fib, self.rsu1.icnlayer.pit, self.rsu1.linklayer.faceidtable)
+        self.rsu2.nfnlayer.optimizer = EdgeComputingOptimizer(self.rsu2.icnlayer.cs, self.rsu2.icnlayer.fib, self.rsu2.icnlayer.pit, self.rsu2.linklayer.faceidtable)
+        self.rsu3.nfnlayer.optimizer = EdgeComputingOptimizer(self.rsu3.icnlayer.cs, self.rsu3.icnlayer.fib, self.rsu3.icnlayer.pit, self.rsu3.linklayer.faceidtable)
 
         self.mgmt_client1 = MgmtClient(self.rsu1.mgmt.mgmt_sock.getsockname()[1])
         self.mgmt_client2 = MgmtClient(self.rsu2.mgmt.mgmt_sock.getsockname()[1])
@@ -77,26 +72,24 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
 
         self.simulation_bus.start_process()
 
-        # setup rsu1
+        #setup rsu1
 
         self.mgmt_client1.add_face("rsu2", None, 0)
         self.mgmt_client1.add_forwarding_rule(Name("/rsu"), 0)
-        self.mgmt_client1.add_new_content(Name("/rsu/func/f1"),
-                                          "PYTHON\nf\ndef f(a):\n    for i in range(0,30000000):\n        a.upper()\n    return a.upper() + ' RSU1'")
+        self.mgmt_client1.add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n    for i in range(0,30000000):\n        a.upper()\n    return a.upper() + ' RSU1'")
 
-        # setup rsu2
+        #setup rsu2
         self.mgmt_client2.add_face("rsu1", None, 0)
         self.mgmt_client2.add_face("rsu3", None, 0)
         self.mgmt_client2.add_forwarding_rule(Name("/rsu"), 0)
-        # self.mgmt_client2.add_forwarding_rule(Name("/rsu"), 1)
-        self.mgmt_client2.add_new_content(Name("/rsu/func/f1"),
-                                          "PYTHON\nf\ndef f(a):\n    for i in range(0,40000000):\n        a.upper()\n    return a.upper() + ' RSU2'")
+        #self.mgmt_client2.add_forwarding_rule(Name("/rsu"), 1)
+        self.mgmt_client2.add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n    for i in range(0,40000000):\n        a.upper()\n    return a.upper() + ' RSU2'")
 
-        # setup rsu3
+        #setup rsu3
         self.mgmt_client3.add_face("rsu2", None, 0)
         self.mgmt_client3.add_forwarding_rule(Name("/rsu"), 0)
-        self.mgmt_client3.add_new_content(Name("/rsu/func/f1"),
-                                          "PYTHON\nf\ndef f(a):\n    for i in range(0,50000000):\n        a.upper()\n    return a.upper() + ' RSU3'")
+        self.mgmt_client3.add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n    for i in range(0,50000000):\n        a.upper()\n    return a.upper() + ' RSU3'")
+
 
     def test_without_data_from_client(self):
         """execute a simple function on the rsus"""
@@ -111,8 +104,7 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         print("Result at RSU1:", res)
         res = self.fetch_tool2.fetch_data(name, timeout=10)
         print("Result as fetched from RSU2:", res)
-        self.assertEqual(res,
-                         "HELLOWORLD RSU2")  # since node 2 starts computation too, result is on 2 the one of 2, killing forwarding rule on node one would fix that
+        self.assertEqual(res, "HELLOWORLD RSU2") #since node 2 starts computation too, result is on 2 the one of 2, killing forwarding rule on node one would fix that
 
     def test_inner_call_without_data_from_client(self):
         """execute one function on the first node and another function on the second node"""
@@ -130,5 +122,5 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         res1 = self.fetch_tool1.fetch_data(name1, timeout=10)
         print(res1)
 
-        # res2 = self.fetch_tool2.fetch_data(name2, timeout=10)
-        # print(res2)
+        #res2 = self.fetch_tool2.fetch_data(name2, timeout=10)
+        #print(res2)

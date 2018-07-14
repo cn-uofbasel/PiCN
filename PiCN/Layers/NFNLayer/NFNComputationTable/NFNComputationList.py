@@ -2,6 +2,7 @@
 
 import time
 
+
 from PiCN.Packets import Name, Interest
 from PiCN.Layers.NFNLayer.NFNComputationTable.BaseNFNComputationTable import BaseNFNComputationTable
 from PiCN.Layers.NFNLayer.NFNComputationTable.BaseNFNComputationTable import NFNComputationTableEntry
@@ -9,14 +10,14 @@ from PiCN.Layers.NFNLayer.NFNComputationTable.BaseNFNComputationTable import NFN
 from PiCN.Layers.NFNLayer.Parser import *
 from PiCN.Layers.NFNLayer.R2C import BaseR2CHandler
 
-
 class NFNComputationList(BaseNFNComputationTable):
     """Implementation of the NFNComputationTable using a list"""
 
     def __init__(self, r2cclient: BaseR2CHandler, parser: DefaultNFNParser):
         super().__init__(r2cclient, parser)
 
-    def add_computation(self, name: Name, id: int, interest, ast: AST = None) -> bool:
+
+    def add_computation(self, name: Name, id: int, interest, ast:AST=None) -> bool:
         if self.is_comp_running(name):
             c = self.get_computation(name)
             c.time_stamp = time.time()
@@ -65,7 +66,7 @@ class NFNComputationList(BaseNFNComputationTable):
             if required_requests == []:
                 continue
             if required_requests == None:
-                comp_to_remove.append(comp)  # remove comp if there was a timeout that should not be refreshed
+                comp_to_remove.append(comp) #remove comp if there was a timeout that should not be refreshed
             else:
                 requests += required_requests
         for c in comp_to_remove:

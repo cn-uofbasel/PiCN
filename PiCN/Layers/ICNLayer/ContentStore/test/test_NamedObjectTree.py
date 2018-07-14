@@ -8,6 +8,7 @@ from PiCN.Packets import Content, Name
 
 
 class test_NamedObjectTree(unittest.TestCase):
+
     def setUp(self):
         self.tree1_co = NamedObjectTree()  # for tests with objects of type Content
         self.tree_cse = NamedObjectTree()  # for tests with objects of type ContentStoreEntry
@@ -136,6 +137,7 @@ class test_NamedObjectTree(unittest.TestCase):
 
         n2 = self.tree1_co.prefix_lookup(Name("/ndn/ch")).name
         self.assertTrue(Name("/ndn/ch").is_prefix_of(n2))
+
 
     #################### Same Tests with objects of type ContentStoreEntry instead of Content ####################
 

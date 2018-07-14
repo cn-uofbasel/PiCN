@@ -1,9 +1,11 @@
 """Test the BasicPacketEncodingLayer"""
 
+
 import abc
 import unittest
 
 from multiprocessing import Queue
+
 
 from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
@@ -14,8 +16,8 @@ from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface, AddressInfo
 from PiCN.Processes import PiCNSyncDataStructFactory
 from PiCN.Packets import Content, Interest
 
-
 class cases_BasicPacketEncodingLayer(object):
+
     @abc.abstractmethod
     def get_encoder(self):
         """returns the encoder to be used"""
@@ -42,6 +44,7 @@ class cases_BasicPacketEncodingLayer(object):
         self.port1 = self.linkLayer1.interfaces[0].get_port()
         self.port2 = self.linkLayer2.interfaces[0].get_port()
 
+
         self.q1_fromLower = Queue()
         self.q1_fromHigher = Queue()
         self.q1_toLower = Queue()
@@ -62,11 +65,12 @@ class cases_BasicPacketEncodingLayer(object):
         self.packetEncodingLayer2.queue_to_lower = self.q2_toLower
         self.packetEncodingLayer2.queue_to_higher = self.q2_toHigher
 
-        self.linkLayer1.queue_from_higher = self.q1_toLower  # from higher in Linklayer is to Lower from Encoding Layer
-        self.linkLayer1.queue_to_higher = self.q1_fromLower  # to higher in Linklayer is from lower from Encoding Layer
+        self.linkLayer1.queue_from_higher = self.q1_toLower #from higher in Linklayer is to Lower from Encoding Layer
+        self.linkLayer1.queue_to_higher = self.q1_fromLower #to higher in Linklayer is from lower from Encoding Layer
 
         self.linkLayer2.queue_from_higher = self.q2_toLower  # from higher in Linklayer is to Lower from Encoding Layer
         self.linkLayer2.queue_to_higher = self.q2_fromLower  # to higher in Linklayer is from lower from Encoding Layer
+
 
     def tearDown(self):
         self.packetEncodingLayer1.stop_process()
@@ -78,7 +82,7 @@ class cases_BasicPacketEncodingLayer(object):
         """Test the BasicPacketEncodingLayer bidirectional"""
         self.packetEncodingLayer1.start_process()
 
-        # test interest
+        #test interest
         i = [2, Interest("/test/data")]
         self.q1_fromHigher.put(i)
         try:
@@ -89,7 +93,7 @@ class cases_BasicPacketEncodingLayer(object):
         di = self.q1_toHigher.get()
         self.assertEqual(i, di)
 
-        # test content
+        #test content
         c = [2, Content("/test/data", "HelloWorld")]
         self.q1_fromHigher.put(c)
         try:
@@ -112,15 +116,15 @@ class cases_BasicPacketEncodingLayer(object):
         fid = self.linkLayer1.faceidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.port2), 0))
         i = Interest("/test/data")
 
-        # PUT interest in node 1 queues
+        #PUT interest in node 1 queues
         self.packetEncodingLayer1.queue_from_higher.put([fid, i])
-        # GET interest from node 2 queues
+        #GET interest from node 2 queues
         try:
             data = self.packetEncodingLayer2.queue_to_higher.get(timeout=2.0)
         except:
             self.fail()
 
-        # Check Packet
+        #Check Packet
         ri = data[1]
         self.assertEqual(ri, i)
 
@@ -148,13 +152,10 @@ class cases_BasicPacketEncodingLayer(object):
 
 class test_BasicPacketEncodingLayer_SimplePacketEncoder(cases_BasicPacketEncodingLayer, unittest.TestCase):
     """Runs tests with the SimplePacketEncoder"""
-
     def get_encoder(self):
         return SimpleStringEncoder()
 
-
 class test_BasicPacketEncodingLayer_NDNTLVPacketEncoder(cases_BasicPacketEncodingLayer, unittest.TestCase):
     """Runs tests with the NDNTLVPacketEncoder"""
-
     def get_encoder(self):
         return NdnTlvEncoder()

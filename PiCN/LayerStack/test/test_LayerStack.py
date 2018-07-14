@@ -1,3 +1,4 @@
+
 import unittest
 
 from PiCN.LayerStack import LayerStack
@@ -6,6 +7,7 @@ from PiCN.Processes import LayerProcess
 
 
 class test_LayerStack(unittest.TestCase):
+
     def test_create_empty(self):
         with self.assertRaises(ValueError):
             lstack: LayerStack = LayerStack([])

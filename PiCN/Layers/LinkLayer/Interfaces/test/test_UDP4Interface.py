@@ -5,7 +5,6 @@ import unittest
 
 from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface
 
-
 class test_UDP4Interface(unittest.TestCase):
     """Test the UDP4 Interface"""
 
@@ -16,6 +15,7 @@ class test_UDP4Interface(unittest.TestCase):
     def tearDown(self):
         self.interface1.close()
         self.interface2.close()
+
 
     def test_receiving_data(self):
         """test receiving data"""

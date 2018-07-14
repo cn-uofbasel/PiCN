@@ -5,8 +5,8 @@ from types import FunctionType, CodeType
 
 from PiCN.Layers.NFNLayer.NFNExecutor import BaseNFNExecutor
 
-
 class NFNPythonExecutor(BaseNFNExecutor):
+
     def __init__(self):
         self._language = "PYTHON"
         self._sandbox = self._init_sandbox()
@@ -29,13 +29,13 @@ class NFNPythonExecutor(BaseNFNExecutor):
                         lib_functions.append((fcode.co_name, FunctionType(fcode, self._sandbox)))
             if entry_point is None:
                 return None
-            for lf in lib_functions:  # enable calling of all functions but not the entry point
+            for lf in lib_functions: #enable calling of all functions but not the entry point
                 if lf[1] is None:
                     continue
                 self._sandbox[lf[0]] = lf[1]
             return entry_point(*params)
         except:
-            # raise
+            #raise
             return None
 
     def _get_entry_function_name(self, function: str) -> (str, str):
@@ -60,10 +60,10 @@ class NFNPythonExecutor(BaseNFNExecutor):
             # "callable": callable,  #TODO Check that
             "True": True,
             "False": False,
-            # "dir": dir, #TODO Check that
+            #"dir": dir, #TODO Check that
             "frozenset": frozenset,
-            # "getattr": getattr, #TODO Check that
-            # "hasattr": hasattr,  #TODO Check that
+            #"getattr": getattr, #TODO Check that
+            #"hasattr": hasattr,  #TODO Check that
             "abs": abs,
             "complex": complex,
             "divmod": divmod,
@@ -91,4 +91,4 @@ class NFNPythonExecutor(BaseNFNExecutor):
             "type": type,
             "zip": zip,
             "None": None,
-        }
+            }

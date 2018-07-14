@@ -27,26 +27,26 @@ class NdnTlvEncoder(BasicEncoder):
     """
 
     __nack_reason_values = {
-        NackReason.CONGESTION: 50,  # NDNLPv2 compatible
-        NackReason.DUPLICATE: 100,  # NDNLPv2 compatible
-        NackReason.NO_ROUTE: 150,  # NDNLPv2 compatible
-        NackReason.NO_CONTENT: 160,  # extension: does not exist in NDNLPv2
-        NackReason.COMP_QUEUE_FULL: 161,  # extension: does not exist in NDNLPv2
-        NackReason.COMP_PARAM_UNAVAILABLE: 162,  # extension: does not exist in NDNLPv2
-        NackReason.COMP_EXCEPTION: 163,  # extension: does not exist in NDNLPv2
-        NackReason.COMP_TERMINATED: 164  # extension: does not exist in NDNLPv2
+        NackReason.CONGESTION: 50,                  # NDNLPv2 compatible
+        NackReason.DUPLICATE: 100,                  # NDNLPv2 compatible
+        NackReason.NO_ROUTE: 150,                   # NDNLPv2 compatible
+        NackReason.NO_CONTENT: 160,                 # extension: does not exist in NDNLPv2
+        NackReason.COMP_QUEUE_FULL: 161,            # extension: does not exist in NDNLPv2
+        NackReason.COMP_PARAM_UNAVAILABLE: 162,     # extension: does not exist in NDNLPv2
+        NackReason.COMP_EXCEPTION: 163,             # extension: does not exist in NDNLPv2
+        NackReason.COMP_TERMINATED: 164             # extension: does not exist in NDNLPv2
     }
     """Mapping of NackReason Enum to wire format values"""
 
     __nack_reason_enum = {
-        50: NackReason.CONGESTION,  # NDNLPv2 compatible
-        100: NackReason.DUPLICATE,  # NDNLPv2 compatible
-        150: NackReason.NO_ROUTE,  # NDNLPv2 compatible
-        160: NackReason.NO_CONTENT,  # extension: does not exist in NDNLPv2
-        161: NackReason.COMP_QUEUE_FULL,  # extension: does not exist in NDNLPv2
-        162: NackReason.COMP_PARAM_UNAVAILABLE,  # extension: does not exist in NDNLPv2
-        163: NackReason.COMP_EXCEPTION,  # extension: does not exist in NDNLPv2
-        164: NackReason.COMP_TERMINATED  # extension: does not exist in NDNLPv2
+         50: NackReason.CONGESTION,                 # NDNLPv2 compatible
+        100: NackReason.DUPLICATE,                  # NDNLPv2 compatible
+        150: NackReason.NO_ROUTE,                   # NDNLPv2 compatible
+        160: NackReason.NO_CONTENT,                 # extension: does not exist in NDNLPv2
+        161: NackReason.COMP_QUEUE_FULL,            # extension: does not exist in NDNLPv2
+        162: NackReason.COMP_PARAM_UNAVAILABLE,     # extension: does not exist in NDNLPv2
+        163: NackReason.COMP_EXCEPTION,             # extension: does not exist in NDNLPv2
+        164: NackReason.COMP_TERMINATED             # extension: does not exist in NDNLPv2
     }
     """Mapping of wire format nack reasons to NackReason Enum"""
 
@@ -88,7 +88,7 @@ class NdnTlvEncoder(BasicEncoder):
         :return: Packet in PiCN's internal representation
         """
         # print("got %d bytes to decode" % len(wire_data))
-        if (self.is_content(wire_data)):
+        if(self.is_content(wire_data)):
             self.logger.info("Decode content object")
             try:
                 (name, payload) = self.decode_data(wire_data)
@@ -96,7 +96,7 @@ class NdnTlvEncoder(BasicEncoder):
             except:
                 self.logger.info("Decoding failed (malformed packet)")
                 return UnknownPacket(wire_format=wire_data)
-        if (self.is_interest(wire_data)):
+        if(self.is_interest(wire_data)):
             self.logger.info("Decode interest")
             try:
                 name = self.decode_interest(wire_data)
@@ -104,7 +104,7 @@ class NdnTlvEncoder(BasicEncoder):
             except:
                 self.logger.info("Decoding failed (malformed packet)")
                 return UnknownPacket(wire_format=wire_data)
-        if (self.is_nack(wire_data)):
+        if(self.is_nack(wire_data)):
             self.logger.info("Decode NACK")
             try:
                 (name, reason) = self.decode_nack(wire_data)
@@ -115,6 +115,7 @@ class NdnTlvEncoder(BasicEncoder):
         else:
             self.logger.info("Decode failed (unknown packet type)")
             return UnknownPacket(wire_format=wire_data)
+
 
     ### Helpers ###
 
@@ -134,7 +135,7 @@ class NdnTlvEncoder(BasicEncoder):
         for c in name._components[::-1]:
             encoder.writeBlobTlv(Tlv.NameComponent, c)
         encoder.writeTypeAndLength(Tlv.Name, len(encoder))
-        return encoder.getOutput()  # .tobytes()
+        return encoder.getOutput() #.tobytes()
 
     def encode_interest(self, name: Name) -> bytearray:
         """

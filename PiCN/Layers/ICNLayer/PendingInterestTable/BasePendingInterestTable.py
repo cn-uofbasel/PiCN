@@ -13,7 +13,7 @@ from PiCN.Layers.ICNLayer import BaseICNDataStruct
 class PendingInterestTableEntry(object):
     """An entry in the Forwarding Information Base"""
 
-    def __init__(self, name: Name, faceid: int, interest: Interest = None, local_app: bool = False):
+    def __init__(self, name: Name, faceid: int, interest:Interest = None, local_app: bool=False):
         self.name = name
         self._faceids: List[int] = []
         if isinstance(faceid, list):
@@ -22,7 +22,7 @@ class PendingInterestTableEntry(object):
             self._faceids.append(faceid)
         self._timestamp = time.time()
         self._retransmits = 0
-        self._local_app: List[bool] = []
+        self._local_app: List[bool]= []
         if isinstance(local_app, list):
             self._local_app.extend(local_app)
         else:
@@ -97,7 +97,7 @@ class BasePendingInterestTable(BaseICNDataStruct):
     :param pit_timeout: timeout for a pit entry when calling the ageing function
     """
 
-    def __init__(self, pit_timeout: int = 10, pit_retransmits: int = 3):
+    def __init__(self, pit_timeout: int=10, pit_retransmits: int=3):
         super().__init__()
         self.container: List[PendingInterestTableEntry] = []
         self._pit_timeout = pit_timeout
@@ -150,3 +150,6 @@ class BasePendingInterestTable(BaseICNDataStruct):
         :param retransmits: retransmit value to be set
         """
         self._pit_retransmits = retransmits
+
+
+

@@ -12,7 +12,6 @@ from typing import List
 def Tree(named_object=None):
     return {"subtree": defaultdict(Tree), "leaf": named_object}
 
-
 class NamedObjectTree():
     """
     Data structure to organize objects with property 'name' (of type PiCN.Packets.Name) in a tree reflecting their
@@ -79,7 +78,6 @@ class NamedObjectTree():
         :param name: name/prefix
         :return: Named object or None
         """
-
         def traverse(tree):
             if tree["leaf"] is not None:
                 return tree["leaf"]

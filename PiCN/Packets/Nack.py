@@ -5,7 +5,6 @@ from .Interest import Interest
 from .Name import Name
 from .NackReason import NackReason
 
-
 class Nack(Packet):
     """
     Internal representation of an NACK (negative acknowledgement) packet
@@ -39,7 +38,7 @@ class Nack(Packet):
         self._reason = reason
 
     @interest.setter
-    def interest(self, i: Interest):
+    def interest(self, i:Interest):
         self._interest = i
 
     def __eq__(self, other):

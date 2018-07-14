@@ -5,7 +5,6 @@ import unittest
 from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from PiCN.Packets import Content, Interest, Nack, NackReason, Name
 
-
 class test_NdnTlvEncoder(unittest.TestCase):
     """Test the NdnTlvEncoder"""
 
@@ -30,7 +29,7 @@ class test_NdnTlvEncoder(unittest.TestCase):
     def test_Content_Creation_no_wireformat(self):
         """Test the creation of a content object message with no wireformat given"""
         name: Name = Name("/test/data")
-        c1: Content = Content(name, "HelloWorld")
+        c1: Content =  Content(name, "HelloWorld")
         enc_c1 = self.encoder.encode(c1)
         self.assertEqual(enc_c1[0], 0x6)
         self.assertFalse(self.encoder.is_interest(enc_c1))

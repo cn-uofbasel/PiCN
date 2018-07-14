@@ -31,8 +31,10 @@ class test_BasicChunkLayer(unittest.TestCase):
         self.chunkLayer.queue_from_lower = self.q1_from_lower
         self.chunkLayer.queue_from_higher = self.q1_from_higher
 
+
     def tearDown(self):
         self.chunkLayer.stop_process()
+
 
     def test_name_in_chunktable(self):
         """Test if the helper to find a name in the chunktable works"""
@@ -72,6 +74,7 @@ class test_BasicChunkLayer(unittest.TestCase):
         c5 = Content("/data/test/c1", "dtc1")
         c6 = Content("/data/test/c2", "dtc2")
 
+
         self.chunkLayer._chunk_table[c1.name] = (c1, time.time())
         self.chunkLayer._chunk_table[c2.name] = (c2, time.time())
         self.chunkLayer._chunk_table[c3.name] = (c3, time.time())
@@ -80,13 +83,14 @@ class test_BasicChunkLayer(unittest.TestCase):
         self.chunkLayer._chunk_table[c5.name] = (c5, time.time())
         self.chunkLayer._chunk_table[c6.name] = (c6, time.time())
 
+
         chunks1 = self.chunkLayer.get_chunk_list_from_chunk_table(rte1.requested_chunks)
         chunks2 = self.chunkLayer.get_chunk_list_from_chunk_table(rte2.requested_chunks)
 
         compdata1 = [c1, c2, c3]
         compdata2 = [c4, c5, c6]
 
-        for i in range(0, 3):
+        for i in range(0,3):
             self.assertEqual(chunks1[i], compdata1[i])
             self.assertEqual(chunks2[i], compdata2[i])
 
@@ -167,13 +171,13 @@ class test_BasicChunkLayer(unittest.TestCase):
         request_table_entry = self.chunkLayer.handle_received_meta_data(0, md1, request_table_entry, self.q1_to_lower)
 
         self.assertEqual(request_table_entry.requested_md[0], Name("/test/data/m1"))
-        chunknames = [Name("/test/data/c0"), Name("/test/data/c1"), Name("/test/data/c2"), Name("/test/data/c3"),
-                      Name("/test/data/c4")]
+        chunknames =  [Name("/test/data/c0"), Name("/test/data/c1"), Name("/test/data/c2"), Name("/test/data/c3"),
+                       Name("/test/data/c4")]
         self.assertEqual(request_table_entry.requested_chunks, chunknames[:4])
 
         d1 = self.q1_to_lower.get()[1]
         self.assertEqual(d1.name, Name("/test/data/m1"))
-        for i in range(0, 4):
+        for i in range(0,4):
             d2 = self.q1_to_lower.get()[1]
             self.assertEqual(d2.name, chunknames[i])
         self.assertTrue(self.q1_to_lower.empty())
@@ -187,6 +191,7 @@ class test_BasicChunkLayer(unittest.TestCase):
         except:
             self.fail()
         self.assertEqual(d3.name, Name("/test/data/c4"))
+
 
     def test_handle_received_chunk_data(self):
         """test if received chunk data are handled correctly"""
@@ -205,12 +210,10 @@ class test_BasicChunkLayer(unittest.TestCase):
         chunk1 = Content(chunk1_n, "chunk1")
         chunk2 = Content(chunk2_n, "chunk2")
 
-        request_table_entry = self.chunkLayer.handle_received_chunk_data(0, chunk1, request_table_entry,
-                                                                         self.q1_to_higher)
+        request_table_entry = self.chunkLayer.handle_received_chunk_data(0, chunk1, request_table_entry, self.q1_to_higher)
         self.assertEqual(request_table_entry.requested_chunks, [chunk2_n])
 
-        request_table_entry = self.chunkLayer.handle_received_chunk_data(0, chunk2, request_table_entry,
-                                                                         self.q1_to_higher)
+        request_table_entry = self.chunkLayer.handle_received_chunk_data(0, chunk2, request_table_entry, self.q1_to_higher)
         self.assertEqual(request_table_entry, None)
         try:
             data = self.q1_to_higher.get(timeout=2.0)[1]
@@ -219,6 +222,7 @@ class test_BasicChunkLayer(unittest.TestCase):
         self.assertEqual(data.name, n1)
         self.assertEqual(data.content, "chunk1chunk2")
         self.assertEqual(len(self.chunkLayer._request_table), 0)
+
 
     def test_interest_from_lower_no_match(self):
         """Test handling interest from lower with no chunk entry"""
@@ -313,6 +317,7 @@ class test_BasicChunkLayer(unittest.TestCase):
             self.fail()
         self.assertEqual(data[1], c1)
 
+
     def test_metadata_from_lower_layer(self):
         """test receiving metadata from lower layer"""
         self.chunkLayer.start_process()
@@ -331,7 +336,7 @@ class test_BasicChunkLayer(unittest.TestCase):
         chunknames = [Name("/test/data/c0"), Name("/test/data/c1"), Name("/test/data/c2"), Name("/test/data/c3"),
                       Name("/test/data/c4")]
 
-        for i in range(0, 4):
+        for i in range(0,4):
             data = self.chunkLayer.queue_to_lower.get()
             self.assertEqual(Interest(chunknames[i]), data[1])
 

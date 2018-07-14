@@ -10,8 +10,8 @@ from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
 from PiCN.Layers.LinkLayer.FaceIDTable import BaseFaceIDTable
 
-
 class ToDataFirstOptimizer(BaseNFNOptimizer):
+
     def __init__(self, cs: BaseContentStore, fib: BaseForwardingInformationBase, pit: BasePendingInterestTable,
                  faceidtable: BaseFaceIDTable) -> None:
         super().__init__(cs, fib, pit, faceidtable)

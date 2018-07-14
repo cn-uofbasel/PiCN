@@ -11,7 +11,6 @@ from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
 from PiCN.Layers.LinkLayer.FaceIDTable import BaseFaceIDTable
 from PiCN.Packets import Interest
 
-
 class BaseNFNOptimizer(object):
     """Base class for the NFN Optimizers"""
 
@@ -77,7 +76,7 @@ class BaseNFNOptimizer(object):
         if isinstance(ast, AST_FuncCall):
             for p in ast.params:
                 names = self._get_names_from_ast(p, names)
-                # names.append(ast._element)
+            #names.append(ast._element)
         return names
 
     def _get_functions_from_ast(self, ast: AST, names: Name = None):
@@ -88,5 +87,5 @@ class BaseNFNOptimizer(object):
         if isinstance(ast, AST_FuncCall):
             for p in ast.params:
                 names = self._get_functions_from_ast(p, names)
-                # names.append(ast._element)
+            #names.append(ast._element)
         return names

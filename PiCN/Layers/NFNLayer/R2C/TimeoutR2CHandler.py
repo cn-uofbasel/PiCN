@@ -7,9 +7,9 @@ from PiCN.Layers.NFNLayer.NFNComputationTable import BaseNFNComputationTable
 from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
 from PiCN.Packets import Name, Content
 
-
 class TimeoutR2CHandler(BaseR2CHandler):
-    def __init__(self, parser: DefaultNFNParser = DefaultNFNParser()):
+
+    def __init__(self, parser: DefaultNFNParser=DefaultNFNParser()):
         super().__init__(parser)
 
     def R2C_selection(self, names: List[Name]) -> List[Name]:

@@ -20,11 +20,10 @@ from PiCN.Logger import Logger
 from PiCN.Mgmt import Mgmt
 from PiCN.Routing import BasicRouting
 
-
 class ICNForwarder(object):
     """A ICN Forwarder using PiCN"""
 
-    def __init__(self, port=9000, log_level=255, encoder: BasicEncoder = None, interfaces: List[BaseInterface] = None):
+    def __init__(self, port=9000, log_level=255, encoder: BasicEncoder=None, interfaces: List[BaseInterface] = None):
         # debug level
         logger = Logger("ICNForwarder", log_level)
 
@@ -48,7 +47,7 @@ class ICNForwarder(object):
         pit = synced_data_struct_factory.manager.pit()
         faceidtable = synced_data_struct_factory.manager.faceidtable()
 
-        # default interface
+        #default interface
         if interfaces is not None:
             self.interfaces = interfaces
             mgmt_port = port
@@ -61,6 +60,8 @@ class ICNForwarder(object):
         self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
         self.icnlayer = BasicICNLayer(log_level=log_level)
 
+
+
         self.lstack: LayerStack = LayerStack([
             self.icnlayer,
             self.packetencodinglayer,
@@ -72,7 +73,7 @@ class ICNForwarder(object):
         self.icnlayer.pit = pit
 
         # routing
-        self.routing = BasicRouting(self.icnlayer.pit, None, log_level=log_level)  # TODO NOT IMPLEMENTED YET
+        self.routing = BasicRouting(self.icnlayer.pit, None, log_level=log_level) #TODO NOT IMPLEMENTED YET
 
         # mgmt
         self.mgmt = Mgmt(cs, fib, pit, self.linklayer, mgmt_port, self.stop_forwarder,
@@ -85,7 +86,7 @@ class ICNForwarder(object):
         self.mgmt.start_process()
 
     def stop_forwarder(self):
-        # Stop processes
+        #Stop processes
         self.mgmt.stop_process()
         self.lstack.stop_all()
         # close queues file descriptors

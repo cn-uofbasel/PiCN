@@ -15,20 +15,18 @@ class RequestTableEntry(object):
     def __init__(self, name: Name):
         self.name: Name = name
         self.requested_chunks = []
-        self.chunks = []
+        self.chunks =[]
         self.requested_md = []
         self.chunked = False
-        self.lastchunk: Name
+        self.lastchunk:Name
 
     def __eq__(self, other):
         return self.name == other.name
 
-
 class BasicChunkLayer(LayerProcess):
     """"Basic Chunking Layer for PICN"""
 
-    def __init__(self, chunkifyer: BaseChunkifyer = None, chunk_size: int = 4096,
-                 manager: multiprocessing.Manager = None,
+    def __init__(self, chunkifyer: BaseChunkifyer=None, chunk_size: int=4096, manager: multiprocessing.Manager=None,
                  log_level=255):
         super().__init__("ChunkLayer", log_level=log_level)
         self.chunk_size = chunk_size
@@ -54,19 +52,18 @@ class BasicChunkLayer(LayerProcess):
             return
         if isinstance(packet, Content):
             self.logger.info("Packet is Content (name=%s, %d bytes)" % \
-                             (str(packet.name), len(packet.content)))
+                                      (str(packet.name), len(packet.content)))
             if len(packet.content) < self.chunk_size:
                 to_lower.put([faceid, packet])
             else:
                 self.logger.info("Chunking Packet")
-                metadata, chunks = self.chunkifyer.chunk_data(packet)  # create metadata and chunks
+                metadata, chunks = self.chunkifyer.chunk_data(packet) #create metadata and chunks
                 self.logger.info("Metadata: " + metadata[0].content)
-                to_lower.put([faceid, metadata[
-                    0]])  # return first name TODO HANDLE THE CASE, WHERE CHUNKS CAN TIMEOUT AND MUST BE REPRODUCED
-                for md in metadata:  # add metadata to chunktable
+                to_lower.put([faceid, metadata[0]]) #return first name TODO HANDLE THE CASE, WHERE CHUNKS CAN TIMEOUT AND MUST BE REPRODUCED
+                for md in metadata: #add metadata to chunktable
                     if md.name not in self._chunk_table:
                         self._chunk_table[md.name] = (md, time.time())
-                for c in chunks:  # add chunks to chunktable
+                for c in chunks: #add chunks to chunktable
                     if c.name not in self._chunk_table:
                         self._chunk_table[c.name] = (c, time.time())
         if isinstance(packet, Nack):
@@ -81,7 +78,7 @@ class BasicChunkLayer(LayerProcess):
         packet = data[1]
         if isinstance(packet, Interest):
             self.logger.info("Packet is Interest")
-            if packet.name in self._chunk_table:  # Check if Interest is in chunktable
+            if packet.name in self._chunk_table: #Check if Interest is in chunktable
                 matching_content = self._chunk_table.get(packet.name)[0]
                 to_lower.put([faceid, matching_content])
             else:
@@ -93,18 +90,18 @@ class BasicChunkLayer(LayerProcess):
             if request_table_entry is None:
                 return
             self._request_table.remove(request_table_entry)
-            if request_table_entry.chunked is False:  # not chunked content
+            if request_table_entry.chunked is False: #not chunked content
                 if not packet.get_bytes().startswith(b'mdo:'):
                     to_higher.put([faceid, packet])
                     return
-                else:  # Received metadata data --> chunked content
+                else: # Received metadata data --> chunked content
                     request_table_entry.chunked = True
-            if packet.get_bytes().startswith(b'mdo:'):  # request all frames from metadata
+            if packet.get_bytes().startswith(b'mdo:'): # request all frames from metadata
                 request_table_entry = self.handle_received_meta_data(faceid, packet, request_table_entry, to_lower)
             else:
                 request_table_entry = self.handle_received_chunk_data(faceid, packet, request_table_entry, to_higher)
                 if request_table_entry is None:
-                    return  # deletes entry if data was completed
+                    return #deletes entry if data was completed
             self._request_table.append(request_table_entry)
         if isinstance(packet, Nack):
             requestentry = self.get_request_table_entry(packet.name)
@@ -173,7 +170,7 @@ class BasicChunkLayer(LayerProcess):
                 return True
         return False
 
-    def remove_chunk_name_from_request_table_entry(self, request_table_entry: RequestTableEntry, name: Name) \
+    def remove_chunk_name_from_request_table_entry(self, request_table_entry: RequestTableEntry, name: Name)\
             -> RequestTableEntry:
         """remove chunk from chunktable"""
         if name not in request_table_entry.requested_chunks:

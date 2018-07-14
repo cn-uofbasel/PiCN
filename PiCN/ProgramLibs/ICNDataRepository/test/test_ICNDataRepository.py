@@ -11,7 +11,6 @@ from PiCN.Packets import Name, NackReason
 from PiCN.ProgramLibs.ICNDataRepository import ICNDataRepository
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
 
-
 class cases_ICNDataRepository(object):
     """Test the ICN Data Repository using fetch"""
 
@@ -75,16 +74,12 @@ class cases_ICNDataRepository(object):
         content = self.fetch.fetch_data(Name("/test/data/f4"))
         self.assertEqual(content, "Received Nack: " + NackReason.NO_CONTENT.value)
 
-
 class test_ICNDataRepository_SimplePacketEncoder(cases_ICNDataRepository, unittest.TestCase):
     """Runs tests with the SimplePacketEncoder"""
-
     def get_encoder(self):
         return SimpleStringEncoder()
 
-
 class test_ICNDataRepository_NDNTLVPacketEncoder(cases_ICNDataRepository, unittest.TestCase):
     """Runs tests with the NDNTLVPacketEncoder"""
-
     def get_encoder(self):
         return NdnTlvEncoder()

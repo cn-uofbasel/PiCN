@@ -6,12 +6,11 @@ from PiCN.Packets import Content, Name
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore, ContentStoreEntry
 from PiCN.Layers.ICNLayer.ContentStore.NamedObjectTree import NamedObjectTree
 
-
 class ContentStoreMemoryPrefix(BaseContentStore):
     """ An in-memory content store with prefix matching"""
 
     def __init__(self):
-        self._container: NamedObjectTree = NamedObjectTree()
+        self._container:NamedObjectTree = NamedObjectTree()
 
     def find_content_object(self, name: Name) -> ContentStoreEntry:
         """
@@ -21,7 +20,7 @@ class ContentStoreMemoryPrefix(BaseContentStore):
         """
         return self._container.prefix_lookup(name)
 
-    def add_content_object(self, content: Content, static: bool = False):
+    def add_content_object(self, content: Content, static: bool=False):
         """
         Insert content object
         :param content: content object to insert

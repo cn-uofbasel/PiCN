@@ -6,7 +6,6 @@ from PiCN.Layers.NFNLayer.Parser import TokenType
 from PiCN.Layers.NFNLayer.Parser import Token
 from PiCN.Layers.NFNLayer.Parser import DefaultNFNTokenizer
 
-
 class test_DefaultNFNTokenizer(unittest.TestCase):
     """Test the default Tokenizer"""
 
@@ -43,14 +42,14 @@ class test_DefaultNFNTokenizer(unittest.TestCase):
     def test_int(self):
         """Test single int"""
         test_string = "-1234"
-        expected_res = [(TokenType.INT, "-1234")]
+        expected_res = [(TokenType.INT,"-1234")]
         tokens = self.tokenizer.tokenize(test_string)
         self.assertEqual(expected_res, tokens)
 
     def test_float(self):
         """Test single float"""
         test_string = "2.5e8"
-        expected_res = [(TokenType.FLOAT, "2.5e8")]
+        expected_res = [(TokenType.FLOAT,"2.5e8")]
         tokens = self.tokenizer.tokenize(test_string)
         self.assertEqual(expected_res, tokens)
 

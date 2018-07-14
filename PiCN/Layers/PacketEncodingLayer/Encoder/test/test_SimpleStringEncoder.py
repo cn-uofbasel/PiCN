@@ -5,7 +5,6 @@ import unittest
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 from PiCN.Packets import Content, Interest, Nack, NackReason
 
-
 class test_SimpleStringEncoder(unittest.TestCase):
     """Test the SimpleStringEncoder"""
 

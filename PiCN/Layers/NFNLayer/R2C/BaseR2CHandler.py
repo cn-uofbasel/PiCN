@@ -7,11 +7,10 @@ from PiCN.Layers.NFNLayer.NFNComputationTable import BaseNFNComputationTable
 from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
 from PiCN.Packets import Name, Content
 
-
 class BaseR2CHandler(object):
     """Base Class for R2C Clients in PiCN's NFN Layer"""
 
-    def __init__(self, parser: DefaultNFNParser = DefaultNFNParser()):
+    def __init__(self, parser: DefaultNFNParser=DefaultNFNParser()):
         self.parser = parser
         pass
 
@@ -41,6 +40,7 @@ class BaseR2CHandler(object):
         :param name: R2C name from which the components should be removed
         :return NFN name without R2C marker
         """
+
 
     @abc.abstractmethod
     def R2C_identify_Name(self, name: Name) -> bool:

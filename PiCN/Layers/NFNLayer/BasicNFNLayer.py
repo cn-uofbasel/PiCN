@@ -17,14 +17,13 @@ from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
 from PiCN.Layers.LinkLayer.FaceIDTable import BaseFaceIDTable
 
-
 class BasicNFNLayer(LayerProcess):
     """Basic NFN Layer Implementation"""
 
     def __init__(self, cs: BaseContentStore, fib: BaseForwardingInformationBase, pit: BasePendingInterestTable,
                  faceidtable: BaseFaceIDTable,
                  comp_table: BaseNFNComputationTable, executors: Dict[str, type(BaseNFNExecutor)],
-                 parser: DefaultNFNParser, r2c_client: BaseR2CHandler, log_level: int = 255):
+                 parser: DefaultNFNParser, r2c_client: BaseR2CHandler, log_level: int=255):
         super().__init__("NFN-Layer", log_level=log_level)
         self.cs = cs
         self.fib = fib
@@ -66,30 +65,30 @@ class BasicNFNLayer(LayerProcess):
             c = self.r2cclient.R2C_handle_request(interest.name, self.computation_table)
             if c is not None:
                 if packet_id < 0:
-                    self.computation_table.push_data(c)  # local request
+                    self.computation_table.push_data(c) #local request
                 else:
                     self.queue_to_lower.put([packet_id, c])
             return
-        if interest.name.components[-1] != b"NFN":  # send non NFN interests back
+        if interest.name.components[-1] != b"NFN": #send non NFN interests back
             self.queue_to_lower.put([packet_id, interest])
             return
-        # parse interest and create computation
+        #parse interest and create computation
         nfn_str, prepended_name = self.parser.network_name_to_nfn_str(interest.name)
         ast = self.parser.parse(nfn_str)
 
         if self.computation_table.add_computation(interest.name, packet_id, interest, ast) == False:
             return
 
-        # request required data
+        #request required data
         required_optimizer_data = self.optimizer.required_data(interest.name, ast)
 
         self.computation_table.update_status(interest.name, NFNComputationState.FWD)
-        if required_optimizer_data != []:  # Optimizer requires additional data
+        if required_optimizer_data != []: # Optimizer requires additional data
             raise NotImplemented("Global Optimizing not implemeted yet")
-            # TODO add to await list, send messages to reqeust data
+            #TODO add to await list, send messages to reqeust data
             return
 
-        # if no data are required we can continue directly, otherwise data handler must call that
+        #if no data are required we can continue directly, otherwise data handler must call that
         self.forwarding_descision(interest)
 
     def handleContent(self, packet_id: int, content: Content):
@@ -109,6 +108,7 @@ class BasicNFNLayer(LayerProcess):
             if comp.comp_state == NFNComputationState.EXEC or comp.comp_state == NFNComputationState.WRITEBACK:
                 self.compute(comp.interest)
 
+
     def handleNack(self, packet_id: int, nack: Nack):
         """Handles a Nack
         :param packet_id: id of the computation
@@ -117,17 +117,17 @@ class BasicNFNLayer(LayerProcess):
         remove_list = []
         for e in self.computation_table.get_container():
             self.computation_table.remove_computation(e.original_name)
-            # check next rewrite if current is nack-ed TODO this is a code duplication with ageing in ComputationTableEntry
-            if e.comp_state == NFNComputationState.REWRITE and \
-                            e.rewrite_list != [] and \
-                            nack.name == self.parser.nfn_str_to_network_name(e.rewrite_list[0]):
+            #check next rewrite if current is nack-ed TODO this is a code duplication with ageing in ComputationTableEntry
+            if e.comp_state == NFNComputationState.REWRITE and\
+                    e.rewrite_list != [] and\
+                    nack.name == self.parser.nfn_str_to_network_name(e.rewrite_list[0]):
                 e.rewrite_list.pop(0)
                 if e.rewrite_list == []:
                     remove_list.append(e.original_name)
                 else:
                     request = Interest(self.parser.nfn_str_to_network_name(e.rewrite_list[0]))
                     self.queue_to_lower.put([e.id, request])
-            # check if nack-ed data were required.
+            #check if nack-ed data were required.
             elif nack.name == e.original_name:
                 remove_list.append(e.original_name)
             else:
@@ -135,7 +135,7 @@ class BasicNFNLayer(LayerProcess):
                     if nack.name == a.name:
                         remove_list.append(e.original_name)
             self.computation_table.append_computation(e)
-        # remove all computation that are nack-ed and forward nack
+        #remove all computation that are nack-ed and forward nack
         for r in remove_list:
             e = self.computation_table.get_computation(r)
             self.computation_table.remove_computation(r)
@@ -159,7 +159,7 @@ class BasicNFNLayer(LayerProcess):
                 entry.rewrite_list = rewritten_names
                 request = self.parser.nfn_str_to_network_name(rewritten_names[0])
                 self.queue_to_lower.put([entry.id, Interest(request)])
-                #               self.handleInterest([entry.id, Interest(request)]) #TODO required?
+#               self.handleInterest([entry.id, Interest(request)]) #TODO required?
                 self.computation_table.append_computation(entry)
 
         if self.optimizer.compute_local(prepended_name, entry.ast, interest):
@@ -179,9 +179,9 @@ class BasicNFNLayer(LayerProcess):
                     name = Name(p._element)
                     self.queue_to_lower.put([entry.id, Interest(name)])
                 elif isinstance(p, AST_FuncCall):
-                    # p._prepend = True
+                    #p._prepend = True
                     name = self.parser.nfn_str_to_network_name((str(p)))
-                    # p._prepend = False
+                    #p._prepend = False
                     self.logger.info("Subcomputation: " + str(name))
                     self.handleInterest(entry.id, Interest(name))
                 else:
@@ -189,7 +189,7 @@ class BasicNFNLayer(LayerProcess):
                 entry.add_name_to_await_list(name)
 
             self.computation_table.append_computation(entry)
-            if (entry.awaiting_data == []):
+            if(entry.awaiting_data == []):
                 self.compute(interest)
 
     def get_nf_code_language(self, function: str):
@@ -213,7 +213,7 @@ class BasicNFNLayer(LayerProcess):
             name = self.parser.nfn_str_to_network_name(entry.rewrite_list[0])
             res = entry.available_data[name]
             data = Content(entry.original_name, res)
-            # self.queue_to_lower.put([entry.id, data])
+            #self.queue_to_lower.put([entry.id, data])
             self.handleContent(entry.id, data)
             return
         function_name = Name(entry.ast._element)
@@ -246,7 +246,7 @@ class BasicNFNLayer(LayerProcess):
         if res is None:
             self.queue_to_lower.put([entry.id,
                                      Nack(entry.original_name, NackReason.COMP_EXCEPTION, interest=entry.interest)])
-        content_res: Content = Content(entry.original_name, str(res))  # TODO typed results
+        content_res: Content = Content(entry.original_name, str(res)) #TODO typed results
         self.queue_to_lower.put([entry.id, content_res])
         self.computation_table.push_data(content_res)
         self.logger.info("Finish Computation: " + str(content_res.name))
@@ -261,7 +261,7 @@ class BasicNFNLayer(LayerProcess):
                 continue
             else:
                 name = n
-            if '_' in ''.join(name.string_components):  # sth is broken here, so this is just a quick fix
+            if '_' in ''.join(name.string_components): #sth is broken here, so this is just a quick fix
                 self.handleInterest(0, Interest(name))
             else:
                 self.handleInterest(-1, Interest(name))
@@ -271,6 +271,7 @@ class BasicNFNLayer(LayerProcess):
             else:
                 name = n
             nack = Nack(n, NackReason.COMP_TERMINATED, interest=Interest(name))
-            # self.handleNack(-1, nack)
+            #self.handleNack(-1, nack)
             self.queue_to_lower.put([0, nack])
         self.computation_table = ct
+

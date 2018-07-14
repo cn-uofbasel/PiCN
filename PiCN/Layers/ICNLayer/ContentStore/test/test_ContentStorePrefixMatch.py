@@ -7,6 +7,7 @@ from PiCN.Packets import Content
 
 
 class test_ContentStorePrefixMatch(unittest.TestCase):
+
     def setUp(self):
         self.cs = ContentStoreMemoryPrefix()
 

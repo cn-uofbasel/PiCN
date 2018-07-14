@@ -11,8 +11,8 @@ from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
 from PiCN.Layers.LinkLayer.FaceIDTable import BaseFaceIDTable
 from PiCN.Packets import Interest
 
-
 class EdgeComputingOptimizer(BaseNFNOptimizer):
+
     def __init__(self, cs: BaseContentStore, fib: BaseForwardingInformationBase, pit: BasePendingInterestTable,
                  faceidTable: BaseFaceIDTable) -> None:
         super().__init__(cs, fib, pit, faceidTable)
