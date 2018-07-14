@@ -3,8 +3,8 @@
 import multiprocessing
 
 from PiCN.Packets import Content, Interest, Packet, Nack, Name
-from PiCN.Processes import LayerProcess
 from PiCN.Playground.AssistedSharing.WrapperDescription import WrapperDescription
+from PiCN.Processes import LayerProcess
 
 
 class FetchLayer(LayerProcess):

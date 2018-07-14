@@ -1,7 +1,7 @@
 """NFN executor for Named Functions written in Python"""
 
-from typing import List
 from types import FunctionType, CodeType
+from typing import List
 
 from PiCN.Layers.NFNLayer.NFNExecutor import BaseNFNExecutor
 

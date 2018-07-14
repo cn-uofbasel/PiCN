@@ -1,8 +1,9 @@
 """Abstract Encoder for the BasicPacketEncoding Layer"""
 
 import abc
-from PiCN.Packets import Packet
+
 from PiCN.Logger import Logger
+from PiCN.Packets import Packet
 
 
 class BasicEncoder(object):

@@ -1,19 +1,17 @@
 """Testing the to Data First Optimizers"""
 
-import multiprocessing
 import unittest
 
-from PiCN.Packets import Name, Content, Interest
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseMemoryPrefix
 from PiCN.Layers.ICNLayer.PendingInterestTable import PendingInterstTableMemoryExact
-
-from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationList
-from PiCN.Layers.NFNLayer.R2C import TimeoutR2CHandler
-from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
-from PiCN.Layers.NFNLayer.NFNOptimizer import ToDataFirstOptimizer
-from PiCN.Processes import PiCNSyncDataStructFactory
 from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
+from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationList
+from PiCN.Layers.NFNLayer.NFNOptimizer import ToDataFirstOptimizer
+from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
+from PiCN.Layers.NFNLayer.R2C import TimeoutR2CHandler
+from PiCN.Packets import Name, Content, Interest
+from PiCN.Processes import PiCNSyncDataStructFactory
 
 
 class test_ToDataFirstOptimizer(unittest.TestCase):

@@ -1,14 +1,14 @@
 """Fetch Stack"""
 
-from PiCN.Packets.Name import Name
 from PiCN.LayerStack import LayerStack
-from PiCN.Playground.AssistedSharing.FetchLayer import FetchLayer
-from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
+from PiCN.Layers.LinkLayer import BasicLinkLayer
 from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
 from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface, AddressInfo
-from PiCN.Layers.LinkLayer import BasicLinkLayer
-from PiCN.Processes import PiCNSyncDataStructFactory
+from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
 from PiCN.Layers.PacketEncodingLayer.Encoder.NdnTlvEncoder import NdnTlvEncoder
+from PiCN.Packets.Name import Name
+from PiCN.Playground.AssistedSharing.FetchLayer import FetchLayer
+from PiCN.Processes import PiCNSyncDataStructFactory
 
 
 class FetchStack(object):

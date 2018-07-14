@@ -1,8 +1,8 @@
 """Test Nack Object"""
 import unittest
 
-from PiCN.Packets import Nack, NackReason
 from PiCN.Packets import Interest
+from PiCN.Packets import Nack, NackReason
 
 
 class TestNack(unittest.TestCase):

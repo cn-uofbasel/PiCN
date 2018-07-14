@@ -1,22 +1,20 @@
 """Test the BasicNFNLayer"""
 
+import multiprocessing
 import time
 import unittest
-import multiprocessing
-
-from PiCN.Layers.NFNLayer import BasicNFNLayer
-from PiCN.Layers.NFNLayer.NFNExecutor import NFNPythonExecutor
-from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
-from PiCN.Layers.NFNLayer.NFNComputationTable import *
-from PiCN.Layers.NFNLayer.R2C import TimeoutR2CHandler
-from PiCN.Layers.NFNLayer.Parser import *
-from PiCN.Packets import Name, Interest, Content, Nack, NackReason
 
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseMemoryPrefix
 from PiCN.Layers.ICNLayer.PendingInterestTable import PendingInterstTableMemoryExact
-from PiCN.Processes import PiCNSyncDataStructFactory
 from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
+from PiCN.Layers.NFNLayer import BasicNFNLayer
+from PiCN.Layers.NFNLayer.NFNComputationTable import *
+from PiCN.Layers.NFNLayer.NFNExecutor import NFNPythonExecutor
+from PiCN.Layers.NFNLayer.Parser import *
+from PiCN.Layers.NFNLayer.R2C import TimeoutR2CHandler
+from PiCN.Packets import Name, Interest, Content, Nack, NackReason
+from PiCN.Processes import PiCNSyncDataStructFactory
 
 
 class test_BasicNFNLayer(unittest.TestCase):

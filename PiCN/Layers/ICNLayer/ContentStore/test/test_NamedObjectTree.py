@@ -2,8 +2,8 @@
 
 import unittest
 
-from PiCN.Layers.ICNLayer.ContentStore.NamedObjectTree import NamedObjectTree
 from PiCN.Layers.ICNLayer.ContentStore.BaseContentStore import ContentStoreEntry
+from PiCN.Layers.ICNLayer.ContentStore.NamedObjectTree import NamedObjectTree
 from PiCN.Packets import Content, Name
 
 

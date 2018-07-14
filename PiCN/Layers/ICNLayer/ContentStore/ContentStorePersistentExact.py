@@ -1,12 +1,12 @@
 """ An persistent content store with exact matching """
 
-import time
-import shelve
 import random
+import shelve
 import string
+import time
 
-from PiCN.Packets import Content, Name
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore, ContentStoreEntry
+from PiCN.Packets import Content, Name
 
 
 class ContentStorePersistentExact(BaseContentStore):

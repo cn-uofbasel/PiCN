@@ -1,7 +1,7 @@
 """Index schema parsing, representation and querying"""
 
-from itertools import groupby
 import re
+from itertools import groupby
 
 from PiCN.Packets.Name import Name
 

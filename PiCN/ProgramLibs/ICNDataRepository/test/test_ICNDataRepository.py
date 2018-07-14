@@ -5,11 +5,10 @@ import os
 import shutil
 import unittest
 
-from PiCN.ProgramLibs.Fetch import Fetch
-
-from PiCN.Packets import Name, NackReason
-from PiCN.ProgramLibs.ICNDataRepository import ICNDataRepository
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
+from PiCN.Packets import Name, NackReason
+from PiCN.ProgramLibs.Fetch import Fetch
+from PiCN.ProgramLibs.ICNDataRepository import ICNDataRepository
 
 
 class cases_ICNDataRepository(object):

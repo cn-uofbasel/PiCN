@@ -3,9 +3,9 @@
 import argparse
 import logging
 
-from PiCN.Playground.Heartbeats.Nodes import HeartbeatForwarderStack
 from PiCN.Logger import Logger
 from PiCN.Playground.Heartbeats.Layers.PacketEncoding import ExtendedNdnTlvEncoder
+from PiCN.Playground.Heartbeats.Nodes import HeartbeatForwarderStack
 
 
 def main(args):

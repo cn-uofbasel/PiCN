@@ -4,8 +4,8 @@
     * to single char pattern has no token and stop pattern, both must be ""
 """
 
-import re
 import _sre
+import re
 from enum import Enum
 from typing import List, Tuple
 

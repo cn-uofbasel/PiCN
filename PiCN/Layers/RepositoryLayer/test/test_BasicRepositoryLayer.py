@@ -6,7 +6,6 @@ import shutil
 import unittest
 
 from PiCN.Layers.RepositoryLayer import BasicRepositoryLayer
-
 from PiCN.Layers.RepositoryLayer.Repository import SimpleFileSystemRepository
 from PiCN.Packets import Content, Interest, Name, Nack, NackReason
 

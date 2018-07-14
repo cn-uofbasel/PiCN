@@ -2,12 +2,11 @@
 
 import time
 
-from PiCN.Packets import Name, Interest
 from PiCN.Layers.NFNLayer.NFNComputationTable.BaseNFNComputationTable import BaseNFNComputationTable
 from PiCN.Layers.NFNLayer.NFNComputationTable.BaseNFNComputationTable import NFNComputationTableEntry
-from PiCN.Layers.NFNLayer.NFNComputationTable.BaseNFNComputationTable import NFNComputationState
 from PiCN.Layers.NFNLayer.Parser import *
 from PiCN.Layers.NFNLayer.R2C import BaseR2CHandler
+from PiCN.Packets import Name
 
 
 class NFNComputationList(BaseNFNComputationTable):

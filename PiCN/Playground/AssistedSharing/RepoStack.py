@@ -1,17 +1,14 @@
 """Publisher Stack"""
 
-import multiprocessing
-
-from PiCN.Playground.AssistedSharing import RepoLayer
 from PiCN.LayerStack.LayerStack import LayerStack
-
-from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
+from PiCN.Layers.LinkLayer import BasicLinkLayer
 from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
 from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface
-from PiCN.Layers.LinkLayer import BasicLinkLayer
-from PiCN.Processes import PiCNSyncDataStructFactory
+from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder, NdnTlvEncoder
 from PiCN.Logger import Logger
+from PiCN.Playground.AssistedSharing import RepoLayer
+from PiCN.Processes import PiCNSyncDataStructFactory
 
 
 class RepoStack(object):

@@ -1,23 +1,20 @@
 """A ICN Forwarder using PiCN"""
 
-import multiprocessing
-
 from typing import List
 
 from PiCN.LayerStack.LayerStack import LayerStack
 from PiCN.Layers.ICNLayer import BasicICNLayer
+from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseMemoryPrefix
 from PiCN.Layers.ICNLayer.PendingInterestTable import PendingInterstTableMemoryExact
-from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
-from PiCN.Processes import PiCNSyncDataStructFactory
-
-from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
 from PiCN.Layers.LinkLayer import BasicLinkLayer
-from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface, AddressInfo, BaseInterface
 from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
+from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface, BaseInterface
+from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder, SimpleStringEncoder
 from PiCN.Logger import Logger
 from PiCN.Mgmt import Mgmt
+from PiCN.Processes import PiCNSyncDataStructFactory
 from PiCN.Routing import BasicRouting
 
 

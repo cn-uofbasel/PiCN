@@ -2,8 +2,6 @@
 
 import re
 
-from PiCN.Packets.Name import Name
-
 
 class WrapperDescription(object):
     """ Representation of a wrapper description"""

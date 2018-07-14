@@ -2,10 +2,10 @@
 
 import unittest
 
-from PiCN.Packets import Name, Content, Interest
-from PiCN.Layers.NFNLayer.R2C import TimeoutR2CHandler
-from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationList
+from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
+from PiCN.Layers.NFNLayer.R2C import TimeoutR2CHandler
+from PiCN.Packets import Name, Content, Interest
 
 
 class test_TimeoutR2CClient(unittest.TestCase):

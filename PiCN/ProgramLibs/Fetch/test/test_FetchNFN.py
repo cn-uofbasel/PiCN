@@ -6,13 +6,12 @@ import shutil
 import time
 import unittest
 
-from PiCN.ProgramLibs.Fetch import Fetch
-from PiCN.ProgramLibs.NFNForwarder import NFNForwarder
-
+from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
 from PiCN.Mgmt import MgmtClient
 from PiCN.Packets import Name
+from PiCN.ProgramLibs.Fetch import Fetch
 from PiCN.ProgramLibs.ICNDataRepository import ICNDataRepository
-from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
+from PiCN.ProgramLibs.NFNForwarder import NFNForwarder
 
 
 class cases_FetchNFN(object):

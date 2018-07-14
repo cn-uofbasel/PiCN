@@ -1,7 +1,5 @@
 """Implementation of a FaceIDTable using a Double Dict"""
 
-import time
-
 from typing import Dict
 
 from PiCN.Layers.LinkLayer.FaceIDTable import BaseFaceIDTable

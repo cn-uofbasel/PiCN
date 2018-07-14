@@ -1,14 +1,14 @@
 """Interface Layer (REST API)"""
 
-from PiCN.Processes import LayerProcess
-from PiCN.Packets.Content import Content
-
+import http.server
 import multiprocessing
 import shelve
-from http.server import BaseHTTPRequestHandler
 import socketserver
-import http.server
 import ssl
+from http.server import BaseHTTPRequestHandler
+
+from PiCN.Packets.Content import Content
+from PiCN.Processes import LayerProcess
 
 
 class DataHandler(BaseHTTPRequestHandler):

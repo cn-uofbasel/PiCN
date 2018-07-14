@@ -1,11 +1,11 @@
 import multiprocessing
 import threading
-from math import pow
 import time
+from math import pow
 
-from PiCN.Processes import LayerProcess
 from PiCN.Packets import Name, Interest, Content, Nack, NackReason
 from PiCN.Playground.Heartbeats.Layers.PacketEncoding.Heartbeat import Heartbeat
+from PiCN.Processes import LayerProcess
 
 
 class HeartbeatComputationLayer(LayerProcess):

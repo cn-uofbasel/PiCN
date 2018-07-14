@@ -1,15 +1,15 @@
 """Base class for the NFN Optimizers"""
 
 import abc
-from typing import Dict, List
+from typing import List
 
-from PiCN.Packets import Name
-from PiCN.Layers.NFNLayer.Parser import *
+from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
 from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
-from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
 from PiCN.Layers.LinkLayer.FaceIDTable import BaseFaceIDTable
+from PiCN.Layers.NFNLayer.Parser import *
 from PiCN.Packets import Interest
+from PiCN.Packets import Name
 
 
 class BaseNFNOptimizer(object):

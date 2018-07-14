@@ -1,13 +1,12 @@
 """NDN TLV Encoder"""
 
+from random import SystemRandom
+
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
 from PiCN.Packets import Packet, Content, Interest, Nack, NackReason, Name, UnknownPacket
-
-from PiCNExternal.pyndn.encoding.tlv.tlv.tlv_encoder import TlvEncoder
-from PiCNExternal.pyndn.encoding.tlv.tlv.tlv_decoder import TlvDecoder
 from PiCNExternal.pyndn.encoding.tlv.tlv.tlv import Tlv
-
-from random import SystemRandom
+from PiCNExternal.pyndn.encoding.tlv.tlv.tlv_decoder import TlvDecoder
+from PiCNExternal.pyndn.encoding.tlv.tlv.tlv_encoder import TlvEncoder
 
 
 class NdnTlvEncoder(BasicEncoder):

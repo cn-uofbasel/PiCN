@@ -1,19 +1,19 @@
 """Test the PiCN Simulation System"""
 
 import abc
+import os
 import queue
 import unittest
-import os
 
-from PiCN.Layers.LinkLayer.Interfaces import SimulationBus
 from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
-from PiCN.ProgramLibs.ICNForwarder import ICNForwarder
-from PiCN.ProgramLibs.Fetch import Fetch
-from PiCN.ProgramLibs.NFNForwarder import NFNForwarder
-from PiCN.ProgramLibs.ICNDataRepository import ICNDataRepository
+from PiCN.Layers.LinkLayer.Interfaces import SimulationBus
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder, SimpleStringEncoder, NdnTlvEncoder
-from PiCN.Packets import Content, Interest, Name
 from PiCN.Mgmt import MgmtClient
+from PiCN.Packets import Content, Interest, Name
+from PiCN.ProgramLibs.Fetch import Fetch
+from PiCN.ProgramLibs.ICNDataRepository import ICNDataRepository
+from PiCN.ProgramLibs.ICNForwarder import ICNForwarder
+from PiCN.ProgramLibs.NFNForwarder import NFNForwarder
 
 
 class cases_Simulation():

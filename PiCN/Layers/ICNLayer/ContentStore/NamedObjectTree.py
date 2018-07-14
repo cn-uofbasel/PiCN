@@ -1,12 +1,12 @@
 """ Data structure to organize named objects in a tree reflecting their namespace hierarchy """
 
-from PiCN.Packets import Name
-
-from functools import reduce
-from collections import defaultdict
-import operator
 import json
+import operator
+from collections import defaultdict
+from functools import reduce
 from typing import List
+
+from PiCN.Packets import Name
 
 
 def Tree(named_object=None):

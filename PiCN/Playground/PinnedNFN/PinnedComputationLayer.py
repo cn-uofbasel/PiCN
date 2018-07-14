@@ -3,8 +3,8 @@ import threading
 import time
 from math import pow
 
-from PiCN.Processes import LayerProcess
 from PiCN.Packets import Name, Interest, Content, Nack, NackReason
+from PiCN.Processes import LayerProcess
 
 
 class PinnedComputationLayer(LayerProcess):

@@ -4,11 +4,8 @@ import multiprocessing
 import time
 import unittest
 
-from queue import Queue
-
 from PiCN.Layers.ChunkLayer import BasicChunkLayer
 from PiCN.Layers.ChunkLayer import RequestTableEntry
-
 from PiCN.Layers.ChunkLayer.Chunkifyer import SimpleContentChunkifyer
 from PiCN.Packets import Content, Interest, Name, Nack, NackReason
 

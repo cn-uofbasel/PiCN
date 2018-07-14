@@ -1,11 +1,10 @@
 """in-memory Pending Interest Table using exact prefix matching"""
 
 import time
-
 from typing import List
-from PiCN.Layers.ICNLayer.PendingInterestTable.BasePendingInterestTable import BasePendingInterestTable, \
-    PendingInterestTableEntry
+
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseEntry
+from PiCN.Layers.ICNLayer.PendingInterestTable.BasePendingInterestTable import BasePendingInterestTable, PendingInterestTableEntry
 from PiCN.Packets import Interest, Name
 
 

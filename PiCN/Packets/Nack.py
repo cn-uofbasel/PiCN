@@ -1,9 +1,9 @@
 """Internal representation of an NACK (negative acknowledgement) packet"""
 
-from .Packet import Packet
 from .Interest import Interest
-from .Name import Name
 from .NackReason import NackReason
+from .Name import Name
+from .Packet import Packet
 
 
 class Nack(Packet):

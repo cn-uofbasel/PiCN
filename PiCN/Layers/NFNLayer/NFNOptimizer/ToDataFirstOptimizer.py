@@ -1,14 +1,12 @@
 """Simple NFN Optimizer, always forwarding towards data"""
 
-from typing import Dict
-
-from PiCN.Packets import Interest
-from PiCN.Layers.NFNLayer.Parser.AST import *
-from PiCN.Layers.NFNLayer.NFNOptimizer import BaseNFNOptimizer
+from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
 from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
-from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
 from PiCN.Layers.LinkLayer.FaceIDTable import BaseFaceIDTable
+from PiCN.Layers.NFNLayer.NFNOptimizer import BaseNFNOptimizer
+from PiCN.Layers.NFNLayer.Parser.AST import *
+from PiCN.Packets import Interest
 
 
 class ToDataFirstOptimizer(BaseNFNOptimizer):

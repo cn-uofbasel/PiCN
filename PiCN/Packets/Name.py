@@ -1,10 +1,9 @@
 """Internal representation of network name"""
 
-from typing import List, Union
-
 import binascii
 import json
 import os
+from typing import List, Union
 
 
 class Name(object):

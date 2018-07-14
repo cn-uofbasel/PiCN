@@ -2,11 +2,9 @@
 
 from typing import Dict
 
-from PiCN.Packets import Name
-from PiCN.Layers.NFNLayer.Parser import TokenType
-from PiCN.Layers.NFNLayer.Parser import Token
 from PiCN.Layers.NFNLayer.Parser import DefaultNFNTokenizer
-
+from PiCN.Layers.NFNLayer.Parser import Token
+from PiCN.Layers.NFNLayer.Parser import TokenType
 from PiCN.Layers.NFNLayer.Parser.AST import *
 
 

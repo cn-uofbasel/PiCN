@@ -4,8 +4,8 @@ import argparse
 import logging
 
 import PiCN.Playground.BeeSensRepo.RepoStack
-from PiCN.Logger import Logger
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
+from PiCN.Logger import Logger
 
 
 def main(args):
