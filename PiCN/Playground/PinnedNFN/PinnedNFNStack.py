@@ -47,7 +47,7 @@ class PinnedNFNStack(object):
 
         # tell icn_layer that there is a higher layer which might satisfy interests
         self.icn_layer._interest_to_app = True  # TODO -- decide here if it should be forwarded upwards or not
-        #self.icn_layer._interest_to_app = lambda interest: interest.name.components[-1] == b"pNFN"
+        # self.icn_layer._interest_to_app = lambda interest: interest.name.components[-1] == b"pNFN"
 
         # setup stack
         self.stack: LayerStack = LayerStack([
