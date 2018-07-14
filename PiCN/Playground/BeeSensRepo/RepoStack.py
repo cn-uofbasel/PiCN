@@ -14,7 +14,8 @@ from PiCN.Logger import Logger
 
 
 class RepoStack(object):
-    def __init__(self, port=9500, http_port=8080, log_level=255, encoder: BasicEncoder = NdnTlvEncoder, database_path="/tmp", flush_database=False, pem_path=None):
+    def __init__(self, port=9500, http_port=8080, log_level=255, encoder: BasicEncoder = NdnTlvEncoder,
+                 database_path="/tmp", flush_database=False, pem_path=None):
         # debug level
         logger = Logger("Repo", log_level)
 
@@ -28,7 +29,7 @@ class RepoStack(object):
         synced_data_struct_factory1.register("cs", ContentStorePersistentExact)
         synced_data_struct_factory1.create_manager()
         face_id_table = synced_data_struct_factory1.manager.face_id_table()
-        storage = synced_data_struct_factory1.manager.cs(db_path=database_path+"/beesens-cs.db")
+        storage = synced_data_struct_factory1.manager.cs(db_path=database_path + "/beesens-cs.db")
         if flush_database:
             storage.delete_all()
 
@@ -36,7 +37,8 @@ class RepoStack(object):
         self.link_layer = BasicLinkLayer([UDP4Interface(port)], face_id_table, log_level=log_level)
         self.packet_encoding_layer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
         self.storage_layer = StorageLayer(log_level=log_level)
-        self.interface_layer = InterfaceLayer(http_port=http_port, log_level=log_level, pem_path=pem_path, flush_database=flush_database)
+        self.interface_layer = InterfaceLayer(http_port=http_port, log_level=log_level, pem_path=pem_path,
+                                              flush_database=flush_database)
 
         # setup stack
         self.stack: LayerStack = LayerStack([
