@@ -42,7 +42,7 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         self.fetch_tool2 = Fetch("rsu2", None, 255, self.encoder_type(), [self.simulation_bus.add_interface("fetchtool2")])
 
         self.rsu1 = NFNForwarder(port=0, encoder=self.encoder_type(),
-                                 interfaces=[self.simulation_bus.add_interface("rsu1")], log_level=255)
+                                 interfaces=[self.simulation_bus.add_interface("rsu1")], log_level=0)
 
         self.rsu2 = NFNForwarder(port=0, encoder=self.encoder_type(),
                                  interfaces=[self.simulation_bus.add_interface("rsu2")], log_level=255)
@@ -119,8 +119,8 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         name2 += '_(/rsu/func/f1("helloworld"))'
         name2 += "NFN"
 
-        res1 = self.fetch_tool1.fetch_data(name1, timeout=10)
+        res1 = self.fetch_tool1.fetch_data(name1, timeout=0)
         print(res1)
 
-        #res2 = self.fetch_tool2.fetch_data(name2, timeout=10)
-        #print(res2)
+        res2 = self.fetch_tool2.fetch_data(name2, timeout=0)
+        print(res2)
