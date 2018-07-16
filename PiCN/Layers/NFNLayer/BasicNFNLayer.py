@@ -1,5 +1,6 @@
 """Basic NFN Layer Implementation"""
 import multiprocessing
+import random
 
 from typing import Dict, List
 
@@ -96,6 +97,7 @@ class BasicNFNLayer(LayerProcess):
         :param packet_id: id of the computation
         :param content: content that arrived
         """
+        self.logger.info("Handeling Content: " + str(content.name))
         used = self.computation_table.push_data(content)
         if not used:
             self.queue_to_lower.put([packet_id, content])
@@ -247,14 +249,14 @@ class BasicNFNLayer(LayerProcess):
             self.queue_to_lower.put([entry.id,
                                      Nack(entry.original_name, NackReason.COMP_EXCEPTION, interest=entry.interest)])
         content_res: Content = Content(entry.original_name, str(res)) #TODO typed results
-        self.queue_to_lower.put([entry.id, content_res])
-        self.computation_table.push_data(content_res)
         self.logger.info("Finish Computation: " + str(content_res.name))
+        #self.computation_table.push_data(content_res)
+        #self.queue_to_lower.put([entry.id, content_res])
+        self.handleContent(entry.id, content_res)
 
     def ageing(self):
         """Ageging of the computation queue etc"""
-        ct = self.computation_table
-        requests, removes = ct.ageing()
+        requests, removes = self.computation_table.ageing()
 
         for n in requests:
             if type(n) is str:
@@ -273,5 +275,4 @@ class BasicNFNLayer(LayerProcess):
             nack = Nack(n, NackReason.COMP_TERMINATED, interest=Interest(name))
             #self.handleNack(-1, nack)
             self.queue_to_lower.put([0, nack])
-        self.computation_table = ct
 
