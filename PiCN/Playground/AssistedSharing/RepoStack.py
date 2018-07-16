@@ -23,7 +23,7 @@ class RepoStack(object):
         encoder.set_log_level(log_level)
         self.encoder = encoder
 
-        #create datastruct
+        # create datastruct
         synced_data_struct_factory1 = PiCNSyncDataStructFactory()
         synced_data_struct_factory1.register("face_id_table", FaceIDDict)
         synced_data_struct_factory1.create_manager()

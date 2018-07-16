@@ -33,7 +33,8 @@ def main(args):
     encoder = NdnTlvEncoder(log_level) if args.format == 'ndntlv' else SimpleStringEncoder
 
     # Start
-    server = PiCN.Playground.PinnedNFN.PinnedNFNStack(replica_id=args.id, port=args.port, log_level=log_level, encoder=encoder)
+    server = PiCN.Playground.PinnedNFN.PinnedNFNStack(replica_id=args.id, port=args.port, log_level=log_level,
+                                                      encoder=encoder)
     server.start_forwarder()
     server.link_layer.process.join()
 

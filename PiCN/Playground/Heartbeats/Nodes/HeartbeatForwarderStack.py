@@ -19,10 +19,12 @@ from PiCN.Playground.Heartbeats.Layers.NetworkLayer import HeartbeatNetworkLayer
 from PiCN.Playground.Heartbeats.Layers.PacketEncoding import HeartbeatPacketEncodingLayer
 from PiCN.Playground.Heartbeats.Layers.PacketEncoding import ExtendedNdnTlvEncoder
 
+
 class HeartbeatForwarderStack(object):
     """A Extended ICN Nodes"""
 
-    def __init__(self, port=9000, log_level=255, encoder: ExtendedNdnTlvEncoder=None, interfaces: List[BaseInterface] = None):
+    def __init__(self, port=9000, log_level=255, encoder: ExtendedNdnTlvEncoder = None,
+                 interfaces: List[BaseInterface] = None):
         # debug level
         logger = Logger("ICNForwarder", log_level)
 
@@ -46,7 +48,7 @@ class HeartbeatForwarderStack(object):
         pit = synced_data_struct_factory.manager.pit(pit_timeout=60)
         face_id_table = synced_data_struct_factory.manager.face_id_table()
 
-        #default interface
+        # default interface
         if interfaces is not None:
             self.interfaces = interfaces
             mgmt_port = port
@@ -56,10 +58,8 @@ class HeartbeatForwarderStack(object):
 
         # initialize layers
         self.link_layer = BasicLinkLayer(interfaces, face_id_table, log_level=log_level)
-        self.packet_encoding_layer = HeartbeatPacketEncodingLayer(self.encoder, log_level=log_level) # TODO -- exchange this layer
+        self.packet_encoding_layer = HeartbeatPacketEncodingLayer(self.encoder, log_level=log_level)
         self.icn_layer = HeartbeatNetworkLayer(log_level=log_level)
-
-
 
         self.lstack: LayerStack = LayerStack([
             self.icn_layer,
@@ -72,7 +72,7 @@ class HeartbeatForwarderStack(object):
         self.icn_layer.pit = pit
 
         # routing
-        self.routing = BasicRouting(self.icn_layer.pit, None, log_level=log_level) #TODO NOT IMPLEMENTED YET
+        self.routing = BasicRouting(self.icn_layer.pit, None, log_level=log_level)  # TODO NOT IMPLEMENTED YET
 
         # mgmt
         self.mgmt = Mgmt(cs, fib, pit, self.link_layer, mgmt_port, self.stop_forwarder,
@@ -85,7 +85,7 @@ class HeartbeatForwarderStack(object):
         self.mgmt.start_process()
 
     def stop_forwarder(self):
-        #Stop processes
+        # Stop processes
         self.mgmt.stop_process()
         self.lstack.stop_all()
         # close queues file descriptors

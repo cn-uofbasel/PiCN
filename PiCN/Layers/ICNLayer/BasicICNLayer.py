@@ -29,30 +29,7 @@ class BasicICNLayer(LayerProcess):
         high_level_id = data[0]
         packet = data[1]
         if isinstance(packet, Interest):
-            cs_entry = self.cs.find_content_object(packet.name)
-            if cs_entry is not None:
-                self.queue_to_higher.put([high_level_id, cs_entry.content])
-                return
-            pit_entry = self.pit.find_pit_entry(packet.name)
-            self.pit.add_pit_entry(packet.name, high_level_id, packet, local_app=True)
-            if pit_entry:
-                fib_entry = self.fib.find_fib_entry(packet.name, incoming_faceids=pit_entry.face_id)
-            else:
-                fib_entry = self.fib.find_fib_entry(packet.name)
-            if fib_entry is not None:
-                self.pit.add_used_fib_entry(packet.name, fib_entry)
-                to_lower.put([fib_entry.faceid, packet])
-            else:
-                self.logger.info("No FIB entry, sending Nack")
-                nack = Nack(packet.name, NackReason.NO_ROUTE, interest=packet)
-                if pit_entry is not None: #if pit entry is available, consider it, otherwise assume interest came from higher
-                    for i in range(0, len(pit_entry.faceids)):
-                        if pit_entry._local_app[i]:
-                            to_higher.put([high_level_id, nack])
-                    #    else:
-                    #       to_lower.put([pit_entry._faceids[i], nack])
-                else:
-                    to_higher.put([high_level_id, nack])
+            self.handle_interest_from_higher(high_level_id, packet, to_lower, to_higher)
         elif isinstance(packet, Content):
             self.handle_content(high_level_id, packet, to_lower, to_higher, True) #content handled same as for content from network
         elif isinstance(packet, Nack):
@@ -72,15 +49,43 @@ class BasicICNLayer(LayerProcess):
         face_id = data[0]
         packet = data[1]
         if isinstance(packet, Interest):
-            self.handle_interest(face_id, packet, to_lower, to_higher, False)
+            self.handle_interest_from_lower(face_id, packet, to_lower, to_higher, False)
         elif isinstance(packet, Content):
             self.handle_content(face_id, packet, to_lower, to_higher, False)
         elif isinstance(packet, Nack):
             self.handle_nack(face_id, packet, to_lower, to_higher, False)
 
-    def handle_interest(self, face_id: int, interest: Interest, to_lower: multiprocessing.Queue,
-                        to_higher: multiprocessing.Queue, from_local: bool = False):
-        self.logger.info("Handling Interest")
+    def handle_interest_from_higher (self, face_id: int, interest: Interest, to_lower: multiprocessing.Queue,
+                                   to_higher: multiprocessing.Queue):
+        self.logger.info("Handling Interest (from lower)")
+        cs_entry = self.cs.find_content_object(interest.name)
+        if cs_entry is not None:
+            self.queue_to_higher.put([face_id, cs_entry.content])
+            return
+        pit_entry = self.pit.find_pit_entry(interest.name)
+        self.pit.add_pit_entry(interest.name, face_id, interest, local_app=True)
+        if pit_entry:
+            fib_entry = self.fib.find_fib_entry(interest.name, incoming_faceids=pit_entry.face_id)
+        else:
+            fib_entry = self.fib.find_fib_entry(interest.name)
+        if fib_entry is not None:
+            self.pit.add_used_fib_entry(interest.name, fib_entry)
+            to_lower.put([fib_entry.faceid, interest])
+        else:
+            self.logger.info("No FIB entry, sending Nack")
+            nack = Nack(interest.name, NackReason.NO_ROUTE, interest=interest)
+            if pit_entry is not None:  # if pit entry is available, consider it, otherwise assume interest came from higher
+                for i in range(0, len(pit_entry.faceids)):
+                    if pit_entry._local_app[i]:
+                        to_higher.put([face_id, nack])
+                        #    else:
+                        #       to_lower.put([pit_entry._faceids[i], nack])
+            else:
+                to_higher.put([face_id, nack])
+
+    def handle_interest_from_lower(self, face_id: int, interest: Interest, to_lower: multiprocessing.Queue,
+                                   to_higher: multiprocessing.Queue, from_local: bool = False):
+        self.logger.info("Handling Interest (from lower)")
         #if to_higher is not None: #TODO check if app layer accepted the data, and change handling
 
         cs_entry = self.cs.find_content_object(interest.name)

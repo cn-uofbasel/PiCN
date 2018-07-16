@@ -8,11 +8,10 @@ import time
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from PiCN.Layers.PacketEncodingLayer.Printer.NdnTlvPrinter import NdnTlvPrinter
-from PiCN.Packets import Interest, Content
+from PiCN.Packets import Interest
 
 
 def main(args):
-
     # Packet encoder
     encoder = NdnTlvEncoder() if args.format == 'ndntlv' else SimpleStringEncoder
 
@@ -43,7 +42,6 @@ def main(args):
     print("Waiting for result: " + str(time_to_wait))
     time.sleep(time_to_wait * 1.2)
 
-
     # Send second interest
     new_components = args.name.split("/")[1:-1]
     new_components.append("resultpNFN")
@@ -73,10 +71,13 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Pinned NFN Peek Tool')
-    parser.add_argument('-i', '--ip', type=str, default='127.0.0.1', help="IP address or hostname of forwarder (default: 127.0.0.1)")
+    parser.add_argument('-i', '--ip', type=str, default='127.0.0.1',
+                        help="IP address or hostname of forwarder (default: 127.0.0.1)")
     parser.add_argument('-p', '--port', type=int, default=9000, help="UDP port (default: 9000)")
-    parser.add_argument('-f', '--format', choices=['ndntlv','simple'], type=str, default='ndntlv', help='Packet Format (default: ndntlv)')
-    parser.add_argument('--plain', help="plain output (writes payload to stdout or returns -2 for NACK)", action="store_true")
+    parser.add_argument('-f', '--format', choices=['ndntlv', 'simple'], type=str, default='ndntlv',
+                        help='Packet Format (default: ndntlv)')
+    parser.add_argument('--plain', help="plain output (writes payload to stdout or returns -2 for NACK)",
+                        action="store_true")
     parser.add_argument('name', type=str, help="Computation")
     args = parser.parse_args()
     main(args)
