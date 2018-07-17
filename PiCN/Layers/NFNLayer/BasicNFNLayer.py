@@ -169,6 +169,7 @@ class BasicNFNLayer(LayerProcess):
             self.computation_table.remove_computation(interest.name)
             entry.comp_state = NFNComputationState.EXEC
             if not isinstance(entry.ast, AST_FuncCall):
+                self.logger.error("AST is no function call but: " + str(entry.ast))
                 return
 
             func_name = Name(entry.ast._element)
