@@ -45,9 +45,9 @@ class BasicICNLayer(LayerProcess):
         if not isinstance(data[1], Packet):
             self.logger.warning("ICN Layer expects to receive [face id, packet] from lower layer")
             return
-
         face_id = data[0]
         packet = data[1]
+        self.logger.info("Received Packet from lower: " + str(face_id) + "; " + str(packet.name))
         if isinstance(packet, Interest):
             self.handle_interest_from_lower(face_id, packet, to_lower, to_higher, False)
         elif isinstance(packet, Content):
@@ -57,7 +57,7 @@ class BasicICNLayer(LayerProcess):
 
     def handle_interest_from_higher (self, face_id: int, interest: Interest, to_lower: multiprocessing.Queue,
                                    to_higher: multiprocessing.Queue):
-        self.logger.info("Handling Interest (from lower)")
+        self.logger.info("Handling Interest (from higher): " + str(interest.name) + "; Face ID: " + str(face_id))
         cs_entry = self.cs.find_content_object(interest.name)
         if cs_entry is not None:
             self.queue_to_higher.put([face_id, cs_entry.content])
@@ -65,7 +65,7 @@ class BasicICNLayer(LayerProcess):
         pit_entry = self.pit.find_pit_entry(interest.name)
         self.pit.add_pit_entry(interest.name, face_id, interest, local_app=True)
         if pit_entry:
-            fib_entry = self.fib.find_fib_entry(interest.name, incoming_faceids=pit_entry.face_id)
+            fib_entry = self.fib.find_fib_entry(interest.name, incoming_faceids=pit_entry.faceids)
         else:
             fib_entry = self.fib.find_fib_entry(interest.name)
         if fib_entry is not None:
@@ -85,9 +85,7 @@ class BasicICNLayer(LayerProcess):
 
     def handle_interest_from_lower(self, face_id: int, interest: Interest, to_lower: multiprocessing.Queue,
                                    to_higher: multiprocessing.Queue, from_local: bool = False):
-        self.logger.info("Handling Interest (from lower)")
-        #if to_higher is not None: #TODO check if app layer accepted the data, and change handling
-
+        self.logger.info("Handling Interest (from lower): " + str(interest.name) + "; Face ID: " + str(face_id))
         cs_entry = self.cs.find_content_object(interest.name)
         if cs_entry is not None:
             self.logger.info("Found in content store")

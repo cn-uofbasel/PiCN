@@ -45,7 +45,7 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
                                  interfaces=[self.simulation_bus.add_interface("rsu1")], log_level=255)
 
         self.rsu2 = NFNForwarder(port=0, encoder=self.encoder_type(),
-                                 interfaces=[self.simulation_bus.add_interface("rsu2")], log_level=0)
+                                 interfaces=[self.simulation_bus.add_interface("rsu2")], log_level=255)
         self.rsu3 = NFNForwarder(port=0, encoder=self.encoder_type(),
                                  interfaces=[self.simulation_bus.add_interface("rsu3")], log_level=255)
 
@@ -103,8 +103,8 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         self.assertEqual(res, "HELLOWORLD RSU1")
         print("Result at RSU1:", res)
         res = self.fetch_tool2.fetch_data(name, timeout=10)
-        print("Result as fetched from RSU2:", res)
-        self.assertEqual(res, "HELLOWORLD RSU2") #since node 2 starts computation too, result is on 2 the one of 2, killing forwarding rule on node one would fix that
+        print("Result as fetched via RSU2:", res)
+        self.assertEqual(res, "HELLOWORLD RSU1")
 
     def test_inner_call_without_data_from_client(self):
         """execute one function on the first node and another function on the second node"""

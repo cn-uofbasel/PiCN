@@ -41,7 +41,7 @@ class BasicNFNLayer(LayerProcess):
         packet_id = data[0]
         packet = data[1]
         if isinstance(packet, Interest):
-            self.logger.info("Got Interest from lower: " + str(packet.name))
+            self.logger.info("Got Interest from lower: " + str(packet.name) + "; Face ID: " + str(packet_id))
             self.handleInterest(packet_id, packet)
         elif isinstance(packet, Content):
             self.logger.info("Got Content from lower: " + str(packet.name))
@@ -275,5 +275,5 @@ class BasicNFNLayer(LayerProcess):
                 name = n
             nack = Nack(n, NackReason.COMP_TERMINATED, interest=Interest(name))
             #self.handleNack(-1, nack)
-            self.queue_to_lower.put([0, nack])
+            self.queue_to_lower.put([n.id, nack])
 
