@@ -19,7 +19,7 @@ def main(argv):
     if len(argv) == 3 and argv[2] == "EDGE":
         print("Edge Computing Node")
         forwarder.nfnlayer.optimizer = EdgeComputingOptimizer(forwarder.icnlayer.cs, forwarder.icnlayer.fib,
-                                                              forwarder.icnlayer.pit)
+                                                              forwarder.icnlayer.pit, forwarder.linklayer.faceidtable)
 
     forwarder.start_forwarder()
 

@@ -72,7 +72,7 @@ class BasicICNLayer(LayerProcess):
             self.pit.add_used_fib_entry(interest.name, fib_entry)
             to_lower.put([fib_entry.faceid, interest])
         else:
-            self.logger.info("No FIB entry, sending Nack")
+            self.logger.info("No FIB entry, sending Nack: " + str(interest.name))
             nack = Nack(interest.name, NackReason.NO_ROUTE, interest=interest)
             if pit_entry is not None:  # if pit entry is available, consider it, otherwise assume interest came from higher
                 for i in range(0, len(pit_entry.faceids)):

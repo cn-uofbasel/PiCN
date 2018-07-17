@@ -153,7 +153,7 @@ class BasicNFNLayer(LayerProcess):
         entry = self.computation_table.get_computation(interest.name)
 
         if self.optimizer.compute_fwd(prepended_name, entry.ast, interest):
-            self.logger.info("Forward Computation")
+            self.logger.info("Forward Computation: " + str(interest.name))
             rewritten_names = self.optimizer.rewrite(interest.name, entry.ast)
             if rewritten_names and len(rewritten_names) > 0:
                 self.computation_table.remove_computation(interest.name)
@@ -165,7 +165,7 @@ class BasicNFNLayer(LayerProcess):
                 self.computation_table.append_computation(entry)
 
         if self.optimizer.compute_local(prepended_name, entry.ast, interest):
-            self.logger.info("Compute Local")
+            self.logger.info("Compute Local: " + str(interest.name))
             self.computation_table.remove_computation(interest.name)
             entry.comp_state = NFNComputationState.EXEC
             if not isinstance(entry.ast, AST_FuncCall):
