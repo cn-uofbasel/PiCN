@@ -17,7 +17,7 @@ class PendingInterestTableEntry(object):
         self.name = name
         self._faceids: List[int] = []
         if isinstance(faceid, list):
-            self._faceids = faceid
+            self._faceids.extend(faceid)
         else:
             self._faceids.append(faceid)
         self._timestamp = time.time()

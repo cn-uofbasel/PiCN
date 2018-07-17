@@ -152,14 +152,18 @@ class BasicICNLayer(LayerProcess):
                     if pit_entry.local_app[i] == True: #Go with NACK first only to app layer if it was requested
                         re_add = True
                 self.pit.remove_pit_entry(pit_entry.name)
+                indices_to_remove = []
                 for i in range(0, len(pit_entry.faceids)):
                     if to_higher is not None and pit_entry.local_app[i]:
                         to_higher.put([face_id, nack])
-                        del pit_entry.face_id[i]
-                        del pit_entry.local_app[i]
+                        indices_to_remove.append(i)
                     elif not re_add:
                         to_lower.put([pit_entry.faceids[i], nack])
                 if re_add:
+                    indices_to_remove_reverse = indices_to_remove[::-1]
+                    for i in indices_to_remove_reverse:
+                        del pit_entry.face_id[i]
+                        del pit_entry.local_app[i]
                     self.pit.append(pit_entry)
             else:
                 self.logger.info("Try using next FIB path")
@@ -174,11 +178,15 @@ class BasicICNLayer(LayerProcess):
             retransmits = self.pit.ageing()
             for pit_entry in retransmits:
                 fib_entry = self.fib.find_fib_entry(pit_entry.name, pit_entry.fib_entries_already_used, pit_entry.faceids)
+                if not fib_entry:
+                    continue
                 self.queue_to_lower.put([fib_entry.faceid, pit_entry.interest])
             #CS ageing
             self.cs.ageing()
+        except Exception as e:
+            self.logger.warn("Exception during ageing: " + str(e))
+            pass
+        finally:
             t = threading.Timer(self._ageing_interval, self.ageing)
             t.setDaemon(True)
             t.start()
-        except:
-            pass

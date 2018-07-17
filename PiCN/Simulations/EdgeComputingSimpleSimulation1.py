@@ -45,7 +45,7 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
                                  interfaces=[self.simulation_bus.add_interface("rsu1")], log_level=255)
 
         self.rsu2 = NFNForwarder(port=0, encoder=self.encoder_type(),
-                                 interfaces=[self.simulation_bus.add_interface("rsu2")], log_level=255)
+                                 interfaces=[self.simulation_bus.add_interface("rsu2")], log_level=0)
         self.rsu3 = NFNForwarder(port=0, encoder=self.encoder_type(),
                                  interfaces=[self.simulation_bus.add_interface("rsu3")], log_level=255)
 
@@ -83,7 +83,7 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         self.mgmt_client2.add_face("rsu3", None, 0)
         self.mgmt_client2.add_forwarding_rule(Name("/rsu"), 0)
         #self.mgmt_client2.add_forwarding_rule(Name("/rsu"), 1)
-        self.mgmt_client2.add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n    for i in range(0,40000000):\n        a.upper()\n    return a.upper() + ' RSU2'")
+        self.mgmt_client2.add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n    for i in range(0,60000000):\n        a.upper()\n    return a.upper() + ' RSU2'")
 
         #setup rsu3
         self.mgmt_client3.add_face("rsu2", None, 0)
@@ -119,8 +119,8 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         name2 += '_(/rsu/func/f1("helloworld"))'
         name2 += "NFN"
 
-        res1 = self.fetch_tool1.fetch_data(name1, timeout=10)
+        res1 = self.fetch_tool1.fetch_data(name1, timeout=0)
         print(res1)
 
-        #res2 = self.fetch_tool2.fetch_data(name2, timeout=10)
-        #print(res2)
+        res2 = self.fetch_tool2.fetch_data(name2, timeout=0)
+        print(res2)
