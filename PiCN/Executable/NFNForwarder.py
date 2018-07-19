@@ -33,12 +33,16 @@ def main(argv):
     # Packet encoder
     encoder = NdnTlvEncoder(log_level) if args.format == 'ndntlv' else SimpleStringEncoder
 
-    forwarder = PiCN.ProgramLibs.NFNForwarder.NFNForwarder(args.port, log_level, encoder)
 
     if args.optimizer == "Edge":
+        forwarder = PiCN.ProgramLibs.NFNForwarder.NFNForwarder(args.port, log_level, encoder, ageing_interval=1)
         logger.info("Edge Computing Node")
+        forwarder.icnlayer.pit.set_pit_timeout(2)
+        forwarder.icnlayer.cs.set_cs_timeout(30)
         forwarder.nfnlayer.optimizer = EdgeComputingOptimizer(forwarder.icnlayer.cs, forwarder.icnlayer.fib,
                                                               forwarder.icnlayer.pit, forwarder.linklayer.faceidtable)
+    else:
+        forwarder = PiCN.ProgramLibs.NFNForwarder.NFNForwarder(args.port, log_level, encoder)
 
     forwarder.start_forwarder()
 

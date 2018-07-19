@@ -18,13 +18,14 @@ class BasicICNLayer(LayerProcess):
     """
 
     def __init__(self, cs: BaseContentStore=None, pit: BasePendingInterestTable=None,
-            fib: BaseForwardingInformationBase=None, rib: BaseRoutingInformationBase = None, log_level=255):
+            fib: BaseForwardingInformationBase=None, rib: BaseRoutingInformationBase = None, log_level=255,
+                 ageing_interval: int=3):
         super().__init__(logger_name="ICNLayer", log_level=log_level)
         self.cs = cs
         self.pit = pit
         self.fib = fib
         self.rib = rib
-        self._ageing_interval: int = 4
+        self._ageing_interval: int = ageing_interval
         self._interest_to_app: bool = False
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
@@ -138,7 +139,7 @@ class BasicICNLayer(LayerProcess):
 
     def handle_nack(self, face_id: int, nack: Nack, to_lower: multiprocessing.Queue,
                     to_higher: multiprocessing.Queue, from_local: bool = False):
-        self.logger.info("Handling NACK")
+        self.logger.info("Handling NACK: " + str(nack.name) + " Reason: " + str(nack.reason) + " From Local: " + str(from_local))
         pit_entry = self.pit.find_pit_entry(nack.name)
         if pit_entry is None:
             self.logger.info("No PIT entry for NACK available, dropping")

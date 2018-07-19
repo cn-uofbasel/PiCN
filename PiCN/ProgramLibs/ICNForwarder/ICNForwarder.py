@@ -31,7 +31,7 @@ class ICNForwarder(object):
     """A ICN Forwarder using PiCN"""
 
     def __init__(self, port=9000, log_level=255, encoder: BasicEncoder=None, routing: bool=False, peers=None,
-                 autoconfig: bool=False, interfaces: List[BaseInterface] = None):
+                 autoconfig: bool=False, interfaces: List[BaseInterface] = None, ageing_interval: int=3):
         # debug level
         logger = Logger("ICNForwarder", log_level)
 
@@ -69,7 +69,7 @@ class ICNForwarder(object):
         # initialize layers
         self.linklayer = BasicLinkLayer(interfaces, faceidtable, log_level=log_level)
         self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
-        self.icnlayer = BasicICNLayer(log_level=log_level)
+        self.icnlayer = BasicICNLayer(log_level=log_level, ageing_interval=ageing_interval)
 
         self.lstack: LayerStack = LayerStack([
             self.icnlayer,
