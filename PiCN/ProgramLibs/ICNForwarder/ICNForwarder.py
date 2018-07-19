@@ -23,7 +23,8 @@ from PiCN.Routing import BasicRouting
 class ICNForwarder(object):
     """A ICN Forwarder using PiCN"""
 
-    def __init__(self, port=9000, log_level=255, encoder: BasicEncoder=None, interfaces: List[BaseInterface] = None):
+    def __init__(self, port=9000, log_level=255, encoder: BasicEncoder=None, interfaces: List[BaseInterface] = None,
+                 ageing_interval: int=3):
         # debug level
         logger = Logger("ICNForwarder", log_level)
 
@@ -58,7 +59,7 @@ class ICNForwarder(object):
         # initialize layers
         self.linklayer = BasicLinkLayer(interfaces, faceidtable, log_level=log_level)
         self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
-        self.icnlayer = BasicICNLayer(log_level=log_level)
+        self.icnlayer = BasicICNLayer(log_level=log_level, ageing_interval=ageing_interval)
 
 
 
