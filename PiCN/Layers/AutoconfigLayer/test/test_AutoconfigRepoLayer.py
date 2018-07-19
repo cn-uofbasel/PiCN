@@ -7,19 +7,29 @@ import queue
 from datetime import datetime, timedelta
 
 from PiCN.Layers.AutoconfigLayer import AutoconfigRepoLayer
+from PiCN.Layers.LinkLayer import BasicLinkLayer
+from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
+from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
 from PiCN.Packets import Name, Interest, Content, Nack, NackReason
 
-from PiCN.Layers.AutoconfigLayer.test.mocks import MockLinkLayer, MockRepository
+from PiCN.Layers.AutoconfigLayer.test.mocks import MockInterface, MockRepository
+from PiCN.Processes import PiCNSyncDataStructFactory
 
 
 class test_AutoconfigRepoLayer(unittest.TestCase):
 
     def setUp(self):
-        self.manager = multiprocessing.Manager()
-        self.linklayer_mock = MockLinkLayer(port=1337)
+        synced_data_struct_factory = PiCNSyncDataStructFactory()
+        synced_data_struct_factory.register('faceidtable', FaceIDDict)
+        synced_data_struct_factory.create_manager()
+
+        self.mock_interface = MockInterface(port=1337)
+        self.faceidtable: FaceIDDict = synced_data_struct_factory.manager.faceidtable()
+
+        self.linklayer = BasicLinkLayer([self.mock_interface], self.faceidtable)
         self.repo = MockRepository(Name('/unconfigured'))
-        self.autoconflayer = AutoconfigRepoLayer(name='testrepo', linklayer=self.linklayer_mock, repo=self.repo,
-                                                 addr='127.0.1.1', port=4242, bcaddr='127.255.255.255', bcport=4242)
+        self.autoconflayer = AutoconfigRepoLayer(name='testrepo', linklayer=self.linklayer, repo=self.repo,
+                                                 addr='127.0.1.1', bcport=4242)
         self.autoconflayer.queue_to_higher = self.queue_to_higher = multiprocessing.Queue()
         self.autoconflayer.queue_from_higher = self.queue_from_higher = multiprocessing.Queue()
         self.autoconflayer.queue_to_lower = self.queue_to_lower = multiprocessing.Queue()
@@ -35,7 +45,7 @@ class test_AutoconfigRepoLayer(unittest.TestCase):
     def test_broadcast_enabled(self):
         """Test that broadcasting was enabled on the UDP socket"""
         self.autoconflayer.start_process()
-        self.linklayer_mock.sock.setsockopt.assert_called_once_with(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        self.mock_interface.sock.setsockopt.assert_called_once_with(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
     def test_initial_forwarder_solicitation(self):
         """Test that the autoconfig layer sends an initial forwarder solicitation when starting"""
@@ -49,6 +59,7 @@ class test_AutoconfigRepoLayer(unittest.TestCase):
 
     def test_pass_through(self):
         """Test that autoconfig-unrelated content is passed through unchanged"""
+        self.faceidtable.add(42, AddressInfo(('127.13.37.42', 4567), 0))
         self.autoconflayer.start_process()
         # Receive forwarder solicitation
         _ = self.queue_to_lower.get()
@@ -69,6 +80,7 @@ class test_AutoconfigRepoLayer(unittest.TestCase):
 
     def test_service_registration(self):
         """Test that a service registration interest is sent"""
+        self.faceidtable.add(42, AddressInfo(('127.42.42.42', 9000), 0))
         self.autoconflayer.start_process()
         # Receive forwarder solicitation
         bface, _ = self.queue_to_lower.get()
@@ -77,16 +89,17 @@ class test_AutoconfigRepoLayer(unittest.TestCase):
         self.queue_from_lower.put([42, forwarders])
         # Receive service registration
         fid, data = self.queue_to_lower.get()
-        self.assertEqual(bface, fid)
+        self.assertEqual(42, fid)
         self.assertIsInstance(data, Interest)
         registration_name = Name('/autoconfig/service')
-        registration_name += 'udp4://127.0.1.1:4242'
+        registration_name += 'udp4://127.0.1.1:1337'
         registration_name += 'test'
         registration_name += 'testrepo'
         self.assertEqual(registration_name, data.name)
 
     def test_service_registration_prefix_changed(self):
         """Test that a service registration interest is sent"""
+        self.faceidtable.add(42, AddressInfo(('127.42.42.42', 9000), 0))
         self.autoconflayer.start_process()
         # Receive forwarder solicitation
         bface, _ = self.queue_to_lower.get()
@@ -96,7 +109,7 @@ class test_AutoconfigRepoLayer(unittest.TestCase):
         # Receive service registration
         fid, data = self.queue_to_lower.get()
         registration_name = Name('/autoconfig/service')
-        registration_name += 'udp4://127.0.1.1:4242'
+        registration_name += 'udp4://127.0.1.1:1337'
         registration_name += 'test'
         registration_name += 'testrepo'
         self.assertEqual(registration_name, data.name)
@@ -109,6 +122,7 @@ class test_AutoconfigRepoLayer(unittest.TestCase):
 
     def test_service_registration_nack_prefix_not_changed(self):
         """Test that a service registration interest is sent"""
+        self.faceidtable.add(42, AddressInfo(('127.42.42.42', 9000), 0))
         self.autoconflayer.start_process()
         # Receive forwarder solicitation
         bface, _ = self.queue_to_lower.get()
@@ -118,12 +132,12 @@ class test_AutoconfigRepoLayer(unittest.TestCase):
         # Receive service registration
         fid, data = self.queue_to_lower.get()
         registration_name = Name('/autoconfig/service')
-        registration_name += 'udp4://127.0.1.1:4242'
+        registration_name += 'udp4://127.0.1.1:1337'
         registration_name += 'test'
         registration_name += 'testrepo'
         self.assertEqual(registration_name, data.name)
         # Send service registration NACK
-        nack = Nack(registration_name, NackReason.NO_ROUTE)
+        nack = Nack(registration_name, NackReason.NO_ROUTE, data)
         self.queue_from_lower.put([42, nack])
         time.sleep(1)
         # Make sure the repo prefix was NOT changed
@@ -131,6 +145,7 @@ class test_AutoconfigRepoLayer(unittest.TestCase):
 
     def test_service_registration_timeout_renewal(self):
         """Test that the service registration is renewed before the timeout"""
+        self.faceidtable.add(42, AddressInfo(('127.42.42.42', 9000), 0))
         waittime = 5
         self.autoconflayer.start_process()
         # Receive forwarder solicitation
@@ -141,7 +156,7 @@ class test_AutoconfigRepoLayer(unittest.TestCase):
         # Receive service registration
         fid, data = self.queue_to_lower.get()
         registration_name = Name('/autoconfig/service')
-        registration_name += 'udp4://127.0.1.1:4242'
+        registration_name += 'udp4://127.0.1.1:1337'
         registration_name += 'test'
         registration_name += 'testrepo'
         self.assertEqual(registration_name, data.name)
@@ -157,9 +172,10 @@ class test_AutoconfigRepoLayer(unittest.TestCase):
             except queue.Empty:
                 pass
         registration_interest = Interest(registration_name)
-        self.assertIn([bface, registration_interest], data)
+        self.assertIn([42, registration_interest], data)
 
     def test_service_registration_global_ignored(self):
+        self.faceidtable.add(42, AddressInfo(('127.42.42.42', 9000), 0))
         waittime = 5
         self.autoconflayer.start_process()
         # Receive forwarder solicitation
@@ -179,15 +195,16 @@ class test_AutoconfigRepoLayer(unittest.TestCase):
                 pass
         self.assertEqual(1, len(data))
         fid, data = data[0]
-        self.assertEqual(bface, fid)
+        self.assertEqual(42, fid)
         self.assertIsInstance(data, Interest)
         registration_name = Name('/autoconfig/service')
-        registration_name += 'udp4://127.0.1.1:4242'
+        registration_name += 'udp4://127.0.1.1:1337'
         registration_name += 'test'
         registration_name += 'testrepo'
         self.assertEqual(registration_name, data.name)
 
     def test_service_registration_global_only(self):
+        self.faceidtable.add(42, AddressInfo(('127.42.42.42', 9000), 0))
         waittime = 5
         self.autoconflayer._register_local = False
         self.autoconflayer._register_global = True
@@ -209,10 +226,10 @@ class test_AutoconfigRepoLayer(unittest.TestCase):
                 pass
         self.assertEqual(1, len(data))
         fid, data = data[0]
-        self.assertEqual(bface, fid)
+        self.assertEqual(42, fid)
         self.assertIsInstance(data, Interest)
         registration_name = Name('/autoconfig/service')
-        registration_name += 'udp4://127.0.1.1:4242'
+        registration_name += 'udp4://127.0.1.1:1337'
         registration_name += 'routed'
         registration_name += 'testrepo'
         self.assertEqual(registration_name, data.name)

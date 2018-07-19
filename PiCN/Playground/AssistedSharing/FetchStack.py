@@ -4,7 +4,10 @@ from PiCN.Packets.Name import Name
 from PiCN.LayerStack import LayerStack
 from PiCN.Playground.AssistedSharing.FetchLayer import FetchLayer
 from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
-from PiCN.Layers.LinkLayer import UDP4LinkLayer
+from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
+from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface, AddressInfo
+from PiCN.Layers.LinkLayer import BasicLinkLayer
+from PiCN.Processes import PiCNSyncDataStructFactory
 from PiCN.Layers.PacketEncodingLayer.Encoder.NdnTlvEncoder import NdnTlvEncoder
 
 
@@ -29,8 +32,15 @@ class FetchStack(object):
         # create encoder
         self.encoder = NdnTlvEncoder()
 
+        # create datastruct
+        synced_data_struct_factory1 = PiCNSyncDataStructFactory()
+        synced_data_struct_factory1.register("faceidtable", FaceIDDict)
+        synced_data_struct_factory1.create_manager()
+        faceidtable = synced_data_struct_factory1.manager.faceidtable()
+
         # create layers
-        self.link_layer = UDP4LinkLayer(0, log_level=log_level)
+
+        self.link_layer = BasicLinkLayer([UDP4Interface(0)], faceidtable, log_level=log_level)
         self.packet_encoding_layer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
         self.fetch_layer = FetchLayer(log_level)
 
@@ -41,7 +51,7 @@ class FetchStack(object):
         ])
 
         # setup face
-        self.face_id = self.link_layer.create_new_fid((ip, port), True)
+        self.face_id = self.link_layer.faceidtable.get_or_create_faceid(AddressInfo((ip, port), 0))
 
         # start all layers in the stack
         self.layer_stack.start_all()

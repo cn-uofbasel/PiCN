@@ -9,8 +9,8 @@ from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore, ContentStoreEntr
 class ContentStoreMemoryExact(BaseContentStore):
     """ A in memory Content Store using exact matching"""
 
-    def __init__(self):
-        BaseContentStore.__init__(self)
+    def __init__(self, cs_timeout: int = 10):
+        BaseContentStore.__init__(self, cs_timeout=cs_timeout)
 
     def find_content_object(self, name: Name) -> ContentStoreEntry:
         for c in self._container:
@@ -33,3 +33,14 @@ class ContentStoreMemoryExact(BaseContentStore):
         self._container.remove(cs_entry)
         cs_entry.timestamp = time.time()
         self._container.append(cs_entry)
+
+    def ageing(self):
+        cur_time = time.time()
+        remove = []
+        for cs_entry in self._container:
+            if cs_entry.static is True:
+                continue
+            if cs_entry.timestamp + self._cs_timeout < cur_time:
+                remove.append(cs_entry)
+        for cs_entry in remove:
+            self.remove_content_object(cs_entry.content.name)

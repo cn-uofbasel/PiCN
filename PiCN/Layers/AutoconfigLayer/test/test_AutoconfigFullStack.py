@@ -6,9 +6,11 @@ import queue
 
 from PiCN.LayerStack import LayerStack
 from PiCN.Layers.ICNLayer import BasicICNLayer
+from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
+from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface
 from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
 from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
-from PiCN.Layers.LinkLayer import UDP4LinkLayer
+from PiCN.Layers.LinkLayer import BasicLinkLayer
 from PiCN.Layers.RepositoryLayer import BasicRepositoryLayer
 from PiCN.Layers.AutoconfigLayer import AutoconfigServerLayer, AutoconfigClientLayer, AutoconfigRepoLayer
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
@@ -20,29 +22,39 @@ from PiCN.Layers.ChunkLayer.Chunkifyer import SimpleContentChunkifyer
 from PiCN.Packets import Name, Interest, Content
 
 from PiCN.Layers.AutoconfigLayer.test.mocks import MockRepository
+from PiCN.Processes import PiCNSyncDataStructFactory
 
 
 class test_AutoconfigFullStack(unittest.TestCase):
 
     def setUp(self):
-
+        synced_data_struct_factory = PiCNSyncDataStructFactory()
+        synced_data_struct_factory.register('cs', ContentStoreMemoryExact)
+        synced_data_struct_factory.register('pit', PendingInterstTableMemoryExact)
+        synced_data_struct_factory.register('fib', ForwardingInformationBaseMemoryPrefix)
+        synced_data_struct_factory.register('faceidtable', FaceIDDict)
+        synced_data_struct_factory.create_manager()
         # Set up forwarder
-        manager = multiprocessing.Manager()
-        ds = manager.dict()
-        ds['cs'] = ContentStoreMemoryExact()
-        ds['pit'] = PendingInterstTableMemoryExact()
-        ds['fib'] = ForwardingInformationBaseMemoryPrefix()
+        cs = synced_data_struct_factory.manager.cs()
+        pit = synced_data_struct_factory.manager.pit()
+        fib = synced_data_struct_factory.manager.fib()
         prefixes = [(Name('/test/prefix/repos'), True)]
         # Auto-assign port
-        forwarder_linklayer = UDP4LinkLayer(port=0, manager=manager)
-        forwarder_port = forwarder_linklayer.sock.getsockname()[1]
+        forwarder_interface = UDP4Interface(0)
+        forwarder_fidtable = synced_data_struct_factory.manager.faceidtable()
+        forwarder_linklayer = BasicLinkLayer([forwarder_interface], forwarder_fidtable)
+        forwarder_port = forwarder_interface.get_port()
         forwarder_encoder = NdnTlvEncoder()
         icnlayer = BasicICNLayer()
-        icnlayer._data_structs = ds
+        icnlayer.cs = cs
+        icnlayer.pit = pit
+        icnlayer.fib = fib
+        forwarder_autoconfiglayer = AutoconfigServerLayer(forwarder_linklayer,
+                                                          registration_prefixes=prefixes)
+        forwarder_autoconfiglayer.fib = fib
         self.forwarder = LayerStack([
             icnlayer,
-            AutoconfigServerLayer(forwarder_linklayer, ds,
-                                  registration_prefixes=prefixes, bcaddr='127.255.255.255'),
+            forwarder_autoconfiglayer,
             BasicPacketEncodingLayer(forwarder_encoder),
             forwarder_linklayer
         ])
@@ -53,13 +65,14 @@ class test_AutoconfigFullStack(unittest.TestCase):
         repo_chunklayer = BasicChunkLayer(repo_chunkifyer)
         repo_encoder = NdnTlvEncoder()
         # Auto-assign port
-        repo_linklayer = UDP4LinkLayer(port=0, manager=manager)
-        repo_port = repo_linklayer.sock.getsockname()[1]
+        repo_interface = UDP4Interface(0)
+        repo_fidtable = synced_data_struct_factory.manager.faceidtable()
+        repo_linklayer = BasicLinkLayer([repo_interface], repo_fidtable)
+        repo_port = repo_interface.get_port()
         self.repo = LayerStack([
             BasicRepositoryLayer(repository),
             repo_chunklayer,
-            AutoconfigRepoLayer('testrepo', repo_linklayer, repository, '127.0.0.1', repo_port,
-                                bcaddr='127.255.255.255', bcport=forwarder_port),
+            AutoconfigRepoLayer('testrepo', repo_linklayer, repository, '127.0.0.1', forwarder_port),
             BasicPacketEncodingLayer(repo_encoder),
             repo_linklayer
         ])
@@ -68,10 +81,12 @@ class test_AutoconfigFullStack(unittest.TestCase):
         client_chunkifyer = SimpleContentChunkifyer()
         client_chunklayer = BasicChunkLayer(client_chunkifyer)
         client_encoder = NdnTlvEncoder()
-        client_linklayer = UDP4LinkLayer(port=0, manager=manager)
+        client_interface = UDP4Interface(0)
+        client_fidtable = synced_data_struct_factory.manager.faceidtable()
+        client_linklayer = BasicLinkLayer([client_interface], client_fidtable)
         self.client = LayerStack([
             client_chunklayer,
-            AutoconfigClientLayer(client_linklayer, bcaddr='127.255.255.255', bcport=forwarder_port),
+            AutoconfigClientLayer(client_linklayer, bcport=forwarder_port),
             BasicPacketEncodingLayer(client_encoder),
             client_linklayer
         ])
@@ -89,7 +104,7 @@ class test_AutoconfigFullStack(unittest.TestCase):
         self.client.start_all()
         time.sleep(1.0)
 
-        # Send an interest with a fixed name, let autoconfig figure out where to get the da10.0ta from
+        # Send an interest with a fixed name, let autoconfig figure out where to get the data from
         name = Name('/test/prefix/repos/testrepo/testcontent')
         interest = Interest(name)
         self.client.queue_from_higher.put([None, interest])

@@ -7,27 +7,36 @@ from typing import List, Tuple
 
 from PiCN.Layers.AutoconfigLayer import AutoconfigServerLayer
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseMemoryPrefix
+from PiCN.Layers.LinkLayer import BasicLinkLayer
+from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
+from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
 from PiCN.Packets import Name, Interest, Content, Nack, NackReason
 
-from PiCN.Layers.AutoconfigLayer.test.mocks import MockLinkLayer
+from PiCN.Layers.AutoconfigLayer.test.mocks import MockInterface
+from PiCN.Processes import PiCNSyncDataStructFactory
 
 
 class test_AutoconfigServerLayer(unittest.TestCase):
 
     def setUp(self):
-        manager = multiprocessing.Manager()
-        self.linklayer_mock = MockLinkLayer(port=1337)
-        self.ds = manager.dict()
-        fib = ForwardingInformationBaseMemoryPrefix()
+        synced_data_struct_factory = PiCNSyncDataStructFactory()
+        synced_data_struct_factory.register('fib', ForwardingInformationBaseMemoryPrefix)
+        synced_data_struct_factory.register('faceidtable', FaceIDDict)
+        synced_data_struct_factory.create_manager()
+        fib = synced_data_struct_factory.manager.fib()
+        self.faceidtable: FaceIDDict = synced_data_struct_factory.manager.faceidtable()
         # Create a face and an example route
-        outfid = self.linklayer_mock._get_or_create_fid(('127.13.37.42', 4242))
+        self.mock_interface = MockInterface(port=1337)
+        self.linklayer = BasicLinkLayer([self.mock_interface], self.faceidtable)
+
+        outfid = self.linklayer.faceidtable.get_or_create_faceid(AddressInfo(('127.13.37.42', 4242), 0))
         fib.add_fib_entry(Name('/global'), outfid)
-        self.ds['fib'] = fib
         # List of advertised prefixes
         self.prefixes: List[Tuple[Name, bool]] = [(Name('/test/repos'), False), (Name('/home'), True)]
-        self.autoconflayer = AutoconfigServerLayer(linklayer=self.linklayer_mock, data_structs=self.ds,
-                                                   address='127.0.1.1', bcaddr='127.255.255.255',
+        self.autoconflayer = AutoconfigServerLayer(linklayer=self.linklayer,
+                                                   address='127.0.1.1',
                                                    registration_prefixes=self.prefixes)
+        self.autoconflayer.fib = fib
         self.autoconflayer.queue_to_higher = self.queue_to_higher = multiprocessing.Queue()
         self.autoconflayer.queue_from_higher = self.queue_from_higher = multiprocessing.Queue()
         self.autoconflayer.queue_to_lower = self.queue_to_lower = multiprocessing.Queue()
@@ -43,13 +52,14 @@ class test_AutoconfigServerLayer(unittest.TestCase):
     def test_broadcast_enabled(self):
         """Test that broadcasting was enabled on the UDP socket"""
         self.autoconflayer.start_process()
-        self.linklayer_mock.sock.setsockopt.assert_called_once_with(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        self.mock_interface.sock.setsockopt.assert_called_once_with(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
     def test_pass_through(self):
         """Test that autoconfig-unrelated content is passed through unchanged"""
         self.autoconflayer.start_process()
         # Pass an interest object from below
         interest = Interest(Name('/foo/bar'))
+        self.faceidtable.add(42, AddressInfo(('127.13.37.42', 4567), 0))
         self.queue_from_lower.put([42, interest])
         data = self.queue_to_higher.get()
         self.assertEqual(2, len(data))
@@ -69,6 +79,7 @@ class test_AutoconfigServerLayer(unittest.TestCase):
         # Send forwarder solicitation
         name = Name('/autoconfig/forwarders')
         interest = Interest(name)
+        self.faceidtable.add(42, AddressInfo(('127.13.37.42', 4567), 0))
         self.queue_from_lower.put([42, interest])
         # Receive forwarder advertisement
         fid, packet = self.queue_to_lower.get()
@@ -92,6 +103,7 @@ class test_AutoconfigServerLayer(unittest.TestCase):
         rname += 'repos'
         rname += 'testrepo'
         rinterest = Interest(rname)
+        self.faceidtable.add(42, AddressInfo(('127.13.37.42', 4567), 0))
         self.queue_from_lower.put([42, rinterest])
         # Receive service registration ACK
         fid, packet = self.queue_to_lower.get()
@@ -121,6 +133,7 @@ class test_AutoconfigServerLayer(unittest.TestCase):
         rinterest = Interest(rname)
         for i in range(2):
             # Send service registration
+            self.faceidtable.add(42, AddressInfo(('127.13.37.42', 4567), 0))
             self.queue_from_lower.put([42, rinterest])
             # Receive service registration, should be ACK both times
             fid, packet = self.queue_to_lower.get()
@@ -138,6 +151,7 @@ class test_AutoconfigServerLayer(unittest.TestCase):
         rname += 'repos'
         rname += 'testrepo'
         rinterest = Interest(rname)
+        self.faceidtable.add(42, AddressInfo(('127.13.37.42', 4567), 0))
         self.queue_from_lower.put([42, rinterest])
         # Receive first service registration reply, should be ACK
         fid, packet = self.queue_to_lower.get()
@@ -168,6 +182,7 @@ class test_AutoconfigServerLayer(unittest.TestCase):
         rname += 'otherprefix'
         rname += 'testrepo'
         rinterest = Interest(rname)
+        self.faceidtable.add(42, AddressInfo(('127.13.37.42', 4567), 0))
         self.queue_from_lower.put([42, rinterest])
         # Receive service registration reply, should be NACK
         fid, packet = self.queue_to_lower.get()

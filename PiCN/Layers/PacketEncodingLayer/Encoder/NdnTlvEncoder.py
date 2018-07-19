@@ -108,7 +108,7 @@ class NdnTlvEncoder(BasicEncoder):
             self.logger.info("Decode NACK")
             try:
                 (name, reason) = self.decode_nack(wire_data)
-                return Nack(name, reason, wire_format=wire_data)
+                return Nack(name, reason, None, wire_format=wire_data)
             except:
                 self.logger.info("Decoding failed (malformed packet)")
                 return UnknownPacket(wire_format=wire_data)

@@ -10,7 +10,10 @@ from multiprocessing import Queue
 from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
 
-from PiCN.Layers.LinkLayer import UDP4LinkLayer
+from PiCN.Layers.LinkLayer import BasicLinkLayer
+from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
+from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface, AddressInfo
+from PiCN.Processes import PiCNSyncDataStructFactory
 from PiCN.Packets import Content, Interest
 
 class cases_BasicPacketEncodingLayer(object):
@@ -25,10 +28,21 @@ class cases_BasicPacketEncodingLayer(object):
         self.packetEncodingLayer1 = BasicPacketEncodingLayer(encoder=self.encoder1)
         self.packetEncodingLayer2 = BasicPacketEncodingLayer(encoder=self.encoder2)
 
-        self.linkLayer1 = UDP4LinkLayer(0)
-        self.linkLayer2 = UDP4LinkLayer(0)
-        self.port1 = self.linkLayer1.get_port()
-        self.port2 = self.linkLayer2.get_port()
+        self.udp4interface1 = UDP4Interface(0)
+        synced_data_struct_factory1 = PiCNSyncDataStructFactory()
+        synced_data_struct_factory1.register("faceidtable", FaceIDDict)
+        synced_data_struct_factory1.create_manager()
+        self.faceidtable1 = synced_data_struct_factory1.manager.faceidtable()
+        self.linkLayer1 = BasicLinkLayer([self.udp4interface1], self.faceidtable1)
+
+        self.udp4interface2 = UDP4Interface(0)
+        synced_data_struct_factory2 = PiCNSyncDataStructFactory()
+        synced_data_struct_factory2.register("faceidtable", FaceIDDict)
+        synced_data_struct_factory2.create_manager()
+        self.faceidtable2 = synced_data_struct_factory2.manager.faceidtable()
+        self.linkLayer2 = BasicLinkLayer([self.udp4interface2], self.faceidtable2)
+        self.port1 = self.linkLayer1.interfaces[0].get_port()
+        self.port2 = self.linkLayer2.interfaces[0].get_port()
 
 
         self.q1_fromLower = Queue()
@@ -99,7 +113,7 @@ class cases_BasicPacketEncodingLayer(object):
         self.linkLayer2.start_process()
         self.packetEncodingLayer1.start_process()
         self.packetEncodingLayer2.start_process()
-        fid = self.linkLayer1.create_new_fid(("127.0.0.1", self.port2))
+        fid = self.linkLayer1.faceidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.port2), 0))
         i = Interest("/test/data")
 
         #PUT interest in node 1 queues
@@ -120,7 +134,7 @@ class cases_BasicPacketEncodingLayer(object):
         self.linkLayer2.start_process()
         self.packetEncodingLayer1.start_process()
         self.packetEncodingLayer2.start_process()
-        fid = self.linkLayer1.create_new_fid(("127.0.0.1", self.port2))
+        fid = self.linkLayer1.faceidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.port2), 0))
         c = Content("/test/data", "HelloWorld")
 
         # PUT interest in node 1 queues

@@ -48,6 +48,12 @@ function main {
     if [[ $1 == "fwd_to_testbed" ]]
     then
         config_fwd_to_testbed
+    elif [[ $1 == "dima_pinned_nfn" ]]
+    then
+	config_dima_pinned_nfn
+    elif [[ $1 == "dima_heartbeat" ]]
+    then
+	config_dima_heartbeat
     else
         echo "Configuration not found."
         echo ""
@@ -71,7 +77,7 @@ function main {
 #  - Forwardin rule from 9001 to NDN testbed for prefix /ndn/ch/unibas
 
 function config_fwd_to_testbed {
-	# Relay on port 9001 (default)
+    # Relay on port 9001 (default)
     tmux new-window -t $SESSION:1 -n 'Relay'
     tmux send-keys -t $SESSION:1 'picn-relay -l ' $LOGLEVEL ' --port ' $(($INITPORT+1)) C-m
 
@@ -80,23 +86,90 @@ function config_fwd_to_testbed {
     tmux send-keys -t $SESSION:2 'picn-relay -l ' $LOGLEVEL ' --port ' $INITPORT C-m
 
     sleep .5
-
     # Content object to 9001 (default)
     tmux send-keys -t $SESSION:0 'picn-mgmt --port ' $(($INITPORT+1)) ' newcontent /ndn/ch/unibas/test:TestTestTest!' C-m
-    sleep .1
-
+    sleep .2
     # Face and fwd rule from 9000 to 9001  (default)
-    tmux send-keys -t $SESSION:0 'picn-mgmt --port ' $INITPORT ' newface 127.0.0.1:' $(($INITPORT+1)) C-m
-    sleep .1
+    tmux send-keys -t $SESSION:0 'picn-mgmt --port ' $INITPORT ' newface 127.0.0.1:' $(($INITPORT+1)) ':0' C-m
+    sleep .2
     tmux send-keys -t $SESSION:0 'picn-mgmt --port ' $INITPORT ' newforwardingrule /ndn/ch/unibas:0' C-m
-    sleep .1
-
+    sleep .2
     # Face and fwd rule form 9001 to testbed (default)
-    tmux send-keys -t $SESSION:0 'picn-mgmt --port ' $(($INITPORT+1)) ' newface ' $NDNTESTBED ':6363' C-m
-    sleep .1
+    tmux send-keys -t $SESSION:0 'picn-mgmt --port ' $(($INITPORT+1)) ' newface ' $NDNTESTBED ':6363:0' C-m
+    sleep .2
     tmux send-keys -t $SESSION:0 'picn-mgmt --port ' $(($INITPORT+1)) ' newforwardingrule /ndn/ch/unibas:0' C-m
-    sleep .1
+    sleep .2
     
+}
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+
+function config_dima_pinned_nfn {
+    # Relay on port 4000
+    tmux new-window -t $SESSION:1 -n 'Relay-4000'
+    tmux send-keys -t $SESSION:1 'picn-relay -l ' $LOGLEVEL ' --port 4000' C-m
+
+    # Relay on port 4001
+    tmux new-window -t $SESSION:2 -n 'Relay-4001'
+    tmux send-keys -t $SESSION:2 'picn-relay -l ' $LOGLEVEL ' --port 4001' C-m
+
+    # Start server on port 3000
+    tmux new-window -t $SESSION:3 -n 'Server0'
+    tmux send-keys -t $SESSION:3 'picn-pinned-nfn -l ' $LOGLEVEL ' --port 3000 --id 0' C-m
+
+    # Start server on port 3001
+    tmux new-window -t $SESSION:4 -n 'Server1'
+    tmux send-keys -t $SESSION:4 'picn-pinned-nfn -l ' $LOGLEVEL ' --port 3001 --id 1' C-m
+
+    sleep .5
+
+    # Face and fwd rule from 4001 to 4000
+    tmux send-keys -t $SESSION:0 'picn-mgmt --port 4001 newface 127.0.0.1:4000:0' C-m
+    sleep .2
+    tmux send-keys -t $SESSION:0 'picn-mgmt --port 4001 newforwardingrule /the/prefix:0' C-m
+    sleep .2
+
+    # Face and fwd rule from 4000 to 3000
+    tmux send-keys -t $SESSION:0 'picn-mgmt --port 4000 newface 127.0.0.1:3000:0' C-m
+    sleep .2
+    tmux send-keys -t $SESSION:0 'picn-mgmt --port 4000 newforwardingrule /the/prefix:0' C-m
+    sleep .2
+
+    # Face and fwd rule from 4000 to 3001
+    tmux send-keys -t $SESSION:0 'picn-mgmt --port 4000 newface 127.0.0.1:3001:0' C-m
+    sleep .2
+    tmux send-keys -t $SESSION:0 'picn-mgmt --port 4000 newforwardingrule /the/prefix:1' C-m
+    sleep .2
+}
+
+function config_dima_heartbeat {
+    # Relay on port 4000
+    tmux new-window -t $SESSION:1 -n 'Relay-4000'
+    tmux send-keys -t $SESSION:1 'picn-heartbeat-forwarder -l ' $LOGLEVEL ' --port 4000' C-m
+
+    # Relay on port 4001
+    tmux new-window -t $SESSION:2 -n 'Relay-4001'
+    tmux send-keys -t $SESSION:2 'picn-heartbeat-forwarder -l ' $LOGLEVEL ' --port 4001' C-m
+
+    # Start server on port 3000
+    tmux new-window -t $SESSION:3 -n 'Server0'
+    tmux send-keys -t $SESSION:3 'picn-heartbeat-server -l ' $LOGLEVEL ' --port 3000' C-m
+
+    sleep .5
+
+    # Face and fwd rule from 4001 to 4000
+    tmux send-keys -t $SESSION:0 'picn-mgmt --port 4001 newface 127.0.0.1:4000:0' C-m
+    sleep .2
+    tmux send-keys -t $SESSION:0 'picn-mgmt --port 4001 newforwardingrule /the/prefix:0' C-m
+    sleep .2
+
+    # Face and fwd rule from 4000 to 3000
+    tmux send-keys -t $SESSION:0 'picn-mgmt --port 4000 newface 127.0.0.1:3000:0' C-m
+    sleep .2
+    tmux send-keys -t $SESSION:0 'picn-mgmt --port 4000 newforwardingrule /the/prefix:0' C-m
+    sleep .2
+
 }
 
 

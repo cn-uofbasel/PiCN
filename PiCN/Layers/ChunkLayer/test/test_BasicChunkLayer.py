@@ -18,7 +18,7 @@ class test_BasicChunkLayer(unittest.TestCase):
 
     def setUp(self):
         self.chunkifyer = SimpleContentChunkifyer()
-        self.chunkLayer: BasicChunkLayer = BasicChunkLayer(self.chunkifyer)
+        self.chunkLayer: BasicChunkLayer = BasicChunkLayer(self.chunkifyer, log_level=255)
 
         self.q1_to_lower = multiprocessing.Queue()
         self.q1_to_higher = multiprocessing.Queue()
@@ -117,7 +117,6 @@ class test_BasicChunkLayer(unittest.TestCase):
         self.assertTrue(entry1)
         self.assertFalse(entry2)
         self.assertTrue(entry3)
-
         rt_entry = self.chunkLayer.get_request_table_entry(Name("/test/data/c1"))
         self.chunkLayer._request_table.remove(rt_entry)
         rt_entry = self.chunkLayer.remove_chunk_name_from_request_table_entry(rt_entry, Name("/test/data/c1"))
@@ -268,11 +267,10 @@ class test_BasicChunkLayer(unittest.TestCase):
         i = Interest("/test/data")
         self.chunkLayer._request_table.append(RequestTableEntry(i.name))
         self.chunkLayer.queue_from_higher.put([0, i])
-        try:
-            data = self.chunkLayer.queue_to_lower.get(timeout=2.0)
-        except:
-            self.fail()
-        self.assertEqual(data[1], i)
+        time.sleep(1)
+        res = self.chunkLayer.queue_to_lower.get()
+        self.assertEqual(res[1], i)
+        self.assertTrue(self.chunkLayer.queue_to_lower.empty())
         self.assertEqual(self.chunkLayer._request_table[0], RequestTableEntry(i.name))
 
     def test_content_from_higher_no_chunk(self):
@@ -412,7 +410,7 @@ class test_BasicChunkLayer(unittest.TestCase):
     def test_nack_from_lower(self):
         """Test nack from lower"""
         self.chunkLayer.start_process()
-        nack1 = Nack("/test/data", NackReason.NO_CONTENT)
+        nack1 = Nack("/test/data", NackReason.NO_CONTENT, None)
         self.chunkLayer.queue_from_lower.put([1, nack1])
         try:
             data = self.chunkLayer.queue_to_higher.get(timeout=2.0)

@@ -1,10 +1,10 @@
 
-from typing import Iterator, Tuple
+from typing import Iterator, List, Tuple
 
 import abc
 from datetime import datetime
 
-from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
+from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase, ForwardingInformationBaseEntry
 from PiCN.Packets import Name
 
 
@@ -41,11 +41,9 @@ class BaseRoutingInformationBase(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def build_fib(self, fib: BaseForwardingInformationBase):
+    def build_fib(self) -> List[ForwardingInformationBaseEntry]:
         """
-        Construct FIB entries from the RIB data, and insert them into the passed FIB object.
-        All previous entries in the FIB will be deleted.
-        :param fib: The FIB to fill with routes.
+        Construct FIB entries from the RIB data.
         """
         pass
 
@@ -54,6 +52,14 @@ class BaseRoutingInformationBase(abc.ABC):
         """
         Creates an iterator over the longest-common-prefix-reduced entries of the RIB.
         :return: An iterator of tuples (name, fid, distance, timeout)
+        """
+        pass
+
+    @abc.abstractmethod
+    def entries(self) -> List[Tuple[Name, int, int, datetime]]:
+        """
+        Creates a list of longest-common-prefix-reduced entries of the RIB.
+        :return: A list of tuples (name, fid, distance, timeout)
         """
         pass
 

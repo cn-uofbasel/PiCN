@@ -5,13 +5,13 @@ import time
 from typing import List
 
 from PiCN.Packets import Content, Name
-
+from PiCN.Layers.ICNLayer import BaseICNDataStruct
 
 class ContentStoreEntry(object):
     """Entry of the content store"""
     def __init__(self, content: Content, static: bool=False):
         self._content: Content = content
-        self._static: bool = static
+        self._static: bool = static #if true: do not remove this content object from CS by ageing
         self._timestamp = time.time()
 
     @property
@@ -45,32 +45,60 @@ class ContentStoreEntry(object):
     def __eq__(self, other):
         return self._content == other._content
 
-class BaseContentStore(object):
-    """Abstract BaseContentStore for usage in BasicICNLayer"""
+class BaseContentStore(BaseICNDataStruct):
+    """Abstract BaseContentStore for usage in BasicICNLayer
+    :param cs_timeout: Time interval in which a CS entry will be cached
+    """
 
-    def __init__(self):
+    def __init__(self, cs_timeout: int=10):
+        super().__init__()
         self._container: List[ContentStoreEntry] = []
+        self._cs_timeout = cs_timeout
 
     @abc.abstractmethod
     def add_content_object(self, content: Content, static: bool=False):
-        """check if there is already a content object stored, otherwise store it in the container"""
+        """
+        Insert content object
+        :param content: content object to insert
+        :param static: if true the conent object will not be considered by ageing
+        :return: None
+        """
 
     @abc.abstractmethod
     def find_content_object(self, name: Name) -> ContentStoreEntry:
-        """check if there is a matching content object"""
+        """
+        Lookup a content object
+        :param name:  Name
+        :return:      Matching Content Object or None
+        """
 
     @abc.abstractmethod
     def remove_content_object(self, name: Name):
-        """Remove a content object from CS"""
+        """
+        Remove content object
+        :param name: Name (exact)
+        :return: None
+        """
 
     @abc.abstractmethod
     def update_timestamp(self, cs_entry: ContentStoreEntry):
+        """
+        Update timestamp
+        :param cs_entry: content store entry
+        :return: None
+        """
         """Update Timestamp of a ContentStoreEntry"""
 
-    @property
-    def container(self):
-        return self._container
+    @abc.abstractmethod
+    def ageing(self):
+        """
+        Update the entries periodically
+        :return: None
+        """
 
-    @container.setter
-    def container(self, container):
-        self._container = container
+    def set_cs_timeout(self, timeout: float):
+        """set the timeout intervall for a CS entry
+        :param timeout: the timeout intervall to be set
+        """
+        self._cs_timeout = timeout
+

@@ -5,6 +5,7 @@ import multiprocessing
 from typing import List, Optional
 
 from PiCN.Packets import Name
+from PiCN.Layers.ICNLayer import BaseICNDataStruct
 
 
 class ForwardingInformationBaseEntry(object):
@@ -49,10 +50,11 @@ class ForwardingInformationBaseEntry(object):
         self._static = static
 
 
-class BaseForwardingInformationBase(object):
+class BaseForwardingInformationBase(BaseICNDataStruct):
     """Abstract BaseForwardingInformationBase for usage in BasicICNLayer"""
 
     def __init__(self):
+        super().__init__()
         self._container: List[ForwardingInformationBaseEntry] = []
         self._manager: Optional[multiprocessing.Manager] = None
 
@@ -65,7 +67,8 @@ class BaseForwardingInformationBase(object):
         """Remove an entry from the FIB"""
 
     @abc.abstractmethod
-    def find_fib_entry(self, name: Name, already_used: List[ForwardingInformationBaseEntry]) \
+    def find_fib_entry(self, name: Name, already_used: List[ForwardingInformationBaseEntry] = None,
+                       incoming_faceids: List[int] = None) \
             ->ForwardingInformationBaseEntry:
         """Find an entry in the FIB"""
 
@@ -73,18 +76,4 @@ class BaseForwardingInformationBase(object):
     def clear(self):
         """Remove all non-static entries from the FIB"""
 
-    @property
-    def container(self):
-        return self._container
 
-    @container.setter
-    def container(self, container):
-        self._container = container
-
-    @property
-    def manager(self):
-        return self._manager
-
-    @manager.setter
-    def manager(self, manager: multiprocessing.Manager):
-        self._manager = manager

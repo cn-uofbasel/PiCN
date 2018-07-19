@@ -10,7 +10,7 @@ from datetime import timedelta
 from time import sleep
 
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
-from PiCN.Layers.RoutingLayer.RoutingInformationBase import TreeRoutingInformationBase
+from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
 from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from PiCN.Packets import Name
 from PiCN.ProgramLibs.Fetch import Fetch
@@ -40,11 +40,11 @@ class test_AutoconfigRepoHopping(unittest.TestCase):
         # Initialize core nodes
         for c in [00, 10, 20, 30]:
             self.nodes[c] = ICNForwarder(0, encoder=NdnTlvEncoder(), routing=True, peers=[])
-            self.ports[c] = self.nodes[c].linklayer.sock.getsockname()[1]
+            self.ports[c] = self.nodes[c].linklayer.interfaces[0].get_port()
         # Initialize edge nodes
         for e in [11, 12, 13, 21, 22, 23, 31, 32, 33]:
             self.nodes[e] = ICNForwarder(0, encoder=NdnTlvEncoder(), routing=True, peers=[], autoconfig=True)
-            self.ports[e] = self.nodes[e].linklayer.sock.getsockname()[1]
+            self.ports[e] = self.nodes[e].linklayer.interfaces[0].get_port()
 
         # Assign routing peers after the OS assigned UDP ports. Each node knows the nodes one layer "beneath" itself
         # in above graph as its routing peers.
@@ -62,48 +62,44 @@ class test_AutoconfigRepoHopping(unittest.TestCase):
                                               ('127.0.0.1', self.ports[33])]
 
         # Set up faces and static FIB of core00 node.
-        fid00to10: int = self.nodes[00].linklayer.get_or_create_fid(('127.0.0.1', self.ports[10]), static=True)
-        fid00to20: int = self.nodes[00].linklayer.get_or_create_fid(('127.0.0.1', self.ports[20]), static=True)
-        fid00to30: int = self.nodes[00].linklayer.get_or_create_fid(('127.0.0.1', self.ports[30]), static=True)
-        fib00: BaseForwardingInformationBase = self.nodes[00].data_structs['fib']
+        fid00to10: int = self.nodes[00].linklayer.faceidtable.get_or_create_faceid(AddressInfo(('127.0.0.1', self.ports[10]), 0))
+        fid00to20: int = self.nodes[00].linklayer.faceidtable.get_or_create_faceid(AddressInfo(('127.0.0.1', self.ports[20]), 0))
+        fid00to30: int = self.nodes[00].linklayer.faceidtable.get_or_create_faceid(AddressInfo(('127.0.0.1', self.ports[30]), 0))
+        fib00: BaseForwardingInformationBase = self.nodes[00].icnlayer.fib
         fib00.add_fib_entry(Name('/edge'), fid00to10, static=True)
         fib00.add_fib_entry(Name('/edge'), fid00to20, static=True)
         fib00.add_fib_entry(Name('/edge'), fid00to30, static=True)
-        self.nodes[00].data_structs['fib'] = fib00
-        self.nodes[00].data_structs['rib'] = TreeRoutingInformationBase(self.manager, shortest_only=False)
+        self.nodes[00].routinglayer.rib.shortest_only = False
 
         # Set up faces and static FIB of core10 node.
-        fid10to11: int = self.nodes[10].linklayer.get_or_create_fid(('127.0.0.1', self.ports[11]), static=True)
-        fid10to12: int = self.nodes[10].linklayer.get_or_create_fid(('127.0.0.1', self.ports[12]), static=True)
-        fid10to13: int = self.nodes[10].linklayer.get_or_create_fid(('127.0.0.1', self.ports[13]), static=True)
-        fib10: BaseForwardingInformationBase = self.nodes[10].data_structs['fib']
+        fid10to11: int = self.nodes[10].linklayer.faceidtable.get_or_create_faceid(AddressInfo(('127.0.0.1', self.ports[11]), 0))
+        fid10to12: int = self.nodes[10].linklayer.faceidtable.get_or_create_faceid(AddressInfo(('127.0.0.1', self.ports[12]), 0))
+        fid10to13: int = self.nodes[10].linklayer.faceidtable.get_or_create_faceid(AddressInfo(('127.0.0.1', self.ports[13]), 0))
+        fib10: BaseForwardingInformationBase = self.nodes[10].icnlayer.fib
         fib10.add_fib_entry(Name('/edge'), fid10to11, static=True)
         fib10.add_fib_entry(Name('/edge'), fid10to12, static=True)
         fib10.add_fib_entry(Name('/edge'), fid10to13, static=True)
-        self.nodes[10].data_structs['fib'] = fib10
-        self.nodes[10].data_structs['rib'] = TreeRoutingInformationBase(self.manager, shortest_only=False)
+        self.nodes[10].routinglayer.rib.shortest_only = False
 
         # Set up faces and static FIB of core20 node.
-        fid20to21: int = self.nodes[20].linklayer.get_or_create_fid(('127.0.0.1', self.ports[21]), static=True)
-        fid20to22: int = self.nodes[20].linklayer.get_or_create_fid(('127.0.0.1', self.ports[22]), static=True)
-        fid20to23: int = self.nodes[20].linklayer.get_or_create_fid(('127.0.0.1', self.ports[23]), static=True)
-        fib20: BaseForwardingInformationBase = self.nodes[20].data_structs['fib']
+        fid20to21: int = self.nodes[20].linklayer.faceidtable.get_or_create_faceid(AddressInfo(('127.0.0.1', self.ports[21]), 0))
+        fid20to22: int = self.nodes[20].linklayer.faceidtable.get_or_create_faceid(AddressInfo(('127.0.0.1', self.ports[22]), 0))
+        fid20to23: int = self.nodes[20].linklayer.faceidtable.get_or_create_faceid(AddressInfo(('127.0.0.1', self.ports[23]), 0))
+        fib20: BaseForwardingInformationBase = self.nodes[20].icnlayer.fib
         fib20.add_fib_entry(Name('/edge'), fid20to21, static=True)
         fib20.add_fib_entry(Name('/edge'), fid20to22, static=True)
         fib20.add_fib_entry(Name('/edge'), fid20to23, static=True)
-        self.nodes[20].data_structs['fib'] = fib20
-        self.nodes[20].data_structs['rib'] = TreeRoutingInformationBase(self.manager, shortest_only=False)
+        self.nodes[20].routinglayer.rib.shortest_only = False
 
         # Set up faces and static FIB of core30 node.
-        fid30to31: int = self.nodes[30].linklayer.get_or_create_fid(('127.0.0.1', self.ports[31]), static=True)
-        fid30to32: int = self.nodes[30].linklayer.get_or_create_fid(('127.0.0.1', self.ports[32]), static=True)
-        fid30to33: int = self.nodes[30].linklayer.get_or_create_fid(('127.0.0.1', self.ports[33]), static=True)
-        fib30: BaseForwardingInformationBase = self.nodes[30].data_structs['fib']
+        fid30to31: int = self.nodes[30].linklayer.faceidtable.get_or_create_faceid(AddressInfo(('127.0.0.1', self.ports[31]), 0))
+        fid30to32: int = self.nodes[30].linklayer.faceidtable.get_or_create_faceid(AddressInfo(('127.0.0.1', self.ports[32]), 0))
+        fid30to33: int = self.nodes[30].linklayer.faceidtable.get_or_create_faceid(AddressInfo(('127.0.0.1', self.ports[33]), 0))
+        fib30: BaseForwardingInformationBase = self.nodes[30].icnlayer.fib
         fib30.add_fib_entry(Name('/edge'), fid30to31, static=True)
         fib30.add_fib_entry(Name('/edge'), fid30to32, static=True)
         fib30.add_fib_entry(Name('/edge'), fid30to33, static=True)
-        self.nodes[30].data_structs['fib'] = fib30
-        self.nodes[30].data_structs['rib'] = TreeRoutingInformationBase(self.manager, shortest_only=False)
+        self.nodes[30].routinglayer.rib.shortest_only = False
 
         self.nodes[00].routinglayer._ageing_interval = 1.0
         self.nodes[10].routinglayer._ageing_interval = 1.0

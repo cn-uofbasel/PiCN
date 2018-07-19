@@ -7,6 +7,7 @@ import queue
 
 from datetime import datetime, timedelta
 
+from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
 from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from PiCN.Layers.RoutingLayer.RoutingInformationBase import BaseRoutingInformationBase
 from PiCN.Packets import Name
@@ -36,10 +37,9 @@ class test_RoutingLayerFullStack(unittest.TestCase):
         self.repo = ICNDataRepository('/tmp/test_repo', Name('/testrepo'), port=9090, encoder=NdnTlvEncoder())
         self.fetch = Fetch('127.0.0.1', 9004, encoder=NdnTlvEncoder())
         # Create RIB entry for the repository (with Python weirdness)
-        repo_fid: int = self.f9000.linklayer.create_new_fid(('127.0.0.1', 9090), static=True)
-        rib: BaseRoutingInformationBase = self.f9000.data_structs['rib']
+        repo_fid: int = self.f9000.linklayer.faceidtable.get_or_create_faceid(AddressInfo(('127.0.0.1', 9090), 0))
+        rib: BaseRoutingInformationBase = self.f9000.routinglayer.rib
         rib.insert(Name('/testrepo'), repo_fid, distance=1, timeout=None)
-        self.f9000.data_structs['rib'] = rib
 
     def tearDown(self):
         self.f9000.stop_forwarder()

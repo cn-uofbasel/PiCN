@@ -7,9 +7,11 @@ import socket
 from PiCN.Mgmt import MgmtClient
 from PiCN.Packets import Name
 
+
 def main(args, help_string):
 
     mgmt_client = MgmtClient(args.port)
+    data = None
 
     if args.command == "shutdown":
         try:
@@ -40,7 +42,7 @@ def main(args, help_string):
             sys.exit(-2)
 
         try:
-            data = mgmt_client.add_face(resolved_hostname, args.parameters.split(":")[1])
+            data = mgmt_client.add_face(resolved_hostname, int(args.parameters.split(":")[1]), int(args.parameters.split(":")[2]))
         except:
             print(help_string)
 

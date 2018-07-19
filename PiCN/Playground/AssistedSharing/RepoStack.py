@@ -3,10 +3,13 @@
 import multiprocessing
 
 from PiCN.Playground.AssistedSharing import RepoLayer
-from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
 from PiCN.LayerStack.LayerStack import LayerStack
 
-from PiCN.Layers.LinkLayer import UDP4LinkLayer
+from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
+from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
+from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface
+from PiCN.Layers.LinkLayer import BasicLinkLayer
+from PiCN.Processes import PiCNSyncDataStructFactory
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder, NdnTlvEncoder
 from PiCN.Logger import Logger
 
@@ -20,8 +23,14 @@ class RepoStack(object):
         encoder.set_log_level(log_level)
         self.encoder = encoder
 
+        # create datastruct
+        synced_data_struct_factory1 = PiCNSyncDataStructFactory()
+        synced_data_struct_factory1.register("face_id_table", FaceIDDict)
+        synced_data_struct_factory1.create_manager()
+        face_id_table = synced_data_struct_factory1.manager.face_id_table()
+
         # initialize layers
-        self.link_layer = UDP4LinkLayer(port, log_level=log_level)
+        self.link_layer = BasicLinkLayer([UDP4Interface(port)], face_id_table, log_level=log_level)
         self.packet_encoding_layer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
         self.repo_layer = RepoLayer(log_level=log_level)
 

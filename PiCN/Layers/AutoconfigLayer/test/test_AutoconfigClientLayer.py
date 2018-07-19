@@ -7,18 +7,28 @@ from datetime import datetime, timedelta
 import queue
 
 from PiCN.Layers.AutoconfigLayer import AutoconfigClientLayer
+from PiCN.Layers.LinkLayer import BasicLinkLayer
+from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
+from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
 from PiCN.Packets import Name, Interest, Content, Nack, NackReason
 
-from PiCN.Layers.AutoconfigLayer.test.mocks import MockLinkLayer
+from PiCN.Layers.AutoconfigLayer.test.mocks import MockInterface
+from PiCN.Processes import PiCNSyncDataStructFactory
 
 
 class test_AutoconfigClientLayer(unittest.TestCase):
 
     def setUp(self):
-        self.manager = multiprocessing.Manager()
-        self.linklayer_mock = MockLinkLayer(port=1337)
-        self.autoconflayer = AutoconfigClientLayer(linklayer=self.linklayer_mock,
-                                                   bcaddr='127.255.255.255', bcport=4242,
+        synced_data_struct_factory = PiCNSyncDataStructFactory()
+        synced_data_struct_factory.register('faceidtable', FaceIDDict)
+        synced_data_struct_factory.create_manager()
+
+        self.mock_interface = MockInterface(port=1337)
+        self.faceidtable: FaceIDDict = synced_data_struct_factory.manager.faceidtable()
+
+        self.linklayer = BasicLinkLayer([self.mock_interface], self.faceidtable)
+        self.autoconflayer = AutoconfigClientLayer(linklayer=self.linklayer,
+                                                   bcport=4242,
                                                    solicitation_timeout=3.0)
         self.autoconflayer.queue_to_higher = self.queue_to_higher = multiprocessing.Queue()
         self.autoconflayer.queue_from_higher = self.queue_from_higher = multiprocessing.Queue()
@@ -35,7 +45,7 @@ class test_AutoconfigClientLayer(unittest.TestCase):
     def test_broadcast_enabled(self):
         """Test that broadcasting was enabled on the UDP socket"""
         self.autoconflayer.start_process()
-        self.linklayer_mock.sock.setsockopt.assert_called_once_with(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        self.mock_interface.sock.setsockopt.assert_called_once_with(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
     def test_pass_through(self):
         """Test that autoconfig-unrelated content is passed through unchanged"""
@@ -73,13 +83,13 @@ class test_AutoconfigClientLayer(unittest.TestCase):
             except queue.Empty:
                 pass
         # Make sure the broadcast face was actually created and get its face id
-        bcfid = self.linklayer_mock._ip_to_fid.get(('127.255.255.255', 4242), None)
+        bcfid = self.faceidtable.get_or_create_faceid(AddressInfo(('127.255.255.255', 4242), 0))
         self.assertIsNotNone(bcfid)
         # Make sure a forwarder solicitation was sent downwards
         solictiation = Interest(Name('/autoconfig/forwarders'))
         self.assertIn([bcfid, solictiation], tolower)
 
-    def test_interest_passed_down_after_advertiesement(self):
+    def test_interest_passed_down_after_advertisement(self):
         """
         Test that held interests are passed downwards once a forwarder advertisement with a matching route is received.
         """
@@ -103,7 +113,7 @@ class test_AutoconfigClientLayer(unittest.TestCase):
             except queue.Empty:
                 pass
         # Make sure the broadcast face was actually created and get its face id
-        bcfid = self.linklayer_mock._ip_to_fid.get(('127.255.255.255', 4242), None)
+        bcfid = self.faceidtable.get_or_create_faceid(AddressInfo(('127.255.255.255', 4242), 0))
         self.assertIsNotNone(bcfid)
         # Make sure a forwarder solicitation was sent downwards
         solictiation = Interest(Name('/autoconfig/forwarders'))
@@ -122,7 +132,7 @@ class test_AutoconfigClientLayer(unittest.TestCase):
             except queue.Empty:
                 pass
         # Make sure the face to the forwarder was actually created and get its face id
-        fwdfid = self.linklayer_mock._ip_to_fid.get(('127.13.37.42', 1234), None)
+        fwdfid = self.faceidtable.get_face_id(AddressInfo(('127.13.37.42', 1234), 0))
         self.assertIsNotNone(fwdfid)
         # Make sure the two interests with matching prefixes were passed downwards
         self.assertIn([fwdfid, foobar], tolower)
@@ -146,7 +156,7 @@ class test_AutoconfigClientLayer(unittest.TestCase):
             except queue.Empty:
                 pass
         # Make sure the broadcast face was actually created and get its face id
-        bcfid = self.linklayer_mock._ip_to_fid.get(('127.255.255.255', 4242), None)
+        bcfid = self.faceidtable.get_or_create_faceid(AddressInfo(('127.255.255.255', 4242), 0))
         self.assertIsNotNone(bcfid)
         # Make sure the forwarder solicitation was sent more than once
         solictiation = Interest(Name('/autoconfig/forwarders'))
@@ -173,7 +183,7 @@ class test_AutoconfigClientLayer(unittest.TestCase):
             tohigher = self.queue_to_higher.get(timeout=waittime/10)
         except queue.Empty:
             self.fail()
-        bcfid = self.linklayer_mock._ip_to_fid.get(('127.255.255.255', 4242), None)
+        bcfid = self.faceidtable.get_or_create_faceid(AddressInfo(('127.255.255.255', 4242), 0))
         self.assertIsNotNone(bcfid)
         solictiation = Interest(Name('/autoconfig/forwarders'))
         solictiation_count = len([1 for data in tolower if data == [bcfid, solictiation]])

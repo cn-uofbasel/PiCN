@@ -4,7 +4,7 @@ import multiprocessing
 
 from typing import Dict, Tuple, Union
 
-from PiCN.Layers.LinkLayer import UDP4LinkLayer
+from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface
 from PiCN.Layers.RepositoryLayer.Repository import BaseRepository
 from PiCN.Packets import Name, Content, Nack
 
@@ -16,7 +16,7 @@ class MockSocket(object):
         self.close = unittest.mock.Mock()
 
 
-class MockLinkLayer(UDP4LinkLayer):
+class MockInterface(UDP4Interface):
 
     # noinspection PyMissingConstructor
     # super constructor not called, as no actual socket should be instantiated.
@@ -39,6 +39,19 @@ class MockLinkLayer(UDP4LinkLayer):
         self._id_gen += 1
         self._ip_to_fid[addr] = fid
         return fid
+
+    def send(self, data, addr):
+        pass
+
+    def receive(self):
+        pass
+
+    def get_broadcast_address(self):
+        return '127.255.255.255'
+
+    @property
+    def file_descriptor(self):
+        return None
 
 
 class MockRepository(BaseRepository):

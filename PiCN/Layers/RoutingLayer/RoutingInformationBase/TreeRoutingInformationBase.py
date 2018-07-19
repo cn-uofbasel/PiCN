@@ -1,10 +1,9 @@
 
 from typing import List, Tuple, Dict, Iterator
 
-import multiprocessing
 from datetime import datetime
 
-from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
+from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase, ForwardingInformationBaseEntry
 from PiCN.Layers.RoutingLayer.RoutingInformationBase.BaseRoutingInformationBase import BaseRoutingInformationBase
 from PiCN.Packets import Name
 
@@ -163,20 +162,18 @@ class TreeRoutingInformationBase(BaseRoutingInformationBase):
     Implementation of a Routing Information Base that uses a tree structure for internal storage.
     """
 
-    def __init__(self, manager: multiprocessing.Manager, shortest_only: bool = True):
+    def __init__(self, shortest_only: bool = True):
         """
         :param shortest_only: Whether to only add the shortest route to the FIB, or to add all routes.
         """
         super().__init__(shortest_only)
         self._tree: _RIBTreeNode = _RIBTreeNode(collapse_reduce_to_shortest=shortest_only)
-        self._lock: multiprocessing.Lock = manager.Lock()
 
     def ageing(self):
         """
         Remove outdated entries from the RIB.
         """
-        with self._lock:
-            self._tree.ageing(datetime.utcnow())
+        self._tree.ageing(datetime.utcnow())
 
     def insert(self, name: Name, fid: int, distance: int, timeout: datetime = None):
         """
@@ -187,27 +184,28 @@ class TreeRoutingInformationBase(BaseRoutingInformationBase):
         :param timeout: The timestamp after which to consider the route
         :return:
         """
-        with self._lock:
-            self._tree.insert(name, fid, distance, timeout)
+        self._tree.insert(name, fid, distance, timeout)
 
-    def build_fib(self, fib: BaseForwardingInformationBase):
+    def build_fib(self) -> List[ForwardingInformationBaseEntry]:
         """
         Construct FIB entries from the RIB data, and insert them into the passed FIB object.
         All previous entries in the FIB will be deleted.
         :param fib: The FIB to fill with routes.
         """
         # Clear all previous FIB entries
-        fib.clear()
         # Add the longest prefix representation entries to the FIB
+        fib: List[ForwardingInformationBaseEntry] = list()
         for name, fid, dist, timeout in self:
-            fib.add_fib_entry(name, fid, static=False)
+            fib.append(ForwardingInformationBaseEntry(name, fid, static=False))
+        return fib
 
     def __iter__(self) -> Iterator[Tuple[Name, int, int, datetime]]:
-        with self._lock:
-            collapsed: List[Tuple[List[bytes], int, int, datetime]] = self._tree.collapse()
+        collapsed: List[Tuple[List[bytes], int, int, datetime]] = self._tree.collapse()
         for name, fid, dist, timeout in collapsed:
             yield (Name(name), fid, dist, timeout)
 
+    def entries(self) -> List[Tuple[Name, int, int, datetime]]:
+        return [(Name(name), fid, dist, timeout) for name, fid, dist, timeout in self._tree.collapse()]
+
     def __len__(self):
-        with self._lock:
-            return len(self._tree.collapse())
+        return len(self._tree.collapse())

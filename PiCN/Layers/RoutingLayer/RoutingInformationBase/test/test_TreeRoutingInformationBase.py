@@ -1,19 +1,14 @@
 
 import unittest
-import multiprocessing
 from datetime import datetime, timedelta
 
 from PiCN.Layers.RoutingLayer.RoutingInformationBase.TreeRoutingInformationBase import _RIBTreeNode
 from PiCN.Layers.RoutingLayer.RoutingInformationBase import BaseRoutingInformationBase, TreeRoutingInformationBase
-from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase,\
-    ForwardingInformationBaseMemoryPrefix, ForwardingInformationBaseEntry
+from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseEntry
 from PiCN.Packets import Name
 
 
 class test_TreeRoutingInformationBase(unittest.TestCase):
-
-    def setUp(self):
-        self.manager = multiprocessing.Manager()
 
     def test_insert(self):
         tree: _RIBTreeNode = _RIBTreeNode()
@@ -93,19 +88,18 @@ class test_TreeRoutingInformationBase(unittest.TestCase):
         self.assertNotIn(1, tree._distance_vector)
 
     def test_wrapper_class(self):
-        rib: BaseRoutingInformationBase = TreeRoutingInformationBase(self.manager)
-        fib: BaseForwardingInformationBase = ForwardingInformationBaseMemoryPrefix()
+        rib: BaseRoutingInformationBase = TreeRoutingInformationBase()
         rib.insert(Name('/foo/bar'), 0, 42)
         rib.insert(Name('/ndn/ch/unibas/dmi/cn'), 1, 10)
         rib.insert(Name('/ndn/ch/unibas/dmi/cs'), 1, 12)
-        rib.build_fib(fib)
+        fib = rib.build_fib()
         foobarentry = ForwardingInformationBaseEntry(Name('/foo/bar'), 0)
         unibasentry = ForwardingInformationBaseEntry(Name('/ndn/ch/unibas/dmi'), 1)
-        self.assertIn(foobarentry, fib.container)
-        self.assertIn(unibasentry, fib.container)
+        self.assertIn(foobarentry, fib)
+        self.assertIn(unibasentry, fib)
 
     def test_iter_len(self):
-        rib: BaseRoutingInformationBase = TreeRoutingInformationBase(self.manager)
+        rib: BaseRoutingInformationBase = TreeRoutingInformationBase()
         timeout = datetime.utcnow() + timedelta(hours=1)
         rib.insert(Name('/foo/bar'), 0, 4, timeout=timeout)
         rib.insert(Name('/ndn/ch/unibas/dmi'), 1, 2)
@@ -115,17 +109,16 @@ class test_TreeRoutingInformationBase(unittest.TestCase):
         self.assertIn((Name('/ndn/ch/unibas'), 1, 2, None), rib)
 
     def test_collapse_all_no_reduction(self):
-        rib: BaseRoutingInformationBase = TreeRoutingInformationBase(self.manager, shortest_only=False)
+        rib: BaseRoutingInformationBase = TreeRoutingInformationBase(shortest_only=False)
         rib.insert(Name('/ndn/ch/unibas/dmi/cn'), 1, 3)
         rib.insert(Name('/ndn/ch/unibas/dmi/cn'), 2, 4)
         rib.insert(Name('/ndn/edu/ucla'), 0, 4)
         rib.insert(Name('/ndn/edu/ucla/ping'), 0, 5)
-        fib: BaseForwardingInformationBase = ForwardingInformationBaseMemoryPrefix()
-        rib.build_fib(fib)
+        fib = rib.build_fib()
         cnentry1 = ForwardingInformationBaseEntry(Name('/ndn/ch/unibas/dmi/cn'), 1)
         cnentry2 = ForwardingInformationBaseEntry(Name('/ndn/ch/unibas/dmi/cn'), 2)
         uclaentry = ForwardingInformationBaseEntry(Name('/ndn/edu/ucla'), 0)
-        self.assertEqual(3, len(fib.container))
-        self.assertIn(cnentry1, fib.container)
-        self.assertIn(cnentry2, fib.container)
-        self.assertIn(uclaentry, fib.container)
+        self.assertEqual(3, len(fib))
+        self.assertIn(cnentry1, fib)
+        self.assertIn(cnentry2, fib)
+        self.assertIn(uclaentry, fib)

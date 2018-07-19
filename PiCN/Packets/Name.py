@@ -69,6 +69,9 @@ class Name(object):
     def __str__(self) -> str:
         return self.to_string()
 
+    def __repr__(self) -> str:
+        return f'<PiCN.Packets.Name.Name {str(self)} at {hex(id(self))}>'
+
     def __eq__(self, other) -> bool:
         if type(other) is not Name:
             return False

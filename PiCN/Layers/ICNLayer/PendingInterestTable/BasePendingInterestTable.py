@@ -7,6 +7,7 @@ from typing import List
 
 from PiCN.Packets import Interest, Name
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseEntry
+from PiCN.Layers.ICNLayer import BaseICNDataStruct
 
 
 class PendingInterestTableEntry(object):
@@ -15,11 +16,17 @@ class PendingInterestTableEntry(object):
     def __init__(self, name: Name, faceid: int, interest:Interest = None, local_app: bool=False):
         self.name = name
         self._faceids: List[int] = []
-        self._faceids.append(faceid)
+        if isinstance(faceid, list):
+            self._faceids.extend(faceid)
+        else:
+            self._faceids.append(faceid)
         self._timestamp = time.time()
         self._retransmits = 0
         self._local_app: List[bool]= []
-        self._local_app.append(local_app)
+        if isinstance(local_app, list):
+            self._local_app.extend(local_app)
+        else:
+            self._local_app.append(local_app)
         self._interest = interest
         self._fib_entries_already_used: List[ForwardingInformationBaseEntry] = []
 
@@ -85,47 +92,64 @@ class PendingInterestTableEntry(object):
         self._fib_entries_already_used = fib_entries_already_used
 
 
-class BasePendingInterestTable(object):
-    """Abstract BasePendingInterestaTable for usage in BasicICNLayer"""
+class BasePendingInterestTable(BaseICNDataStruct):
+    """Abstract BasePendingInterestaTable for usage in BasicICNLayer
+    :param pit_timeout: timeout for a pit entry when calling the ageing function
+    """
 
-    def __init__(self):
-        self._container: List[PendingInterestTableEntry] = []
+    def __init__(self, pit_timeout: int=10, pit_retransmits: int=3):
+        super().__init__()
+        self.container: List[PendingInterestTableEntry] = []
+        self._pit_timeout = pit_timeout
+        self._pit_retransmits = pit_retransmits
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def add_pit_entry(self, name: Name, faceid: int, interest: Interest = None, local_app: bool = False):
         """Add an new entry"""
 
-    @abc.abstractclassmethod
-    def find_pit_entry(self, name: Name) -> int:
+    @abc.abstractmethod
+    def find_pit_entry(self, name: Name) -> PendingInterestTableEntry:
         """Find an entry in the PIT"""
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def remove_pit_entry(self, name: Name):
         """Remove an entry in the PIT"""
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def update_timestamp(self, pit_entry: PendingInterestTableEntry):
         """Update Timestamp of a PIT Entry"""
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def add_used_fib_entry(self, name: Name, used_fib_entry: ForwardingInformationBaseEntry):
         """Add a used fib entry to the already used fib entries"""
 
+    @abc.abstractmethod
+    def ageing(self) -> List[PendingInterestTableEntry]:
+        """Update the entries periodically
+        :return List of PIT entries to be retransmitted
+        """
+
+    @abc.abstractmethod
+    def append(self, entry):
+        """append an pit_entry to the pit container
+        :param entry: entry to be appended
+        """
+
+    @abc.abstractmethod
     def get_already_used_pit_entries(self, name: Name):
         """Get already used fib entries"""
 
-    @property
-    def container(self):
-        return self._container
+    def set_pit_timeout(self, timeout: float):
+        """set the timeout intervall for a pit entry
+        :param timeout: timout value to be set
+        """
+        self._pit_timeout = timeout
 
-    @container.setter
-    def container(self, container):
-        self._container = container
+    def set_pit_retransmits(self, retransmits: int):
+        """set the max number of retransmits for a pit entry
+        :param retransmits: retransmit value to be set
+        """
+        self._pit_retransmits = retransmits
 
-    @property
-    def manager(self):
-        return self._manager
 
-    @manager.setter
-    def manager(self, manager: multiprocessing.Manager):
-        self._manager = manager
+

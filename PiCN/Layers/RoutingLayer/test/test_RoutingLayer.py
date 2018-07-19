@@ -6,28 +6,39 @@ import queue
 from datetime import datetime, timedelta
 from time import sleep
 
+from PiCN.Layers.LinkLayer import BasicLinkLayer
+from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
+from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
 from PiCN.Layers.RoutingLayer import BasicRoutingLayer
 from PiCN.Layers.RoutingLayer.RoutingInformationBase import BaseRoutingInformationBase, TreeRoutingInformationBase
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase, \
     ForwardingInformationBaseMemoryPrefix
-from PiCN.Layers.RoutingLayer.test.mocks import MockLinkLayer
+from PiCN.Layers.RoutingLayer.test.mocks import MockInterface
 from PiCN.Packets import Interest, Content, Name
+from PiCN.Processes import PiCNSyncDataStructFactory
 
 
 class test_RoutingLayer(unittest.TestCase):
 
     def setUp(self):
-        self.manager = multiprocessing.Manager()
+        synced_data_struct_factory = PiCNSyncDataStructFactory()
+        synced_data_struct_factory.register('fib', ForwardingInformationBaseMemoryPrefix)
+        synced_data_struct_factory.register('rib', TreeRoutingInformationBase)
+        synced_data_struct_factory.register('faceidtable', FaceIDDict)
+        synced_data_struct_factory.create_manager()
 
-        self.linklayer_mock = MockLinkLayer()
+        self.mock_interface = MockInterface(0)
+        self.fidtable = synced_data_struct_factory.manager.faceidtable()
+        self.linklayer = BasicLinkLayer([self.mock_interface], self.fidtable)
         self.peer = ('127.42.13.37', 6363)
 
-        self.data_structs = self.manager.dict()
-        self.data_structs['fib']: BaseForwardingInformationBase = ForwardingInformationBaseMemoryPrefix()
-        self.data_structs['rib']: BaseRoutingInformationBase = TreeRoutingInformationBase(self.manager)
+        self.fib: BaseForwardingInformationBase = synced_data_struct_factory.manager.fib()
+        self.rib: BaseRoutingInformationBase = synced_data_struct_factory.manager.rib()
 
-        self.routinglayer = BasicRoutingLayer(self.linklayer_mock, self.data_structs, [self.peer])
+        self.routinglayer = BasicRoutingLayer(self.linklayer, [self.peer])
 
+        self.routinglayer.rib = self.rib
+        self.routinglayer.fib = self.fib
         self.routinglayer.queue_to_higher = self.queue_to_higher = multiprocessing.Queue()
         self.routinglayer.queue_from_higher = self.queue_from_higher = multiprocessing.Queue()
         self.routinglayer.queue_to_lower = self.queue_to_lower = multiprocessing.Queue()
@@ -101,9 +112,7 @@ class test_RoutingLayer(unittest.TestCase):
         self.assertNotIn([42, c], packets)
 
     def test_nonempty_routing_content(self):
-        rib: BaseRoutingInformationBase = self.data_structs['rib']
-        rib.insert(Name('/ndn/ch/unibas'), 42, 3)
-        self.data_structs['rib'] = rib
+        self.rib.insert(Name('/ndn/ch/unibas'), 42, 3)
 
         self.routinglayer.start_process()
         waittime = 1.0
@@ -144,14 +153,14 @@ class test_RoutingLayer(unittest.TestCase):
         self.queue_from_lower.put([42, announcement])
         sleep(waittime)
         # Make sure an appropriate entry is added to the RIB (with incremented distance)
-        for name, fid, dist, _ in self.data_structs['rib']:
+        for name, fid, dist, _ in self.rib.entries():
             if name == Name('/ndn/ch/unibas') and fid == 42 and dist == 4:
                 return
         self.fail()
 
     def test_ageing(self):
         waittime: float = 3.0
-        peerfid = self.linklayer_mock._get_or_create_fid(self.peer, static=True)
+        peerfid = self.linklayer.faceidtable.get_or_create_faceid(AddressInfo(self.peer, 0))
         self.routinglayer._ageing_interval = 0.5
 
         self.routinglayer.start_process()

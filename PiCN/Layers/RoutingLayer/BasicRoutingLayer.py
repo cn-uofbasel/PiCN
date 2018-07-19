@@ -1,25 +1,27 @@
 
-from typing import List, Tuple, Dict
+from typing import List, Tuple
 
 import multiprocessing
 import threading
 from datetime import datetime, timedelta
 
+from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
 from PiCN.Processes import LayerProcess
-from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
+from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase, ForwardingInformationBaseEntry
 from PiCN.Layers.RoutingLayer.RoutingInformationBase import BaseRoutingInformationBase
-from PiCN.Layers.LinkLayer import UDP4LinkLayer
+from PiCN.Layers.LinkLayer import BasicLinkLayer
 from PiCN.Packets import Name, Content, Interest
 
 
 class BasicRoutingLayer(LayerProcess):
 
-    def __init__(self, linklayer: UDP4LinkLayer, data_structs: Dict[str, object],
+    def __init__(self, linklayer: BasicLinkLayer,
                  peers: List[Tuple[str, int]] = None, log_level: int = 255):
         super().__init__('BasicRoutingLayer', log_level)
         self._prefix: Name = Name('/routing')
-        self._linklayer: UDP4LinkLayer = linklayer
-        self._datastructs: Dict[str, object] = data_structs
+        self._linklayer: BasicLinkLayer = linklayer
+        self.rib: BaseRoutingInformationBase = None
+        self.fib: BaseForwardingInformationBase = None
         self._rib_maxage: timedelta = timedelta(seconds=3600)
         self._peers: List[Tuple[str, int]] = peers if peers is not None else []
         self._ageing_interval: float = 5.0
@@ -45,9 +47,8 @@ class BasicRoutingLayer(LayerProcess):
         if packet.name == self._prefix:
             if isinstance(packet, Interest):
                 self.logger.info('Received routing interest')
-                rib: BaseRoutingInformationBase = self._datastructs['rib']
                 output: str = ''
-                for name, fid, dist, timeout in rib:
+                for name, fid, dist, timeout in self.rib.entries():
                     if timeout is None:
                         output = f'{output}{name}:{dist}:-1\n'
                     else:
@@ -56,9 +57,8 @@ class BasicRoutingLayer(LayerProcess):
                 self.queue_to_lower.put([rcv_fid, content])
             elif isinstance(packet, Content):
                 self.logger.info('Received routing content')
-                rib: BaseRoutingInformationBase = self._datastructs['rib']
+                rib: BaseRoutingInformationBase = self.rib
                 lines: List[str] = [l for l in packet.content.split('\n') if len(l) > 0]
-                # TODO(s3lph): Make rcv_fid static
                 for line in lines:
                     name, dist, timeout = line.rsplit(':', 2)
                     if timeout == '-1':
@@ -66,7 +66,6 @@ class BasicRoutingLayer(LayerProcess):
                     else:
                         timeout = timedelta(seconds=int(timeout))
                     rib.insert(Name(name), rcv_fid, int(dist) + 1, now + min(timeout, self._rib_maxage))
-                self._datastructs['rib'] = rib
             return
         self.queue_to_higher.put(data)
 
@@ -74,12 +73,11 @@ class BasicRoutingLayer(LayerProcess):
         self.queue_to_lower.put(data)
 
     def _ageing(self):
-        rib: BaseRoutingInformationBase = self._datastructs['rib']
-        fib: BaseForwardingInformationBase = self._datastructs['fib']
-        rib.ageing()
-        rib.build_fib(fib)
-        self._datastructs['rib'] = rib
-        self._datastructs['fib'] = fib
+        if self.rib is not None:
+            self.rib.ageing()
+            self.fib.clear()
+            for entry in self.rib.build_fib():
+                self.fib.add_fib_entry(entry.name, entry.faceid, static=entry.static)
         self._send_routing_interest()
         self._ageing_timer = threading.Timer(self._ageing_interval, self._ageing)
         self._ageing_timer.start()
@@ -87,7 +85,8 @@ class BasicRoutingLayer(LayerProcess):
     def _send_routing_interest(self):
         solicitation: Interest = Interest(self._prefix)
         for addr in self._peers:
-            fid = self._linklayer.get_or_create_fid(addr, static=True)
+            addr_info: AddressInfo = AddressInfo(addr, 0)
+            fid = self._linklayer.faceidtable.get_or_create_faceid(addr_info)
             try:
                 self.queue_to_lower.put([fid, solicitation])
             except AssertionError:
