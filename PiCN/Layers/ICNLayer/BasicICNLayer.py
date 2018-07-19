@@ -136,7 +136,7 @@ class BasicICNLayer(LayerProcess):
 
     def handle_nack(self, face_id: int, nack: Nack, to_lower: multiprocessing.Queue,
                     to_higher: multiprocessing.Queue, from_local: bool = False):
-        self.logger.info("Handling NACK")
+        self.logger.info("Handling NACK: " + str(nack.name) + " Reason: " + str(nack.reason) + " From Local: " + str(from_local))
         pit_entry = self.pit.find_pit_entry(nack.name)
         if pit_entry is None:
             self.logger.info("No PIT entry for NACK available, dropping")
