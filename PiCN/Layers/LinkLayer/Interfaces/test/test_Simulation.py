@@ -279,7 +279,7 @@ class cases_Simulation():
         mgmt_client1.add_face("icnfwd2", None, 0)
         mgmt_client1.add_forwarding_rule(Name("/test"), 0)
 
-        res = self.fetchtool.fetch_data(Name("/test/data/f1"), 10)
+        res = self.fetchtool.fetch_data(Name("/test/data/f1"), 3)
 
         self.assertEqual("A"*50000, res)
 

@@ -122,6 +122,7 @@ class test_AutoconfigRepoHopping(unittest.TestCase):
             n.stop_forwarder()
         shutil.rmtree('/tmp/test_hopping_repo')
 
+    @unittest.skip("Requires lots of resources, move to simulation")
     def test_hopping_repo(self):
         for n in self.nodes.values():
             n.start_forwarder()
