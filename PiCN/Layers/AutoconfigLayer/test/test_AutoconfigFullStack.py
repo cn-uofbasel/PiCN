@@ -98,18 +98,18 @@ class test_AutoconfigFullStack(unittest.TestCase):
 
     def test_repo_forwarder_client_fetch_fixed_name(self):
         self.forwarder.start_all()
-        time.sleep(1.0)
+        time.sleep(2.0)
         self.repo.start_all()
-        time.sleep(1.0)
+        time.sleep(2.0)
         self.client.start_all()
-        time.sleep(1.0)
+        time.sleep(2.0)
 
         # Send an interest with a fixed name, let autoconfig figure out where to get the data from
         name = Name('/test/prefix/repos/testrepo/testcontent')
         interest = Interest(name)
         self.client.queue_from_higher.put([None, interest])
         try:
-            data = self.client.queue_to_higher.get(timeout=10.0)
+            data = self.client.queue_to_higher.get(timeout=20.0)
         except queue.Empty:
             self.fail()
         self.assertIsInstance(data[1], Content)
