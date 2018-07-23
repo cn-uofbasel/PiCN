@@ -98,11 +98,11 @@ class test_AutoconfigFullStack(unittest.TestCase):
 
     def test_repo_forwarder_client_fetch_fixed_name(self):
         self.forwarder.start_all()
-        time.sleep(2.0)
+        time.sleep(1.0)
         self.repo.start_all()
-        time.sleep(2.0)
+        time.sleep(1.0)
         self.client.start_all()
-        time.sleep(2.0)
+        time.sleep(5.0)
 
         # Send an interest with a fixed name, let autoconfig figure out where to get the data from
         name = Name('/test/prefix/repos/testrepo/testcontent')
