@@ -41,7 +41,7 @@ class BasicNFNLayer(LayerProcess):
         packet_id = data[0]
         packet = data[1]
         if isinstance(packet, Interest):
-            self.logger.info("Got Interest from lower: " + str(packet.name))
+            self.logger.info("Got Interest from lower: " + str(packet.name) + "; Face ID: " + str(packet_id))
             self.handleInterest(packet_id, packet)
         elif isinstance(packet, Content):
             self.logger.info("Got Content from lower: " + str(packet.name))
@@ -153,7 +153,7 @@ class BasicNFNLayer(LayerProcess):
         entry = self.computation_table.get_computation(interest.name)
 
         if self.optimizer.compute_fwd(prepended_name, entry.ast, interest):
-            self.logger.info("Forward Computation")
+            self.logger.info("Forward Computation: " + str(interest.name))
             rewritten_names = self.optimizer.rewrite(interest.name, entry.ast)
             if rewritten_names and len(rewritten_names) > 0:
                 self.computation_table.remove_computation(interest.name)
@@ -165,10 +165,11 @@ class BasicNFNLayer(LayerProcess):
                 self.computation_table.append_computation(entry)
 
         if self.optimizer.compute_local(prepended_name, entry.ast, interest):
-            self.logger.info("Compute Local")
+            self.logger.info("Compute Local: " + str(interest.name))
             self.computation_table.remove_computation(interest.name)
             entry.comp_state = NFNComputationState.EXEC
             if not isinstance(entry.ast, AST_FuncCall):
+                self.logger.error("AST is no function call but: " + str(entry.ast))
                 return
 
             func_name = Name(entry.ast._element)
@@ -274,5 +275,5 @@ class BasicNFNLayer(LayerProcess):
                 name = n
             nack = Nack(n, NackReason.COMP_TERMINATED, interest=Interest(name))
             #self.handleNack(-1, nack)
-            self.queue_to_lower.put([0, nack])
+            self.queue_to_lower.put([n.id, nack])
 

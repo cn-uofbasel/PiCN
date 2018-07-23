@@ -30,13 +30,12 @@ class BasicLinkLayer(LayerProcess):
         :param to_higher: queue to the higher layer
         :param data: received data
         """
-        self.logger.info("Got data from Network")
         packet = data[0]
         addr = data[1]
 
-
         addr_info = AddressInfo(addr, self.interfaces.index(interface))
         faceid = self.faceidtable.get_or_create_faceid(addr_info)
+        self.logger.info("Got data from Network and from Face ID: " + str(faceid) + ", addr: " + str(addr_info.address))
         to_higher.put([faceid, packet])
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
@@ -45,9 +44,10 @@ class BasicLinkLayer(LayerProcess):
         :param to_higher: queue to the higher layer
         :param data: data to be send
         """
-        self.logger.info("Got data from Higher Layer")
+
         faceid = data[0]
         packet = data[1]
+        self.logger.info("Got data from Higher Layer with faceid: " + str(faceid))
 
         addr_info = self.faceidtable.get_address_info(faceid)
         if not addr_info:

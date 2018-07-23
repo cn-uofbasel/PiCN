@@ -14,6 +14,7 @@ import abc
 import queue
 import unittest
 import os
+import time
 
 from PiCN.Layers.LinkLayer.Interfaces import SimulationBus
 from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
@@ -42,12 +43,20 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         self.fetch_tool2 = Fetch("rsu2", None, 255, self.encoder_type(), [self.simulation_bus.add_interface("fetchtool2")])
 
         self.rsu1 = NFNForwarder(port=0, encoder=self.encoder_type(),
-                                 interfaces=[self.simulation_bus.add_interface("rsu1")], log_level=255)
+                                 interfaces=[self.simulation_bus.add_interface("rsu1")], log_level=255, ageing_interval=1)
 
         self.rsu2 = NFNForwarder(port=0, encoder=self.encoder_type(),
-                                 interfaces=[self.simulation_bus.add_interface("rsu2")], log_level=0)
+                                 interfaces=[self.simulation_bus.add_interface("rsu2")], log_level=255, ageing_interval=1)
         self.rsu3 = NFNForwarder(port=0, encoder=self.encoder_type(),
-                                 interfaces=[self.simulation_bus.add_interface("rsu3")], log_level=255)
+                                 interfaces=[self.simulation_bus.add_interface("rsu3")], log_level=255, ageing_interval=1)
+
+
+        self.rsu1.icnlayer.pit.set_pit_timeout(0)
+        self.rsu1.icnlayer.cs.set_cs_timeout(30)
+        self.rsu2.icnlayer.pit.set_pit_timeout(0)
+        self.rsu2.icnlayer.cs.set_cs_timeout(30)
+        self.rsu3.icnlayer.pit.set_pit_timeout(0)
+        self.rsu3.icnlayer.cs.set_cs_timeout(30)
 
         self.rsu1.nfnlayer.optimizer = EdgeComputingOptimizer(self.rsu1.icnlayer.cs, self.rsu1.icnlayer.fib, self.rsu1.icnlayer.pit, self.rsu1.linklayer.faceidtable)
         self.rsu2.nfnlayer.optimizer = EdgeComputingOptimizer(self.rsu2.icnlayer.cs, self.rsu2.icnlayer.fib, self.rsu2.icnlayer.pit, self.rsu2.linklayer.faceidtable)
@@ -102,9 +111,10 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         res = self.fetch_tool1.fetch_data(name, timeout=10)
         self.assertEqual(res, "HELLOWORLD RSU1")
         print("Result at RSU1:", res)
+        time.sleep(4)
         res = self.fetch_tool2.fetch_data(name, timeout=10)
-        print("Result as fetched from RSU2:", res)
-        self.assertEqual(res, "HELLOWORLD RSU2") #since node 2 starts computation too, result is on 2 the one of 2, killing forwarding rule on node one would fix that
+        print("Result as fetched via RSU2:", res)
+        self.assertEqual(res, "HELLOWORLD RSU1")
 
     def test_inner_call_without_data_from_client(self):
         """execute one function on the first node and another function on the second node"""
@@ -122,5 +132,6 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         res1 = self.fetch_tool1.fetch_data(name1, timeout=0)
         print(res1)
 
+        time.sleep(2)
         res2 = self.fetch_tool2.fetch_data(name2, timeout=0)
         print(res2)

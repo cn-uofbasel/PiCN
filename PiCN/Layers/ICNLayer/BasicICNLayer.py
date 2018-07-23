@@ -17,12 +17,12 @@ class BasicICNLayer(LayerProcess):
     """
 
     def __init__(self, cs: BaseContentStore=None, pit: BasePendingInterestTable=None,
-                 fib: BaseForwardingInformationBase=None, log_level=255):
+                 fib: BaseForwardingInformationBase=None, log_level=255, ageing_interval: int=3):
         super().__init__(logger_name="ICNLayer", log_level=log_level)
         self.cs = cs
         self.pit = pit
         self.fib = fib
-        self._ageing_interval: int = 4
+        self._ageing_interval: int = ageing_interval
         self._interest_to_app: bool = False
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
@@ -45,9 +45,9 @@ class BasicICNLayer(LayerProcess):
         if not isinstance(data[1], Packet):
             self.logger.warning("ICN Layer expects to receive [face id, packet] from lower layer")
             return
-
         face_id = data[0]
         packet = data[1]
+        self.logger.info("Received Packet from lower: " + str(face_id) + "; " + str(packet.name))
         if isinstance(packet, Interest):
             self.handle_interest_from_lower(face_id, packet, to_lower, to_higher, False)
         elif isinstance(packet, Content):
@@ -57,7 +57,7 @@ class BasicICNLayer(LayerProcess):
 
     def handle_interest_from_higher (self, face_id: int, interest: Interest, to_lower: multiprocessing.Queue,
                                    to_higher: multiprocessing.Queue):
-        self.logger.info("Handling Interest (from lower)")
+        self.logger.info("Handling Interest (from higher): " + str(interest.name) + "; Face ID: " + str(face_id))
         cs_entry = self.cs.find_content_object(interest.name)
         if cs_entry is not None:
             self.queue_to_higher.put([face_id, cs_entry.content])
@@ -65,14 +65,14 @@ class BasicICNLayer(LayerProcess):
         pit_entry = self.pit.find_pit_entry(interest.name)
         self.pit.add_pit_entry(interest.name, face_id, interest, local_app=True)
         if pit_entry:
-            fib_entry = self.fib.find_fib_entry(interest.name, incoming_faceids=pit_entry.face_id)
+            fib_entry = self.fib.find_fib_entry(interest.name, incoming_faceids=pit_entry.faceids)
         else:
             fib_entry = self.fib.find_fib_entry(interest.name)
         if fib_entry is not None:
             self.pit.add_used_fib_entry(interest.name, fib_entry)
             to_lower.put([fib_entry.faceid, interest])
         else:
-            self.logger.info("No FIB entry, sending Nack")
+            self.logger.info("No FIB entry, sending Nack: " + str(interest.name))
             nack = Nack(interest.name, NackReason.NO_ROUTE, interest=interest)
             if pit_entry is not None:  # if pit entry is available, consider it, otherwise assume interest came from higher
                 for i in range(0, len(pit_entry.faceids)):
@@ -85,9 +85,7 @@ class BasicICNLayer(LayerProcess):
 
     def handle_interest_from_lower(self, face_id: int, interest: Interest, to_lower: multiprocessing.Queue,
                                    to_higher: multiprocessing.Queue, from_local: bool = False):
-        self.logger.info("Handling Interest (from lower)")
-        #if to_higher is not None: #TODO check if app layer accepted the data, and change handling
-
+        self.logger.info("Handling Interest (from lower): " + str(interest.name) + "; Face ID: " + str(face_id))
         cs_entry = self.cs.find_content_object(interest.name)
         if cs_entry is not None:
             self.logger.info("Found in content store")
@@ -138,7 +136,7 @@ class BasicICNLayer(LayerProcess):
 
     def handle_nack(self, face_id: int, nack: Nack, to_lower: multiprocessing.Queue,
                     to_higher: multiprocessing.Queue, from_local: bool = False):
-        self.logger.info("Handling NACK")
+        self.logger.info("Handling NACK: " + str(nack.name) + " Reason: " + str(nack.reason) + " From Local: " + str(from_local))
         pit_entry = self.pit.find_pit_entry(nack.name)
         if pit_entry is None:
             self.logger.info("No PIT entry for NACK available, dropping")

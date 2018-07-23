@@ -31,7 +31,8 @@ from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
 class NFNForwarder(object):
     """NFN Forwarder for PICN"""
     # TODO add chunking layer
-    def __init__(self, port=9000, log_level=255, encoder: BasicEncoder=None, interfaces: List[BaseInterface]=None):
+    def __init__(self, port=9000, log_level=255, encoder: BasicEncoder=None, interfaces: List[BaseInterface]=None,
+                 ageing_interval: int = 3):
         # debug level
         logger = Logger("NFNForwarder", log_level)
         logger.info("Start PiCN NFN Forwarder on port " + str(port))
@@ -72,7 +73,7 @@ class NFNForwarder(object):
         # initialize layers
         self.linklayer = BasicLinkLayer(interfaces, faceidtable, log_level=log_level)
         self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
-        self.icnlayer = BasicICNLayer(log_level=log_level)
+        self.icnlayer = BasicICNLayer(log_level=log_level, ageing_interval=ageing_interval)
         self.chunklayer = BasicChunkLayer(self.chunkifier, log_level=log_level)
 
         # setup nfn

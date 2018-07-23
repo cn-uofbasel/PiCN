@@ -24,6 +24,7 @@ class BasicPacketEncodingLayer(LayerProcess):
         face_id, packet = self.check_data(data)
         if face_id == None or packet is None:
             return
+        self.logger.info("Packet from higher, Faceid: " + str(face_id) + ", Name: " + str(packet.name))
         encoded_packet = self.encode(packet)
         if encoded_packet is None:
             self.logger.info("Dropping Packet since None")
@@ -38,6 +39,7 @@ class BasicPacketEncodingLayer(LayerProcess):
         if decoded_packet is None:
             self.logger.info("Dropping Packet since None")
             return
+        self.logger.info("Packet from lower, Faceid: " + str(face_id) + ", Name: " + str(decoded_packet.name))
         to_higher.put([face_id, decoded_packet])
 
     def encode(self, data):
