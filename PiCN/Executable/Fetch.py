@@ -15,7 +15,7 @@ def main(args):
     name.format = args.format
 
     encoder = NdnTlvEncoder() if args.format == 'ndntlv' else SimpleStringEncoder
-    fetchTool = Fetch(args.ip, args.port, encoder=encoder)
+    fetchTool = Fetch(args.ip, args.port, encoder=encoder, autoconfig=args.autoconfig)
 
     content = fetchTool.fetch_data(name)
     print(content)
@@ -27,6 +27,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='ICN Fetch Tool')
     parser.add_argument('--format', choices=['ndntlv', ' simple'], type=str,
                         default='ndntlv', help='default is: "ndntlv"')
+    parser.add_argument('-a', '--autoconfig', action='store_true')
     parser.add_argument('ip', type=str,
                         help="IP addr of forwarder")
     parser.add_argument('port', type=int,

@@ -45,3 +45,21 @@ class BaseInterface(object):
         different sockets
         :return: File descriptor used for communication.
         """
+
+    def enable_broadcast(self) -> bool:
+        """
+        Attempts to enable broadcasting on this interface.  Must be overwritten if an interface implementation supports
+        broadcast.
+
+        :return: True on success, False on failure
+        """
+        return False
+
+    def get_broadcast_address(self) -> str:
+        """
+        Get the interface's broadcast address. Broadcasting may have to be enabled first.
+
+        :return: The interface's broadcast address, or None, if not applicable.
+        """
+        return None
+

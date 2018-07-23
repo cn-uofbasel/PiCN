@@ -7,6 +7,7 @@ from typing import List
 
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore, ContentStoreEntry
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase, ForwardingInformationBaseEntry
+from PiCN.Layers.RoutingLayer.RoutingInformationBase import BaseRoutingInformationBase
 from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable, PendingInterestTableEntry
 from PiCN.Packets import Name, Content, Interest, Packet, Nack, NackReason
 from PiCN.Processes import LayerProcess
@@ -17,11 +18,13 @@ class BasicICNLayer(LayerProcess):
     """
 
     def __init__(self, cs: BaseContentStore=None, pit: BasePendingInterestTable=None,
-                 fib: BaseForwardingInformationBase=None, log_level=255, ageing_interval: int=3):
+            fib: BaseForwardingInformationBase=None, rib: BaseRoutingInformationBase = None, log_level=255,
+                 ageing_interval: int=3):
         super().__init__(logger_name="ICNLayer", log_level=log_level)
         self.cs = cs
         self.pit = pit
         self.fib = fib
+        self.rib = rib
         self._ageing_interval: int = ageing_interval
         self._interest_to_app: bool = False
 
