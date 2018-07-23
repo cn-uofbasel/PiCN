@@ -23,7 +23,6 @@ from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
 from PiCN.Logger import Logger
 from PiCN.Mgmt import Mgmt
 from PiCN.Processes import PiCNSyncDataStructFactory
-from PiCN.Routing import BasicRouting
 from PiCN.Layers.LinkLayer import BasicLinkLayer
 from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface, AddressInfo, BaseInterface
 from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
@@ -95,9 +94,6 @@ class NFNForwarder(object):
         self.icnlayer.cs = cs
         self.icnlayer.fib = fib
         self.icnlayer.pit = pit
-
-        # routing
-        self.routing = BasicRouting(self.icnlayer.pit, None, log_level=log_level)  # TODO NOT IMPLEMENTED YET
 
         # mgmt
         self.mgmt = Mgmt(self.icnlayer.cs, self.icnlayer.fib, self.icnlayer.pit, self.linklayer,
