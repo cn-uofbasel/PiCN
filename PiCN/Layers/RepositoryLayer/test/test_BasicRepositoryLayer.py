@@ -70,7 +70,7 @@ class test_BasicRepositoryLayer(unittest.TestCase):
         n1 = Nack(i1.name, NackReason.NO_CONTENT, interest=i1)
         self.repositoryLayer.queue_from_lower.put([0, i1])
         try:
-            data = self.repositoryLayer.queue_to_lower.get(timeout=2.0)
+            data = self.repositoryLayer.queue_to_lower.get(timeout=4.0)
         except:
             self.fail()
         self.assertEqual(n1, data[1])

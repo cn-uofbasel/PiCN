@@ -109,7 +109,7 @@ class test_AutoconfigFullStack(unittest.TestCase):
         interest = Interest(name)
         self.client.queue_from_higher.put([None, interest])
         try:
-            data = self.client.queue_to_higher.get(timeout=2.0)
+            data = self.client.queue_to_higher.get(timeout=5.0)
         except queue.Empty:
             self.fail()
         self.assertIsInstance(data[1], Content)
