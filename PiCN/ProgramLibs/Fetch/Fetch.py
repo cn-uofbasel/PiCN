@@ -1,6 +1,7 @@
 """Fetch Tool for PiCN"""
 
 from PiCN.LayerStack import LayerStack
+from PiCN.Layers.AutoconfigLayer import AutoconfigClientLayer
 from PiCN.Layers.ChunkLayer import BasicChunkLayer
 from PiCN.Layers.PacketEncodingLayer import BasicPacketEncodingLayer
 from PiCN.Layers.ChunkLayer.Chunkifyer import SimpleContentChunkifyer
@@ -16,7 +17,8 @@ from PiCN.Packets import Content, Name, Interest, Nack
 class Fetch(object):
     """Fetch Tool for PiCN"""
 
-    def __init__(self, ip: str, port: int, log_level = 255, encoder: BasicEncoder=None, interfaces=None):
+    def __init__(self, ip: str, port: int, log_level = 255, encoder: BasicEncoder=None, autoconfig: bool = False,
+                 interfaces=None):
 
         # create encoder and chunkifyer
         if encoder is None:
@@ -48,6 +50,11 @@ class Fetch(object):
             self.linklayer
         ])
 
+        self.autoconfig = autoconfig
+        if autoconfig:
+            self.autoconfiglayer: AutoconfigClientLayer = AutoconfigClientLayer(self.linklayer)
+            self.lstack.insert(self.autoconfiglayer, on_top_of=self.packetencodinglayer)
+
         # setup communication
         if port is None:
             self.fid = self.linklayer.faceidtable.get_or_create_faceid(AddressInfo(ip, 0))
@@ -64,7 +71,11 @@ class Fetch(object):
         """
         # create interest
         interest: Interest = Interest(name)
-        self.lstack.queue_from_higher.put([self.fid, interest])
+        if self.autoconfig:
+            self.lstack.queue_from_higher.put([None, interest])
+        else:
+            self.lstack.queue_from_higher.put([self.fid, interest])
+
         if timeout == 0:
             packet = self.lstack.queue_to_higher.get()[1]
         else:

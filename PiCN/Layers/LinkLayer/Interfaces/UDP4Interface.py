@@ -36,5 +36,20 @@ class UDP4Interface(BaseInterface):
     def close(self):
         self.sock.close()
 
+    def enable_broadcast(self) -> bool:
+        """
+        Attempts to enable broadcasting on this interface.
+
+        :return: True on success, False on failure
+        """
+        try:
+            self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        except:
+            return False
+        return True
+
+    def get_broadcast_address(self) -> str:
+        return '255.255.255.255'
+
     def __eq__(self, other):
         return self.get_port() == other.get_port()

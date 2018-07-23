@@ -5,6 +5,7 @@ from typing import List, Union
 import binascii
 import json
 import os
+from typing import List, Union
 
 class Name(object):
     """
@@ -30,6 +31,8 @@ class Name(object):
 
     def components_to_string(self) -> str:
         # FIXME: handle '/' as part of a component, and binary components
+        if len(self._components) == 0:
+            return '/'
         if type(self._components[0]) is str:
             s =  '/' + '/'.join([c for c in self._components])
             return s
@@ -66,6 +69,9 @@ class Name(object):
     def __str__(self) -> str:
         return self.to_string()
 
+    def __repr__(self) -> str:
+        return f'<PiCN.Packets.Name.Name {str(self)} at {hex(id(self))}>'
+
     def __eq__(self, other) -> bool:
         if type(other) is not Name:
             return False
@@ -96,6 +102,9 @@ class Name(object):
 
     def __hash__(self) -> int:
         return self._components.__str__().__hash__()
+
+    def __len__(self):
+        return len(self._components)
 
     def is_prefix_of(self, name):
         """
