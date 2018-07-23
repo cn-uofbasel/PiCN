@@ -1,10 +1,22 @@
+"""
+Repo that move along edge nodes given the following structure. Node: Test requires some computational power and takes
+some time! If it fails maybe more computational power is required!
+                       c00
+             _________/ | \_________
+            |           |           |
+            |           |           |
+           c10         c20         c30
+         /  |  \      / |  \      / | \
+       e11 e12 e13 e21 e22 e23 e31 e32 e33
+
+       """
+
 
 from typing import List, Tuple, Dict
 
 import multiprocessing
 import os
 import shutil
-import unittest
 import queue
 from datetime import timedelta
 from time import sleep
@@ -18,7 +30,7 @@ from PiCN.ProgramLibs.ICNDataRepository import ICNDataRepository
 from PiCN.ProgramLibs.ICNForwarder import ICNForwarder
 
 
-class test_AutoconfigRepoHopping(unittest.TestCase):
+class AutoconfigRepoHoppingSimulation(object):
 
     def setUp(self):
         """
@@ -122,8 +134,7 @@ class test_AutoconfigRepoHopping(unittest.TestCase):
             n.stop_forwarder()
         shutil.rmtree('/tmp/test_hopping_repo')
 
-    @unittest.skip("Requires lots of resources, move to simulation")
-    def test_hopping_repo(self):
+    def run_simulation(self):
         for n in self.nodes.values():
             n.start_forwarder()
 
@@ -149,4 +160,15 @@ class test_AutoconfigRepoHopping(unittest.TestCase):
         expected: List[str] = []
         for c in [1, 2, 3, 4, 5, 6, 7, 8, 9]:
             expected.append(f'This is test chunk {c}!')
-        self.assertEqual(expected, chunks)
+        if expected == chunks:
+            print("Test was successful executed")
+        else:
+            print("Error during test")
+
+if __name__ == "__main__":
+    test = AutoconfigRepoHoppingSimulation()
+    try:
+        test.setUp()
+        test.run_simulation()
+    finally:
+        test.tearDown()
