@@ -108,7 +108,8 @@ class NFNForwarder(object):
 
     def stop_forwarder(self):
         # Stop processes
-        self.mgmt.stop_process()
         self.lstack.stop_all()
         # close queues file descriptors
+        if self.mgmt.process:
+            self.mgmt.stop_process()
         self.lstack.close_all()

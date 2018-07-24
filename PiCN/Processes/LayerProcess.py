@@ -157,8 +157,9 @@ class LayerProcess(PiCNProcess):
     def stop_process(self):
         """Stop the Layer Process"""
         if self.process:
+            #self.process.kill()
             self.process.terminate()
-            self.process.join()
+            #self.process.join()
         time.sleep(0.1)
         if self.queue_to_lower:
             self.queue_to_lower.close()
