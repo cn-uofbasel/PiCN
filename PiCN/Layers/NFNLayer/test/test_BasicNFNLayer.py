@@ -194,7 +194,7 @@ class test_BasicNFNLayer(unittest.TestCase):
 
     def test_forwarding_descision_no_rewrite(self):
         """Test if forward or compute local: goal: forward with no rewrite"""
-        self.nfn_layer.fib.add_fib_entry(Name('/func'), 1, True)
+        self.nfn_layer.fib.add_fib_entry(Name('/func'), [1], True)
 
         computation_name = Name("/func/f1")
         computation_name += "_(/test/data)"
@@ -215,7 +215,7 @@ class test_BasicNFNLayer(unittest.TestCase):
 
     def test_forwarding_descision_rewrite(self):
         """Test if forward or compute local: goal: forward with rewrite"""
-        self.nfn_layer.fib.add_fib_entry(Name('/test'), 1, True)
+        self.nfn_layer.fib.add_fib_entry(Name('/test'), [1], True)
 
         computation_name = Name("/func/f1")
         computation_name += "_(1,/test/data)"
@@ -238,7 +238,7 @@ class test_BasicNFNLayer(unittest.TestCase):
 
     def test_forward_descision_fwd_not_prepended_local(self):
         """Test if the forward or compute local: forward with not prepended data local available"""
-        self.nfn_layer.fib.add_fib_entry(Name('/test'), 1, True)
+        self.nfn_layer.fib.add_fib_entry(Name('/test'), [1], True)
 
         c1 = Content("/test/data", "Hello World")
         self.nfn_layer.cs.add_content_object(c1)
@@ -264,7 +264,7 @@ class test_BasicNFNLayer(unittest.TestCase):
 
     def test_forward_descision_compute_local_no_param(self):
         """Test if the forward or compute local: goal: compute local with no parameter"""
-        self.nfn_layer.fib.add_fib_entry(Name('/test'), 1, True)
+        self.nfn_layer.fib.add_fib_entry(Name('/test'), [1], True)
 
         c1 = Content("/func/f1", "PYTHON\nf\ndef f(a):\n    return a.upper()")
         self.nfn_layer.cs.add_content_object(c1)
@@ -285,7 +285,7 @@ class test_BasicNFNLayer(unittest.TestCase):
 
     def test_forward_descision_compute_local_param(self):
         """Test if the forward or compute local: goal: compute local with parameter"""
-        self.nfn_layer.fib.add_fib_entry(Name('/test'), 1, True)
+        self.nfn_layer.fib.add_fib_entry(Name('/test'), [1], True)
 
         c1 = Content("/func/f1", "PYTHON\nf\ndef f(a):\n    return a.upper()")
         self.nfn_layer.cs.add_content_object(c1)
@@ -309,7 +309,7 @@ class test_BasicNFNLayer(unittest.TestCase):
 
     def test_forward_descision_compute_inner_call(self):
         """Test if the forward or compute local: goal: compute local with inner call"""
-        self.nfn_layer.fib.add_fib_entry(Name('/test'), 1, True)
+        self.nfn_layer.fib.add_fib_entry(Name('/test'), [1], True)
 
         c1 = Content("/func/f1", "PYTHON\nf\ndef f(a):\n    return a.upper()")
         self.nfn_layer.cs.add_content_object(c1)
@@ -340,7 +340,7 @@ class test_BasicNFNLayer(unittest.TestCase):
     def test_handle_interest(self):
         """Test if handle interest handles an interest message correctly"""
 
-        self.nfn_layer.fib.add_fib_entry(Name('/test'), 1, True)
+        self.nfn_layer.fib.add_fib_entry(Name('/test'), [1], True)
 
         c1 = Content("/func/f1", "PYTHON\nf\ndef f(a):\n    return a.upper()")
         self.nfn_layer.cs.add_content_object(c1)
@@ -427,7 +427,7 @@ class test_BasicNFNLayer(unittest.TestCase):
 
     def test_handle_content_start_fwd(self):
         """test rewrting handling content"""
-        self.nfn_layer.fib.add_fib_entry(Name('/test'), 1, True)
+        self.nfn_layer.fib.add_fib_entry(Name('/test'), [1], True)
 
         computation_name = Name("/func/f1")
         computation_name += "_(/test/data)"
@@ -457,7 +457,7 @@ class test_BasicNFNLayer(unittest.TestCase):
 
     def test_handle_nack_on_rewritten_computation_no_further_rewrite(self):
         """Test if a Nack message is handled correctly for a rewritten computation, when there is no further rewrite"""
-        self.nfn_layer.fib.add_fib_entry(Name('/test'), 1, True)
+        self.nfn_layer.fib.add_fib_entry(Name('/test'), [1], True)
 
         computation_name = Name("/func/f1")
         computation_name += "_(/test/data)"
@@ -493,8 +493,8 @@ class test_BasicNFNLayer(unittest.TestCase):
 
     def test_handle_nack_on_rewritten_computation_further_rewrite(self):
         """Test if a Nack message is handled correctly for a rewritten computation, when there is a further rewrite"""
-        self.nfn_layer.fib.add_fib_entry(Name('/test'), 1, True)
-        self.nfn_layer.fib.add_fib_entry(Name('/data'), 1, True)
+        self.nfn_layer.fib.add_fib_entry(Name('/test'), [1], True)
+        self.nfn_layer.fib.add_fib_entry(Name('/data'), [1], True)
 
         computation_name = Name("/func/f1")
         computation_name += "_(/test/data,/data/test)"
@@ -579,8 +579,8 @@ class test_BasicNFNLayer(unittest.TestCase):
 
     def test_fwd(self):
         """Test forwarding using the BasicNFNLayer"""
-        self.nfn_layer.fib.add_fib_entry(Name('/test'), 1, True)
-        self.nfn_layer.fib.add_fib_entry(Name('/data'), 1, True)
+        self.nfn_layer.fib.add_fib_entry(Name('/test'), [1], True)
+        self.nfn_layer.fib.add_fib_entry(Name('/data'), [1], True)
 
         self.nfn_layer.start_process()
 
@@ -614,7 +614,7 @@ class test_BasicNFNLayer(unittest.TestCase):
 
     def test_compute(self):
         """Test Computing using the BasicNFNLayer"""
-        self.nfn_layer.fib.add_fib_entry(Name('/test'), 1, True)
+        self.nfn_layer.fib.add_fib_entry(Name('/test'), [1], True)
 
         c1 = Content("/func/f1", "PYTHON\nf\ndef f(a):\n    return a.upper()")
         self.nfn_layer.cs.add_content_object(c1)

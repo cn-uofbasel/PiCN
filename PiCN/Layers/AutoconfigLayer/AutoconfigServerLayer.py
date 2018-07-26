@@ -164,7 +164,7 @@ class AutoconfigServerLayer(LayerProcess):
         srvfid: int = self._linklayer.faceidtable.get_or_create_faceid(srv_addr_info)
         if local_only or self.rib is None:
             # If the prefix is not routed or routing is disabled altogether, create a static FIB entry
-            self.fib.add_fib_entry(srvname, srvfid, static=True)
+            self.fib.add_fib_entry(srvname, [srvfid], static=True)
         else:
             # If routing is enabled AND the prefix is routed, create a RIB entry
             self.rib.insert(srvname, srvfid, 1, timeout)

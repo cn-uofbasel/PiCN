@@ -77,7 +77,7 @@ class BasicRoutingLayer(LayerProcess):
             self.rib.ageing()
             self.fib.clear()
             for entry in self.rib.build_fib():
-                self.fib.add_fib_entry(entry.name, entry.faceid, static=entry.static)
+                self.fib.add_fib_entry(entry.name, [entry.faceid], static=entry.static)
         self._send_routing_interest()
         self._ageing_timer = threading.Timer(self._ageing_interval, self._ageing)
         self._ageing_timer.start()

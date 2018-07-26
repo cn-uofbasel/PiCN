@@ -74,7 +74,7 @@ class SimulationBus(PiCNProcess):
     """Simulation Bus that dispatches the communication between nodes in a Simulation"""
 
     def __init__(self, packetencoder: BasicEncoder=SimpleStringEncoder()):
-        self.interfacetable: Dict[SimulationInterface] = {}
+        self.interfacetable: Dict[str, SimulationInterface] = {}
         self.packetencoder = packetencoder
 
 
@@ -84,6 +84,8 @@ class SimulationBus(PiCNProcess):
         self.process.start()
 
     def stop_process(self):
+        for iface in self.interfacetable.values():
+            iface.close()
         if self.process:
             self.process.terminate()
 

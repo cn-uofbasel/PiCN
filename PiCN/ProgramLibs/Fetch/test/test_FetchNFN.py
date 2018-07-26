@@ -53,13 +53,13 @@ class cases_FetchNFN(object):
         #create new face
         self.mgmtClient1 = MgmtClient(self.fwd_port1)
         self.mgmtClient1.add_face("127.0.0.1", self.fwd_port2, 0)
-        self.mgmtClient1.add_forwarding_rule(Name("/lib"), 0)
+        self.mgmtClient1.add_forwarding_rule(Name("/lib"), [0])
         self.mgmtClient1.add_face("127.0.0.1", self.repo_port, 0)
-        self.mgmtClient1.add_forwarding_rule(Name("/test"), 0)
+        self.mgmtClient1.add_forwarding_rule(Name("/test"), [0])
 
         self.mgmtClient2 = MgmtClient(self.fwd_port2)
         self.mgmtClient2.add_face("127.0.0.1", self.repo_port, 0)
-        self.mgmtClient2.add_forwarding_rule(Name("/test"), 0)
+        self.mgmtClient2.add_forwarding_rule(Name("/test"), [0])
 
     def tearDown(self):
         try:
