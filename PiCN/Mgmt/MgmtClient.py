@@ -1,6 +1,7 @@
 """Client for The Mgmt of PiCN"""
 
 import socket
+from typing import List
 
 from PiCN.Packets import Name
 
@@ -21,12 +22,14 @@ class MgmtClient(object):
         param = ip_addr + ":" + str(port) + ":" + str(if_num)
         return self.layercommand("linklayer", "newface", param)
 
-    def add_forwarding_rule(self, name: Name, faceid: int) -> str:
+    def add_forwarding_rule(self, name: Name, faceid: List[int]) -> str:
         """adding a new forwarding rule to a face
         :param name: name for the forwarding rule which should be bound to the face
-        :param faceid: face id to identify the face on which the name should be bound
+        :param faceid: list of faceids to identify the face on which the name should be bound
         :return: reply message of the relay
         """
+        if isinstance(faceid, List):
+            faceid = ','.join(str(e) for e in faceid)
         param = name.to_string() + ":" + str(faceid)
         return self.layercommand("icnlayer", "newforwardingrule", param.replace("/", "%2F"))
 

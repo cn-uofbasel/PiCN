@@ -37,6 +37,16 @@ class ForwardingInformationBaseMemoryPrefix(BaseForwardingInformationBase):
             if fib_entry.name == name:
                 self._container.remove(fib_entry)
 
+    def add_faceid_to_entry(self, name, fid):
+        entry = self.find_fib_entry(name)
+        self.remove_fib_entry(name)
+        if entry is None:
+            return
+        if fid not in entry.faceid:
+            entry.faceid.append(fid)
+        self._container.insert(0, entry)
+
+
     def clear(self):
         for fib_entry in self._container:
             if not fib_entry.static:

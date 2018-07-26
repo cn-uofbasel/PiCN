@@ -114,11 +114,15 @@ class Mgmt(PiCNProcess):
         # newface expects /linklayer/newface/ip:port
         elif (command == "newforwardingrule"):
             prefix, faceid = params.split(":", 1)
-            faceid = int(faceid)
+            faceid_str = faceid
+            faceid = faceid.split(',')
+
+            faceid = list(map(lambda x: int(x), faceid))
+
             prefix = prefix.replace("%2F", "/")
             name = Name(prefix)
             self.fib.add_fib_entry(name, faceid, True)
-            reply = "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newforwardingrule OK:" + str(faceid) + "\r\n"
+            reply = "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newforwardingrule OK:" + str(faceid_str) + "\r\n"
             replysock.send(reply.encode())
             self.logger.info("New Forwardingrule added " + prefix + "|" + str(faceid))
             return
