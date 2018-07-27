@@ -88,7 +88,16 @@ class test_PendingInterstTableMemoryExact(unittest.TestCase):
     def test_add_already_used_fib_entry(self):
         """Test adding an already used FIB Entry"""
         n1 = Name("/test/data")
-        fib_entry = ForwardingInformationBaseEntry(n1, 2, False)
-        self.pit.add_pit_entry(n1, 1, None, False)
+        fib_entry = ForwardingInformationBaseEntry(n1, [2], False)
+        self.pit.add_pit_entry(n1, [1], None, False)
         self.pit.add_used_fib_entry(n1, fib_entry)
         self.assertEqual(self.pit.get_already_used_pit_entries(n1)[0], fib_entry)
+
+    def test_set_number_of_forwards(self):
+        """Test setting the number of forwards used in parallel, important for nack handling"""
+        n1 = Name("/test/data")
+        self.pit.add_pit_entry(n1, [1], None, False)
+        self.pit.set_number_of_forwards(n1, 3)
+        entry = self.pit.find_pit_entry(n1)
+
+        self.assertEqual(entry.number_of_forwards, 3)

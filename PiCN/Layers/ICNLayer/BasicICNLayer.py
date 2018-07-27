@@ -73,7 +73,8 @@ class BasicICNLayer(LayerProcess):
             fib_entry = self.fib.find_fib_entry(interest.name)
         if fib_entry is not None:
             self.pit.add_used_fib_entry(interest.name, fib_entry)
-            to_lower.put([fib_entry.faceid, interest])
+            for fid in fib_entry.faceid:
+                to_lower.put([fid, interest])
         else:
             self.logger.info("No FIB entry, sending Nack: " + str(interest.name))
             nack = Nack(interest.name, NackReason.NO_ROUTE, interest=interest)
