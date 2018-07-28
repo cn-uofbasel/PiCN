@@ -24,7 +24,8 @@ class test_BasicRepositoryLayer(unittest.TestCase):
             content_file.write("data1")
         with open( self.path + "/f2", 'w+') as content_file:
             content_file.write("data2")
-        self.repository = SimpleFileSystemRepository( self.path, Name("/test/data"))
+        manager = multiprocessing.Manager()
+        self.repository = SimpleFileSystemRepository(self.path, Name("/test/data"), manager=manager)
         self.repositoryLayer = BasicRepositoryLayer(self.repository)
 
         self.q1_from_lower = multiprocessing.Queue()
@@ -69,7 +70,7 @@ class test_BasicRepositoryLayer(unittest.TestCase):
         n1 = Nack(i1.name, NackReason.NO_CONTENT, interest=i1)
         self.repositoryLayer.queue_from_lower.put([0, i1])
         try:
-            data = self.repositoryLayer.queue_to_lower.get(timeout=2.0)
+            data = self.repositoryLayer.queue_to_lower.get(timeout=4.0)
         except:
             self.fail()
         self.assertEqual(n1, data[1])

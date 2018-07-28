@@ -19,7 +19,7 @@ config_PiCN = {
     'long_description': 'A modular Python ICN implementation',
     'install_requires': [],
     'packages': ['PiCN', 'PiCN.Processes', 'PiCN.Layers.LinkLayer', 'PiCN.Layers.PacketEncodingLayer',
-                 'PiCN.Layers.PacketEncodingLayer.Encoder', 'PiCN.Routing', 'PiCN.ProgramLibs.Fetch',
+                 'PiCN.Layers.PacketEncodingLayer.Encoder', 'PiCN.ProgramLibs.Fetch',
                  'PiCN.Layers.ICNLayer', 'PiCN.Layers.ICNLayer.ContentStore',
                  'PiCN.Layers.ICNLayer.ForwardingInformationBase', 'PiCN.Layers.ICNLayer.PendingInterestTable',
                  'PiCN.Packets', "PiCN.Mgmt", 'PiCN.ProgramLibs.ICNForwarder',

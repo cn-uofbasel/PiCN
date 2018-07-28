@@ -21,7 +21,7 @@ def main(args):
         encoder = SimpleStringEncoder(log_level=log_level)
 
     repo = ICNDataRepository(args.datapath, prefix,
-                             args.port, log_level, encoder=encoder)
+                             args.port, log_level, encoder=encoder, autoconfig=args.autoconfig)
     repo.start_repo()
 
     repo.linklayer.process.join()
@@ -31,6 +31,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='ICN Data Repository')
     parser.add_argument('--format', default='ndntlv', type=str)
+    parser.add_argument('-a', '--autoconfig', action='store_true')
     parser.add_argument('datapath', type=str,
                         help='filesystem path where the repo stores its data')
     parser.add_argument('icnprefix', type=str,

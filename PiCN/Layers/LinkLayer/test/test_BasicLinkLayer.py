@@ -117,8 +117,8 @@ class test_BasicLinkLayer(unittest.TestCase):
             self.linklayer1.queue_from_higher.put([fid1, str1.encode()])
             self.linklayer2.queue_from_higher.put([fid2, str2.encode()])
 
-            d2 = self.linklayer2.queue_to_higher.get(timeout=2.0)
-            d1 = self.linklayer1.queue_to_higher.get(timeout=2.0)
+            d2 = self.linklayer2.queue_to_higher.get(timeout=5.0)
+            d1 = self.linklayer1.queue_to_higher.get(timeout=5.0)
 
             packet2 = d1[1].decode()
             packet1 = d2[1].decode()
@@ -133,8 +133,8 @@ class test_BasicLinkLayer(unittest.TestCase):
             self.linklayer1.queue_from_higher.put([fid1, str1.encode()])
             self.linklayer2.queue_from_higher.put([fid2, str2.encode()])
 
-            d1 = self.linklayer1.queue_to_higher.get(timeout=2.0)
-            d2 = self.linklayer2.queue_to_higher.get(timeout=2.0)
+            d1 = self.linklayer1.queue_to_higher.get(timeout=5.0)
+            d2 = self.linklayer2.queue_to_higher.get(timeout=5.0)
 
             packet2 = d1[1].decode()
             packet1 = d2[1].decode()

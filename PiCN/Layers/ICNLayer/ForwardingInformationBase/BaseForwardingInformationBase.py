@@ -2,7 +2,7 @@
 
 import abc
 import multiprocessing
-from typing import List
+from typing import List, Optional
 
 from PiCN.Packets import Name
 from PiCN.Layers.ICNLayer import BaseICNDataStruct
@@ -12,12 +12,18 @@ class ForwardingInformationBaseEntry(object):
     """An entry in the Forwarding Information Base"""
 
     def __init__(self, name: Name, faceid: int, static: bool=False):
-       self._name: Name = name
-       self._faceid: int = faceid
-       self._static: bool = static
+        self._name: Name = name
+        self._faceid: int = faceid
+        self._static: bool = static
 
     def __eq__(self, other):
-        return self._name == other._name and self._faceid == other._faceid
+        if isinstance(other, ForwardingInformationBaseEntry):
+            return self._name == other._name and self._faceid == other._faceid
+        return False
+
+    def __repr__(self):
+        static: str = ' static' if self._static else ''
+        return f'<ForwardingInformationBaseEntry {self._name} via {self._faceid}{static} at {id(self)}>'
 
     @property
     def name(self):
@@ -43,24 +49,31 @@ class ForwardingInformationBaseEntry(object):
     def static(self, static):
         self._static = static
 
+
 class BaseForwardingInformationBase(BaseICNDataStruct):
     """Abstract BaseForwardingInformationBase for usage in BasicICNLayer"""
 
     def __init__(self):
         super().__init__()
         self._container: List[ForwardingInformationBaseEntry] = []
+        self._manager: Optional[multiprocessing.Manager] = None
 
     @abc.abstractmethod
     def add_fib_entry(self, name: Name, fid: int, static: bool):
-        """Add an Interest to the PIT"""
+        """Add an Interest to the FIB"""
 
     @abc.abstractmethod
     def remove_fib_entry(self, name: Name):
-        """Remove an entry from the PIT"""
+        """Remove an entry from the FIB"""
 
     @abc.abstractmethod
-    def find_fib_entry(self, name: Name, already_used: List[ForwardingInformationBaseEntry]) \
+    def find_fib_entry(self, name: Name, already_used: List[ForwardingInformationBaseEntry] = None,
+                       incoming_faceids: List[int] = None) \
             ->ForwardingInformationBaseEntry:
-        """Find an entry in the PIT"""
+        """Find an entry in the FIB"""
+
+    @abc.abstractmethod
+    def clear(self):
+        """Remove all non-static entries from the FIB"""
 
 

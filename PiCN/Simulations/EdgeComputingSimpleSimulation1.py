@@ -111,7 +111,7 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         res = self.fetch_tool1.fetch_data(name, timeout=10)
         self.assertEqual(res, "HELLOWORLD RSU1")
         print("Result at RSU1:", res)
-        time.sleep(4)
+        time.sleep(2)
         res = self.fetch_tool2.fetch_data(name, timeout=10)
         print("Result as fetched via RSU2:", res)
         self.assertEqual(res, "HELLOWORLD RSU1")

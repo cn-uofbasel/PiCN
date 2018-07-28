@@ -269,7 +269,7 @@ class cases_Simulation():
                                                 interfaces=[self.simulation_bus.add_interface("icnfwd2")])
 
 
-        self.fetchtool = Fetch("icnfwd1", None, 255, self.encoder_type(), [self.simulation_bus.add_interface("fetchtool")])
+        self.fetchtool = Fetch("icnfwd1", None, 255, encoder=self.encoder_type(), interfaces=[self.simulation_bus.add_interface("fetchtool")])
 
         self.icn_forwarder1.start_forwarder()
         self.icn_forwarder2.start_repo()
