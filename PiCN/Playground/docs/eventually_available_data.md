@@ -31,13 +31,13 @@ Add the core PiCN tools to your PATH (bash):
 you@machine:~$ PATH=$PATH:`pwd`/PiCN/starter
 ```
 
-Also add tools for eventually-available data retrieval to your PATH (bash):
+Also add tools for eventually-available data retrieval tools to your PATH (bash):
 ```console
 you@machine:~$ PATH=$PATH:`pwd`/PiCN/Playground/starter
 ```
 We recommend to add these lines to ~/.bashrc (bash).
 
-If the tools are available, you see help information after typing the following commands:
+If the tools are available, you see usage information after typing the following commands:
 
 ```console
 you@machine:~$ picn-forwarder --help
