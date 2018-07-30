@@ -73,6 +73,10 @@ class BaseForwardingInformationBase(BaseICNDataStruct):
         """Find an entry in the FIB"""
 
     @abc.abstractmethod
+    def add_faceid_to_entry(self, name, fid):
+        """adds a face id to an entry"""
+
+    @abc.abstractmethod
     def clear(self):
         """Remove all non-static entries from the FIB"""
 

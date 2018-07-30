@@ -29,6 +29,7 @@ class PendingInterestTableEntry(object):
             self._local_app.append(local_app)
         self._interest = interest
         self._fib_entries_already_used: List[ForwardingInformationBaseEntry] = []
+        self.number_of_forwards = 0
 
     def __eq__(self, other):
         if other is None:
@@ -139,6 +140,12 @@ class BasePendingInterestTable(BaseICNDataStruct):
     def get_already_used_pit_entries(self, name: Name):
         """Get already used fib entries"""
 
+    def set_number_of_forwards(self, name, forwards):
+        pit_entry = self.find_pit_entry(name)
+        self.remove_pit_entry(name)
+        pit_entry.number_of_forwards = forwards
+        self.append(pit_entry)
+
     def set_pit_timeout(self, timeout: float):
         """set the timeout intervall for a pit entry
         :param timeout: timout value to be set
@@ -150,6 +157,7 @@ class BasePendingInterestTable(BaseICNDataStruct):
         :param retransmits: retransmit value to be set
         """
         self._pit_retransmits = retransmits
+
 
 
 

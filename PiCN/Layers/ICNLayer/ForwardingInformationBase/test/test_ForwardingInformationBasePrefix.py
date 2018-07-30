@@ -19,7 +19,7 @@ class test_ForwardingInformationBaseMemoryPrefix(unittest.TestCase):
 
     def test_add_entry_to_fib(self):
         """Test add entry to fib"""
-        fid = 1
+        fid = [1]
         name = Name("/test/data")
         self.fib.add_fib_entry(name, fid)
         entry = self.fib._container[0]
@@ -28,7 +28,7 @@ class test_ForwardingInformationBaseMemoryPrefix(unittest.TestCase):
 
     def test_find_entry_to_fib(self):
         """Test finding a fib entry"""
-        fid = 1
+        fid = [1]
         name = Name("/test/data")
         self.fib.add_fib_entry(name, fid)
         entry = self.fib._container[0]
@@ -40,8 +40,8 @@ class test_ForwardingInformationBaseMemoryPrefix(unittest.TestCase):
 
     def test_find_entry_to_fib_multiple_entries(self):
         """Test finding a fib entry with multiple entries"""
-        fid1 = 1
-        fid2 = 2
+        fid1 = [1]
+        fid2 = [2]
         name1 = Name("/test/data")
         name2 = Name("/data/test")
         self.fib.add_fib_entry(name2, fid2)
@@ -55,8 +55,8 @@ class test_ForwardingInformationBaseMemoryPrefix(unittest.TestCase):
 
     def test_find_entry_to_fib_longest_match(self):
         """Test finding a fib using a longest match"""
-        fid1 = 1
-        fid2 = 2
+        fid1 = [1]
+        fid2 = [2]
         name1 = Name("/test/data")
         name2 = Name("/data")
         name3 = Name("/test/data/object")
@@ -72,7 +72,7 @@ class test_ForwardingInformationBaseMemoryPrefix(unittest.TestCase):
 
     def test_find_entry_to_fib_no_match(self):
         """Test finding a fib entry with no match"""
-        fid = 1
+        fid = [1]
         name1 = Name("/test/data")
         name2 = Name("/data/test")
         self.fib.add_fib_entry(name1, fid)
@@ -84,7 +84,7 @@ class test_ForwardingInformationBaseMemoryPrefix(unittest.TestCase):
 
     def test_remove_entry_to_fib(self):
         """Test remove a fib entry"""
-        fid = 1
+        fid = [1]
         name = Name("/test/data")
         self.fib.add_fib_entry(name, fid)
         entry = self.fib._container[0]
@@ -94,9 +94,9 @@ class test_ForwardingInformationBaseMemoryPrefix(unittest.TestCase):
 
     def test_get_already_used_fib_entry(self):
         """Test to get a fib entry if there are alreay used entries"""
-        fid1 = 1
-        fid2 = 2
-        fid3 = 3
+        fid1 = [1]
+        fid2 = [2]
+        fid3 = [3]
         n1 = Name("/test/data/content")
         n2 = Name("/test")
         n3 = Name("/test/data")
@@ -122,9 +122,20 @@ class test_ForwardingInformationBaseMemoryPrefix(unittest.TestCase):
         self.assertEqual(fib_entry, None)
 
     def test_clear(self):
-        self.fib.add_fib_entry(Name('/test/foo'), 42, static=True)
-        self.fib.add_fib_entry(Name('/test/bar'), 1337, static=False)
+        self.fib.add_fib_entry(Name('/test/foo'), [42], static=True)
+        self.fib.add_fib_entry(Name('/test/bar'), [1337], static=False)
         self.assertEqual(2, len(self.fib.container))
         self.fib.clear()
         self.assertEqual(1, len(self.fib.container))
         self.assertIsNotNone(self.fib.find_fib_entry(Name('/test/foo')))
+
+    def test_add_faceid_to_entry(self):
+        self.fib.add_fib_entry(Name('/test/foo'), [42], static=True)
+        self.fib.add_fib_entry(Name('/test/bar'), [1337], static=False)
+        self.assertEqual(2, len(self.fib.container))
+        self.fib.add_faceid_to_entry(Name("/test/bar"), 21)
+        entry = self.fib.find_fib_entry(Name("/test/bar"))
+        self.assertEqual([1337, 21], entry.faceid)
+        self.fib.add_faceid_to_entry(Name("/test/bar"), 21)
+        entry = self.fib.find_fib_entry(Name("/test/bar"))
+        self.assertEqual([1337, 21], entry.faceid)

@@ -90,7 +90,7 @@ class cases_NFNForwarder(object):
         testMgmtSock2.close()
         self.assertEqual(data.decode(),
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newforwardingrule OK:0\r\n")
-        self.assertEqual(self.forwarder1.icnlayer.fib.find_fib_entry(Name("/test/data")).faceid, 0)
+        self.assertEqual(self.forwarder1.icnlayer.fib.find_fib_entry(Name("/test/data")).faceid, [0])
 
         # new content
         testMgmtSock3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -146,7 +146,7 @@ class cases_NFNForwarder(object):
         testMgmtSock2.close()
         self.assertEqual(data.decode(),
                          "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newforwardingrule OK:0\r\n")
-        self.assertEqual(0, self.forwarder1.icnlayer.fib.find_fib_entry(Name("/lib/func")).faceid)
+        self.assertEqual([0], self.forwarder1.icnlayer.fib.find_fib_entry(Name("/lib/func")).faceid)
 
         #add function
         testMgmtSock3 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -183,8 +183,8 @@ class cases_NFNForwarder(object):
         fid2 = self.forwarder2.linklayer.faceidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.forwarder1_port), 0))
 
         # register prefixes
-        self.forwarder1.icnlayer.fib.add_fib_entry(Name("/lib/func"), fid1, True)
-        self.forwarder2.icnlayer.fib.add_fib_entry(Name("/test"), fid2, True)
+        self.forwarder1.icnlayer.fib.add_fib_entry(Name("/lib/func"), [fid1], True)
+        self.forwarder2.icnlayer.fib.add_fib_entry(Name("/test"), [fid2], True)
 
         # add function
         testMgmtSock1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -232,8 +232,8 @@ class cases_NFNForwarder(object):
         fid2 = self.forwarder2.linklayer.faceidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.forwarder1_port), 0))
 
         # register prefixes
-        self.forwarder1.icnlayer.fib.add_fib_entry(Name("/lib/func"), fid1, True)
-        self.forwarder2.icnlayer.fib.add_fib_entry(Name("/test"), fid2, True)
+        self.forwarder1.icnlayer.fib.add_fib_entry(Name("/lib/func"), [fid1], True)
+        self.forwarder2.icnlayer.fib.add_fib_entry(Name("/test"), [fid2], True)
 
         # add function
         testMgmtSock1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -289,8 +289,8 @@ class cases_NFNForwarder(object):
         fid1 = self.forwarder1.linklayer.faceidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.forwarder2_port), 0))
         fid2 = self.forwarder2.linklayer.faceidtable.get_or_create_faceid(AddressInfo(("127.0.0.1", self.forwarder1_port), 0))
         # register prefixes
-        self.forwarder1.icnlayer.fib.add_fib_entry(Name("/lib/func"), fid1, True)
-        self.forwarder2.icnlayer.fib.add_fib_entry(Name("/test"), fid2, True)
+        self.forwarder1.icnlayer.fib.add_fib_entry(Name("/lib/func"), [fid1], True)
+        self.forwarder2.icnlayer.fib.add_fib_entry(Name("/test"), [fid2], True)
 
         # add function
         testMgmtSock1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

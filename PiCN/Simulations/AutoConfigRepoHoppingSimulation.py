@@ -78,9 +78,9 @@ class AutoconfigRepoHoppingSimulation(object):
         fid00to20: int = self.nodes[00].linklayer.faceidtable.get_or_create_faceid(AddressInfo(('127.0.0.1', self.ports[20]), 0))
         fid00to30: int = self.nodes[00].linklayer.faceidtable.get_or_create_faceid(AddressInfo(('127.0.0.1', self.ports[30]), 0))
         fib00: BaseForwardingInformationBase = self.nodes[00].icnlayer.fib
-        fib00.add_fib_entry(Name('/edge'), fid00to10, static=True)
-        fib00.add_fib_entry(Name('/edge'), fid00to20, static=True)
-        fib00.add_fib_entry(Name('/edge'), fid00to30, static=True)
+        fib00.add_fib_entry(Name('/edge'), [fid00to10], static=True)
+        fib00.add_fib_entry(Name('/edge'), [fid00to20], static=True)
+        fib00.add_fib_entry(Name('/edge'), [fid00to30], static=True)
         self.nodes[00].routinglayer.rib.shortest_only = False
 
         # Set up faces and static FIB of core10 node.
@@ -88,9 +88,9 @@ class AutoconfigRepoHoppingSimulation(object):
         fid10to12: int = self.nodes[10].linklayer.faceidtable.get_or_create_faceid(AddressInfo(('127.0.0.1', self.ports[12]), 0))
         fid10to13: int = self.nodes[10].linklayer.faceidtable.get_or_create_faceid(AddressInfo(('127.0.0.1', self.ports[13]), 0))
         fib10: BaseForwardingInformationBase = self.nodes[10].icnlayer.fib
-        fib10.add_fib_entry(Name('/edge'), fid10to11, static=True)
-        fib10.add_fib_entry(Name('/edge'), fid10to12, static=True)
-        fib10.add_fib_entry(Name('/edge'), fid10to13, static=True)
+        fib10.add_fib_entry(Name('/edge'), [fid10to11], static=True)
+        fib10.add_fib_entry(Name('/edge'), [fid10to12], static=True)
+        fib10.add_fib_entry(Name('/edge'), [fid10to13], static=True)
         self.nodes[10].routinglayer.rib.shortest_only = False
 
         # Set up faces and static FIB of core20 node.
@@ -98,9 +98,9 @@ class AutoconfigRepoHoppingSimulation(object):
         fid20to22: int = self.nodes[20].linklayer.faceidtable.get_or_create_faceid(AddressInfo(('127.0.0.1', self.ports[22]), 0))
         fid20to23: int = self.nodes[20].linklayer.faceidtable.get_or_create_faceid(AddressInfo(('127.0.0.1', self.ports[23]), 0))
         fib20: BaseForwardingInformationBase = self.nodes[20].icnlayer.fib
-        fib20.add_fib_entry(Name('/edge'), fid20to21, static=True)
-        fib20.add_fib_entry(Name('/edge'), fid20to22, static=True)
-        fib20.add_fib_entry(Name('/edge'), fid20to23, static=True)
+        fib20.add_fib_entry(Name('/edge'), [fid20to21], static=True)
+        fib20.add_fib_entry(Name('/edge'), [fid20to22], static=True)
+        fib20.add_fib_entry(Name('/edge'), [fid20to23], static=True)
         self.nodes[20].routinglayer.rib.shortest_only = False
 
         # Set up faces and static FIB of core30 node.
@@ -108,9 +108,9 @@ class AutoconfigRepoHoppingSimulation(object):
         fid30to32: int = self.nodes[30].linklayer.faceidtable.get_or_create_faceid(AddressInfo(('127.0.0.1', self.ports[32]), 0))
         fid30to33: int = self.nodes[30].linklayer.faceidtable.get_or_create_faceid(AddressInfo(('127.0.0.1', self.ports[33]), 0))
         fib30: BaseForwardingInformationBase = self.nodes[30].icnlayer.fib
-        fib30.add_fib_entry(Name('/edge'), fid30to31, static=True)
-        fib30.add_fib_entry(Name('/edge'), fid30to32, static=True)
-        fib30.add_fib_entry(Name('/edge'), fid30to33, static=True)
+        fib30.add_fib_entry(Name('/edge'), [fid30to31], static=True)
+        fib30.add_fib_entry(Name('/edge'), [fid30to32], static=True)
+        fib30.add_fib_entry(Name('/edge'), [fid30to33], static=True)
         self.nodes[30].routinglayer.rib.shortest_only = False
 
         self.nodes[00].routinglayer._ageing_interval = 1.0

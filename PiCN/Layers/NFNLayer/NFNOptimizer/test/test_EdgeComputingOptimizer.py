@@ -62,7 +62,7 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         cmp_name += "NFN"
         workflow = "/func/f1(/test/data)"
         fib = self.optimizer.fib
-        fib.add_fib_entry(Name("/test"), 1, False)
+        fib.add_fib_entry(Name("/test"), [1], False)
         self.optimizer.fib = fib
         ast = self.parser.parse(workflow)
         self.assertTrue(self.optimizer.compute_fwd(cmp_name, ast, Interest(cmp_name)))

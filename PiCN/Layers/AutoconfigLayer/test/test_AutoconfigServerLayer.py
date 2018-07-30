@@ -30,7 +30,7 @@ class test_AutoconfigServerLayer(unittest.TestCase):
         self.linklayer = BasicLinkLayer([self.mock_interface], self.faceidtable)
 
         outfid = self.linklayer.faceidtable.get_or_create_faceid(AddressInfo(('127.13.37.42', 4242), 0))
-        fib.add_fib_entry(Name('/global'), outfid)
+        fib.add_fib_entry(Name('/global'), [outfid])
         # List of advertised prefixes
         self.prefixes: List[Tuple[Name, bool]] = [(Name('/test/repos'), False), (Name('/home'), True)]
         self.autoconflayer = AutoconfigServerLayer(linklayer=self.linklayer,
