@@ -50,8 +50,35 @@ you@machine:~$ picn-heartbeat-forwarder --help
 
 ## Heartbeat Approach
 
-..
+### Starting Nodes
 
+Open a terminal and type the following commmand to start a packet forwarding node:
+
+```console
+you@machine:~$ picn-heartbeat-forwarder ............
+```
+
+...tod... explanation
+
+Type in another terminal the following command to start the computation server:
+
+```console
+you@machine:~$ picn-heartbeat-server ............
+```
+
+... todo.. explanation
+
+You should see something similar that the following.
+
+...todo screenshot...
+
+### Forwarding Rule
+
+...
+
+### Request Content
+
+...
 
 ## Two-Phase Request Approach
 
