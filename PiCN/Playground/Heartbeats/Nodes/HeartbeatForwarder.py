@@ -23,7 +23,7 @@ def main(args):
     logger = Logger("ICNForwarder", log_level)
 
     # Info
-    logger.info("Starting a Heartbeat Nodes...")
+    logger.info("Starting a Heartbeat Forwarder...")
     logger.info("UDP Port:       " + str(args.port))
     logger.info("Log Level:      " + args.logging)
     logger.info("Packet Format:   Extended NDN Packet Format")

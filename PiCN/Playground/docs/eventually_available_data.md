@@ -55,7 +55,7 @@ you@machine:~$ picn-heartbeat-forwarder --help
 Open a terminal and type the following commmand to start a packet forwarding node:
 
 ```console
-you@machine:~$ picn-heartbeat-forwarder ............
+you@machine:~$ picn-heartbeat-forwarder --port 9000
 ```
 
 ...tod... explanation
@@ -63,14 +63,17 @@ you@machine:~$ picn-heartbeat-forwarder ............
 Type in another terminal the following command to start the computation server:
 
 ```console
-you@machine:~$ picn-heartbeat-server ............
+you@machine:~$ picn-heartbeat-server --port 8000
 ```
 
 ... todo.. explanation
 
-You should see something similar that the following.
+You should see something similar to the following.
 
-...todo screenshot...
+![Heartbeat Forwarder Output](https://raw.githubusercontent.com/cn-uofbasel/PiCN/nof18-doc/PiCN/Playground/docs/img/screenshot-heartbeat-forwarder.png "Heartbeat Forwarder Output")
+
+![Heartbeat Server Output](https://raw.githubusercontent.com/cn-uofbasel/PiCN/nof18-doc/PiCN/Playground/docs/img/screenshot-heartbeat-server.png "Heartbeat Server Output")
+
 
 ### Forwarding Rule
 
