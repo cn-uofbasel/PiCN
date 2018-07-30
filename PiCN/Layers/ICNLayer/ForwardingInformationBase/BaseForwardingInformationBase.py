@@ -13,7 +13,7 @@ class ForwardingInformationBaseEntry(object):
 
     def __init__(self, name: Name, faceid: int, static: bool=False):
         self._name: Name = name
-        self._faceid: int = faceid
+        self._faceid: List[int] = faceid
         self._static: bool = static
 
     def __eq__(self, other):
@@ -59,7 +59,7 @@ class BaseForwardingInformationBase(BaseICNDataStruct):
         self._manager: Optional[multiprocessing.Manager] = None
 
     @abc.abstractmethod
-    def add_fib_entry(self, name: Name, fid: int, static: bool):
+    def add_fib_entry(self, name: Name, fid: List[int], static: bool):
         """Add an Interest to the FIB"""
 
     @abc.abstractmethod

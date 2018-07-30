@@ -20,10 +20,15 @@ class ForwardingInformationBaseMemoryPrefix(BaseForwardingInformationBase):
             for fib_entry in self._container:
                 if already_used and fib_entry in already_used:
                     continue
-                if incoming_faceids is not None and fib_entry.faceid in incoming_faceids:
+                forward_faceids = []
+                if fib_entry.name.components != components:
                     continue
-                if fib_entry.name.components == components:
-                    return fib_entry
+                for faceid in fib_entry.faceid:
+                    if not incoming_faceids or faceid not in incoming_faceids:
+                        forward_faceids.append(faceid)
+                if len(forward_faceids) == 0:
+                    continue
+                return ForwardingInformationBaseEntry(fib_entry.name, forward_faceids)
             components = components[:complen - 1]
         return None
 
@@ -46,7 +51,6 @@ class ForwardingInformationBaseMemoryPrefix(BaseForwardingInformationBase):
         if fid not in entry.faceid:
             entry.faceid.append(fid)
         self._container.insert(0, entry)
-
 
     def clear(self):
         for fib_entry in self._container:

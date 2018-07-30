@@ -85,18 +85,18 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
 
         self.mgmt_client1.add_face("rsu2", None, 0)
         self.mgmt_client1.add_forwarding_rule(Name("/rsu"), [0])
-        self.mgmt_client1.add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n    for i in range(0,30000000):\n        a.upper()\n    return a.upper() + ' RSU1'")
+        self.mgmt_client1.add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n    for i in range(0,20000000):\n        a.upper()\n    return a.upper() + ' RSU1'")
 
         #setup rsu2
         self.mgmt_client2.add_face("rsu1", None, 0)
         self.mgmt_client2.add_face("rsu3", None, 0)
         self.mgmt_client2.add_forwarding_rule(Name("/rsu"), [0,1])
-        self.mgmt_client2.add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n    for i in range(0,60000000):\n        a.upper()\n    return a.upper() + ' RSU2'")
+        self.mgmt_client2.add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n    for i in range(0,30000000):\n        a.upper()\n    return a.upper() + ' RSU2'")
 
         #setup rsu3
         self.mgmt_client3.add_face("rsu2", None, 0)
         self.mgmt_client3.add_forwarding_rule(Name("/rsu"), [0])
-        self.mgmt_client3.add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n    for i in range(0,50000000):\n        a.upper()\n    return a.upper() + ' RSU3'")
+        self.mgmt_client3.add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n    for i in range(0,40000000):\n        a.upper()\n    return a.upper() + ' RSU3'")
 
 
     def test_without_data_from_client(self):
@@ -110,7 +110,7 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         res = self.fetch_tool1.fetch_data(name, timeout=10)
         self.assertEqual(res, "HELLOWORLD RSU1")
         print("Result at RSU1:", res)
-        time.sleep(2)
+        time.sleep(6)
         res = self.fetch_tool2.fetch_data(name, timeout=10)
         print("Result as fetched via RSU2:", res)
         self.assertEqual(res, "HELLOWORLD RSU1")
@@ -131,6 +131,6 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         res1 = self.fetch_tool1.fetch_data(name1, timeout=0)
         print(res1)
 
-        time.sleep(2)
+        time.sleep(7)
         res2 = self.fetch_tool2.fetch_data(name2, timeout=0)
         print(res2)
