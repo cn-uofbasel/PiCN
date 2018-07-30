@@ -11,7 +11,7 @@ For both approaches, our sample topology simply consists of a packet forwarder w
 
 * Nodes are connected via UDP faces: The packet forwarder listens on port 9000 and the computation server on on port 8000.
 * A forwarding rule is configured on the packet fowarder to forward interests prefixed with `/the/prefix` to the computation node.
-* The computation node comes with a function store where services are saved. When starting a computation node, the services `/xxx/xxx/xxx` and `/xxx/xxx/xxx` are automatically added.
+* The computation node comes with a function store where services are saved. When starting a computation node, the service `/the/prefix/square` is automatically added.
 * The reader of this how-to will request eventually-available computation results via the forwarder from the computation server. for this purpose, client tools are available which implement the consumption logic. In real-world applications, this logic would be implemented by the client application.
 
 
