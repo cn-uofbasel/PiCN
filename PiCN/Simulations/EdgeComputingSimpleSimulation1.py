@@ -90,8 +90,7 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         #setup rsu2
         self.mgmt_client2.add_face("rsu1", None, 0)
         self.mgmt_client2.add_face("rsu3", None, 0)
-        self.mgmt_client2.add_forwarding_rule(Name("/rsu"), [0])
-        #self.mgmt_client2.add_forwarding_rule(Name("/rsu"), 1)
+        self.mgmt_client2.add_forwarding_rule(Name("/rsu"), [0,1])
         self.mgmt_client2.add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n    for i in range(0,60000000):\n        a.upper()\n    return a.upper() + ' RSU2'")
 
         #setup rsu3
