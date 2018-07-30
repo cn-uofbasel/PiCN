@@ -29,6 +29,7 @@ class PendingInterestTableEntry(object):
             self._local_app.append(local_app)
         self._interest = interest
         self._fib_entries_already_used: List[ForwardingInformationBaseEntry] = []
+        self.faces_already_nacked = []
         self.number_of_forwards = 0
 
     def __eq__(self, other):
@@ -145,6 +146,28 @@ class BasePendingInterestTable(BaseICNDataStruct):
         self.remove_pit_entry(name)
         pit_entry.number_of_forwards = forwards
         self.append(pit_entry)
+
+    def increase_number_of_forwards(self, name):
+        pit_entry = self.find_pit_entry(name)
+        self.remove_pit_entry(name)
+        pit_entry.number_of_forwards = pit_entry.number_of_forwards + 1
+        self.append(pit_entry)
+
+    def decrease_number_of_forwards(self, name):
+        pit_entry = self.find_pit_entry(name)
+        self.remove_pit_entry(name)
+        pit_entry.number_of_forwards = pit_entry.number_of_forwards - 1
+        self.append(pit_entry)
+
+    def add_nacked_faceid(self, name, fid: int):
+        pit_entry = self.find_pit_entry(name)
+        self.remove_pit_entry(name)
+        pit_entry.faces_already_nacked.append(fid)
+        self.append(pit_entry)
+
+    def test_faceid_was_nacked(self, name, fid: int):
+        pit_entry = self.find_pit_entry(name)
+        return fid in pit_entry.faces_already_nacked
 
     def set_pit_timeout(self, timeout: float):
         """set the timeout intervall for a pit entry

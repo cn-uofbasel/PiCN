@@ -72,9 +72,10 @@ class BasicICNLayer(LayerProcess):
         else:
             fib_entry = self.fib.find_fib_entry(interest.name)
         if fib_entry is not None:
-            self.pit.set_number_of_forwards(interest.name, len(fib_entry.faceid))
             for fid in fib_entry.faceid:
-                to_lower.put([fid, interest])
+                if not self.pit.test_faceid_was_nacked(interest.name, fid):
+                    self.pit.increase_number_of_forwards(interest.name)
+                    to_lower.put([fid, interest])
         else:
             self.logger.info("No FIB entry, sending Nack: " + str(interest.name))
             nack = Nack(interest.name, NackReason.NO_ROUTE, interest=interest)
@@ -82,8 +83,8 @@ class BasicICNLayer(LayerProcess):
                 for i in range(0, len(pit_entry.faceids)):
                     if pit_entry._local_app[i]:
                         to_higher.put([face_id, nack])
-                        #    else:
-                        #       to_lower.put([pit_entry._faceids[i], nack])
+                    else:
+                        to_lower.put([pit_entry._faceids[i], nack])
             else:
                 to_higher.put([face_id, nack])
 
@@ -111,9 +112,10 @@ class BasicICNLayer(LayerProcess):
         if new_face_id is not None:
             self.logger.info("Found in FIB, forwarding")
             self.pit.add_pit_entry(interest.name, face_id, interest, local_app=from_local)
-            self.pit.set_number_of_forwards(interest.name, len(new_face_id.faceid))
             for fid in new_face_id.faceid:
-                to_lower.put([fid, interest])
+                if self.pit.test_faceid_was_nacked(interest.name, fid):
+                    self.pit.increase_number_of_forwards(interest.name)
+                    to_lower.put([fid, interest])
             return
         self.logger.info("No FIB entry, sending Nack")
         nack = Nack(interest.name, NackReason.NO_ROUTE, interest=interest)
@@ -147,9 +149,10 @@ class BasicICNLayer(LayerProcess):
             self.logger.info("No PIT entry for NACK available, dropping")
             return
         else:
-            if cur_pit_entry.number_of_forwards > 1:
-                self.logger.info("Ignoring Nack, since other faces are still active")
-                self.pit.set_number_of_forwards(nack.name, cur_pit_entry.number_of_forwards-1)
+            if cur_pit_entry.number_of_forwards > 0:
+                self.logger.info("Ignoring Nack from FaceID" + str(face_id) + "for " + str(nack.name) + "since other faces are still active")
+                self.pit.add_nacked_faceid(nack.name, face_id)
+                self.pit.decrease_number_of_forwards(nack.name)
                 return
             cur_fib_entry = self.fib.find_fib_entry(nack.name, cur_pit_entry.fib_entries_already_used, cur_pit_entry.faceids) #current entry
             self.pit.add_used_fib_entry(nack.name, cur_fib_entry) #add current entry to used list, modiefies pit entry in pit
@@ -177,9 +180,10 @@ class BasicICNLayer(LayerProcess):
                     self.pit.append(pit_entry)
             else:
                 self.logger.info("Try using next FIB path")
-                self.pit.set_number_of_forwards(pit_entry.interest.name, len(fib_entry.faceid))
                 for fid in fib_entry.faceid:
-                    to_lower.put([fid, pit_entry.interest])
+                    if not self.pit.test_faceid_was_nacked(pit_entry.name, fid):
+                        self.pit.increase_number_of_forwards(pit_entry.name)
+                        to_lower.put([fid, pit_entry.interest])
 
     def ageing(self):
         """Ageing the data structs"""
@@ -193,7 +197,8 @@ class BasicICNLayer(LayerProcess):
                     continue
                 self.pit.set_number_of_forwards(pit_entry.name, len(fib_entry.faceid))
                 for fid in fib_entry.faceid:
-                    self.queue_to_lower.put([fid, pit_entry.interest])
+                    if not self.pit.test_faceid_was_nacked(pit_entry.name, fid):
+                        self.queue_to_lower.put([fid, pit_entry.interest])
             #CS ageing
             self.cs.ageing()
         except Exception as e:
