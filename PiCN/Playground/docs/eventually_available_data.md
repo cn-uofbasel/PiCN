@@ -90,3 +90,17 @@ you@machine:~$ picn-heartbeat-peek ..........
 ## Two-Phase Request Approach
 
 ..
+
+### Starting Nodes
+
+Open a terminal and type the following commmand to start a packet forwarding node on UDP port 9000:
+
+```console
+you@machine:~$ picn-relay --port 9000
+```
+
+Type in another terminal the following command to start the computation server on UDP port 8000:
+
+```console
+you@machine:~$ picn-twophase-server --port 8000
+```
