@@ -48,7 +48,10 @@ def main(args, help_string):
 
     elif args.command == "newforwardingrule":
         try:
-            data = mgmt_client.add_forwarding_rule(Name(args.parameters.split(":")[0]), args.parameters.split(":")[1])
+            faceids_str = args.parameters.split(":")[1].split(",")
+            print(faceids_str)
+            faceids = list(map(lambda x: int(x), faceids_str))
+            data = mgmt_client.add_forwarding_rule(Name(args.parameters.split(":")[0]),faceids)
         except ConnectionRefusedError:
             print("Connection Refused. Forwarder not running?")
         except:
@@ -81,5 +84,5 @@ if __name__ == "__main__":
 # print("\t\tgetrepopath")
 # print("\t\tgetrepoprefix")
 # print("\t\tnewface ip:port")
-# print("\t\tnewforwardingrule prefix:face")
+# print("\t\tnewforwardingrule prefix:face[, face]")
 # print("\t\tnewcontent name:content")
