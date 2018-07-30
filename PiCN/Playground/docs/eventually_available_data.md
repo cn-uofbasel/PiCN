@@ -84,7 +84,7 @@ you@machine:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newforwardingrule /the/prefi
 ### Request Content
 
 ```console
-you@machine:~$ picn-heartbeat-peek ..........
+you@machine:~$ picn-heartbeat-peek --port 9000 --plain /the/prefix/square/5/1/hNFN
 ```
 
 ![Heartbeat Peek Output](https://raw.githubusercontent.com/cn-uofbasel/PiCN/nof18-doc/PiCN/Playground/docs/img/screenshot-heartbeat-peek.png "Heartbeat Peek Output")
@@ -127,5 +127,5 @@ you@machine:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newforwardingrule /the/prefi
 ### Request Content
 
 ```console
-you@machine:~$ picn-twophase-peek ..........
+you@machine:~$ picn-heartbeat-peek --port 9000 --plain /the/prefix/square/5/1/pNFN
 ```
