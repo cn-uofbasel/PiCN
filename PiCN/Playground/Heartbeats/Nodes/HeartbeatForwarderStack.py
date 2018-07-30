@@ -13,7 +13,6 @@ from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface, BaseInterface
 from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
 from PiCN.Logger import Logger
 from PiCN.Mgmt import Mgmt
-from PiCN.Routing import BasicRouting
 
 from PiCN.Playground.Heartbeats.Layers.NetworkLayer import HeartbeatNetworkLayer
 from PiCN.Playground.Heartbeats.Layers.PacketEncoding import HeartbeatPacketEncodingLayer
