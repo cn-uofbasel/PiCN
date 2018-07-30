@@ -104,3 +104,26 @@ Type in another terminal the following command to start the computation server o
 ```console
 you@machine:~$ picn-twophase-server --port 8000
 ```
+
+You should see something similar to the following.
+
+![Forwarder Output](https://raw.githubusercontent.com/cn-uofbasel/PiCN/nof18-doc/PiCN/Playground/docs/img/screenshot-twophase-forwarder.png "Forwarder Output")
+
+![Two-Phase Server Output](https://raw.githubusercontent.com/cn-uofbasel/PiCN/nof18-doc/PiCN/Playground/docs/img/screenshot-twophase-server.png "Two-Phase Server Output")
+
+Once we send packets through the network, additional log information is shown.
+
+### Forwarding Rule
+
+To configure a forwarding rule from forwarder to computation server, type in another terminal:
+
+```console
+you@machine:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newface 127.0.0.1:8000:0
+you@machine:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newforwardingrule /the/prefix:0
+```
+
+### Request Content
+
+```console
+you@machine:~$ picn-twophase-peek ..........
+```
