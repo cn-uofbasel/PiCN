@@ -87,6 +87,8 @@ you@machine:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newforwardingrule /the/prefi
 you@machine:~$ picn-heartbeat-peek ..........
 ```
 
+![Heartbeat Peek Output](https://raw.githubusercontent.com/cn-uofbasel/PiCN/nof18-doc/PiCN/Playground/docs/img/screenshot-heartbeat-peek.png "Heartbeat Peek Output")
+
 ## Two-Phase Request Approach
 
 ..
