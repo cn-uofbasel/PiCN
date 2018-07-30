@@ -52,7 +52,7 @@ class cases_Simulation():
         self.simulation_bus.start_process()
 
         fid1 = self.icn_forwarder1.linklayer.faceidtable.get_or_create_faceid(AddressInfo("icnfwd2", 0))
-        self.icn_forwarder1.icnlayer.fib.add_fib_entry(Name("/test"), fid1)
+        self.icn_forwarder1.icnlayer.fib.add_fib_entry(Name("/test"), [fid1])
 
         self.icn_forwarder2.icnlayer.cs.add_content_object(Content("/test/data", "HelloWorld"), static=True)
 
@@ -81,7 +81,7 @@ class cases_Simulation():
         self.icn_forwarder2.start_forwarder()
 
         fid1 = self.icn_forwarder1.linklayer.faceidtable.get_or_create_faceid(AddressInfo("icnfwd2", 0))
-        self.icn_forwarder1.icnlayer.fib.add_fib_entry(Name("/test"), fid1)
+        self.icn_forwarder1.icnlayer.fib.add_fib_entry(Name("/test"), [fid1])
 
         self.icn_forwarder2.icnlayer.cs.add_content_object(Content("/test/data", "HelloWorld"), static=True)
 
@@ -110,7 +110,7 @@ class cases_Simulation():
         self.icn_forwarder2.start_forwarder()
 
         fid1 = self.icn_forwarder1.linklayer.faceidtable.get_or_create_faceid(AddressInfo("icnfwd2", 0))
-        self.icn_forwarder1.icnlayer.fib.add_fib_entry(Name("/test"), fid1)
+        self.icn_forwarder1.icnlayer.fib.add_fib_entry(Name("/test"), [fid1])
 
         self.icn_forwarder2.icnlayer.cs.add_content_object(Content("/test/data", "HelloWorld"), static=True)
 
@@ -134,7 +134,7 @@ class cases_Simulation():
         mgmt_client1 = MgmtClient(self.icn_forwarder1.mgmt.mgmt_sock.getsockname()[1])
 
         mgmt_client1.add_face("icnfwd2", None, 0)
-        mgmt_client1.add_forwarding_rule(Name("/test"), 0)
+        mgmt_client1.add_forwarding_rule(Name("/test"), [0])
 
         mgmt_client2 = MgmtClient(self.icn_forwarder2.mgmt.mgmt_sock.getsockname()[1])
         mgmt_client2.add_new_content(Name("/test/data"), "HelloWorld")
@@ -170,7 +170,7 @@ class cases_Simulation():
         mgmt_client1 = MgmtClient(self.icn_forwarder1.mgmt.mgmt_sock.getsockname()[1])
 
         mgmt_client1.add_face("icnfwd2", None, 0)
-        mgmt_client1.add_forwarding_rule(Name("/test"), 0)
+        mgmt_client1.add_forwarding_rule(Name("/test"), [0])
 
         mgmt_client2 = MgmtClient(self.icn_forwarder2.mgmt.mgmt_sock.getsockname()[1])
         mgmt_client2.add_new_content(Name("/test/data"), "HelloWorld")
@@ -200,13 +200,13 @@ class cases_Simulation():
 
         mgmt_client1 = MgmtClient(self.icn_forwarder1.mgmt.mgmt_sock.getsockname()[1])
         mgmt_client1.add_face("icnfwd2", None, 0)
-        mgmt_client1.add_forwarding_rule(Name("/test"), 0)
+        mgmt_client1.add_forwarding_rule(Name("/test"), [0])
         mgmt_client1.add_new_content(Name("/func/f1"), "PYTHON\nf\ndef f(a):\n    return a.upper()")
 
         mgmt_client2 = MgmtClient(self.icn_forwarder2.mgmt.mgmt_sock.getsockname()[1])
         mgmt_client2.add_new_content(Name("/test/data"), "HelloWorld")
         mgmt_client2.add_face("icnfwd1", None, 0)
-        mgmt_client2.add_forwarding_rule(Name("/func"), 0)
+        mgmt_client2.add_forwarding_rule(Name("/func"), [0])
 
         interest = Interest("/test/data")
         interest.name += "/func/f1(_)"
@@ -242,7 +242,7 @@ class cases_Simulation():
 
         mgmt_client1 = MgmtClient(self.icn_forwarder1.mgmt.mgmt_sock.getsockname()[1])
         mgmt_client1.add_face("icnfwd2", None, 0)
-        mgmt_client1.add_forwarding_rule(Name("/test"), 0)
+        mgmt_client1.add_forwarding_rule(Name("/test"), [0])
 
         interest = Interest("/test/data/f1")
         wire_data = self.encoder.encode(interest)
@@ -277,7 +277,7 @@ class cases_Simulation():
 
         mgmt_client1 = MgmtClient(self.icn_forwarder1.mgmt.mgmt_sock.getsockname()[1])
         mgmt_client1.add_face("icnfwd2", None, 0)
-        mgmt_client1.add_forwarding_rule(Name("/test"), 0)
+        mgmt_client1.add_forwarding_rule(Name("/test"), [0])
 
         res = self.fetchtool.fetch_data(Name("/test/data/f1"), 3)
 

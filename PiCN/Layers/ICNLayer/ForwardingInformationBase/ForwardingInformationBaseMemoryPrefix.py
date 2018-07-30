@@ -27,7 +27,8 @@ class ForwardingInformationBaseMemoryPrefix(BaseForwardingInformationBase):
             components = components[:complen - 1]
         return None
 
-    def add_fib_entry(self, name: Name, faceid: int, static: bool=False):
+    def add_fib_entry(self, name: Name, faceid: List[int], static: bool=False):
+        assert (isinstance(faceid, List))
         fib_entry = ForwardingInformationBaseEntry(name, faceid, static)
         if fib_entry not in self._container:
             self._container.insert(0, fib_entry)

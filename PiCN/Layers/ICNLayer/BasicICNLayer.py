@@ -72,7 +72,7 @@ class BasicICNLayer(LayerProcess):
         else:
             fib_entry = self.fib.find_fib_entry(interest.name)
         if fib_entry is not None:
-            self.pit.add_used_fib_entry(interest.name, fib_entry)
+            self.pit.set_number_of_forwards(interest.name, len(fib_entry.faceid))
             for fid in fib_entry.faceid:
                 to_lower.put([fid, interest])
         else:
@@ -111,8 +111,9 @@ class BasicICNLayer(LayerProcess):
         if new_face_id is not None:
             self.logger.info("Found in FIB, forwarding")
             self.pit.add_pit_entry(interest.name, face_id, interest, local_app=from_local)
-            #self.add_used_fib_entry_to_pit(interest.name, new_face_id) #disabled, should only be applied if nack is received.
-            to_lower.put([new_face_id.faceid, interest])
+            self.pit.set_number_of_forwards(interest.name, len(new_face_id.faceid))
+            for fid in new_face_id.faceid:
+                to_lower.put([fid, interest])
             return
         self.logger.info("No FIB entry, sending Nack")
         nack = Nack(interest.name, NackReason.NO_ROUTE, interest=interest)
@@ -140,13 +141,20 @@ class BasicICNLayer(LayerProcess):
 
     def handle_nack(self, face_id: int, nack: Nack, to_lower: multiprocessing.Queue,
                     to_higher: multiprocessing.Queue, from_local: bool = False):
-        self.logger.info("Handling NACK: " + str(nack.name) + " Reason: " + str(nack.reason) + " From Local: " + str(from_local))
-        pit_entry = self.pit.find_pit_entry(nack.name)
-        if pit_entry is None:
+        self.logger.info("Handling NACK: " + str(nack.name) + " Reason: " + str(nack.reason) + ", From Local: " + str(from_local))
+        cur_pit_entry = self.pit.find_pit_entry(nack.name)
+        if cur_pit_entry is None:
             self.logger.info("No PIT entry for NACK available, dropping")
             return
         else:
-            fib_entry = self.fib.find_fib_entry(nack.name, pit_entry.fib_entries_already_used, pit_entry.faceids)
+            if cur_pit_entry.number_of_forwards > 1:
+                self.logger.info("Ignoring Nack, since other faces are still active")
+                self.pit.set_number_of_forwards(nack.name, cur_pit_entry.number_of_forwards-1)
+                return
+            cur_fib_entry = self.fib.find_fib_entry(nack.name, cur_pit_entry.fib_entries_already_used, cur_pit_entry.faceids) #current entry
+            self.pit.add_used_fib_entry(nack.name, cur_fib_entry) #add current entry to used list, modiefies pit entry in pit
+            pit_entry = self.pit.find_pit_entry(nack.name) #read modified entry from pit
+            fib_entry = self.fib.find_fib_entry(nack.name, pit_entry.fib_entries_already_used, pit_entry.faceids) #read new fib entry
             if fib_entry is None:
                 self.logger.info("Sending NACK to previous node(s)")
                 re_add = False
@@ -169,8 +177,9 @@ class BasicICNLayer(LayerProcess):
                     self.pit.append(pit_entry)
             else:
                 self.logger.info("Try using next FIB path")
-                self.pit.add_used_fib_entry(nack.name, fib_entry)
-                to_lower.put([fib_entry.faceid, pit_entry.interest])
+                self.pit.set_number_of_forwards(pit_entry.interest.name, len(fib_entry.faceid))
+                for fid in fib_entry.faceid:
+                    to_lower.put([fid, pit_entry.interest])
 
     def ageing(self):
         """Ageing the data structs"""
@@ -182,7 +191,9 @@ class BasicICNLayer(LayerProcess):
                 fib_entry = self.fib.find_fib_entry(pit_entry.name, pit_entry.fib_entries_already_used, pit_entry.faceids)
                 if not fib_entry:
                     continue
-                self.queue_to_lower.put([fib_entry.faceid, pit_entry.interest])
+                self.pit.set_number_of_forwards(pit_entry.name, len(fib_entry.faceid))
+                for fid in fib_entry.faceid:
+                    self.queue_to_lower.put([fid, pit_entry.interest])
             #CS ageing
             self.cs.ageing()
         except Exception as e:

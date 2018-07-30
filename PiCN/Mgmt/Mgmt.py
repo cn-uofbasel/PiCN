@@ -181,12 +181,12 @@ class Mgmt(PiCNProcess):
             self._run_poll(mgmt_sock)
 
     def start_process(self):
-        self.process = multiprocessing.Process(target=self._run, args=[self.mgmt_sock])
-        self.process.start()
+        self._process = multiprocessing.Process(target=self._run, args=[self.mgmt_sock])
+        self._process.start()
 
     def stop_process(self):
-        if self.process:
-            self.process.terminate()
-            self.process = None
+        if self._process is not None:
+            self._process.terminate()
+            self._process = None
         self.mgmt_sock.close()
 

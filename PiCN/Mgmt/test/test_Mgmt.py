@@ -177,11 +177,11 @@ class test_Mgmt(unittest.TestCase):
         self.linklayer.start_process()
         self.mgmt.start_process()
 
-        data = self.mgmt_client.add_forwarding_rule(Name("/test/data"), 2)
+        data = self.mgmt_client.add_forwarding_rule(Name("/test/data"), [2])
         self.assertEqual("HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newforwardingrule OK:2\r\n", data)
 
         time.sleep(1)
-        data = self.mgmt_client.add_forwarding_rule(Name("/data/test"), 3)
+        data = self.mgmt_client.add_forwarding_rule(Name("/data/test"), [3])
         self.assertEqual(data, "HTTP/1.1 200 OK \r\n Content-Type: text/html \r\n\r\n newforwardingrule OK:3\r\n")
 
         self.assertEqual(self.mgmt.fib.find_fib_entry(Name("/test/data")).faceid, [2])

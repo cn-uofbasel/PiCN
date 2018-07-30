@@ -39,8 +39,8 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         self.encoder_type = self.get_encoder()
         self.simulation_bus = SimulationBus(packetencoder=self.encoder_type())
 
-        self.fetch_tool1 = Fetch("rsu1", None, 255, self.encoder_type(), [self.simulation_bus.add_interface("fetchtool1")])
-        self.fetch_tool2 = Fetch("rsu2", None, 255, self.encoder_type(), [self.simulation_bus.add_interface("fetchtool2")])
+        self.fetch_tool1 = Fetch("rsu1", None, 255, self.encoder_type(), interfaces=[self.simulation_bus.add_interface("fetchtool1")])
+        self.fetch_tool2 = Fetch("rsu2", None, 255, self.encoder_type(), interfaces=[self.simulation_bus.add_interface("fetchtool2")])
 
         self.rsu1 = NFNForwarder(port=0, encoder=self.encoder_type(),
                                  interfaces=[self.simulation_bus.add_interface("rsu1")], log_level=255, ageing_interval=1)
@@ -84,19 +84,19 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         #setup rsu1
 
         self.mgmt_client1.add_face("rsu2", None, 0)
-        self.mgmt_client1.add_forwarding_rule(Name("/rsu"), 0)
+        self.mgmt_client1.add_forwarding_rule(Name("/rsu"), [0])
         self.mgmt_client1.add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n    for i in range(0,30000000):\n        a.upper()\n    return a.upper() + ' RSU1'")
 
         #setup rsu2
         self.mgmt_client2.add_face("rsu1", None, 0)
         self.mgmt_client2.add_face("rsu3", None, 0)
-        self.mgmt_client2.add_forwarding_rule(Name("/rsu"), 0)
+        self.mgmt_client2.add_forwarding_rule(Name("/rsu"), [0])
         #self.mgmt_client2.add_forwarding_rule(Name("/rsu"), 1)
         self.mgmt_client2.add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n    for i in range(0,60000000):\n        a.upper()\n    return a.upper() + ' RSU2'")
 
         #setup rsu3
         self.mgmt_client3.add_face("rsu2", None, 0)
-        self.mgmt_client3.add_forwarding_rule(Name("/rsu"), 0)
+        self.mgmt_client3.add_forwarding_rule(Name("/rsu"), [0])
         self.mgmt_client3.add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n    for i in range(0,50000000):\n        a.upper()\n    return a.upper() + ' RSU3'")
 
 

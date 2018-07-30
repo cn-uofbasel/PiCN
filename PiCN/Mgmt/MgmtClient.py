@@ -28,8 +28,7 @@ class MgmtClient(object):
         :param faceid: list of faceids to identify the face on which the name should be bound
         :return: reply message of the relay
         """
-        if isinstance(faceid, List):
-            faceid = ','.join(str(e) for e in faceid)
+        faceid = ','.join(str(e) for e in faceid)
         param = name.to_string() + ":" + str(faceid)
         return self.layercommand("icnlayer", "newforwardingrule", param.replace("/", "%2F"))
 
