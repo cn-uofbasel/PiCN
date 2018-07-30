@@ -52,21 +52,17 @@ you@machine:~$ picn-heartbeat-forwarder --help
 
 ### Starting Nodes
 
-Open a terminal and type the following commmand to start a packet forwarding node:
+Open a terminal and type the following commmand to start a packet forwarding node on UDP port 9000:
 
 ```console
 you@machine:~$ picn-heartbeat-forwarder --port 9000
 ```
 
-...tod... explanation
-
-Type in another terminal the following command to start the computation server:
+Type in another terminal the following command to start the computation server on UDP port 8000:
 
 ```console
 you@machine:~$ picn-heartbeat-server --port 8000
 ```
-
-... todo.. explanation
 
 You should see something similar to the following.
 
@@ -74,14 +70,22 @@ You should see something similar to the following.
 
 ![Heartbeat Server Output](https://raw.githubusercontent.com/cn-uofbasel/PiCN/nof18-doc/PiCN/Playground/docs/img/screenshot-heartbeat-server.png "Heartbeat Server Output")
 
+Once we send packets through the network, additional log information is shown.
 
 ### Forwarding Rule
 
-...
+To configure a forwarding rule from forwarder to computation server, type in another terminal:
+
+```console
+you@machine:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newface 127.0.0.1:8000:0
+you@machine:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newforwardingrule /the/prefix:0
+```
 
 ### Request Content
 
-...
+```console
+you@machine:~$ picn-heartbeat-peek ..........
+```
 
 ## Two-Phase Request Approach
 
