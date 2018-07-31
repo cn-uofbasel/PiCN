@@ -197,7 +197,6 @@ class BasicICNLayer(LayerProcess):
                 if not fib_entry:
                     continue
                 for fid in fib_entry.faceid:
-                    print("was nacked", self.pit.test_faceid_was_nacked(pit_entry.name, fid))
                     if not self.pit.test_faceid_was_nacked(pit_entry.name, fid):
                         self.queue_to_lower.put([fid, pit_entry.interest])
             #CS ageing

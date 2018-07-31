@@ -13,7 +13,9 @@ from PiCN.Layers.ICNLayer import BaseICNDataStruct
 class PendingInterestTableEntry(object):
     """An entry in the Forwarding Information Base"""
 
-    def __init__(self, name: Name, faceid: int, interest:Interest = None, local_app: bool=False):
+    def __init__(self, name: Name, faceid: int, interest:Interest = None, local_app: bool=False,
+                 fib_entries_already_used: List[ForwardingInformationBaseEntry]=[], faces_already_nacked=[],
+                 number_of_forwards=0):
         self.name = name
         self._faceids: List[int] = []
         if isinstance(faceid, list):
@@ -28,9 +30,9 @@ class PendingInterestTableEntry(object):
         else:
             self._local_app.append(local_app)
         self._interest = interest
-        self._fib_entries_already_used: List[ForwardingInformationBaseEntry] = []
-        self.faces_already_nacked = []
-        self.number_of_forwards = 0
+        self._fib_entries_already_used: List[ForwardingInformationBaseEntry] = fib_entries_already_used
+        self.faces_already_nacked = faces_already_nacked
+        self.number_of_forwards = number_of_forwards
 
     def __eq__(self, other):
         if other is None:
@@ -160,7 +162,6 @@ class BasePendingInterestTable(BaseICNDataStruct):
         self.append(pit_entry)
 
     def add_nacked_faceid(self, name, fid: int):
-        print("nacking face id for name: ", name, fid)
         pit_entry = self.find_pit_entry(name)
         self.remove_pit_entry(name)
         pit_entry.faces_already_nacked.append(fid)
@@ -168,7 +169,6 @@ class BasePendingInterestTable(BaseICNDataStruct):
 
     def test_faceid_was_nacked(self, name, fid: int):
         pit_entry = self.find_pit_entry(name)
-        print("faceid", fid, "nacked? for name", name, fid in pit_entry.faces_already_nacked)
         return (fid in pit_entry.faces_already_nacked)
 
     def set_pit_timeout(self, timeout: float):
