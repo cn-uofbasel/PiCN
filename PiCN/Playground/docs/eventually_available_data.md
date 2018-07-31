@@ -5,7 +5,7 @@ This how-to..
 
 ## Sample Topology
 
-![Sample Topology](https://raw.githubusercontent.com/cn-uofbasel/PiCN/nof18-doc/PiCN/Playground/docs/img/setup.png "Sample Topology")
+![Sample Topology](https://raw.githubusercontent.com/cn-uofbasel/PiCN/master/PiCN/Playground/docs/img/setup.png "Sample Topology")
 
 For both approaches, our sample topology simply consists of a packet forwarder which hands over computation result requests to a computation node.
 
@@ -66,9 +66,9 @@ you@machine:~$ picn-heartbeat-server --port 8000
 
 You should see something similar to the following.
 
-![Heartbeat Forwarder Output](https://raw.githubusercontent.com/cn-uofbasel/PiCN/nof18-doc/PiCN/Playground/docs/img/screenshot-heartbeat-forwarder.png "Heartbeat Forwarder Output")
+![Heartbeat Forwarder Output](https://raw.githubusercontent.com/cn-uofbasel/PiCN/master/PiCN/Playground/docs/img/screenshot-heartbeat-forwarder.png "Heartbeat Forwarder Output")
 
-![Heartbeat Server Output](https://raw.githubusercontent.com/cn-uofbasel/PiCN/nof18-doc/PiCN/Playground/docs/img/screenshot-heartbeat-server.png "Heartbeat Server Output")
+![Heartbeat Server Output](https://raw.githubusercontent.com/cn-uofbasel/PiCN/master/PiCN/Playground/docs/img/screenshot-heartbeat-server.png "Heartbeat Server Output")
 
 Once we send packets through the network, additional log information is shown.
 
@@ -87,7 +87,7 @@ you@machine:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newforwardingrule /the/prefi
 you@machine:~$ picn-heartbeat-peek --port 9000 --plain /the/prefix/square/5/1/hNFN
 ```
 
-![Heartbeat Peek Output](https://raw.githubusercontent.com/cn-uofbasel/PiCN/nof18-doc/PiCN/Playground/docs/img/screenshot-heartbeat-peek.png "Heartbeat Peek Output")
+![Heartbeat Peek Output](https://raw.githubusercontent.com/cn-uofbasel/PiCN/master/PiCN/Playground/docs/img/screenshot-heartbeat-peek.png "Heartbeat Peek Output")
 
 ## Two-Phase Request Approach
 
@@ -107,9 +107,9 @@ you@machine:~$ picn-twophase-server --port 8000
 
 You should see something similar to the following.
 
-![Forwarder Output](https://raw.githubusercontent.com/cn-uofbasel/PiCN/nof18-doc/PiCN/Playground/docs/img/screenshot-twophase-forwarder.png "Forwarder Output")
+![Forwarder Output](https://raw.githubusercontent.com/cn-uofbasel/PiCN/master/PiCN/Playground/docs/img/screenshot-twophase-forwarder.png "Forwarder Output")
 
-![Two-Phase Server Output](https://raw.githubusercontent.com/cn-uofbasel/PiCN/nof18-doc/PiCN/Playground/docs/img/screenshot-twophase-server.png "Two-Phase Server Output")
+![Two-Phase Server Output](https://raw.githubusercontent.com/cn-uofbasel/PiCN/master/PiCN/Playground/docs/img/screenshot-twophase-server.png "Two-Phase Server Output")
 
 Once we send packets through the network, additional log information is shown.
 
@@ -128,4 +128,4 @@ you@machine:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newforwardingrule /the/prefi
 you@machine:~$ picn-heartbeat-peek --port 9000 --plain /the/prefix/square/5/1/pNFN
 ```
 
-![Two-Phase Peek Output](https://raw.githubusercontent.com/cn-uofbasel/PiCN/nof18-doc/PiCN/Playground/docs/img/screenshot-twophase-peek.png "Two-Phase Peek Output")
+![Two-Phase Peek Output](https://raw.githubusercontent.com/cn-uofbasel/PiCN/master/PiCN/Playground/docs/img/screenshot-twophase-peek.png "Two-Phase Peek Output")
