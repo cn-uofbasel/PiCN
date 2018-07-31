@@ -113,7 +113,7 @@ class BasicICNLayer(LayerProcess):
             self.logger.info("Found in FIB, forwarding")
             self.pit.add_pit_entry(interest.name, face_id, interest, local_app=from_local)
             for fid in new_face_id.faceid:
-                if self.pit.test_faceid_was_nacked(interest.name, fid):
+                if not self.pit.test_faceid_was_nacked(interest.name, fid):
                     self.pit.increase_number_of_forwards(interest.name)
                     to_lower.put([fid, interest])
             return
@@ -149,11 +149,12 @@ class BasicICNLayer(LayerProcess):
             self.logger.info("No PIT entry for NACK available, dropping")
             return
         else:
-            if cur_pit_entry.number_of_forwards > 0:
-                self.logger.info("Ignoring Nack from FaceID" + str(face_id) + "for " + str(nack.name) + "since other faces are still active")
-                self.pit.add_nacked_faceid(nack.name, face_id)
+            self.pit.add_nacked_faceid(nack.name, face_id)
+            if cur_pit_entry.number_of_forwards > 1:
+                self.logger.info("Ignoring Nack from FaceID " + str(face_id) + "for " + str(nack.name) + "since other faces (" + str(cur_pit_entry.number_of_forwards) + ") are still active")
                 self.pit.decrease_number_of_forwards(nack.name)
                 return
+            self.pit.set_number_of_forwards(nack.name, 0)
             cur_fib_entry = self.fib.find_fib_entry(nack.name, cur_pit_entry.fib_entries_already_used, cur_pit_entry.faceids) #current entry
             self.pit.add_used_fib_entry(nack.name, cur_fib_entry) #add current entry to used list, modiefies pit entry in pit
             pit_entry = self.pit.find_pit_entry(nack.name) #read modified entry from pit
@@ -195,8 +196,8 @@ class BasicICNLayer(LayerProcess):
                 fib_entry = self.fib.find_fib_entry(pit_entry.name, pit_entry.fib_entries_already_used, pit_entry.faceids)
                 if not fib_entry:
                     continue
-                self.pit.set_number_of_forwards(pit_entry.name, len(fib_entry.faceid))
                 for fid in fib_entry.faceid:
+                    print("was nacked", self.pit.test_faceid_was_nacked(pit_entry.name, fid))
                     if not self.pit.test_faceid_was_nacked(pit_entry.name, fid):
                         self.queue_to_lower.put([fid, pit_entry.interest])
             #CS ageing

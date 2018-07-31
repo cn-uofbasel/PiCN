@@ -160,6 +160,7 @@ class BasePendingInterestTable(BaseICNDataStruct):
         self.append(pit_entry)
 
     def add_nacked_faceid(self, name, fid: int):
+        print("nacking face id for name: ", name, fid)
         pit_entry = self.find_pit_entry(name)
         self.remove_pit_entry(name)
         pit_entry.faces_already_nacked.append(fid)
@@ -167,7 +168,8 @@ class BasePendingInterestTable(BaseICNDataStruct):
 
     def test_faceid_was_nacked(self, name, fid: int):
         pit_entry = self.find_pit_entry(name)
-        return fid in pit_entry.faces_already_nacked
+        print("faceid", fid, "nacked? for name", name, fid in pit_entry.faces_already_nacked)
+        return (fid in pit_entry.faces_already_nacked)
 
     def set_pit_timeout(self, timeout: float):
         """set the timeout intervall for a pit entry

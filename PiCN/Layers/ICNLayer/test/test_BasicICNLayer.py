@@ -637,5 +637,36 @@ class test_BasicICNLayer(unittest.TestCase):
         self.assertTrue(self.icn_layer.queue_to_lower.empty())
 
         self.icn_layer.queue_from_lower.put([2, n1])
-        d3 = self.icn_layer.queue_to_lower.get()
-        #self.assertEqual([1, n1], d3)
+        d3 = self.icn_layer.queue_to_lower.get(timeout=2.0)
+        self.assertEqual([1, n1], d3)
+
+
+    def test_multicast_and_nack_handling_with_retransmit(self):
+        """Test if a multicast works, and if the nack counter for the multicast works"""
+
+        i1 = Interest("/test/data")
+        n1 = Nack(i1.name, NackReason.NO_CONTENT, i1)
+
+        self.icn_layer.start_process()
+
+        self.icn_layer.fib.add_fib_entry(i1.name, [2,3])
+
+        self.icn_layer.queue_from_lower.put([1, i1])
+
+        d1 = self.icn_layer.queue_to_lower.get(timeout=2.0)
+        d2 = self.icn_layer.queue_to_lower.get(timeout=2.0)
+
+        self.assertEqual([2, i1], d1)
+        self.assertEqual([3, i1], d2)
+
+        self.icn_layer.queue_from_lower.put([3, n1])
+        self.assertTrue(self.icn_layer.queue_to_lower.empty())
+
+        self.icn_layer.ageing()
+        d3 = self.icn_layer.queue_to_lower.get(timeout=2.0)
+        self.assertEqual([2, i1], d3)
+
+
+        self.icn_layer.queue_from_lower.put([2, n1])
+        d4 = self.icn_layer.queue_to_lower.get(timeout=2.0)
+        self.assertEqual([1, n1], d4)
