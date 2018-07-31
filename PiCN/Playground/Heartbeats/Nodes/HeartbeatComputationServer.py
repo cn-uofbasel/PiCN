@@ -23,7 +23,7 @@ def main(args):
     logger = Logger("Repo", log_level)
 
     # Info
-    logger.info("Starting a PinnedNFN Server...")
+    logger.info("Starting a Heartbeat Computation Server...")
     logger.info("UDP Port:       " + str(args.port))
     logger.info("Log Level:      " + args.logging)
     logger.info("Packet Format:  Extended NDN Packet Format")

@@ -70,9 +70,6 @@ class HeartbeatForwarderStack(object):
         self.icn_layer.fib = fib
         self.icn_layer.pit = pit
 
-        # routing
-        self.routing = BasicRouting(self.icn_layer.pit, None, log_level=log_level)  # TODO NOT IMPLEMENTED YET
-
         # mgmt
         self.mgmt = Mgmt(cs, fib, pit, self.link_layer, mgmt_port, self.stop_forwarder,
                          log_level=log_level)
