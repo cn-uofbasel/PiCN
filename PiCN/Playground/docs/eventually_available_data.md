@@ -91,8 +91,6 @@ you@machine:~$ picn-heartbeat-peek --port 9000 --plain /the/prefix/square/5/1/hN
 
 ## Two-Phase Request Approach
 
-..
-
 ### Starting Nodes
 
 Open a terminal and type the following commmand to start a packet forwarding node on UDP port 9000:
@@ -129,3 +127,5 @@ you@machine:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newforwardingrule /the/prefi
 ```console
 you@machine:~$ picn-heartbeat-peek --port 9000 --plain /the/prefix/square/5/1/pNFN
 ```
+
+![Two-Phase Peek Output](https://raw.githubusercontent.com/cn-uofbasel/PiCN/nof18-doc/PiCN/Playground/docs/img/screenshot-twophase-peek.png "Two-Phase Peek Output")
