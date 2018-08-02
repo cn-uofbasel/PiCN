@@ -107,11 +107,11 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         name += '_("helloworld")'
         name += "NFN"
 
-        res = self.fetch_tool1.fetch_data(name, timeout=10)
+        res = self.fetch_tool1.fetch_data(name, timeout=5)
         self.assertEqual(res, "HELLOWORLD RSU1")
         print("Result at RSU1:", res)
-        time.sleep(4)
-        res = self.fetch_tool2.fetch_data(name, timeout=10)
+        time.sleep(5)
+        res = self.fetch_tool2.fetch_data(name, timeout=5)
         print("Result as fetched via RSU2:", res)
         self.assertEqual(res, "HELLOWORLD RSU1")
 
@@ -131,6 +131,6 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         res1 = self.fetch_tool1.fetch_data(name1, timeout=0)
         print(res1)
 
-        time.sleep(7)
+        time.sleep(6)
         res2 = self.fetch_tool2.fetch_data(name2, timeout=0)
         print(res2)
