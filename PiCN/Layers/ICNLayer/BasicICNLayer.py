@@ -110,7 +110,7 @@ class BasicICNLayer(LayerProcess):
             return
         new_face_id = self.fib.find_fib_entry(interest.name, None, [face_id])
         if new_face_id is not None:
-            self.logger.info("Found in FIB, forwarding")
+            self.logger.info("Found in FIB, forwarding to Face: " +  str(new_face_id.faceid))
             self.pit.add_pit_entry(interest.name, face_id, interest, local_app=from_local)
             for fid in new_face_id.faceid:
                 if not self.pit.test_faceid_was_nacked(interest.name, fid):
@@ -164,6 +164,7 @@ class BasicICNLayer(LayerProcess):
                 re_add = False
                 for i in range(0, len(pit_entry.faceids)):
                     if pit_entry.local_app[i] == True: #Go with NACK first only to app layer if it was requested
+                        self.logger.info("Nack goes only to local first")
                         re_add = True
                 self.pit.remove_pit_entry(pit_entry.name)
                 indices_to_remove = []
