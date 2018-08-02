@@ -22,14 +22,20 @@ class EdgeComputingOptimizer(BaseNFNOptimizer):
 
     def compute_local(self, prepended_prefix: Name, ast: AST, interest: Interest) -> bool:
 
+        if not isinstance(ast, AST_FuncCall): #only start if computation function local
+            return False
+        function_name = Name(ast._element)
+        if not self.cs.find_content_object(function_name):
+            return False
+
         pit = self.pit.get_container()
         pit_entry = self.pit.find_pit_entry(interest.name)
         if not pit_entry:
             return True
         faceid = pit_entry.faceids[0]
         addr_info = self.faceidtable.get_address_info(faceid)
-        if "rsu" in addr_info.address:
-            return False
+        #if "rsu" in addr_info.address:  #do not start computation if it comes form another RSU  #todo imporve this for ip
+        #    return False
         return True
 
     def compute_fwd(self, prepended_prefix: Name, ast: AST, interest: Interest) -> bool:

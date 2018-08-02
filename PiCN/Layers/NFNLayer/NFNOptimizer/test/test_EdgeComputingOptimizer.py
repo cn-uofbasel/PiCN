@@ -49,6 +49,8 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         cmp_name += "_()"
         cmp_name += "NFN"
         workflow = "/func/f1()"
+        cs = self.optimizer.cs
+        cs.add_content_object(Content("/func/f1"))
         ast = self.parser.parse(workflow)
         self.assertTrue(self.optimizer.compute_fwd(cmp_name, ast, Interest(cmp_name)))
         self.assertTrue(self.optimizer.compute_local(cmp_name, ast, Interest(cmp_name)))
@@ -63,6 +65,8 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         workflow = "/func/f1(/test/data)"
         fib = self.optimizer.fib
         fib.add_fib_entry(Name("/test"), [1], False)
+        cs = self.optimizer.cs
+        cs.add_content_object(Content("/func/f1"))
         self.optimizer.fib = fib
         ast = self.parser.parse(workflow)
         self.assertTrue(self.optimizer.compute_fwd(cmp_name, ast, Interest(cmp_name)))
