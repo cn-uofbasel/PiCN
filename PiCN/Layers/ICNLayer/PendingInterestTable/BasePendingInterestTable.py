@@ -14,7 +14,7 @@ class PendingInterestTableEntry(object):
     """An entry in the Forwarding Information Base"""
 
     def __init__(self, name: Name, faceid: int, interest:Interest = None, local_app: bool=False,
-                 fib_entries_already_used: List[ForwardingInformationBaseEntry]=[], faces_already_nacked=[],
+                 fib_entries_already_used: List[ForwardingInformationBaseEntry]=None, faces_already_nacked=None,
                  number_of_forwards=0):
         self.name = name
         self._faceids: List[int] = []
@@ -30,9 +30,16 @@ class PendingInterestTableEntry(object):
         else:
             self._local_app.append(local_app)
         self._interest = interest
-        self._fib_entries_already_used: List[ForwardingInformationBaseEntry] = fib_entries_already_used
-        self.faces_already_nacked = faces_already_nacked
+        if fib_entries_already_used: #default parameter is not [] but None and this if else is here because [] as default parameter leads to a strange behavior
+            self._fib_entries_already_used: List[ForwardingInformationBaseEntry] = fib_entries_already_used
+        else:
+            self._fib_entries_already_used: List[ForwardingInformationBaseEntry] = []
+        if faces_already_nacked:
+            self.faces_already_nacked = faces_already_nacked
+        else:
+            self.faces_already_nacked = []
         self.number_of_forwards = number_of_forwards
+
 
     def __eq__(self, other):
         if other is None:
