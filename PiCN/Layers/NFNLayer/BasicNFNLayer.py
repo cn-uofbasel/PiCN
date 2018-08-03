@@ -128,7 +128,7 @@ class BasicNFNLayer(LayerProcess):
                     remove_list.append(e.original_name)
                 else:
                     request = Interest(self.parser.nfn_str_to_network_name(e.rewrite_list[0]))
-                    self.queue_to_lower.put([e.id, request])
+                    self.queue_to_lower.put([packet_id, request])
             #check if nack-ed data were required.
             elif nack.name == e.original_name:
                 remove_list.append(e.original_name)
@@ -142,7 +142,7 @@ class BasicNFNLayer(LayerProcess):
             e = self.computation_table.get_computation(r)
             self.computation_table.remove_computation(r)
             new_nack = Nack(e.original_name, nack.reason, interest=e.interest)
-            self.queue_to_lower.put([e.id, new_nack])
+            self.queue_to_lower.put([packet_id, new_nack])
             self.handleNack(e.id, new_nack)
 
     def forwarding_descision(self, interest: Interest):

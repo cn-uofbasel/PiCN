@@ -143,7 +143,8 @@ class BasicICNLayer(LayerProcess):
 
     def handle_nack(self, face_id: int, nack: Nack, to_lower: multiprocessing.Queue,
                     to_higher: multiprocessing.Queue, from_local: bool = False):
-        self.logger.info("Handling NACK: " + str(nack.name) + " Reason: " + str(nack.reason) + ", From Local: " + str(from_local))
+        self.logger.info("Handling NACK: " + str(nack.name) + " Reason: " + str(nack.reason) + ", From FaceID: " +
+                         str(face_id) + ", From Local: " + str(from_local))
         cur_pit_entry = self.pit.find_pit_entry(nack.name)
         if cur_pit_entry is None:
             self.logger.info("No PIT entry for NACK available, dropping")
@@ -159,7 +160,7 @@ class BasicICNLayer(LayerProcess):
             self.pit.add_used_fib_entry(nack.name, cur_fib_entry) #add current entry to used list, modiefies pit entry in pit
             pit_entry = self.pit.find_pit_entry(nack.name) #read modified entry from pit
             fib_entry = self.fib.find_fib_entry(nack.name, pit_entry.fib_entries_already_used, pit_entry.faceids) #read new fib entry
-            if fib_entry is None:
+            if fib_entry is None or fib_entry.faceid == [face_id]: #FIXME WHAT IS THE RIGHT CONDITION HERE?
                 self.logger.info("Sending NACK to previous node(s)")
                 re_add = False
                 for i in range(0, len(pit_entry.faceids)):
@@ -181,7 +182,7 @@ class BasicICNLayer(LayerProcess):
                         del pit_entry.local_app[i]
                     self.pit.append(pit_entry)
             else:
-                self.logger.info("Try using next FIB path")
+                self.logger.info("Try using next FIB path with FaceID: " + str(fib_entry.faceid))
                 for fid in fib_entry.faceid:
                     if not self.pit.test_faceid_was_nacked(pit_entry.name, fid):
                         self.pit.increase_number_of_forwards(pit_entry.name)

@@ -589,7 +589,7 @@ class test_BasicICNLayer(unittest.TestCase):
         self.icn_layer.pit.add_pit_entry(n1, from_fid, i1, None)
         self.icn_layer.fib.add_fib_entry(Name("/test"), [to_fib2])
         self.icn_layer.fib.add_fib_entry(Name("/test/data"), [to_fib3])
-        self.icn_layer.fib.add_fib_entry(Name("/test/data/d1"), [5]) #assuning this entry was used first and is active when nack arrives
+        self.icn_layer.fib.add_fib_entry(Name("/test/data/d1"), [to_fib1]) #assuning this entry was used first and is active when nack arrives
         self.icn_layer.queue_from_lower.put([to_fib1, nack_1])
         try:
             data = self.icn_layer.queue_to_lower.get(timeout=2.0)
