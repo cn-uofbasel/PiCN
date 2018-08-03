@@ -49,7 +49,7 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         self.rsu2 = NFNForwarder(port=0, encoder=self.encoder_type(),
                                  interfaces=[self.simulation_bus.add_interface("rsu2")], log_level=255, ageing_interval=1)
         self.rsu3 = NFNForwarder(port=0, encoder=self.encoder_type(),
-                                 interfaces=[self.simulation_bus.add_interface("rsu3")], log_level=255, ageing_interval=1)
+                                 interfaces=[self.simulation_bus.add_interface("rsu3")], log_level=0, ageing_interval=1)
 
 
         self.rsu1.icnlayer.pit.set_pit_timeout(0)
@@ -149,8 +149,8 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         name1 += '_("helloworld")'
         name1 += "NFN"
 
-        res1 = self.fetch_tool1.fetch_data(name1, timeout=0)
+        res1 = self.fetch_tool1.fetch_data(name1, timeout=10)
         print(res1)
 
-        res2 = self.fetch_tool3.fetch_data(name1, timeout=0)
+        res2 = self.fetch_tool3.fetch_data(name1, timeout=10)
         print(res2)
