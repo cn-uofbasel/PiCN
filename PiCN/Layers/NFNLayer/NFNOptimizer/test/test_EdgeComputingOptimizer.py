@@ -43,8 +43,8 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         self.optimizer: EdgeComputingOptimizer = EdgeComputingOptimizer(cs, fib, pit, faceidtable)
 
 
-    def test_interest_fwd_comp_simple_interest(self):
-        """Test the edgecomputing forwarder with an simple interest"""
+    def test_interest_fwd_comp_simple_interest_without_fib_entry(self):
+        """Test the edgecomputing forwarder with an simple interest without a fib entry"""
         cmp_name = Name("/func/f1")
         cmp_name += "_()"
         cmp_name += "NFN"
@@ -52,10 +52,26 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         cs = self.optimizer.cs
         cs.add_content_object(Content("/func/f1"))
         ast = self.parser.parse(workflow)
-        self.assertTrue(self.optimizer.compute_fwd(cmp_name, ast, Interest(cmp_name)))
+        self.assertFalse(self.optimizer.compute_fwd(cmp_name, ast, Interest(cmp_name)))
         self.assertTrue(self.optimizer.compute_local(cmp_name, ast, Interest(cmp_name)))
         rules = self.optimizer.rewrite(cmp_name, ast)
         self.assertEqual(rules, [])
+
+    def test_interest_fwd_comp_simple_interest(self):
+        """Test the edgecomputing forwarder with an simple interest with a fib entry"""
+        cmp_name = Name("/func/f1")
+        cmp_name += "_()"
+        cmp_name += "NFN"
+        workflow = "/func/f1()"
+        cs = self.optimizer.cs
+        cs.add_content_object(Content("/func/f1"))
+        fib = self.optimizer.fib
+        fib.add_fib_entry(Name("/func"), [1])
+        ast = self.parser.parse(workflow)
+        self.assertTrue(self.optimizer.compute_fwd(cmp_name, ast, Interest(cmp_name)))
+        self.assertTrue(self.optimizer.compute_local(cmp_name, ast, Interest(cmp_name)))
+        rules = self.optimizer.rewrite(cmp_name, ast)
+        self.assertEqual(rules, ['%/func/f1%()'])
 
     def test_interest_fwd_comp_interest(self):
         """Test the edgecomputing forwarder with an computation with parameter"""
