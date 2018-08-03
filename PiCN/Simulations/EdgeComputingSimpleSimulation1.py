@@ -49,7 +49,7 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         self.rsu2 = NFNForwarder(port=0, encoder=self.encoder_type(),
                                  interfaces=[self.simulation_bus.add_interface("rsu2")], log_level=255, ageing_interval=1)
         self.rsu3 = NFNForwarder(port=0, encoder=self.encoder_type(),
-                                 interfaces=[self.simulation_bus.add_interface("rsu3")], log_level=0, ageing_interval=1)
+                                 interfaces=[self.simulation_bus.add_interface("rsu3")], log_level=255, ageing_interval=1)
 
 
         self.rsu1.icnlayer.pit.set_pit_timeout(0)

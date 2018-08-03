@@ -40,6 +40,11 @@ class EdgeComputingOptimizer(BaseNFNOptimizer):
         return True
 
     def compute_fwd(self, prepended_prefix: Name, ast: AST, interest: Interest) -> bool:
+
+        pit_entry = self.pit.find_pit_entry(interest.name)
+
+        if self.fib.find_fib_entry(interest.name, pit_entry.fib_entries_already_used, pit_entry.face_id) is None:
+            return False
         return True
 
     def rewrite(self, prepended_prefix: Name, ast: AST) -> List[str]:
