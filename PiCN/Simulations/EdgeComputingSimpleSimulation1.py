@@ -115,7 +115,7 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         time.sleep(5)
         res = self.fetch_tool2.fetch_data(name, timeout=5)
         print("Result as fetched via RSU2:", res)
-#        self.assertEqual(res, "HELLOWORLD RSU1") not working as long as no exec rsu deduplication of computation starts does not work (Reenable in edge optimizer)
+        self.assertEqual(res, "HELLOWORLD RSU1")
 
     def test_inner_call_without_data_from_client(self):
         """execute one function on the first node and another function on the second node"""
@@ -142,10 +142,10 @@ class EdgeComputingSimpleSimulation1(unittest.TestCase):
         """execute one function on a node where the client will be, when the computation is finished"""
         self.setup_faces_and_connections()
 
-        self.mgmt_client3.add_new_content(Name("/rsu/func/f2"),
+        self.mgmt_client3.add_new_content(Name("/rsu/id3/func/f2"),
                                           "PYTHON\nf\ndef f(a):\n    for i in range(0,20000000):\n        a.upper()\n    return a.upper() + ' PLACED ON RSU3'")
 
-        name1 = Name("/rsu/func/f2")
+        name1 = Name("/rsu/id3/func/f2")
         name1 += '_("helloworld")'
         name1 += "NFN"
 
