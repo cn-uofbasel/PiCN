@@ -16,6 +16,7 @@ class TimeoutPreventionMessageDict(object):
         self.container: Dict[Name, TimeoutPreventionMessageDict.TimeoutPreventionMessageDictEntry] = {}
 
     class TimeoutPreventionMessageDictEntry(object):
+        """Datastructure Entry"""
         def __init__(self):
             self.timestamp = time.time()
 
@@ -25,14 +26,22 @@ class TimeoutPreventionMessageDict(object):
         :param name: name of the entry
         :return entry if found, else None
         """
-        return self.container.get(name)
+        if name in self.container:
+            return self.container.get(name)
 
     def add_entry(self, name: Name, entry: TimeoutPreventionMessageDictEntry):
         """add an entry to the dict
         :param name: Name of the Entry
         :param entry: the entry itself
         """
-        self.container.update(name, entry)
+        self.container[name] = entry
+
+    def create_entry(self, name: Name):
+        """create an new entry given a name
+        :param name: name for the entry
+        """
+        entry = TimeoutPreventionMessageDict.TimeoutPreventionMessageDictEntry()
+        self.add_entry(name, entry)
 
     def update_timestamp(self, name: Name):
         """set the timestamp of the corresponding entry to time.time()
@@ -42,7 +51,7 @@ class TimeoutPreventionMessageDict(object):
         if entry is not None:
             del self.container[name]
         entry.timestamp = time.time()
-        self.container.update(name, entry)
+        self.container[name] = entry
 
     def remove_entry(self, name):
         """Remove an entry from the dict
@@ -63,7 +72,10 @@ class BasicTimeoutPreventionLayer(LayerProcess):
         packet = data[1]
         if isinstance(packet, Interest):
             to_higher.put(data)
-        elif isinstance(packet, Content) or isinstance(packet, Nack):
+        elif isinstance(packet, Content) and len(packet.name.components) > 2 and packet.name.string_components[-2] == 'R2C':
+            self.message_dict.update_timestamp(packet.name) #update timestamp for the R2C message
+            return
+        elif isinstance(packet, Content) or isinstance(packet, Nack): #R2C Content or Nack, remove entry and give to higher layer
             entry = self.message_dict.get_entry(packet.name)
             if entry is None:
                 return
@@ -74,9 +86,8 @@ class BasicTimeoutPreventionLayer(LayerProcess):
         packet_id = data[0]
         packet = data[1]
 
-        if isinstance(packet, Interest):
-            pass #todo add interest to the handler list
-        else:
-            to_lower.put(data)
+        if isinstance(packet, Interest) and packet.name.components[-1] == "NFN":
+            self.message_dict.create_entry(name=packet.name)
+        to_lower.put(data)
 
 
