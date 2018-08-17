@@ -29,8 +29,8 @@ class test_BasicTimeoutPreventionLayer(unittest.TestCase):
 
 
     def test_interest_from_lower(self):
+        """test that an interest from lower is directly forwarded to upper"""
         interest =  Interest("/test/data")
         self.timeoutPreventionLayer.queue_from_lower.put([1, interest])
         res = self.timeoutPreventionLayer.queue_to_higher.get()
-
         self.assertEqual([1, interest], res)
