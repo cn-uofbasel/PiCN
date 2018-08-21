@@ -8,6 +8,7 @@ from typing import Dict
 
 from PiCN.Processes import LayerProcess
 from PiCN.Packets import Interest, Content, Nack, NackReason, Name
+from PiCN.Layers.NFNLayer.NFNComputationTable import BaseNFNComputationTable
 
 class TimeoutPreventionMessageDict(object):
     """Datastructure, that contains R2C messages and the matching handlers"""
@@ -69,17 +70,26 @@ class BasicTimeoutPreventionLayer(LayerProcess):
     """BasicR2CLayer maintains a list of messages for which R2C messages should be sent.
     Moreover, it contains handler for incomming R2C messages"""
 
-    def __init__(self, message_dict: TimeoutPreventionMessageDict):
+    def __init__(self, message_dict: TimeoutPreventionMessageDict, nfn_comp_table: BaseNFNComputationTable):
         self.timeout_interval = 2
         self.ageing_interval = 1
         self.message_dict = message_dict
+        self.nfn_comp_table = nfn_comp_table
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         packet_id = data[0]
         packet = data[1]
         if isinstance(packet, Interest):
-            #TODO R2C request case, use compute table
-            to_higher.put(data)
+            if len(packet.name.components) > 2 and packet.name.string_components[-2] == 'KEEPALIVE':
+                nfn_name = self.remove_keeep_alive_from_name(packet.name)
+                comp = self.nfn_comp_table.get_computation(nfn_name)
+                if comp is not None:
+                    to_lower.put([packet_id, Content(packet.name)])
+                else:
+                    to_lower.put([packet_id, Nack(packet.name, NackReason.COMP_TERMINATED, interest=packet)]) #todo is it working with a nack?
+                return
+            else:
+                to_higher.put(data)
         elif isinstance(packet, Content) and len(packet.name.components) > 2 and packet.name.string_components[-2] == 'KEEPALIVE':
             self.message_dict.update_timestamp(packet.name) #update timestamp for the R2C message
             return

@@ -5,6 +5,7 @@ import unittest
 import multiprocessing
 
 from PiCN.Layers.TimeoutPreventionLayer import BasicTimeoutPreventionLayer, TimeoutPreventionMessageDict
+from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationList
 from PiCN.Packets import Interest, Content, Nack, NackReason
 from PiCN.Processes import PiCNSyncDataStructFactory
 
@@ -14,11 +15,13 @@ class test_BasicTimeoutPreventionLayer(unittest.TestCase):
     def setUp(self):
         synced_data_struct_factory = PiCNSyncDataStructFactory()
         synced_data_struct_factory.register("timeoutPreventionMessageDict", TimeoutPreventionMessageDict)
+        synced_data_struct_factory.register("NFNComputationList", NFNComputationList)
         synced_data_struct_factory.create_manager()
 
         tpmd = synced_data_struct_factory.manager.timeoutPreventionMessageDict()
+        nfncl = synced_data_struct_factory.manager.NFNComputationList(None, None)
 
-        self.timeoutPreventionLayer = BasicTimeoutPreventionLayer(tpmd)
+        self.timeoutPreventionLayer = BasicTimeoutPreventionLayer(tpmd, nfncl)
         self.timeoutPreventionLayer.queue_from_higher = multiprocessing.Queue()
         self.timeoutPreventionLayer.queue_from_lower = multiprocessing.Queue()
         self.timeoutPreventionLayer.queue_to_higher = multiprocessing.Queue()
@@ -223,10 +226,25 @@ class test_BasicTimeoutPreventionLayer(unittest.TestCase):
 
     def test_keep_alive_request(self):
         """test replying a incoming keep alive request"""
-        #TODO
+        interest = Interest("/test/func/_()/NFN")
+        keep_alive = Interest("/test/func/_()/KEEPALIVE/NFN")
+        content = Content(keep_alive.name)
+
+        self.timeoutPreventionLayer.nfn_comp_table.add_computation(interest.name, 3, interest)
+
+        self.timeoutPreventionLayer.queue_from_lower.put([3, keep_alive])
+        self.assertTrue(self.timeoutPreventionLayer.queue_to_higher.empty())
+        res = self.timeoutPreventionLayer.queue_to_lower.get(timeout=2.0)
+        self.assertEqual(res, [3, content])
+
         pass
 
     def test_keep_alive_request_no_comp_running(self):
         """test replying a incoming keep alive request if no comp running"""
-        #TODO
-        pass
+        keep_alive = Interest("/test/func/_()/KEEPALIVE/NFN")
+        nack = Nack(keep_alive.name, reason=NackReason.COMP_TERMINATED, interest=keep_alive)
+
+        self.timeoutPreventionLayer.queue_from_lower.put([3, keep_alive])
+        self.assertTrue(self.timeoutPreventionLayer.queue_to_higher.empty())
+        res = self.timeoutPreventionLayer.queue_to_lower.get(timeout=2.0)
+        self.assertEqual(res, [3, nack])
