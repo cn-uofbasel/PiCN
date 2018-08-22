@@ -34,7 +34,7 @@ class TimeoutPreventionSimulation(unittest.TestCase):
         self.encoder_type = self.get_encoder()
         self.simulation_bus = SimulationBus(packetencoder=self.encoder_type())
 
-        self.fetch_tool1 = Fetch("nfn1", None, 0, self.encoder_type(), interfaces=[self.simulation_bus.add_interface("fetchtool1")])
+        self.fetch_tool1 = Fetch("nfn1", None, 255, self.encoder_type(), interfaces=[self.simulation_bus.add_interface("fetchtool1")])
 
         self.nfn1 = NFNForwarder(port=0, encoder=self.encoder_type(),
                                  interfaces=[self.simulation_bus.add_interface("nfn1")], log_level=255, ageing_interval=1)
@@ -75,7 +75,7 @@ class TimeoutPreventionSimulation(unittest.TestCase):
         self.mgmt_client1.add_face("nfn1", None, 0)
         self.mgmt_client1.add_forwarding_rule(Name("/test"), [0])
         self.mgmt_client2.add_new_content(Name("/lib/func/f1"),
-                                          "PYTHON\nf\ndef f(a):\n    for i in range(0,100000000):\n        a.upper()\n    return a.upper() + ' RSU2'")
+                                          "PYTHON\nf\ndef f(a):\n    for i in range(0,100000000):\n        a.upper()\n    return a.upper() + ' WITHOUT TIMEOUT'")
 
 
     def test_simple_timeout_prevention(self):
@@ -87,3 +87,5 @@ class TimeoutPreventionSimulation(unittest.TestCase):
         name += "NFN"
 
         res = self.fetch_tool1.fetch_data(name, timeout=0)
+        time.sleep(3)
+        print(res)

@@ -18,8 +18,9 @@ class TimeoutPreventionMessageDict(object):
 
     class TimeoutPreventionMessageDictEntry(object):
         """Datastructure Entry"""
-        def __init__(self):
+        def __init__(self, packetid):
             self.timestamp = time.time()
+            self.packetid = packetid
 
 
     def get_entry(self, name: Name) -> TimeoutPreventionMessageDictEntry:
@@ -37,11 +38,11 @@ class TimeoutPreventionMessageDict(object):
         """
         self.container[name] = entry
 
-    def create_entry(self, name: Name):
+    def create_entry(self, name: Name, packet_id: int):
         """create an new entry given a name
         :param name: name for the entry
         """
-        entry = TimeoutPreventionMessageDict.TimeoutPreventionMessageDictEntry()
+        entry = TimeoutPreventionMessageDict.TimeoutPreventionMessageDictEntry(packet_id)
         self.add_entry(name, entry)
 
     def update_timestamp(self, name: Name):
@@ -53,7 +54,7 @@ class TimeoutPreventionMessageDict(object):
             self.remove_entry(name)
         else:
             return
-        entry_n = TimeoutPreventionMessageDict.TimeoutPreventionMessageDictEntry()
+        entry_n = TimeoutPreventionMessageDict.TimeoutPreventionMessageDictEntry(entry.packetid)
         self.add_entry(name, entry_n)
 
     def remove_entry(self, name):
@@ -113,8 +114,8 @@ class BasicTimeoutPreventionLayer(LayerProcess):
         if isinstance(packet, Interest) and packet.name.string_components[-1] == "NFN":
             self.logger.info("Packet is NFN interest, start timeout prevention")
             keepalive_name = self.add_keep_alive_from_name(packet.name)
-            self.message_dict.create_entry(name=packet.name)
-            self.message_dict.create_entry(name=keepalive_name)
+            self.message_dict.create_entry(name=packet.name, packet_id=packet_id)
+            self.message_dict.create_entry(name=keepalive_name, packet_id=packet_id)
         to_lower.put(data)
 
     def ageing(self):
@@ -129,11 +130,11 @@ class BasicTimeoutPreventionLayer(LayerProcess):
                         original_name = self.remove_keeep_alive_from_name(name)
                         removes.append(original_name)
                         nack = Nack(name=original_name, reason=NackReason.NOT_SET, interest=Interest(name))
-                        self.queue_to_higher.put([-1, nack]) #TODO ID
+                        self.queue_to_higher.put([entry.packetid, nack]) #TODO ID
                     else:
-                        self.queue_to_lower.put([-1, Interest(name=name)])
+                        self.queue_to_lower.put([entry.packetid, Interest(name=name)])
                 else:
-                    self.queue_to_lower.put([-1, Interest(name=name)])
+                    self.queue_to_lower.put([entry.packetid, Interest(name=name)])
             for n in removes:
                 self.message_dict.remove_entry(n)
         finally:

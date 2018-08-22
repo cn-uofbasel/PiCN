@@ -69,7 +69,7 @@ class test_BasicTimeoutPreventionLayer(unittest.TestCase):
     def test_content_from_lower_message_dict_entry(self):
         """test content from lower with message dict entry"""
         content = Content("/test/data")
-        self.timeoutPreventionLayer.message_dict.create_entry(content.name)
+        self.timeoutPreventionLayer.message_dict.create_entry(content.name, 1)
         e = self.timeoutPreventionLayer.message_dict.get_entry(content.name)
         self.assertTrue(e is not None)
         self.timeoutPreventionLayer.queue_from_lower.put([1, content])
@@ -88,7 +88,7 @@ class test_BasicTimeoutPreventionLayer(unittest.TestCase):
     def test_nack_from_lower_message_dict_entry(self):
         """test nack from lower WITH message dict entry"""
         nack = Nack("/test/data", interest=Interest("/test/data"), reason=NackReason.CONGESTION)
-        self.timeoutPreventionLayer.message_dict.create_entry(nack.name)
+        self.timeoutPreventionLayer.message_dict.create_entry(nack.name, 1)
         e = self.timeoutPreventionLayer.message_dict.get_entry(nack.name)
         self.assertTrue(e is not None)
         self.timeoutPreventionLayer.queue_from_lower.put([1, nack])
@@ -107,7 +107,7 @@ class test_BasicTimeoutPreventionLayer(unittest.TestCase):
     def test_keepalive_from_lower_message_dict_entry(self):
         """test r2c from lower with message dict entry"""
         content = Content("/test/data/_()/KEEPALIVE/NFN")
-        self.timeoutPreventionLayer.message_dict.create_entry(content.name)
+        self.timeoutPreventionLayer.message_dict.create_entry(content.name, 1)
         e1 = self.timeoutPreventionLayer.message_dict.get_entry(content.name)
         ts = e1.timestamp
         self.assertTrue(e1 is not None)
@@ -133,24 +133,24 @@ class test_BasicTimeoutPreventionLayer(unittest.TestCase):
         self.assertTrue(e2 is not None)
 
         res2 = self.timeoutPreventionLayer.queue_to_lower.get(timeout=2.0)
-        self.assertEqual(res2, [-1, interest])
+        self.assertEqual(res2, [1, interest])
 
         res3 = self.timeoutPreventionLayer.queue_to_lower.get(timeout=2.0)
-        self.assertEqual(res3, [-1, keepalive])
+        self.assertEqual(res3, [1, keepalive])
 
         res4 = self.timeoutPreventionLayer.queue_to_lower.get(timeout=2.0)
-        self.assertEqual(res4, [-1, interest])
+        self.assertEqual(res4, [1, interest])
 
         res5 = self.timeoutPreventionLayer.queue_to_lower.get(timeout=2.0)
-        self.assertEqual(res5, [-1, keepalive])
+        self.assertEqual(res5, [1, keepalive])
 
         res6 = self.timeoutPreventionLayer.queue_to_lower.get(timeout=2.0)
-        self.assertEqual(res6, [-1, interest])
+        self.assertEqual(res6, [1, interest])
 
         self.assertTrue(self.timeoutPreventionLayer.queue_to_lower.empty())
 
         res7 = self.timeoutPreventionLayer.queue_to_higher.get(timeout=2.0)
-        self.assertEqual(res7, [-1, Nack(name=interest.name, reason=NackReason.NOT_SET, interest=interest)])
+        self.assertEqual(res7, [1, Nack(name=interest.name, reason=NackReason.NOT_SET, interest=interest)])
 
     def test_keep_alive_ageing_reply(self):
         """test ageing with keepalive with no keep alive reply"""
@@ -171,10 +171,10 @@ class test_BasicTimeoutPreventionLayer(unittest.TestCase):
         self.assertTrue(e2 is not None)
 
         res2 = self.timeoutPreventionLayer.queue_to_lower.get(timeout=2.0)
-        self.assertEqual(res2, [-1, interest])
+        self.assertEqual(res2, [1, interest])
 
         res3 = self.timeoutPreventionLayer.queue_to_lower.get(timeout=2.0)
-        self.assertEqual(res3, [-1, keepalive])
+        self.assertEqual(res3, [1, keepalive])
 
         self.timeoutPreventionLayer.queue_from_lower.put([4, keepalive_rely])
         e1 = self.timeoutPreventionLayer.message_dict.get_entry(interest.name)
@@ -183,10 +183,10 @@ class test_BasicTimeoutPreventionLayer(unittest.TestCase):
         self.assertTrue(e2 is not None)
 
         res4 = self.timeoutPreventionLayer.queue_to_lower.get(timeout=2.0)
-        self.assertEqual(res4, [-1, interest])
+        self.assertEqual(res4, [1, interest])
 
         res5 = self.timeoutPreventionLayer.queue_to_lower.get(timeout=2.0)
-        self.assertEqual(res5, [-1, keepalive])
+        self.assertEqual(res5, [1, keepalive])
 
 
         self.timeoutPreventionLayer.queue_from_lower.put([4, keepalive_rely])
@@ -196,18 +196,18 @@ class test_BasicTimeoutPreventionLayer(unittest.TestCase):
         self.assertTrue(e2 is not None)
 
         res6 = self.timeoutPreventionLayer.queue_to_lower.get(timeout=2.0)
-        self.assertEqual(res6, [-1, interest])
+        self.assertEqual(res6, [1, interest])
 
         res7 = self.timeoutPreventionLayer.queue_to_lower.get(timeout=2.0)
-        self.assertEqual(res7, [-1, keepalive])
+        self.assertEqual(res7, [1, keepalive])
 
         self.timeoutPreventionLayer.queue_from_lower.put([4, keepalive_rely])
 
         res8 = self.timeoutPreventionLayer.queue_to_lower.get(timeout=2.0)
-        self.assertEqual(res8, [-1, interest])
+        self.assertEqual(res8, [1, interest])
 
         res9 = self.timeoutPreventionLayer.queue_to_lower.get(timeout=2.0)
-        self.assertEqual(res9, [-1, keepalive])
+        self.assertEqual(res9, [1, keepalive])
 
         self.timeoutPreventionLayer.queue_from_lower.put([5, content])
 

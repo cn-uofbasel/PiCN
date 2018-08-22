@@ -16,6 +16,8 @@ class Content(Packet):
         assert (type(self._content) in [bytes, bytearray, type(None)]), "MUST be raw bytes or None"
         self._wire_format = wire_format
         assert (type(self._wire_format) in [bytes, bytearray, type(None)]), "MUST be raw bytes or None"
+        if content == None:
+            self.content = b""
 
     @property
     def content(self) -> str:
