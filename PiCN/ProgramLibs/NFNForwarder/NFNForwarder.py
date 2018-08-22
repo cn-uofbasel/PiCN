@@ -110,6 +110,7 @@ class NFNForwarder(object):
         # start processes
         self.lstack.start_all()
         self.icnlayer.ageing()
+        self.timeoutpreventionlayer.ageing()
         self.mgmt.start_process()
 
     def stop_forwarder(self):

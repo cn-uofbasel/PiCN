@@ -81,7 +81,9 @@ class BasicTimeoutPreventionLayer(LayerProcess):
         packet_id = data[0]
         packet = data[1]
         if isinstance(packet, Interest):
+            self.logger.info("Reveived Interest from lower... " + str(packet.name))
             if len(packet.name.components) > 2 and packet.name.string_components[-2] == 'KEEPALIVE':
+                self.logger.info("Interest is keep alive")
                 if self.nfn_comp_table is None:
                     return
                 nfn_name = self.remove_keeep_alive_from_name(packet.name)
@@ -107,8 +109,9 @@ class BasicTimeoutPreventionLayer(LayerProcess):
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         packet_id = data[0]
         packet = data[1]
-
+        self.logger.info("Received Packet from higher")
         if isinstance(packet, Interest) and packet.name.string_components[-1] == "NFN":
+            self.logger.info("Packet is NFN interest, start timeout prevention")
             keepalive_name = self.add_keep_alive_from_name(packet.name)
             self.message_dict.create_entry(name=packet.name)
             self.message_dict.create_entry(name=keepalive_name)

@@ -167,8 +167,7 @@ class cases_FetchNFN(object):
         except:
             self.fail()
         self.assertEqual(self.data3.upper(), content)
-
-
+        
 class test_FetchNFN_SimplePacketEncoder(cases_FetchNFN, unittest.TestCase):
     """Runs tests with the SimplePacketEncoder"""
     def get_encoder(self):
