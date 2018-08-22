@@ -67,3 +67,8 @@ class NackReason(Enum):
     Semantics: Can only be replied by nodes generating on-demand content (like a NFN computation node).
     Computation process terminated by computation node (e.g. due to timeout or detected infinite-loop).
     """
+
+    COMP_NOT_RUNNING = "computation is not running on the node"
+    """
+    Semantics: Can only be replied by nodes replying to a KEEPALIVE message, if there is no computation is running.
+    """

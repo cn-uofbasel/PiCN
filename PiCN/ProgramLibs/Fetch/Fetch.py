@@ -12,7 +12,7 @@ from PiCN.Processes.PiCNSyncDataStructFactory import PiCNSyncDataStructFactory
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
 from PiCN.Packets import Content, Name, Interest, Nack
-
+from PiCN.Layers.TimeoutPreventionLayer import BasicTimeoutPreventionLayer, TimeoutPreventionMessageDict
 
 class Fetch(object):
     """Fetch Tool for PiCN"""
@@ -31,8 +31,10 @@ class Fetch(object):
         # initialize layers
         synced_data_struct_factory = PiCNSyncDataStructFactory()
         synced_data_struct_factory.register("faceidtable", FaceIDDict)
+        synced_data_struct_factory.register("timeoutprevention_dict", TimeoutPreventionMessageDict)
         synced_data_struct_factory.create_manager()
         faceidtable = synced_data_struct_factory.manager.faceidtable()
+        timeoutprevention_dict = synced_data_struct_factory.manager.timeoutprevention_dict()
 
         if interfaces is None:
             interfaces = [UDP4Interface(0)]
@@ -43,8 +45,9 @@ class Fetch(object):
         self.linklayer = BasicLinkLayer(interfaces, faceidtable, log_level=log_level)
         self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
         self.chunklayer = BasicChunkLayer(self.chunkifyer, log_level=log_level)
-
+        self.timeoutpreventionlayer = BasicTimeoutPreventionLayer(timeoutprevention_dict, None, log_level=log_level)
         self.lstack: LayerStack = LayerStack([
+            self.timeoutpreventionlayer,
             self.chunklayer,
             self.packetencodinglayer,
             self.linklayer

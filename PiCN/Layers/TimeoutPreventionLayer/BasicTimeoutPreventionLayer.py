@@ -70,7 +70,8 @@ class BasicTimeoutPreventionLayer(LayerProcess):
     """BasicR2CLayer maintains a list of messages for which R2C messages should be sent.
     Moreover, it contains handler for incomming R2C messages"""
 
-    def __init__(self, message_dict: TimeoutPreventionMessageDict, nfn_comp_table: BaseNFNComputationTable):
+    def __init__(self, message_dict: TimeoutPreventionMessageDict, nfn_comp_table: BaseNFNComputationTable, log_level = 255):
+        super().__init__("TimoutPrev", log_level)
         self.timeout_interval = 2
         self.ageing_interval = 1
         self.message_dict = message_dict
@@ -81,12 +82,14 @@ class BasicTimeoutPreventionLayer(LayerProcess):
         packet = data[1]
         if isinstance(packet, Interest):
             if len(packet.name.components) > 2 and packet.name.string_components[-2] == 'KEEPALIVE':
+                if self.nfn_comp_table is None:
+                    return
                 nfn_name = self.remove_keeep_alive_from_name(packet.name)
                 comp = self.nfn_comp_table.get_computation(nfn_name)
                 if comp is not None:
                     to_lower.put([packet_id, Content(packet.name)])
                 else:
-                    to_lower.put([packet_id, Nack(packet.name, NackReason.COMP_TERMINATED, interest=packet)]) #todo is it working with a nack?
+                    to_lower.put([packet_id, Nack(packet.name, NackReason.COMP_NOT_RUNNING, interest=packet)]) #todo is it working with a nack?
                 return
             else:
                 to_higher.put(data)

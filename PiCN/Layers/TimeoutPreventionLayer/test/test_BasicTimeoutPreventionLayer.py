@@ -223,7 +223,6 @@ class test_BasicTimeoutPreventionLayer(unittest.TestCase):
         self.assertTrue(self.timeoutPreventionLayer.queue_to_lower.empty())
 
 
-
     def test_keep_alive_request(self):
         """test replying a incoming keep alive request"""
         interest = Interest("/test/func/_()/NFN")
@@ -237,12 +236,10 @@ class test_BasicTimeoutPreventionLayer(unittest.TestCase):
         res = self.timeoutPreventionLayer.queue_to_lower.get(timeout=2.0)
         self.assertEqual(res, [3, content])
 
-        pass
-
     def test_keep_alive_request_no_comp_running(self):
         """test replying a incoming keep alive request if no comp running"""
         keep_alive = Interest("/test/func/_()/KEEPALIVE/NFN")
-        nack = Nack(keep_alive.name, reason=NackReason.COMP_TERMINATED, interest=keep_alive)
+        nack = Nack(keep_alive.name, reason=NackReason.COMP_NOT_RUNNING, interest=keep_alive)
 
         self.timeoutPreventionLayer.queue_from_lower.put([3, keep_alive])
         self.assertTrue(self.timeoutPreventionLayer.queue_to_higher.empty())

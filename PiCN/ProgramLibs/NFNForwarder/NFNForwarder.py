@@ -17,6 +17,7 @@ from PiCN.Layers.ICNLayer.PendingInterestTable import PendingInterstTableMemoryE
 from PiCN.Layers.NFNLayer.R2C import TimeoutR2CHandler
 from PiCN.Layers.NFNLayer.NFNExecutor import NFNPythonExecutor
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationList
+from PiCN.Layers.TimeoutPreventionLayer import BasicTimeoutPreventionLayer, TimeoutPreventionMessageDict
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder, SimpleStringEncoder
 from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
@@ -51,6 +52,7 @@ class NFNForwarder(object):
         synced_data_struct_factory.register("faceidtable", FaceIDDict)
 
         synced_data_struct_factory.register("computation_table", NFNComputationList)
+        synced_data_struct_factory.register("timeoutprevention_dict", TimeoutPreventionMessageDict)
         synced_data_struct_factory.create_manager()
 
         cs = synced_data_struct_factory.manager.cs()
@@ -83,8 +85,12 @@ class NFNForwarder(object):
         comp_table = synced_data_struct_factory.manager.computation_table(self.r2cclient, self.parser)
         self.nfnlayer = BasicNFNLayer(cs, fib, pit, faceidtable, comp_table, self.executors, self.parser, self.r2cclient, log_level=log_level)
 
+        timeoutprevention_dict = synced_data_struct_factory.manager.timeoutprevention_dict()
+        self.timeoutpreventionlayer = BasicTimeoutPreventionLayer(timeoutprevention_dict, comp_table, log_level=log_level)
+
         self.lstack: LayerStack = LayerStack([
             self.nfnlayer,
+            self.timeoutpreventionlayer,
             self.chunklayer,
             self.icnlayer,
             self.packetencodinglayer,
