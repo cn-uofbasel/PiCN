@@ -141,6 +141,7 @@ class cases_FetchNFN(object):
         self.forwarder2.start_forwarder()
         time.sleep(0.1)
         self.add_face_and_forwadingrule()
+        time.sleep(2)
         self.mgmtClient2.add_new_content(Name("/lib/func/f1"), "PYTHON\nf\ndef f(a):\n    return a.upper()")
         fetch_name = Name("/lib/func/f1")
         fetch_name += "_(/test/data/d3)"
@@ -158,6 +159,7 @@ class cases_FetchNFN(object):
         self.forwarder2.start_forwarder()
         time.sleep(0.1)
         self.add_face_and_forwadingrule()
+        time.sleep(2)
         self.mgmtClient2.add_new_content(Name("/lib/func/f1"), "PYTHON\nf\ndef f(a):\n    return a.upper()")
         fetch_name = Name("/test/data/d3")
         fetch_name += "/lib/func/f1(_)"

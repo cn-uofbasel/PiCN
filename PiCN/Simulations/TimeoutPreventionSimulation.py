@@ -100,5 +100,6 @@ class TimeoutPreventionSimulation(unittest.TestCase):
         name += "NFN"
 
         res = self.fetch_tool1.fetch_data(name, timeout=0)
+        self.assertEqual("Received Nack: no forwarding rule", res)
         time.sleep(3)
         print(res)
