@@ -139,10 +139,12 @@ class BasicTimeoutPreventionLayer(LayerProcess):
                     self.queue_to_lower.put([entry.packetid, Interest(name=name)])
             for n in removes:
                 self.message_dict.remove_entry(n)
-        finally:
-            t = threading.Timer(self.ageing_interval, self.ageing)
-            t.setDaemon(True)
-            t.start()
+        except Exception as e:
+            self.logger.warning("Exception during ageing: " + str(e))
+            return
+        t = threading.Timer(self.ageing_interval, self.ageing)
+        t.setDaemon(True)
+        t.start()
 
     def add_keep_alive_from_name(self, name):
         if name.components[-1] != b"NFN":

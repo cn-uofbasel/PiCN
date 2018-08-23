@@ -190,3 +190,9 @@ class Mgmt(PiCNProcess):
             self._process = None
         self.mgmt_sock.close()
 
+    def __del__(self):
+        try:
+            self.mgmt_sock.close()
+        except:
+            pass
+

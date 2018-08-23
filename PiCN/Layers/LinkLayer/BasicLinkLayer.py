@@ -115,4 +115,9 @@ class BasicLinkLayer(LayerProcess):
         if self.queue_from_higher:
             self.queue_from_higher.close()
 
-
+    def __del__(self):
+        for i in self.interfaces:
+            try:
+                i.close()
+            except:
+                pass

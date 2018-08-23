@@ -47,6 +47,7 @@ class test_BasicLinkLayer(unittest.TestCase):
         self.test_port = self.testSock.getsockname()[1]
 
     def tearDown(self):
+        self.testSock.close()
         self.udp4interface1.close()
         self.udp4interface2.close()
         self.linklayer1.stop_process()
