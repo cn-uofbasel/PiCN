@@ -23,7 +23,10 @@ class Content(Packet):
     def content(self) -> str:
         if self._content == None:
             return None
-        return self._content.decode()
+        try:
+            return self._content.decode()
+        except:
+            return "".join(" 0x%02x" % x for x in self._content)[1:]
 
     def get_bytes(self) -> bytearray:
         return self._content
