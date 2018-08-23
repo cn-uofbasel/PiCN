@@ -146,7 +146,7 @@ class cases_FetchNFN(object):
         fetch_name += "_(/test/data/d3)"
         fetch_name += "NFN"
         try:
-            content = self.fetch.fetch_data(fetch_name, timeout=10.0)
+            content = self.fetch.fetch_data(fetch_name, timeout=0)
         except:
             self.fail()
         self.assertEqual(self.data3.upper(), content)
@@ -167,7 +167,7 @@ class cases_FetchNFN(object):
         except:
             self.fail()
         self.assertEqual(self.data3.upper(), content)
-        
+
 class test_FetchNFN_SimplePacketEncoder(cases_FetchNFN, unittest.TestCase):
     """Runs tests with the SimplePacketEncoder"""
     def get_encoder(self):

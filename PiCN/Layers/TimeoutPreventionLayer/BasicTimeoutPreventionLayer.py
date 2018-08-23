@@ -119,6 +119,8 @@ class BasicTimeoutPreventionLayer(LayerProcess):
         to_lower.put(data)
 
     def ageing(self):
+        if self.queue_to_lower._closed or self.queue_to_higher._closed:
+            return
         try:
             removes = []
             container = self.message_dict.get_container()

@@ -89,3 +89,15 @@ class TimeoutPreventionSimulation(unittest.TestCase):
         res = self.fetch_tool1.fetch_data(name, timeout=0)
         time.sleep(3)
         print(res)
+
+    def test_timeout_prevention_if_no_comp(self):
+        """Simple test to see if timeout prevention works if no computation is available"""
+        self.setup_faces_and_connections()
+
+        name = Name("/lib/func/f2")
+        name += '_("helloworld")'
+        name += "NFN"
+
+        res = self.fetch_tool1.fetch_data(name, timeout=0)
+        time.sleep(3)
+        print(res)
