@@ -88,6 +88,7 @@ class TimeoutPreventionSimulation(unittest.TestCase):
 
         res = self.fetch_tool1.fetch_data(name, timeout=0)
         time.sleep(3)
+        self.assertEqual("HELLOWORLD WITHOUT TIMEOUT", res)
         print(res)
 
     def test_timeout_prevention_if_no_comp(self):
