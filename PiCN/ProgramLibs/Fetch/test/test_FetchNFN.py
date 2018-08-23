@@ -79,8 +79,9 @@ class cases_FetchNFN(object):
         self.ICNRepo.start_repo()
         self.forwarder1.start_forwarder()
         self.forwarder2.start_forwarder()
-        time.sleep(0.1)
+        time.sleep(2)
         self.add_face_and_forwadingrule()
+        time.sleep(5)
         fetch_name = "/test/data/d1"
         try:
             content = self.fetch.fetch_data(fetch_name, timeout=100)
@@ -93,8 +94,9 @@ class cases_FetchNFN(object):
         self.ICNRepo.start_repo()
         self.forwarder1.start_forwarder()
         self.forwarder2.start_forwarder()
-        time.sleep(0.1)
+        time.sleep(2)
         self.add_face_and_forwadingrule()
+        time.sleep(5)
         fetch_name = "/test/data/d3"
         content = self.fetch.fetch_data(fetch_name, timeout=100)
         self.assertEqual(self.data3, content)
@@ -104,8 +106,9 @@ class cases_FetchNFN(object):
         self.ICNRepo.start_repo()
         self.forwarder1.start_forwarder()
         self.forwarder2.start_forwarder()
-        time.sleep(0.1)
+        time.sleep(2)
         self.add_face_and_forwadingrule()
+        time.sleep(5)
         self.mgmtClient1.add_new_content(Name("/test/data/d1"), self.data1)
         self.mgmtClient2.add_new_content(Name("/lib/func/f1"), "PYTHON\nf\ndef f(a):\n    return a.upper()")
         fetch_name = Name("/lib/func/f1")
