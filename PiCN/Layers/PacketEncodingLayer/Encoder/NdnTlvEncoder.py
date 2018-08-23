@@ -34,7 +34,8 @@ class NdnTlvEncoder(BasicEncoder):
         NackReason.COMP_QUEUE_FULL: 161,            # extension: does not exist in NDNLPv2
         NackReason.COMP_PARAM_UNAVAILABLE: 162,     # extension: does not exist in NDNLPv2
         NackReason.COMP_EXCEPTION: 163,             # extension: does not exist in NDNLPv2
-        NackReason.COMP_TERMINATED: 164             # extension: does not exist in NDNLPv2
+        NackReason.COMP_TERMINATED: 164,            # extension: does not exist in NDNLPv2
+        NackReason.COMP_NOT_RUNNING: 165            # extension: does not exist in NDNLPv2
     }
     """Mapping of NackReason Enum to wire format values"""
 

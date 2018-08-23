@@ -204,7 +204,7 @@ class BasicICNLayer(LayerProcess):
             #CS ageing
             self.cs.ageing()
         except Exception as e:
-            self.logger.warn("Exception during ageing: " + str(e))
+            self.logger.warning("Exception during ageing: " + str(e))
             pass
         finally:
             t = threading.Timer(self._ageing_interval, self.ageing)

@@ -29,9 +29,9 @@ class cases_NFNForwarder(object):
         self.testSock.bind(("0.0.0.0", 0))
 
     def tearDown(self):
+        self.testSock.close()
         self.forwarder1.stop_forwarder()
         self.forwarder2.stop_forwarder()
-        self.testSock.close()
         pass
 
     def test_NFNForwarder_simple_find_content_one_node(self):
