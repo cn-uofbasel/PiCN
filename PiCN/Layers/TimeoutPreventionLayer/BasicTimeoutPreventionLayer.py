@@ -72,7 +72,7 @@ class BasicTimeoutPreventionLayer(LayerProcess):
     Moreover, it contains handler for incomming R2C messages"""
 
     def __init__(self, message_dict: TimeoutPreventionMessageDict, nfn_comp_table: BaseNFNComputationTable, log_level = 255):
-        super().__init__("TimoutPrev", log_level)
+        super().__init__("TimeoutPrev", log_level)
         self.timeout_interval = 2
         self.ageing_interval = 1
         self.message_dict = message_dict
@@ -88,7 +88,9 @@ class BasicTimeoutPreventionLayer(LayerProcess):
                 if self.nfn_comp_table is None:
                     return
                 nfn_name = self.remove_keeep_alive_from_name(packet.name)
+                self.logger.info("NFN name is: " + str(nfn_name))
                 comp = self.nfn_comp_table.get_computation(nfn_name)
+                self.logger.info("Running Computations: " + str(self.nfn_comp_table.get_container_size()))
                 if comp is not None:
                     to_lower.put([packet_id, Content(packet.name)])
                 else:
@@ -96,16 +98,25 @@ class BasicTimeoutPreventionLayer(LayerProcess):
                 return
             else:
                 to_higher.put(data)
-        elif isinstance(packet, Content) and len(packet.name.components) > 2 and packet.name.string_components[-2] == 'KEEPALIVE':
-            self.message_dict.update_timestamp(packet.name) #update timestamp for the R2C message
-            return
+        elif (isinstance(packet, Content) or isinstance(packet, Nack)) and len(packet.name.components) > 2 and packet.name.string_components[-2] == 'KEEPALIVE':
+            if isinstance(packet, Content):
+                self.logger.info("Received KEEP ALIVE reply, updating timestamps")
+                self.message_dict.update_timestamp(packet.name) #update timestamp for the R2C message
+                return
+            if isinstance(packet, Nack):
+                original_name = self.remove_keeep_alive_from_name(packet.name)
+                self.message_dict.remove_entry(packet.name)
+                self.message_dict.remove_entry(original_name)
+                self.queue_to_higher.put([packet_id, Nack(original_name, reason=NackReason.COMP_NOT_RUNNING,
+                                                          interest=Interest(original_name))])
         elif isinstance(packet, Content) or isinstance(packet, Nack): #R2C Content or Nack, remove entry and give to higher layer
             entry = self.message_dict.get_entry(packet.name)
             if entry is not None:
+                self.logger.info("Removing entry from Keep Alive Dict")
                 self.message_dict.remove_entry(packet.name)
                 keepalive_name = self.add_keep_alive_from_name(packet.name)
                 self.message_dict.remove_entry(keepalive_name)
-            to_higher.put(data)
+            to_higher.put(data) #TODO R2C nack not handled correctly?
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         packet_id = data[0]
@@ -128,6 +139,7 @@ class BasicTimeoutPreventionLayer(LayerProcess):
                 entry = self.message_dict.get_entry(name)
                 if len(name.components) > 2 and name.string_components[-2] == "KEEPALIVE":
                     if entry.timestamp + self.timeout_interval < time.time():
+                        self.logger.info("Remove Keep Alvie Job because of timeout")
                         removes.append(name)
                         original_name = self.remove_keeep_alive_from_name(name)
                         removes.append(original_name)

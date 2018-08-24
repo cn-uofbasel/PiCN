@@ -78,8 +78,8 @@ class BasicNFNLayer(LayerProcess):
         ast = self.parser.parse(nfn_str)
 
         if self.computation_table.add_computation(interest.name, packet_id, interest, ast) == False:
+            self.logger.info("Computation already running")
             return
-
         #request required data
         required_optimizer_data = self.optimizer.required_data(interest.name, ast)
 
