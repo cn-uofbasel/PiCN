@@ -187,6 +187,17 @@ class NdnTlvPrinter(object):
         return value
 
 
+    def __bytes_to_printable_char(self, b: bytes) -> str:
+        """
+        Convert bytes to a printable string
+        :param b: bytes
+        :return: printable string
+        """
+        chars_to_print = """!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüý"""
+        as_str = b.decode('unicode_escape')
+        return ''.join(map(lambda c: c if c in chars_to_print else '�', as_str))
+
+
     def __print_blob(self, len) -> None:
         """
         Print a Blob
@@ -206,6 +217,6 @@ class NdnTlvPrinter(object):
             NdnTlvPrinter.print_without_newline(NdnTlvPrinter.byte_to_hex(e))
             if idx % 8 == 0:
                 NdnTlvPrinter.print_without_newline("\t".expandtabs(50 - 3 * self.__indention_level))
-                NdnTlvPrinter.print_without_newline(re.sub(r'\s', '\xff', self.__wire_format[self.__position-8 : self.__position].decode('ascii', 'replace')))
+                NdnTlvPrinter.print_without_newline(re.sub(r'\s', '\xff', self.__bytes_to_printable_char(self.__wire_format[self.__position - 8 : self.__position])))
         NdnTlvPrinter.print_without_newline("\t".expandtabs(50 + (8 - idx % 8) * 3 - 3 * self.__indention_level))
-        NdnTlvPrinter.print_without_newline(re.sub(r'\s', '\x00', self.__wire_format[self.__position - (idx % 8): self.__position].decode('ascii', 'replace')))
+        NdnTlvPrinter.print_without_newline(re.sub(r'\s', '\x00', self.__bytes_to_printable_char(self.__wire_format[self.__position - (idx % 8): self.__position])))
