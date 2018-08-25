@@ -111,6 +111,8 @@ class ToDataFirstMapReduceSimulation(unittest.TestCase):
 
         self.simulation_bus.start_process()
 
+        time.sleep(3)
+
         # setup forwarding rules
         self.mgmt_client0.add_face("nfn1", None, 0)
         self.mgmt_client0.add_forwarding_rule(Name("/lib/func1"), [0])

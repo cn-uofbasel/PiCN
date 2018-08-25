@@ -150,7 +150,7 @@ class test_BasicTimeoutPreventionLayer(unittest.TestCase):
         self.assertTrue(self.timeoutPreventionLayer.queue_to_lower.empty())
 
         res7 = self.timeoutPreventionLayer.queue_to_higher.get(timeout=2.0)
-        self.assertEqual(res7, [1, Nack(name=interest.name, reason=NackReason.NOT_SET, interest=interest)])
+        self.assertEqual(res7, [1, Nack(name=interest.name, reason=NackReason.COMP_NOT_RUNNING, interest=interest)])
 
     def test_keep_alive_ageing_reply(self):
         """test ageing with keepalive with no keep alive reply"""
@@ -229,7 +229,7 @@ class test_BasicTimeoutPreventionLayer(unittest.TestCase):
         keep_alive = Interest("/test/func/_()/KEEPALIVE/NFN")
         content = Content(keep_alive.name)
 
-        self.timeoutPreventionLayer.nfn_comp_table.add_computation(interest.name, 3, interest)
+        self.timeoutPreventionLayer.computation_table.add_computation(interest.name, 3, interest)
 
         self.timeoutPreventionLayer.queue_from_lower.put([3, keep_alive])
         self.assertTrue(self.timeoutPreventionLayer.queue_to_higher.empty())

@@ -80,6 +80,7 @@ class BasicNFNLayer(LayerProcess):
         if self.computation_table.add_computation(interest.name, packet_id, interest, ast) == False:
             self.logger.info("Computation already running")
             return
+        self.logger.info("#Running Computations: " + str(self.computation_table.get_container_size()))
         #request required data
         required_optimizer_data = self.optimizer.required_data(interest.name, ast)
 
