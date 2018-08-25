@@ -147,7 +147,7 @@ class ToDataFirstMapReduceSimulation(unittest.TestCase):
 
 
     def test_simple_reduce(self):
-        """Simple test to see if timeout prevention works"""
+        """Simple test of the reduce function"""
         self.setup_faces_and_connections()
 
         name = Name("/lib/reduce4")
@@ -160,7 +160,7 @@ class ToDataFirstMapReduceSimulation(unittest.TestCase):
         self.assertEqual("helloworld1helloworld2helloworld3helloworld4", res)
 
     def test_simple_map_reduce(self):
-        """Simple test to see if timeout prevention works"""
+        """Simple map reduce test with input data as string parameter"""
         self.setup_faces_and_connections()
 
         name = Name("/lib/reduce4")
