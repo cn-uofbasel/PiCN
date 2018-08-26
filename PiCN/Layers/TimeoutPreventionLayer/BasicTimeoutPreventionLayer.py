@@ -97,7 +97,7 @@ class BasicTimeoutPreventionLayer(LayerProcess):
                 else:
                     to_lower.put([packet_id, Nack(packet.name, NackReason.COMP_NOT_RUNNING, interest=packet)]) #todo is it working with a nack?
                 return
-            else:
+            elif len(packet.name.components) > 0 and packet.name.components[-1] == b'NFN':
                 self.running_computations.append(packet.name)
                 to_higher.put(data)
         elif (isinstance(packet, Content) or isinstance(packet, Nack)) and len(packet.name.components) > 2 and packet.name.string_components[-2] == 'KEEPALIVE':
