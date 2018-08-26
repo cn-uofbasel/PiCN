@@ -36,14 +36,14 @@ class test_BasicTimeoutPreventionLayer(unittest.TestCase):
         """test that an interest from lower is directly forwarded to upper"""
         interest =  Interest("/test/data")
         self.timeoutPreventionLayer.queue_from_lower.put([1, interest])
-        res = self.timeoutPreventionLayer.queue_to_higher.get(timeout=2.0)
+        res = self.timeoutPreventionLayer.queue_to_higher.get(timeout=4.0)
         self.assertEqual([1, interest], res)
 
     def test_interest_from_higher(self):
         """test sending an interest from higher without adding it to the dict"""
         interest = Interest("/test/data")
         self.timeoutPreventionLayer.queue_from_higher.put([1, interest])
-        res = self.timeoutPreventionLayer.queue_to_lower.get(timeout=2.0)
+        res = self.timeoutPreventionLayer.queue_to_lower.get(timeout=4.0)
         self.assertEqual([1, interest], res)
         e = self.timeoutPreventionLayer.message_dict.get_entry(interest.name)
         self.assertTrue(e is None)

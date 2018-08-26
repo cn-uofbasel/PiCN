@@ -100,6 +100,8 @@ class BasicTimeoutPreventionLayer(LayerProcess):
             elif len(packet.name.components) > 0 and packet.name.components[-1] == b'NFN':
                 self.running_computations.append(packet.name)
                 to_higher.put(data)
+            else:
+                to_higher.put(data)
         elif (isinstance(packet, Content) or isinstance(packet, Nack)) and len(packet.name.components) > 2 and packet.name.string_components[-2] == 'KEEPALIVE':
             if isinstance(packet, Content):
                 self.logger.info("Received KEEP ALIVE reply, updating timestamps")
