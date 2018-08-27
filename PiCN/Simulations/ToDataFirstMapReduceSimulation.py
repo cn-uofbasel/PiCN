@@ -12,6 +12,7 @@ import abc
 import queue
 import unittest
 import os
+import shutil
 import time
 
 from PiCN.Layers.LinkLayer.Interfaces import SimulationBus
@@ -96,6 +97,7 @@ class ToDataFirstMapReduceSimulation(unittest.TestCase):
         self.repo4.stop_repo()
         self.fetch_tool1.stop_fetch()
         self.simulation_bus.stop_process()
+        self.tearDown_repo()
 
     def setup_faces_and_connections(self):
         self.nfn0.start_forwarder()
@@ -145,6 +147,22 @@ class ToDataFirstMapReduceSimulation(unittest.TestCase):
                                           "PYTHON\nf\ndef f(a):\n    for i in range(0,100000000):\n        a.upper()\n    return a.upper()")
 
 
+    def setup_repo(self):
+        for i in range(1,5):
+            self.path = "/tmp/repo" + str(i)
+            try:
+                os.stat(self.path)
+            except:
+                os.mkdir(self.path)
+            with open(self.path + "/data" + str(i), 'w+') as content_file:
+                content_file.write("data" + str(i))
+
+    def tearDown_repo(self):
+        try:
+            shutil.rmtree(self.path)
+            os.remove("/tmp/repo")
+        except:
+            pass
 
     def test_simple_reduce(self):
         """Simple test of the reduce function"""
@@ -171,3 +189,18 @@ class ToDataFirstMapReduceSimulation(unittest.TestCase):
         time.sleep(3)
         print(res)
         self.assertEqual("HELLOWORLD1HELLOWORLD2HELLOWORLD3HELLOWORLD4", res)
+
+
+    def test_simple_map_reduce_data_from_repo(self):
+        """Simple map reduce test with input data from repo"""
+        self.setup_repo()
+        self.setup_faces_and_connections()
+
+        name = Name("/lib/reduce4")
+        name += '_(/lib/func1(/repo/r1/data1),/lib/func2(/repo/r2/data2),/lib/func3(/repo/r3/data3),/lib/func4(/repo/r4/data4))'
+        name += "NFN"
+
+        res = self.fetch_tool1.fetch_data(name, timeout=0)
+        time.sleep(3)
+        print(res)
+        self.assertEqual("DATA1DATA2DATA3DATA4", res)

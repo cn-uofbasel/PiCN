@@ -72,3 +72,8 @@ class NackReason(Enum):
     """
     Semantics: Can only be replied by nodes replying to a KEEPALIVE message, if there is no computation is running.
     """
+
+    COMP_NOT_PARSED = "computation could not be parsed"
+    """
+    Semantics: Occurs if there is a syntax error when creating the AST 
+    """

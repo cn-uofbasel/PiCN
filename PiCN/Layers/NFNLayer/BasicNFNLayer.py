@@ -171,6 +171,9 @@ class BasicNFNLayer(LayerProcess):
             entry.comp_state = NFNComputationState.EXEC
             if not isinstance(entry.ast, AST_FuncCall):
                 self.logger.error("AST is no function call but: " + str(entry.ast))
+                nack = Nack(interest.name, reason=NackReason.COMP_NOT_PARSED, interest=interest)
+                self.handleNack(entry.id, nack)
+                self.queue_to_lower.put([entry.id, nack])
                 return
 
             func_name = Name(entry.ast._element)

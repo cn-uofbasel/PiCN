@@ -149,8 +149,10 @@ class BasicTimeoutPreventionLayer(LayerProcess):
                     if entry.timestamp + self.timeout_interval < time.time():
                         self.logger.info("Remove Keep Alvie Job because of timeout")
                         removes.append(name)
+                        self.running_computations.remove(name)
                         original_name = self.remove_keep_alive_from_name(name)
                         removes.append(original_name)
+                        self.running_computations.remove(original_name)
                         nack = Nack(name=original_name, reason=NackReason.COMP_NOT_RUNNING, interest=Interest(name))
                         self.queue_to_higher.put([entry.packetid, nack]) #TODO ID
                     else:
