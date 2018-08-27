@@ -125,10 +125,8 @@ class BasicTimeoutPreventionLayer(LayerProcess):
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         packet_id = data[0]
         packet = data[1]
-        try:
+        if packet.name in self.running_computations:
             self.running_computations.remove(packet.name)
-        except:
-            pass
         self.logger.info("Received Packet from higher")
         if isinstance(packet, Interest) and packet.name.string_components[-1] == "NFN":
             self.logger.info("Packet is NFN interest, start timeout prevention")
@@ -149,10 +147,12 @@ class BasicTimeoutPreventionLayer(LayerProcess):
                     if entry.timestamp + self.timeout_interval < time.time():
                         self.logger.info("Remove Keep Alvie Job because of timeout")
                         removes.append(name)
-                        self.running_computations.remove(name)
+                        if name in self.running_computations:
+                            self.running_computations.remove(name)
                         original_name = self.remove_keep_alive_from_name(name)
                         removes.append(original_name)
-                        self.running_computations.remove(original_name)
+                        if original_name in self.running_computations:
+                            self.running_computations.remove(original_name)
                         nack = Nack(name=original_name, reason=NackReason.COMP_NOT_RUNNING, interest=Interest(name))
                         self.queue_to_higher.put([entry.packetid, nack]) #TODO ID
                     else:
