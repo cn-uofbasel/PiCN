@@ -105,7 +105,11 @@ class BasicTimeoutPreventionLayer(LayerProcess):
         elif (isinstance(packet, Content) or isinstance(packet, Nack)) and len(packet.name.components) > 2 and packet.name.string_components[-2] == 'KEEPALIVE':
             if isinstance(packet, Content):
                 self.logger.info("Received KEEP ALIVE reply, updating timestamps")
-                self.message_dict.update_timestamp(packet.name) #update timestamp for the R2C message
+                entry = self.message_dict.get_entry(packet.name)
+                if entry:
+                    self.logger.info("Old Timestamp was: " + str(entry.timestamp))
+                    self.message_dict.update_timestamp(packet.name) #update timestamp for the R2C message
+                    self.logger.info("Timestamp is now: " + str(self.message_dict.get_entry(packet.name).timestamp))
                 return
             if isinstance(packet, Nack):
                 original_name = self.remove_keep_alive_from_name(packet.name)
@@ -129,7 +133,7 @@ class BasicTimeoutPreventionLayer(LayerProcess):
             self.running_computations.remove(packet.name)
             self.message_dict.remove_entry(packet.name)
         self.logger.info("Received Packet from higher")
-        if isinstance(packet, Interest) and packet.name.string_components[-1] == "NFN":
+        if isinstance(packet, Interest): #and packet.name.string_components[-1] == "NFN":
             self.logger.info("Packet is NFN interest, start timeout prevention")
             keepalive_name = self.add_keep_alive_from_name(packet.name)
             self.message_dict.create_entry(name=packet.name, packet_id=packet_id)
@@ -139,14 +143,16 @@ class BasicTimeoutPreventionLayer(LayerProcess):
     def ageing(self):
         if self.queue_to_lower._closed or self.queue_to_higher._closed:
             return
+        timestamp = time.time()
         try:
             removes = []
             container = self.message_dict.get_container()
             for name in container:
                 entry = self.message_dict.get_entry(name)
                 if len(name.components) > 2 and name.string_components[-2] == "KEEPALIVE":
-                    if entry.timestamp + self.timeout_interval < time.time():
-                        self.logger.info("Remove Keep Alvie Job because of timeout")
+
+                    if entry.timestamp + self.timeout_interval < timestamp:
+                        self.logger.info("Remove Keep Alvie Job because of timeout. Timestamp is: " + str(entry.timestamp) + " Now is: " + str(timestamp))
                         removes.append(name)
                         if name in self.running_computations:
                             self.running_computations.remove(name)
@@ -155,11 +161,16 @@ class BasicTimeoutPreventionLayer(LayerProcess):
                         if original_name in self.running_computations:
                             self.running_computations.remove(original_name)
                         nack = Nack(name=original_name, reason=NackReason.COMP_NOT_RUNNING, interest=Interest(name))
-                        self.queue_to_higher.put([entry.packetid, nack]) #TODO ID
+                        self.queue_to_higher.put([entry.packetid, nack])
                     else:
                         self.queue_to_lower.put([entry.packetid, Interest(name=name)])
                 else:
-                    self.queue_to_lower.put([entry.packetid, Interest(name=name)])
+                    if name.components[-1] != b'NFN' and entry.timestamp + self.timeout_interval < time.time():
+                        removes.append(name)
+                        nack = Nack(name=name, reason=NackReason.COMP_PARAM_UNAVAILABLE, interest=Interest(name))
+                        self.queue_to_higher.put([entry.packetid, nack])
+                    else:
+                        self.queue_to_lower.put([entry.packetid, Interest(name=name)])
             for n in removes:
                 self.message_dict.remove_entry(n)
         except Exception as e:

@@ -21,7 +21,7 @@ class test_BasicTimeoutPreventionLayer(unittest.TestCase):
         tpmd = synced_data_struct_factory.manager.timeoutPreventionMessageDict()
         nfncl = synced_data_struct_factory.manager.NFNComputationList(None, None)
 
-        self.timeoutPreventionLayer = BasicTimeoutPreventionLayer(tpmd, nfncl)
+        self.timeoutPreventionLayer = BasicTimeoutPreventionLayer(tpmd, nfncl, log_level=0)
         self.timeoutPreventionLayer.queue_from_higher = multiprocessing.Queue()
         self.timeoutPreventionLayer.queue_from_lower = multiprocessing.Queue()
         self.timeoutPreventionLayer.queue_to_higher = multiprocessing.Queue()
@@ -46,7 +46,7 @@ class test_BasicTimeoutPreventionLayer(unittest.TestCase):
         res = self.timeoutPreventionLayer.queue_to_lower.get(timeout=4.0)
         self.assertEqual([1, interest], res)
         e = self.timeoutPreventionLayer.message_dict.get_entry(interest.name)
-        self.assertTrue(e is None)
+        self.assertTrue(e is not None)
 
     def test_nfn_interest_from_higher(self):
         """test sending an interest from higher and adding it to the dict"""
@@ -143,9 +143,6 @@ class test_BasicTimeoutPreventionLayer(unittest.TestCase):
 
         res5 = self.timeoutPreventionLayer.queue_to_lower.get(timeout=2.0)
         self.assertEqual(res5, [1, keepalive])
-
-        res6 = self.timeoutPreventionLayer.queue_to_lower.get(timeout=2.0)
-        self.assertEqual(res6, [1, interest])
 
         self.assertTrue(self.timeoutPreventionLayer.queue_to_lower.empty())
 
