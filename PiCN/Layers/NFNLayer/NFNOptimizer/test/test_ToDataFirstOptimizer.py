@@ -51,7 +51,7 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         self.assertFalse(self.optimizer.compute_fwd(None, ast, Interest(workflow)))
         self.assertTrue(self.optimizer.compute_local(None, ast, Interest(workflow)))
         rules = self.optimizer.rewrite(None, ast)
-        self.assertEqual(rules, [])
+        self.assertEqual(rules, ['local'])
 
 
     def test_simple_call_no_params_fib(self):
@@ -67,7 +67,7 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         self.assertTrue(self.optimizer.compute_fwd(cmp_name, ast, Interest(cmp_name)))
         self.assertFalse(self.optimizer.compute_local(cmp_name, ast, Interest(cmp_name)))
         rules = self.optimizer.rewrite(cmp_name, ast)
-        self.assertEqual(rules, ['%/func/f1%()'])
+        self.assertEqual(rules, ['%/func/f1%()', 'local'])
 
         name = self.parser.nfn_str_to_network_name(rules[0])
         self.assertEqual(name, cmp_name)
@@ -88,7 +88,7 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         self.assertTrue(self.optimizer.compute_fwd(None, ast, Interest(cmp_name)))
         self.assertFalse(self.optimizer.compute_local(None, ast, Interest(cmp_name)))
         rules = self.optimizer.rewrite(cmp_name, ast)
-        self.assertEqual(rules, ['%/func/f1%(/test/data)'])
+        self.assertEqual(rules, ['%/func/f1%(/test/data)', 'local'])
         name = self.parser.nfn_str_to_network_name(rules[0])
         self.assertEqual(name, cmp_name)
         name_str, prepended = self.parser.network_name_to_nfn_str(name)
@@ -114,7 +114,7 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         self.assertFalse(self.optimizer.compute_fwd(prefix, ast, Interest(cmp_name)))
         self.assertTrue(self.optimizer.compute_local(prefix, ast, Interest(cmp_name)))
         rules = self.optimizer.rewrite(prefix, ast)
-        self.assertEqual(rules, ['%/func/f1%(/test/data)'])
+        self.assertEqual(rules, ['%/func/f1%(/test/data)', 'local'])
         name = self.parser.nfn_str_to_network_name(rules[0])
         self.assertEqual(name, cmp_name)
         name_str, prepended = self.parser.network_name_to_nfn_str(name)
@@ -150,7 +150,7 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         self.assertTrue(self.optimizer.compute_fwd(None, ast, Interest(cmp_name)))
         self.assertFalse(self.optimizer.compute_local(None, ast, Interest(cmp_name)))
         rules = self.optimizer.rewrite(None, ast)
-        self.assertEqual(rules, ['/func/f1(%/test/data%)'])
+        self.assertEqual(rules, ['/func/f1(%/test/data%)', 'local'])
         name = self.parser.nfn_str_to_network_name(rules[0])
         self.assertEqual(name, cmp_name)
         name_str, prepended = self.parser.network_name_to_nfn_str(name)
@@ -174,7 +174,7 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         self.assertTrue(self.optimizer.compute_fwd(None, ast, Interest(cmp_name1)))
         self.assertFalse(self.optimizer.compute_local(None, ast, Interest(cmp_name1)))
         rules = self.optimizer.rewrite(None, ast)
-        self.assertEqual(rules, ['/func/f1(%/test/data%)', '%/func/f1%(/test/data)'])
+        self.assertEqual(rules, ['/func/f1(%/test/data%)', '%/func/f1%(/test/data)', 'local'])
         name1 = self.parser.nfn_str_to_network_name(rules[0])
         self.assertEqual(name1, cmp_name1)
         name_str1, prepended1 = self.parser.network_name_to_nfn_str(name1)
@@ -205,7 +205,7 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         self.assertFalse(self.optimizer.compute_local(None, ast, Interest(cmp_name1)))
         rules = self.optimizer.rewrite(None, ast)
         self.assertEqual(rules, ['/func/f1(%/test/data%,/lib/f2(2,/data/test))',
-                                 '/func/f1(/test/data,%/lib/f2%(2,/data/test))'])
+                                 '/func/f1(/test/data,%/lib/f2%(2,/data/test))', 'local'])
         name1 = self.parser.nfn_str_to_network_name(rules[0])
         self.assertEqual(name1.to_string(), cmp_name1.to_string())
         name_str1, prepended1 = self.parser.network_name_to_nfn_str(name1)
