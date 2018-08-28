@@ -210,7 +210,8 @@ class test_BasicNFNLayer(unittest.TestCase):
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
         self.assertEqual(res[1], computation_interest)
         self.assertEqual(self.nfn_layer.computation_table.get_computation(computation_name).comp_state, NFNComputationState.REWRITE)
-        self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list), 1)
+        self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list), 2)
+        self.assertEqual(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list[-1], 'local')
         self.assertEqual(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list[0], "%/func/f1%(/test/data)")
 
     def test_forwarding_descision_rewrite(self):
@@ -233,7 +234,8 @@ class test_BasicNFNLayer(unittest.TestCase):
         compare_name += "/func/f1(1,_)"
         compare_name += "NFN"
         self.assertEqual(res[1], Interest(compare_name))
-        self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list), 1)
+        self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list), 2)
+        self.assertEqual(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list[-1], 'local')
         self.assertEqual(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list[0], "/func/f1(1,%/test/data%)")
 
     def test_forward_descision_fwd_not_prepended_local(self):
@@ -259,7 +261,8 @@ class test_BasicNFNLayer(unittest.TestCase):
         compare_name += "/func/f1(1,_)"
         compare_name += "NFN"
         self.assertEqual(res[1], Interest(compare_name))
-        self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list), 1)
+        self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list), 2)
+        self.assertEqual(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list[-1], 'local')
         self.assertEqual(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list[0], "/func/f1(1,%/test/data%)")
 
     def test_forward_descision_compute_local_no_param(self):
@@ -448,7 +451,8 @@ class test_BasicNFNLayer(unittest.TestCase):
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
         self.assertEqual(res[1], Interest(compare_name))
         self.assertEqual(self.nfn_layer.computation_table.get_computation(computation_name).comp_state, NFNComputationState.REWRITE)
-        self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list), 1)
+        self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list), 2)
+        self.assertEqual(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list[-1], 'local')
         self.assertEqual(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list[0], "/func/f1(%/test/data%)")
 
         self.nfn_layer.handleContent(res[0], Content(compare_name, "HelloWorld"))
@@ -479,17 +483,18 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.assertEqual(res[1], Interest(compare_name))
         self.assertEqual(self.nfn_layer.computation_table.get_computation(computation_name).comp_state,
                          NFNComputationState.REWRITE)
-        self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list), 1)
-        self.assertEqual(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list[0],
-                         "/func/f1(%/test/data%)")
+        self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list), 2)
+        self.assertEqual(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list,
+                         ["/func/f1(%/test/data%)", 'local'])
 
         self.nfn_layer.handleNack(res[1], Nack(compare_name, NackReason.COMP_PARAM_UNAVAILABLE,
                                                interest=Interest(compare_name)))
 
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
-        self.assertEqual(res[1],
-                         Nack(computation_name, NackReason.COMP_PARAM_UNAVAILABLE, interest=Interest(computation_name)))
-        self.assertEqual(self.nfn_layer.computation_table.get_container(), [])
+        self.assertEqual(res[1], Interest("/func/f1"))
+        res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
+        self.assertEqual(res[1], Interest("/test/data"))
+        self.assertTrue(self.nfn_layer.queue_to_lower.empty())
 
     def test_handle_nack_on_rewritten_computation_further_rewrite(self):
         """Test if a Nack message is handled correctly for a rewritten computation, when there is a further rewrite"""
@@ -516,9 +521,10 @@ class test_BasicNFNLayer(unittest.TestCase):
         self.assertEqual(res[1], Interest(nack_name))
         self.assertEqual(self.nfn_layer.computation_table.get_computation(computation_name).comp_state,
                          NFNComputationState.REWRITE)
-        self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list), 2)
+        self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list), 3)
+        self.assertEqual(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list[-1], 'local')
         self.assertEqual(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list,
-                         ["/func/f1(%/test/data%,/data/test)", "/func/f1(/test/data,%/data/test%)"])
+                         ["/func/f1(%/test/data%,/data/test)", "/func/f1(/test/data,%/data/test%)", 'local'])
 
         self.nfn_layer.handleNack(res[1],
                                   Nack(nack_name, NackReason.COMP_PARAM_UNAVAILABLE, interest=Interest(nack_name)))
@@ -530,9 +536,9 @@ class test_BasicNFNLayer(unittest.TestCase):
         res = self.nfn_layer.queue_to_lower.get(timeout=2.0)
         self.assertEqual(res[1], Interest(second_request_name))
         self.assertEqual(self.nfn_layer.computation_table.get_container_size(), 1)
-        self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list), 1)
+        self.assertEqual(len(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list), 2)
         self.assertEqual(self.nfn_layer.computation_table.get_computation(computation_name).rewrite_list,
-                         ["/func/f1(/test/data,%/data/test%)"])
+                         ["/func/f1(/test/data,%/data/test%)", 'local'])
 
     def test_handle_nack_on_computation_name(self):
         """Test handle nack on the name of the original computation"""
