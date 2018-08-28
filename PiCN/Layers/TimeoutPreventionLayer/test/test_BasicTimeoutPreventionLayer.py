@@ -21,7 +21,7 @@ class test_BasicTimeoutPreventionLayer(unittest.TestCase):
         tpmd = synced_data_struct_factory.manager.timeoutPreventionMessageDict()
         nfncl = synced_data_struct_factory.manager.NFNComputationList(None, None)
 
-        self.timeoutPreventionLayer = BasicTimeoutPreventionLayer(tpmd, nfncl, log_level=0)
+        self.timeoutPreventionLayer = BasicTimeoutPreventionLayer(tpmd, nfncl, log_level=255)
         self.timeoutPreventionLayer.queue_from_higher = multiprocessing.Queue()
         self.timeoutPreventionLayer.queue_from_lower = multiprocessing.Queue()
         self.timeoutPreventionLayer.queue_to_higher = multiprocessing.Queue()
