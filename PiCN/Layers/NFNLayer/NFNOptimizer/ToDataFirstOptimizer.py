@@ -81,4 +81,5 @@ class ToDataFirstOptimizer(BaseNFNOptimizer):
         for f in functions_in_fib:
             rewrites.append(self._set_prepended_name(ast, f, ast))
 
+        rewrites.append('local')
         return rewrites

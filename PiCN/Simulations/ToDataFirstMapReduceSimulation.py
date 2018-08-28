@@ -134,6 +134,10 @@ class ToDataFirstMapReduceSimulation(unittest.TestCase):
         self.mgmt_client4.add_face("repo4", None, 0)
         self.mgmt_client4.add_forwarding_rule(Name("/repo/r4"), [0])
 
+
+        self.mgmt_client1.add_face("nfn0", None, 0)
+        self.mgmt_client1.add_forwarding_rule(Name("/lib"), [1])
+
         #setup function code
         self.mgmt_client0.add_new_content(Name("/lib/reduce4"),
                                           "PYTHON\nreduce4\ndef reduce4(a,b,c,d):\n     return a+b+c+d")
@@ -198,6 +202,21 @@ class ToDataFirstMapReduceSimulation(unittest.TestCase):
 
         name = Name("/lib/reduce4")
         name += '_(/lib/func1(/repo/r1/data1),/lib/func2(/repo/r2/data2),/lib/func3(/repo/r3/data3),/lib/func4(/repo/r4/data4))'
+        name += "NFN"
+
+        res = self.fetch_tool1.fetch_data(name, timeout=0)
+        time.sleep(3)
+        print(res)
+        self.assertEqual("DATA1DATA2DATA3DATA4", res)
+
+
+    def test_simple_map_reduce_data_from_repo_to_data(self):
+        """Simple map reduce test with input data from repo forwarding to data"""
+        self.setup_repo()
+        self.setup_faces_and_connections()
+
+        name = Name("/repo/r1/data1")
+        name += '/lib/reduce4(/lib/func1(_),/lib/func2(/repo/r2/data2),/lib/func3(/repo/r3/data3),/lib/func4(/repo/r4/data4))'
         name += "NFN"
 
         res = self.fetch_tool1.fetch_data(name, timeout=0)

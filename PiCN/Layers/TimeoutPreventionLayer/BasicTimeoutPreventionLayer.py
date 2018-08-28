@@ -125,8 +125,9 @@ class BasicTimeoutPreventionLayer(LayerProcess):
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         packet_id = data[0]
         packet = data[1]
-        if packet.name in self.running_computations:
+        if (isinstance(packet, Content) or isinstance(packet, Nack)) and packet.name in self.running_computations:
             self.running_computations.remove(packet.name)
+            self.message_dict.remove_entry(packet.name)
         self.logger.info("Received Packet from higher")
         if isinstance(packet, Interest) and packet.name.string_components[-1] == "NFN":
             self.logger.info("Packet is NFN interest, start timeout prevention")
