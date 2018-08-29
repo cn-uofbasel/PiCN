@@ -90,8 +90,8 @@ class NFNForwarder(object):
 
         self.lstack: LayerStack = LayerStack([
             self.nfnlayer,
-            self.timeoutpreventionlayer,
             self.chunklayer,
+            self.timeoutpreventionlayer,
             self.icnlayer,
             self.packetencodinglayer,
             self.linklayer
