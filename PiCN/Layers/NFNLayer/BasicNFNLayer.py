@@ -6,7 +6,7 @@ from typing import Dict, List
 
 from PiCN.Packets import Interest, Content, Nack, NackReason, Name
 from PiCN.Processes import LayerProcess
-from PiCN.Layers.NFNLayer.NFNComputationTable import BaseNFNComputationTable
+from PiCN.Layers.NFNLayer.NFNComputationTable import BaseNFNComputationTable, NFNComputationTableEntry
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationState
 from PiCN.Layers.NFNLayer.NFNExecutor import BaseNFNExecutor
 from PiCN.Layers.NFNLayer.Parser import *
@@ -78,8 +78,9 @@ class BasicNFNLayer(LayerProcess):
         ast = self.parser.parse(nfn_str)
 
         if self.computation_table.add_computation(interest.name, packet_id, interest, ast) == False:
+            self.logger.info("Computation already running")
             return
-
+        self.logger.info("#Running Computations: " + str(self.computation_table.get_container_size()))
         #request required data
         required_optimizer_data = self.optimizer.required_data(interest.name, ast)
 
@@ -126,6 +127,10 @@ class BasicNFNLayer(LayerProcess):
                 e.rewrite_list.pop(0)
                 if e.rewrite_list == []:
                     remove_list.append(e.original_name)
+                elif e.rewrite_list[0] == 'local':
+                    self.logger.info("No rewrite left, compute local")
+                    self.fetch_parameter_and_compute_local(e.interest, e)
+                    return
                 else:
                     request = Interest(self.parser.nfn_str_to_network_name(e.rewrite_list[0]))
                     self.queue_to_lower.put([packet_id, request])
@@ -165,35 +170,41 @@ class BasicNFNLayer(LayerProcess):
                 self.computation_table.append_computation(entry)
 
         if self.optimizer.compute_local(prepended_name, entry.ast, interest):
-            self.logger.info("Compute Local: " + str(interest.name))
             self.computation_table.remove_computation(interest.name)
-            entry.comp_state = NFNComputationState.EXEC
-            if not isinstance(entry.ast, AST_FuncCall):
-                self.logger.error("AST is no function call but: " + str(entry.ast))
-                return
+            self.fetch_parameter_and_compute_local(interest, entry)
 
-            func_name = Name(entry.ast._element)
-            entry.add_name_to_await_list(func_name)
-            self.queue_to_lower.put([entry.id, Interest(func_name)])
+    def fetch_parameter_and_compute_local(self, interest: Interest, computation_table_entry: NFNComputationTableEntry):
+        self.logger.info("Compute Local: " + str(interest.name))
+        computation_table_entry.comp_state = NFNComputationState.EXEC
+        if not isinstance(computation_table_entry.ast, AST_FuncCall):
+            self.logger.error("AST is no function call but: " + str(computation_table_entry.ast))
+            nack = Nack(interest.name, reason=NackReason.COMP_NOT_PARSED, interest=interest)
+            self.handleNack(computation_table_entry.id, nack)
+            self.queue_to_lower.put([computation_table_entry.id, nack])
+            return
 
-            for p in entry.ast.params:
-                name = None
-                if isinstance(p, AST_Name):
-                    name = Name(p._element)
-                    self.queue_to_lower.put([entry.id, Interest(name)])
-                elif isinstance(p, AST_FuncCall):
-                    #p._prepend = True
-                    name = self.parser.nfn_str_to_network_name((str(p)))
-                    #p._prepend = False
-                    self.logger.info("Subcomputation: " + str(name))
-                    self.handleInterest(entry.id, Interest(name))
-                else:
-                    continue
-                entry.add_name_to_await_list(name)
+        func_name = Name(computation_table_entry.ast._element)
+        computation_table_entry.add_name_to_await_list(func_name)
+        self.queue_to_lower.put([computation_table_entry.id, Interest(func_name)])
 
-            self.computation_table.append_computation(entry)
-            if(entry.awaiting_data == []):
-                self.compute(interest)
+        for p in computation_table_entry.ast.params:
+            name = None
+            if isinstance(p, AST_Name):
+                name = Name(p._element)
+                self.queue_to_lower.put([computation_table_entry.id, Interest(name)])
+            elif isinstance(p, AST_FuncCall):
+                #p._prepend = True
+                name = self.parser.nfn_str_to_network_name((str(p)))
+                #p._prepend = False
+                self.logger.info("Subcomputation: " + str(name))
+                self.handleInterest(computation_table_entry.id, Interest(name))
+            else:
+                continue
+            computation_table_entry.add_name_to_await_list(name)
+
+        self.computation_table.append_computation(computation_table_entry)
+        if(computation_table_entry.awaiting_data == []):
+            self.compute(interest)
 
     def get_nf_code_language(self, function: str):
         """extract the programming language of a function
@@ -210,9 +221,11 @@ class BasicNFNLayer(LayerProcess):
         params = []
         entry = self.computation_table.get_computation(interest.name)
         if entry is None:
+            self.logger.info("Cannot compute because no computation table entry")
             return
         self.computation_table.remove_computation(interest.name)
         if entry.comp_state == NFNComputationState.WRITEBACK:
+            self.logger.info("Writeback computation to incoming name")
             name = self.parser.nfn_str_to_network_name(entry.rewrite_list[0])
             res = entry.available_data[name]
             data = Content(entry.original_name, res)
@@ -222,17 +235,21 @@ class BasicNFNLayer(LayerProcess):
         function_name = Name(entry.ast._element)
         function_code = entry.available_data.get(function_name)
         if function_code is None:
+            self.logger.info("Cannot compute, because function code is not available")
             self.queue_to_lower.put([entry.id, Nack(entry.original_name, NackReason.COMP_PARAM_UNAVAILABLE,
                                                     interest=entry.interest)])
             return
         executor: BaseNFNExecutor = self.executors.get(self.get_nf_code_language(function_code))
         if executor is None:
+            self.logger.info("Cannot compute, because executor is not available")
             self.queue_to_lower.put([entry.id,
                                      Nack(entry.original_name, NackReason.COMP_EXCEPTION, interest=entry.interest)])
+            return
         for e in entry.ast.params:
             if isinstance(e, AST_Name):
                 param = entry.available_data.get(Name(e._element))
                 if param is None:
+                    self.logger.info("Cannot compute, because parameter is not available")
                     self.queue_to_lower.put([entry.id, Nack(entry.original_name, NackReason.COMP_PARAM_UNAVAILABLE,
                                                             interest=entry.interest)])
                     return
@@ -249,6 +266,7 @@ class BasicNFNLayer(LayerProcess):
         if res is None:
             self.queue_to_lower.put([entry.id,
                                      Nack(entry.original_name, NackReason.COMP_EXCEPTION, interest=entry.interest)])
+            return
         content_res: Content = Content(entry.original_name, str(res)) #TODO typed results
         self.logger.info("Finish Computation: " + str(content_res.name))
         #self.computation_table.push_data(content_res)

@@ -167,8 +167,7 @@ class test_NFNComputationList(unittest.TestCase):
         #wait for entry to timeout
         time.sleep(2)
         res = self.computationList.container[0].ageing()
-        compare_name = self.r2cclient.R2C_create_message(request_name)
-        self.assertEqual(res, [request_name, compare_name]) # ageing returns list of names, for which timeout prevention is required
+        self.assertEqual(res, [request_name])
 
     def test_computation_table_entry_ageing_nfn_multiple_awaits(self):
         """test the ageing of await list with nfn entries"""
@@ -185,9 +184,7 @@ class test_NFNComputationList(unittest.TestCase):
         #wait for entry to timeout
         time.sleep(2)
         res = self.computationList.container[0].ageing()
-        compare_name = self.r2cclient.R2C_create_message(request_name)
-        compare_name2 = self.r2cclient.R2C_create_message(request_name2)
-        self.assertEqual(res, [request_name, request_name2, compare_name, compare_name2]) # ageing returns list of names, for which timeout prevention is required
+        self.assertEqual(res, [request_name, request_name2]) # ageing returns list of names, for which timeout prevention is required
 
     def test_computation_table_ageing_nfn_requests_and_ready_computations(self):
         """test the ageing of the computation table using nfn requests and check ready computations"""
@@ -219,19 +216,15 @@ class test_NFNComputationList(unittest.TestCase):
         res = self.computationList.ageing()
 
         self.assertEqual(len(self.computationList.container), 2)
-        self.assertEqual(len(self.computationList.container[0].awaiting_data), 4) # four since r2c
-        self.assertEqual(len(self.computationList.container[1].awaiting_data), 2) # two since r2c
+        self.assertEqual(len(self.computationList.container[0].awaiting_data), 2) # four since r2c
+        self.assertEqual(len(self.computationList.container[1].awaiting_data), 1) # two since r2c
 
         self.assertEqual(self.computationList.container[0].awaiting_data, [NFNAwaitListEntry(request_name),
                                                                            NFNAwaitListEntry(request_name1),
-                                                                           NFNAwaitListEntry(self.r2cclient.R2C_create_message(request_name)),
-                                                                           NFNAwaitListEntry(self.r2cclient.R2C_create_message(request_name1))
                                                                            ])
 
         self.assertEqual(res, ([request_name, request_name1,
-                               self.r2cclient.R2C_create_message(request_name),
-                               self.r2cclient.R2C_create_message(request_name1),
-                               request_name2, self.r2cclient.R2C_create_message(request_name2)], []))
+                               request_name2], []))
 
         self.computationList.push_data(Content(request_name))
         ready_comps = self.computationList.get_ready_computations()
@@ -273,9 +266,9 @@ class test_NFNComputationList(unittest.TestCase):
         res = self.computationList.ageing()
 
         self.assertEqual(len(self.computationList.container), 1)
-        self.assertEqual(len(self.computationList.container[0].awaiting_data), 2) #is two since it contains R2C
+        self.assertEqual(len(self.computationList.container[0].awaiting_data), 1)
 
-        self.assertEqual(res, ([request_name2, self.r2cclient.R2C_create_message(request_name2)], [name]))
+        self.assertEqual(res, ([request_name2], [name]))
 
         v = self.computationList.push_data(Content(request_name2))
         self.assertTrue(v)
@@ -315,37 +308,3 @@ class test_NFNComputationList(unittest.TestCase):
         self.assertEqual(name, ready[0].original_name)
         self.assertEqual("HelloWorld", ready[0].available_data.get(rewrite_list[0]))
 
-    def test_r2c_timeout_prevention(self): #todo same for rewrite
-        """test r2c timeout prevention"""
-        name1 = Name("/test1/NFN")
-        name2 = Name("/test2/NFN")
-        self.computationList.add_computation(name1, 0, Interest(name1))
-        self.computationList.add_computation(name2, 0, Interest(name2))
-
-        requestname1 = Name("/request1/NFN")
-        requestname2 = Name("/request2/NFN")
-
-        self.computationList.add_awaiting_data(name1, requestname1)
-        self.computationList.add_awaiting_data(name2, requestname2)
-
-        entry1 = self.computationList.get_computation(name1)
-        self.computationList.remove_computation(name1)
-        entry1.timeout = 1
-        self.computationList.append_computation(entry1)
-
-        entry2 = self.computationList.get_computation(name2)
-        self.computationList.remove_computation(name2)
-        entry2.timeout = 1
-        self.computationList.append_computation(entry2)
-        #ask for requests
-        time.sleep(1)
-        request_list = self.computationList.ageing()
-        self.assertEqual(request_list, ([requestname1, self.r2cclient.R2C_create_message(requestname1),
-                                        requestname2, self.r2cclient.R2C_create_message(requestname2)], []))
-
-        self.computationList.push_data(Content(self.r2cclient.R2C_create_message(requestname1)))
-        time.sleep(1)
-        request_list = self.computationList.ageing()
-
-        self.assertEqual(request_list, ([requestname1, self.r2cclient.R2C_create_message(requestname1)],
-                                         [name2]))

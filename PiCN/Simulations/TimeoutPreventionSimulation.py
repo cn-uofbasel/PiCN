@@ -24,7 +24,7 @@ from PiCN.Mgmt import MgmtClient
 
 
 class TimeoutPreventionSimulation(unittest.TestCase):
-    """run the simple Edge Computing Scenario Simulation"""
+    """Simulate a Scenario where timeout prevention is required"""
 
     @abc.abstractmethod
     def get_encoder(self) -> BasicEncoder:
@@ -38,7 +38,6 @@ class TimeoutPreventionSimulation(unittest.TestCase):
 
         self.nfn1 = NFNForwarder(port=0, encoder=self.encoder_type(),
                                  interfaces=[self.simulation_bus.add_interface("nfn1")], log_level=255, ageing_interval=1)
-
         self.nfn2 = NFNForwarder(port=0, encoder=self.encoder_type(),
                                  interfaces=[self.simulation_bus.add_interface("nfn2")], log_level=255, ageing_interval=1)
 
@@ -71,7 +70,7 @@ class TimeoutPreventionSimulation(unittest.TestCase):
         self.mgmt_client1.add_forwarding_rule(Name("/lib"), [0])
         self.mgmt_client1.add_new_content(Name("/test/data/string"), "This is a String")
 
-        # setup rsu2
+        # setup nfn2
         self.mgmt_client1.add_face("nfn1", None, 0)
         self.mgmt_client1.add_forwarding_rule(Name("/test"), [0])
         self.mgmt_client2.add_new_content(Name("/lib/func/f1"),
@@ -100,6 +99,6 @@ class TimeoutPreventionSimulation(unittest.TestCase):
         name += "NFN"
 
         res = self.fetch_tool1.fetch_data(name, timeout=0)
-        self.assertEqual("Received Nack: no forwarding rule", res)
+        self.assertEqual("Received Nack: one or many input data (function or data) is unavailable", res)
         time.sleep(3)
         print(res)

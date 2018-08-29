@@ -72,11 +72,12 @@ class BasicTimeoutPreventionLayer(LayerProcess):
     Moreover, it contains handler for incomming R2C messages"""
 
     def __init__(self, message_dict: TimeoutPreventionMessageDict, nfn_comp_table: BaseNFNComputationTable, log_level = 255):
-        super().__init__("TimoutPrev", log_level)
+        super().__init__("TimeoutPrev", log_level)
         self.timeout_interval = 2
         self.ageing_interval = 1
         self.message_dict = message_dict
-        self.nfn_comp_table = nfn_comp_table
+        self.computation_table = nfn_comp_table
+        self.running_computations = [] #todo, this field is required because computation table does not sync fast enough. is this correct, fix BaseMangager access.
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         packet_id = data[0]
@@ -85,33 +86,54 @@ class BasicTimeoutPreventionLayer(LayerProcess):
             self.logger.info("Reveived Interest from lower... " + str(packet.name))
             if len(packet.name.components) > 2 and packet.name.string_components[-2] == 'KEEPALIVE':
                 self.logger.info("Interest is keep alive")
-                if self.nfn_comp_table is None:
+                if self.computation_table is None:
                     return
-                nfn_name = self.remove_keeep_alive_from_name(packet.name)
-                comp = self.nfn_comp_table.get_computation(nfn_name)
-                if comp is not None:
+                nfn_name = self.remove_keep_alive_from_name(packet.name)
+                self.logger.info("NFN name is: " + str(nfn_name))
+                self.logger.info("#Running Computations: " + str(self.computation_table.is_comp_running(nfn_name)))
+                comp = self.computation_table.get_computation(nfn_name)
+                if comp is not None or self.computation_table.is_comp_running(nfn_name) or nfn_name in self.running_computations:
                     to_lower.put([packet_id, Content(packet.name)])
                 else:
                     to_lower.put([packet_id, Nack(packet.name, NackReason.COMP_NOT_RUNNING, interest=packet)]) #todo is it working with a nack?
                 return
+            elif len(packet.name.components) > 0 and packet.name.components[-1] == b'NFN':
+                self.running_computations.append(packet.name)
+                to_higher.put(data)
             else:
                 to_higher.put(data)
-        elif isinstance(packet, Content) and len(packet.name.components) > 2 and packet.name.string_components[-2] == 'KEEPALIVE':
-            self.message_dict.update_timestamp(packet.name) #update timestamp for the R2C message
-            return
+        elif (isinstance(packet, Content) or isinstance(packet, Nack)) and len(packet.name.components) > 2 and packet.name.string_components[-2] == 'KEEPALIVE':
+            if isinstance(packet, Content):
+                self.logger.info("Received KEEP ALIVE reply, updating timestamps")
+                entry = self.message_dict.get_entry(packet.name)
+                if entry:
+                    self.logger.info("Old Timestamp was: " + str(entry.timestamp))
+                    self.message_dict.update_timestamp(packet.name) #update timestamp for the R2C message
+                    self.logger.info("Timestamp is now: " + str(self.message_dict.get_entry(packet.name).timestamp))
+                return
+            if isinstance(packet, Nack):
+                original_name = self.remove_keep_alive_from_name(packet.name)
+                self.message_dict.remove_entry(packet.name)
+                self.message_dict.remove_entry(original_name)
+                self.queue_to_higher.put([packet_id, Nack(original_name, reason=NackReason.COMP_NOT_RUNNING,
+                                                          interest=Interest(original_name))])
         elif isinstance(packet, Content) or isinstance(packet, Nack): #R2C Content or Nack, remove entry and give to higher layer
             entry = self.message_dict.get_entry(packet.name)
             if entry is not None:
+                self.logger.info("Removing entry from Keep Alive Dict")
                 self.message_dict.remove_entry(packet.name)
                 keepalive_name = self.add_keep_alive_from_name(packet.name)
                 self.message_dict.remove_entry(keepalive_name)
-            to_higher.put(data)
+            to_higher.put(data) #TODO R2C nack not handled correctly?
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         packet_id = data[0]
         packet = data[1]
+        if (isinstance(packet, Content) or isinstance(packet, Nack)) and packet.name in self.running_computations:
+            self.running_computations.remove(packet.name)
+            self.message_dict.remove_entry(packet.name)
         self.logger.info("Received Packet from higher")
-        if isinstance(packet, Interest) and packet.name.string_components[-1] == "NFN":
+        if isinstance(packet, Interest): #and packet.name.string_components[-1] == "NFN":
             self.logger.info("Packet is NFN interest, start timeout prevention")
             keepalive_name = self.add_keep_alive_from_name(packet.name)
             self.message_dict.create_entry(name=packet.name, packet_id=packet_id)
@@ -121,22 +143,34 @@ class BasicTimeoutPreventionLayer(LayerProcess):
     def ageing(self):
         if self.queue_to_lower._closed or self.queue_to_higher._closed:
             return
+        timestamp = time.time()
         try:
             removes = []
             container = self.message_dict.get_container()
             for name in container:
                 entry = self.message_dict.get_entry(name)
                 if len(name.components) > 2 and name.string_components[-2] == "KEEPALIVE":
-                    if entry.timestamp + self.timeout_interval < time.time():
+
+                    if entry.timestamp + self.timeout_interval < timestamp:
+                        self.logger.info("Remove Keep Alvie Job because of timeout. Timestamp is: " + str(entry.timestamp) + " Now is: " + str(timestamp))
                         removes.append(name)
-                        original_name = self.remove_keeep_alive_from_name(name)
+                        if name in self.running_computations:
+                            self.running_computations.remove(name)
+                        original_name = self.remove_keep_alive_from_name(name)
                         removes.append(original_name)
-                        nack = Nack(name=original_name, reason=NackReason.NOT_SET, interest=Interest(name))
-                        self.queue_to_higher.put([entry.packetid, nack]) #TODO ID
+                        if original_name in self.running_computations:
+                            self.running_computations.remove(original_name)
+                        nack = Nack(name=original_name, reason=NackReason.COMP_NOT_RUNNING, interest=Interest(name))
+                        self.queue_to_higher.put([entry.packetid, nack])
                     else:
                         self.queue_to_lower.put([entry.packetid, Interest(name=name)])
                 else:
-                    self.queue_to_lower.put([entry.packetid, Interest(name=name)])
+                    if name.components[-1] != b'NFN' and entry.timestamp + self.timeout_interval < time.time():
+                        removes.append(name)
+                        nack = Nack(name=name, reason=NackReason.COMP_PARAM_UNAVAILABLE, interest=Interest(name))
+                        self.queue_to_higher.put([entry.packetid, nack])
+                    else:
+                        self.queue_to_lower.put([entry.packetid, Interest(name=name)])
             for n in removes:
                 self.message_dict.remove_entry(n)
         except Exception as e:
@@ -157,7 +191,7 @@ class BasicTimeoutPreventionLayer(LayerProcess):
         new_name += "NFN"
         return new_name
 
-    def remove_keeep_alive_from_name(self, name):
+    def remove_keep_alive_from_name(self, name):
         if name.components[-1] != b"NFN":
             return name
         new_name = Name()

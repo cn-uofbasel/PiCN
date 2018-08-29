@@ -21,7 +21,7 @@ class test_BasicTimeoutPreventionLayer(unittest.TestCase):
         tpmd = synced_data_struct_factory.manager.timeoutPreventionMessageDict()
         nfncl = synced_data_struct_factory.manager.NFNComputationList(None, None)
 
-        self.timeoutPreventionLayer = BasicTimeoutPreventionLayer(tpmd, nfncl)
+        self.timeoutPreventionLayer = BasicTimeoutPreventionLayer(tpmd, nfncl, log_level=255)
         self.timeoutPreventionLayer.queue_from_higher = multiprocessing.Queue()
         self.timeoutPreventionLayer.queue_from_lower = multiprocessing.Queue()
         self.timeoutPreventionLayer.queue_to_higher = multiprocessing.Queue()
@@ -36,17 +36,17 @@ class test_BasicTimeoutPreventionLayer(unittest.TestCase):
         """test that an interest from lower is directly forwarded to upper"""
         interest =  Interest("/test/data")
         self.timeoutPreventionLayer.queue_from_lower.put([1, interest])
-        res = self.timeoutPreventionLayer.queue_to_higher.get(timeout=2.0)
+        res = self.timeoutPreventionLayer.queue_to_higher.get(timeout=4.0)
         self.assertEqual([1, interest], res)
 
     def test_interest_from_higher(self):
         """test sending an interest from higher without adding it to the dict"""
         interest = Interest("/test/data")
         self.timeoutPreventionLayer.queue_from_higher.put([1, interest])
-        res = self.timeoutPreventionLayer.queue_to_lower.get(timeout=2.0)
+        res = self.timeoutPreventionLayer.queue_to_lower.get(timeout=4.0)
         self.assertEqual([1, interest], res)
         e = self.timeoutPreventionLayer.message_dict.get_entry(interest.name)
-        self.assertTrue(e is None)
+        self.assertTrue(e is not None)
 
     def test_nfn_interest_from_higher(self):
         """test sending an interest from higher and adding it to the dict"""
@@ -144,13 +144,10 @@ class test_BasicTimeoutPreventionLayer(unittest.TestCase):
         res5 = self.timeoutPreventionLayer.queue_to_lower.get(timeout=2.0)
         self.assertEqual(res5, [1, keepalive])
 
-        res6 = self.timeoutPreventionLayer.queue_to_lower.get(timeout=2.0)
-        self.assertEqual(res6, [1, interest])
-
         self.assertTrue(self.timeoutPreventionLayer.queue_to_lower.empty())
 
         res7 = self.timeoutPreventionLayer.queue_to_higher.get(timeout=2.0)
-        self.assertEqual(res7, [1, Nack(name=interest.name, reason=NackReason.NOT_SET, interest=interest)])
+        self.assertEqual(res7, [1, Nack(name=interest.name, reason=NackReason.COMP_NOT_RUNNING, interest=interest)])
 
     def test_keep_alive_ageing_reply(self):
         """test ageing with keepalive with no keep alive reply"""
@@ -229,7 +226,7 @@ class test_BasicTimeoutPreventionLayer(unittest.TestCase):
         keep_alive = Interest("/test/func/_()/KEEPALIVE/NFN")
         content = Content(keep_alive.name)
 
-        self.timeoutPreventionLayer.nfn_comp_table.add_computation(interest.name, 3, interest)
+        self.timeoutPreventionLayer.computation_table.add_computation(interest.name, 3, interest)
 
         self.timeoutPreventionLayer.queue_from_lower.put([3, keep_alive])
         self.assertTrue(self.timeoutPreventionLayer.queue_to_higher.empty())
