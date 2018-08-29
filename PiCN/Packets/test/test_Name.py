@@ -33,6 +33,9 @@ class TestContent(unittest.TestCase):
         self.assertEqual([b'test', b'data'], n._components)
         self.assertEqual('/test/data', n.components_to_string())
 
+    def test_constructor_unprintable(self):
+        n = Name([bytes([0x01, 0x02, 0x03]), bytes([0xff, 0xfe, 0xdf])])
+
     def test_add_names(self):
         n1 = Name('/test')
         n2 = Name('/data')
