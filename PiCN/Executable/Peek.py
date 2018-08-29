@@ -21,7 +21,7 @@ def main(args):
 
     # Send interest packet
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.settimeout(5)
+    sock.settimeout(args.timeout)
     sock.bind(("0.0.0.0", 0))
     try:
         resolved_hostname = socket.gethostbyname(args.ip)
@@ -53,6 +53,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='PiCN Peek Tool')
     parser.add_argument('-i', '--ip', type=str, default='127.0.0.1', help="IP address or hostname of forwarder (default: 127.0.0.1)")
     parser.add_argument('-p', '--port', type=int, default=9000, help="UDP port (default: 9000)")
+    parser.add_argument('-t', '--timeout', type=int, default=5, help="Timeout (default: 5)")
     parser.add_argument('-f', '--format', choices=['ndntlv','simple'], type=str, default='ndntlv', help='Packet Format (default: ndntlv)')
     parser.add_argument('--plain', help="plain output (writes payload to stdout or returns -2 for NACK)", action="store_true")
     parser.add_argument('name', type=str, help="CCN name of the content object to fetch")
