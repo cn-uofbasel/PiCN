@@ -128,15 +128,15 @@ class cases_Fetch(object):
         except:
             os.mkdir(self.path)
 
-        for i in range(1,1000):
+        for i in range(1,50):
             name = "/f" + str(i)
             with open(self.path + name, 'w+') as content_file:
                 content_file.write(self.data3)
-
-        for i in range(1,1000):
+        time.sleep(2)
+        for i in range(1,50):
             fname = "/f" + str(i)
             icn_name = "/test/data" + name
-            content = self.fetch.fetch_data(Name(icn_name))
+            content = self.fetch.fetch_data(Name(icn_name), timeout=10)
             self.assertEqual(content, self.data3)
 
 
