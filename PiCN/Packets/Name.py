@@ -36,23 +36,23 @@ class Name(object):
         if type(self._components[0]) is str:
             s =  '/' + '/'.join([c for c in self._components])
             return s
-        s = '/' + '/'.join([c.decode('ascii') for c in self._components])
+        s = '/' + '/'.join([c.decode('ascii', 'replace') for c in self._components])
         return s
 
     def to_string(self) -> str:
         """Transform name to string, components separated by /"""
         s = self.components_to_string()
         if self.digest:
-            s += "[hashId=%s]" % binascii.hexlify(self.digest).decode('ascii')
+            s += "[hashId=%s]" % binascii.hexlify(self.digest).decode('ascii', 'replace')
         return s
 
     def to_json(self) -> str:
         """encoded name as JSON"""
         n = {}
         n['suite'] = self.suite
-        n['comps'] = [ binascii.hexlify(c).decode('ascii') for c in self._components ]
+        n['comps'] = [ binascii.hexlify(c).decode('ascii', 'replace') for c in self._components ]
         if self.digest:
-            n['dgest'] = binascii.hexlify(self.digest).decode('ascii')
+            n['dgest'] = binascii.hexlify(self.digest).decode('ascii', 'replace')
         return json.dumps(n)
 
     def from_json(self, s: str) -> str:
@@ -135,7 +135,7 @@ class Name(object):
     @property
     def string_components(self):
         """Name components"""
-        return [c.decode('ascii') for c in self._components]
+        return [c.decode('ascii', 'replace') for c in self._components]
 
     @string_components.setter
     def string_components(self, string_components):
