@@ -128,12 +128,12 @@ class cases_Fetch(object):
         except:
             os.mkdir(self.path)
 
-        for i in range(1,50):
+        for i in range(1,10):
             name = "/f" + str(i)
             with open(self.path + name, 'w+') as content_file:
                 content_file.write(self.data3)
         time.sleep(2)
-        for i in range(1,50):
+        for i in range(1,10):
             fname = "/f" + str(i)
             icn_name = "/test/data" + name
             content = self.fetch.fetch_data(Name(icn_name), timeout=10)
