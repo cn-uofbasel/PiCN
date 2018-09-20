@@ -10,7 +10,7 @@ from PiCN.ProgramLibs.Fetch import Fetch
 from PiCN.ProgramLibs.NFNForwarder import NFNForwarder
 
 from PiCN.Mgmt import MgmtClient
-from PiCN.Packets import Name
+from PiCN.Packets import Name, Nack
 from PiCN.ProgramLibs.ICNDataRepository import ICNDataRepository
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
 
@@ -150,8 +150,11 @@ class cases_FetchNFN(object):
         fetch_name = Name("/lib/func/f1")
         fetch_name += "_(/test/data/d3)"
         fetch_name += "NFN"
+        time.sleep(1)
+        content = None
         try:
-            content = self.fetch.fetch_data(fetch_name, timeout=100)
+            while content is None or content == 'Received Nack: no forwarding rule':
+                content = self.fetch.fetch_data(fetch_name, timeout=100)
         except:
             self.fail()
         self.assertEqual(self.data3.upper(), content)
@@ -168,8 +171,11 @@ class cases_FetchNFN(object):
         fetch_name = Name("/test/data/d3")
         fetch_name += "/lib/func/f1(_)"
         fetch_name += "NFN"
+        time.sleep(1)
+        content = None
         try:
-            content = self.fetch.fetch_data(fetch_name, timeout=100)
+            while content is None or content == 'Received Nack: no forwarding rule':
+                content = self.fetch.fetch_data(fetch_name, timeout=100)
         except:
             self.fail()
         self.assertEqual(self.data3.upper(), content)
