@@ -19,7 +19,7 @@ PiCN is written in Python 3.6+ and tested on Linux, Mac OS X and Windows. More t
 * Packet Encoding Layer (NDN packet format + link protocol)
 * CCN Layer (basic forwarding logic, data structs)
 * Chunking Layer
-* Computation Layer (next-gen NFN implementation)
+* Computation Layer (next-gen [NFN](docs/nfn.md) implementation)
 * Management interface to each layer
 
 #### Tools
@@ -75,7 +75,7 @@ you@machine:~$ picn-fetch --format ndntlv 127.0.0.1 9000 /the/prefix/example
 HELLO WORLD
 ```
 
-##Getting Started with NFN
+## Getting Started with NFN
 
 NFN is a computation engine for ICN. It enables user to express a how data should be
 transformed before they are delivered, and the network will find a way to deliver the result. 
