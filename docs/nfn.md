@@ -130,7 +130,7 @@ In both cases the result will be: **HelloWorld**.
 
 Sandboxing is a very important detail of the Python Execution Environment of NFN. 
 We white list secure build in function to be used within named functions.
-You will find a list of build-in functions in the[Python Executor](../PiCN/Layers/NFNLayer/NFNExecutor/NFNPythonExecutor.py).
+You will find a list of build-in functions in the [Python Executor](../PiCN/Layers/NFNLayer/NFNExecutor/NFNPythonExecutor.py).
 If you need additionally function you have to plug then into the list:
 
 ```console
