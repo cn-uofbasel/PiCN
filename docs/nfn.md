@@ -41,6 +41,87 @@ As one can easily see, a NFN interest consists of three main parts:
 After a user expressed either one or the other interest, the network can reorder the interest to optimize the location, where an interest is executed. 
 For example, in data centers it is often useful to forward an interest towards the input data, since input data are usually larger than the function code.
 
+In NFN a parameter can be a NFN expression, too. Therefore, NFN supports **function chaining**.
+
+## Encoding a Named Function in a Content Object
+
+A Named Function contains the actual code to be executed. Popular Named Functions may be available on many content stores.
+
+A Named Functions consists of a name, the code to be executed and some metadata to identify how to execute the named function:
+```console
+<Programming Language Identifier>
+<entry point>
+<actual code>
+```
+
+For the sandboxed Python Execution this means a sample Named Function (Name: **/func/combine**) is: 
+```console
+PYTHON
+func
+def func(a, b):
+    return a + b
+```
+**Note:** the Named Function will be called by the **name of the data object**, not by the name of the entry point. 
+The name of the entry point is used internally only, since a Named Function can internally contains multiple functions, only the entry point is exposed to the network:
+```console
+PYTHON
+func1
+def func1(a, b):
+    private_func(a, b)
+    
+def private_func(a, b):
+    return a+b
+```
+
 
 ## Getting Started with PiCN and NFN
-  
+
+We provide a simple example to show how to setup NFN nodes and how to issue a computation request. 
+
+After installing PiCN, a NFN Forwarder can be started on port 9000: 
+```console
+picn-nfn --port 9000 --format ndntlv -l debug
+``` 
+and a second one on port 9001:
+```console
+picn-nfn --port 9001 --format ndntlv -l debug
+``` 
+
+Next we will install a face from the first node to the second node:
+```console
+picn-mgmt --port 9000 newface 127.0.0.1:9001:0
+``` 
+and a forwarding rule with the prefix **/data**:
+```console
+picn-mgmt --port 9000 newforwardingrule /data:0
+``` 
+
+Now we are ready to add some content to the nodes. 
+
+We add a named function to the first node:
+```console
+picn-mgmt --port 9000 newcontent "/func/combine:PYTHON
+func
+def func(a, b):
+    return a + b
+"
+```
+and we add a data object to the second node:
+
+```console
+picn-mgmt --port 9001 newcontent "/data/obj1:World"
+"
+```
+
+Now we are ready to run a Named Function as described above:
+```console
+picn-fetch 127.0.0.1 9000 '/func/combine/_("Hello",%2Fdata%2Fobj1)/NFN'
+``` 
+or 
+```console
+picn-fetch 127.0.0.1 9000 '/data/obj1/%2Ffunc%2Fcombine("Hello",_)/NFN
+``` 
+It does not matter which name of both is chosen, since the network will decide where to compute. 
+The name prepended for the user is only meaningful for the first hop. 
+
+In both cases the result will be: **HelloWorld**. 

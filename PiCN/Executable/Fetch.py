@@ -13,6 +13,7 @@ from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 def main(args):
     name = Name(args.name)
     name.format = args.format
+    name = unescape_name(name)
 
     encoder = NdnTlvEncoder() if args.format == 'ndntlv' else SimpleStringEncoder
     fetchTool = Fetch(args.ip, args.port, encoder=encoder, autoconfig=args.autoconfig)
@@ -21,6 +22,13 @@ def main(args):
     print(content)
 
     fetchTool.stop_fetch()
+
+def unescape_name(name):
+    r = []
+    for n in range(0, len(name.string_components)):
+        r.append(name.string_components[n].replace("%2F", "/"))
+    name.string_components = r
+    return name
 
 
 if __name__ == "__main__":
