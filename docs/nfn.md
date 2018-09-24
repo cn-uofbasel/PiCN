@@ -4,6 +4,8 @@ Named Function Networking (NFN) provides
 * a way to call and combine Named Functions by using interest messages.
 * a forwarding engine which decides where a result is computed. 
 
+**Note**: NFN has a [Sandboxed Python Execution Environment](nfn.md#sandboxing).
+
 ## NFN Introduction
 A NFN interest consists of one or more names and maybe other data types (integer, string, etc). 
 A name either refers to a function code or a data object.  
