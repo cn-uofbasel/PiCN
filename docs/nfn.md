@@ -125,3 +125,15 @@ It does not matter which name of both is chosen, since the network will decide w
 The name prepended for the user is only meaningful for the first hop. 
 
 In both cases the result will be: **HelloWorld**. 
+
+## Sandboxing
+
+Sandboxing is a very important detail of the Python Execution Environment of NFN. 
+We white list secure build in function to be used within named functions.
+You will find a list of build-in functions in the[Python Executor](../PiCN/Layers/NFNLayer/NFNExecutor/NFNPythonExecutor.py).
+If you need additionally function you have to plug then into the list:
+
+```console
+"<name of the function within the execution environment>" : <name of the function outside of NFN (must be imported before adding it to the list)>
+```
+
