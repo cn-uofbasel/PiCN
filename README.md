@@ -75,6 +75,13 @@ you@machine:~$ picn-fetch --format ndntlv 127.0.0.1 9000 /the/prefix/example
 HELLO WORLD
 ```
 
+##Getting Started with NFN
+
+NFN is a computation engine for ICN. It enables user to express a how data should be
+transformed before they are delivered, and the network will find a way to deliver the result. 
+
+More details: [PiCN NFN](docs/nfn.md)
+
 ## More about...
 
 ### Operational Matters
