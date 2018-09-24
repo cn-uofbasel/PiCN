@@ -141,5 +141,3 @@ class Name(object):
     def string_components(self, string_components):
         self._components = [c.encode('ascii') for c in string_components]
 
-
-
