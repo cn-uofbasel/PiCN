@@ -5,6 +5,8 @@
 * [In a Nutshell: What is behind ICN, CCN and NFN?](background.md)
 * [Getting Started with PiCN](hello_world.md)
 * [Tutorial](tutorial.md)
+* [NFN](nfn.md)
+* [Simulation](simulation.md)
 
 ### Operational Matters
 
