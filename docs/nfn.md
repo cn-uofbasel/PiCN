@@ -4,7 +4,7 @@ Named Function Networking (NFN) provides
 * a way to call and combine Named Functions by using interest messages.
 * a forwarding engine which decides where a result is computed. 
 
-## NFN Encoding
+## NFN Introduction
 A NFN interest consists of one or more names and maybe other data types (integer, string, etc). 
 A name either refers to a function code or a data object.  
 
@@ -41,4 +41,6 @@ As one can easily see, a NFN interest consists of three main parts:
 After a user expressed either one or the other interest, the network can reorder the interest to optimize the location, where an interest is executed. 
 For example, in data centers it is often useful to forward an interest towards the input data, since input data are usually larger than the function code.
 
+
+## Getting Started with PiCN and NFN
   
