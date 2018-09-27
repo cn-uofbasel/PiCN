@@ -30,10 +30,33 @@ Once, you finished the setup, you can create a new Python file, which will conta
 you@machine:~$ touch example_simulation.py 
 ```
 
-Open the file and add the imports for the simulation. In our simulation we use the NFNForwarder
+Open the file **example_simulation.py** and add the imports for the simulation. In our simulation we use the NFNForwarder
 for forwarding and computing results. Furthermore we will use the fetch tool the receive the result.
 
 ```python
 from PiCN.ProgramLibs.Fetch import Fetch
 from PiCN.ProgramLibs.NFNForwarder import NFNForwarder
 ```
+
+To run a simulation it is required to have the simulation system available
+```python
+from PiCN.Layers.LinkLayer.Interfaces import SimulationBus
+from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
+``` 
+
+To setup a NFN forwarder, we need an encoder, so we need to import: 
+```python 
+from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder, SimpleStringEncoder, NdnTlvEncoder
+``` 
+
+To manage the forwarders and to install forwarder, the Mgmt tool is required. 
+```python
+from PiCN.Mgmt import MgmtClient
+```
+
+Last, we need functionallity for creating names etc. 
+```python
+from PiCN.Packets import Content, Interest, Name
+```
+
+
