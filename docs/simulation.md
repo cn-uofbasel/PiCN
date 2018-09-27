@@ -120,7 +120,7 @@ mgmt_client0.add_new_content(Name("/func/combine"), "PYTHON\nfunc\ndef func(a, b
 
 and we put a content object in the cache of nfn_fwd1: 
 ```python
-mgmt_client0.add_new_content(Name("/data/obj1"), "World")
+mgmt_client1.add_new_content(Name("/data/obj1"), "World")
 ```
 
 To request a result we create a workflow and encode it into a name.
@@ -170,7 +170,7 @@ mgmt_client0.add_face("nfn1", None, 0)
 mgmt_client0.add_forwarding_rule(Name("/data"), [0])
 
 mgmt_client0.add_new_content(Name("/func/combine"), "PYTHON\nfunc\ndef func(a, b):\n    return a + b")
-mgmt_client0.add_new_content(Name("/data/obj1"), "World")
+mgmt_client1.add_new_content(Name("/data/obj1"), "World")
 
 name = Name("/func/combine")
 name += '_("Hello",/data/obj1)'
@@ -182,5 +182,5 @@ print(res)
 ```
 ### Other Tools
 
-
+Repo etc
 
