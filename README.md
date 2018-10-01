@@ -70,7 +70,7 @@ you@machine:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newforwardingrule /the:0
 ...
 ```
 
-Note: you can also install a forwarding rule, which forwards an interest to multiple faces in parallel (Assuming there are faces with the face-id 0 and 1. All interests with the prefix "/prefix" will be forwarded to the faces with face-id 0 and 1 in parallel): 
+**Note:** you can also install a forwarding rule, which forwards an interest to multiple faces in parallel (Assuming there are faces with the face-id 0 and 1. All interests with the prefix "/prefix" will be forwarded to the faces with face-id 0 and 1 in parallel): 
 ```console
 you@machine:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newforwardingrule /prefix:0,1
 ...
