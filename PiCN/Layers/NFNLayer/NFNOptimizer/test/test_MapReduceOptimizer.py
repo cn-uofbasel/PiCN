@@ -201,8 +201,15 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
         fib.add_fib_entry(Name("/test"), [2], False)
         self.optimizer.fib = fib
         ast = self.parser.parse(workflow)
-        self.assertTrue(self.optimizer.compute_fwd(None, ast,  Interest(cmp_name1)))
-        self.assertFalse(self.optimizer.compute_local(None, ast, Interest(cmp_name1)))
+        self.assertFalse(self.optimizer.compute_fwd(None, ast,  Interest(cmp_name1)))
+        self.assertTrue(self.optimizer.compute_local(None, ast, Interest(cmp_name1)))
+
+        self.assertTrue(self.optimizer.compute_fwd(None, ast.params[0],  None))
+        self.assertFalse(self.optimizer.compute_local(None, ast.params[0], None))
+
+        self.assertTrue(self.optimizer.compute_fwd(None, ast.params[1],  None))
+        self.assertFalse(self.optimizer.compute_local(None, ast.params[1], None))
+
         rules = self.optimizer.rewrite(None, ast)
         self.assertEqual(rules, ['/func/f1(%/test/data%,/lib/f2(2,/data/test))',
                                  '/func/f1(/test/data,%/lib/f2%(2,/data/test))', 'local'])
