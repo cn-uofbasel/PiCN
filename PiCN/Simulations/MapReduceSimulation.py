@@ -1,5 +1,6 @@
 """Simulate a Map Reduce Scenario where timeout prevention is required.
 In this simulation we are using an Optimizer created for map reduce scenarios.
+This improves the distribution of the computation no matter how the interest is formated.
 
 Scenario consists of two NFN nodes and a Client. Goal of the simulation is to add en
 
