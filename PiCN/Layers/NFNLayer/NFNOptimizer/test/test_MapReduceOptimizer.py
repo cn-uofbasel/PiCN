@@ -219,6 +219,28 @@ class test_ToDataFirstOptimizer(unittest.TestCase):
 
     def test_split_control_flow(self):
         """test if the map reduce optimizer splits the control flow correctly"""
+        fib_name1 = Name("/func/f2")
+        fib_name2 = Name("/func/f3")
+        fib = self.optimizer.fib
+        fib.add_fib_entry(fib_name1, [1])
+        fib.add_fib_entry(fib_name2, [2])
+        self.optimizer.fib = fib
 
 
+        comp = Name("/data/d1")
+        comp += "/func/f1(/func/f2(_),/func/f3(/data/d2))"
+        comp += "NFN"
+        workflow = "/func/f1(/func/f2(/data/d1),/func/f3(/data/d2))"
+
+        ast = self.parser.parse(str(workflow))
+        self.assertNotEqual(ast, None)
+
+        self.assertTrue(self.optimizer.compute_local(None, ast, Interest(comp)))
+        self.assertFalse(self.optimizer.compute_fwd(None, ast, Interest(comp)))
+
+        self.assertFalse(self.optimizer.compute_local(None, ast.params[0], None))
+        self.assertTrue(self.optimizer.compute_fwd(None, ast.params[0], None))
+
+        self.assertFalse(self.optimizer.compute_local(None, ast.params[1], None))
+        self.assertTrue(self.optimizer.compute_fwd(None, ast.params[1], None))
 

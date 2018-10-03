@@ -96,12 +96,22 @@ class MapReduceOptimizer(BaseNFNOptimizer):
             return False
         faceids = []
         for p in params:
-            if p.type == Name:
-                entry = self.fib.find_fib_entry(Name(p._element))
-                for ef in entry.faceid:
-                    if ef not in faceids:
-                        faceids.append(ef)
-        if len(faceids) > 2:
+            if p.type == Name or p.type:
+                n = Name(p._element)
+            elif p.type == AST_FuncCall:
+                rewrites = self.rewrite(Name("/data/d1"), ast)
+                if not rewrites or len(rewrites) == 0:
+                    continue
+                n = rewrites[0]
+            else:
+                continue
+            entry = self.fib.find_fib_entry(n)
+            if entry is None:
+                continue
+            for ef in entry.faceid:
+                if ef not in faceids:
+                    faceids.append(ef)
+        if len(faceids) > 1: #two or more different faces --> split
             return True
         return False
 
