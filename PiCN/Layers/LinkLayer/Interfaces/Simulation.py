@@ -73,9 +73,10 @@ class SimulationInterface(BaseInterface):
 class SimulationBus(PiCNProcess):
     """Simulation Bus that dispatches the communication between nodes in a Simulation"""
 
-    def __init__(self, packetencoder: BasicEncoder=SimpleStringEncoder()):
+    def __init__(self, packetencoder: BasicEncoder=SimpleStringEncoder(), print_keep_alive=True):
         self.interfacetable: Dict[str, SimulationInterface] = {}
         self.packetencoder = packetencoder
+        self.print_keep_alive = print_keep_alive
 
 
     def start_process(self):
@@ -116,13 +117,16 @@ class SimulationBus(PiCNProcess):
 
 
             dec_packet = self.packetencoder.decode(packet)
-            print(f"{time.time():.5f}" + "\tSending packet from\t'" + src_addr + "'\tto\t'" + dst_addr + "':\t'" + str(type(dec_packet)) + "\t"+
-                  str(dec_packet.name).replace("\n", " ") + "'" , end="") #TODO improve logging
+            if self.print_keep_alive or (dec_packet.name.components[-1] == b'NFN' and dec_packet.name.components[-2] != b"KEEPALIVE"):
+                print(f"{time.time():.5f}" + "\tSending packet from\t'" + src_addr + "'\tto\t'" + dst_addr + "':\t'" +
+                      str(type(dec_packet)).replace("class ","").replace("PiCN.Packets.", "") + "\t"+
+                      str(dec_packet.name).replace("\n", " ") + "'" , end="") #TODO improve logging
 
             dst_interface: SimulationInterface = self.interfacetable.get(dst_addr)
 
             if dst_interface.packet_loss(packet):
-                print("\t... LOST")
+                if self.print_keep_alive or (dec_packet.name.components[-1] == b'NFN' and dec_packet.name.components[-2] != b"KEEPALIVE"):
+                    print("\t... LOST")
                 return
 
             if dst_interface.max_bandwidth > 0: #TODO check and improve that
@@ -136,7 +140,8 @@ class SimulationBus(PiCNProcess):
                     data_amount += getsizeof(packet)
 
             delay = dst_interface.delay(packet)
-            print("\t(delay: " + str(delay) + ")")
+            if self.print_keep_alive or (dec_packet.name.components[-1] == b'NFN' and dec_packet.name.components[-2] != b"KEEPALIVE"):
+                print("\t(delay: " + str(delay) + ")")
             #t = threading.Timer(delay, dst_interface.send, args=[packet, src_addr, "bus"])
             #t.setDaemon(True)
             #t.start()
