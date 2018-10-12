@@ -47,7 +47,7 @@ class BasicThunkLayer(LayerProcess):
             self.queue_to_higher.put([id, interest])
             return
 
-        name = interest.name
+        name = self.removeThunkMarker(interest.name)
         nfn_name = self.parser.network_name_to_nfn_str(name)
         ast = self.parser.parse(nfn_name)
 
@@ -64,25 +64,46 @@ class BasicThunkLayer(LayerProcess):
         pass
 
 
-    def removeThunkMarker(self, name: Name):
+    def removeThunkMarker(self, name: Name) -> Name:
+        """Remove the Thunk Marker from a Name"""
         if len(name.components) < 2 or name.components[-2] != b"THUNK":
             return name
-        ret = Name()
-        ret.digest = name.digest
-        ret.components = name.components
+        ret = Name(name.components[:])
         del ret.components[-2]
         return ret
 
-    def addThunkMarker(self, name: Name):
+    def addThunkMarker(self, name: Name) -> Name:
+        """Add a thunk marker to a Name"""
         if len(name.components) < 2 or name.components[-2] == b"THUNK":
             return name
-        ret = Name()
-        ret.digest = name.digest
-        ret.components = name.components
+        ret = Name(name.components[:])
         ret.components.append(ret.components[-1])
         ret.components[-2] = b"THUNK"
         return ret
 
-
-    def generateThunkNames(self, ast: AST, res: List):
-        pass
+    def generatePossibleThunkNames(self, ast: AST, res: List) -> List:
+        """Generate names that can be used for the planning"""
+        if isinstance(ast, AST_FuncCall):
+            fib_entry = self.fib.find_fib_entry(ast._element)
+            if fib_entry:
+                ast._prepend = True
+                n = str(ast)
+                ast._prepend = False
+                if n not in res:
+                    res.append(n)
+            for p in ast.params:
+                n = self.generatePossibleThunkNames(p, res)
+                if n is not None and n not in res:
+                    res.append(n)
+            return res
+        elif isinstance(ast, AST_Name):
+            fib_entry = self.fib.find_fib_entry(ast._element)
+            if fib_entry:
+                ast._prepend = True
+                n = str(ast)
+                ast._prepend = False
+                if n not in res:
+                    res.append(n)
+                return res
+        else:
+            return None
