@@ -2,13 +2,26 @@
 cost of computing the result"""
 import multiprocessing
 
+from typing import List
+
 from PiCN.Processes import LayerProcess
-from PiCN.Packets import Interest, Content, Nack
+from PiCN.Packets import Interest, Content, Nack, NackReason, Name
+from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
+from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
+from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
+from PiCN.Layers.LinkLayer.FaceIDTable import BaseFaceIDTable
+from PiCN.Layers.NFNLayer.Parser import *
 
 class BasicThunkLayer(LayerProcess):
 
-    def __init__(self, log_level=255):
+    def __init__(self, cs: BaseContentStore, fib: BaseForwardingInformationBase, pit: BasePendingInterestTable,
+                 faceidtable: BaseFaceIDTable, parser: DefaultNFNParser, log_level=255):
         super().__init__("ThunkLayer", log_level)
+        self.cs = cs
+        self.fib = fib
+        self.pit = pit
+        self.faceidtable = faceidtable
+        self.parser = parser
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         packet_id = data[0]
@@ -33,6 +46,13 @@ class BasicThunkLayer(LayerProcess):
         if interest.name.components != b"NFN":
             self.queue_to_higher.put([id, interest])
             return
+
+        name = interest.name
+        nfn_name = self.parser.network_name_to_nfn_str(name)
+        ast = self.parser.parse(nfn_name)
+
+
+
         #TODO parse interest -> ast
         #TODO create possible requests
         #TODO find cheapest cost, cache plans
@@ -41,4 +61,28 @@ class BasicThunkLayer(LayerProcess):
         pass
 
     def handleNack(self, id: int, nack: Nack):
+        pass
+
+
+    def removeThunkMarker(self, name: Name):
+        if len(name.components) < 2 or name.components[-2] != b"THUNK":
+            return name
+        ret = Name()
+        ret.digest = name.digest
+        ret.components = name.components
+        del ret.components[-2]
+        return ret
+
+    def addThunkMarker(self, name: Name):
+        if len(name.components) < 2 or name.components[-2] == b"THUNK":
+            return name
+        ret = Name()
+        ret.digest = name.digest
+        ret.components = name.components
+        ret.components.append(ret.components[-1])
+        ret.components[-2] = b"THUNK"
+        return ret
+
+
+    def generateThunkNames(self, ast: AST, res: List):
         pass

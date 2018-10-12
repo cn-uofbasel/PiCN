@@ -12,8 +12,7 @@ class Name(object):
     Internal representation of network name
     """
 
-    def __init__(self, name: Union[str, List[bytes]] = None, suite='ndn2013'):
-        self.suite = suite
+    def __init__(self, name: Union[str, List[bytes]] = None):
         self.digest = None
         if name:
             if isinstance(name, str):
@@ -49,7 +48,6 @@ class Name(object):
     def to_json(self) -> str:
         """encoded name as JSON"""
         n = {}
-        n['suite'] = self.suite
         n['comps'] = [ binascii.hexlify(c).decode('ascii', 'replace') for c in self._components ]
         if self.digest:
             n['dgest'] = binascii.hexlify(self.digest).decode('ascii', 'replace')
@@ -57,7 +55,6 @@ class Name(object):
 
     def from_json(self, s: str) -> str:
         n = json.loads(s)
-        self.suite = n['suite']
         self._components = [ binascii.dehexlify(c) for c in n['comps'] ]
         self.digest = binascii.dehexlify(n['dgest']) if 'dgest' in n else None
         return self
@@ -74,8 +71,6 @@ class Name(object):
 
     def __eq__(self, other) -> bool:
         if type(other) is not Name:
-            return False
-        if self.suite != other.suite:
             return False
         return self.to_string() == other.to_string()
 
