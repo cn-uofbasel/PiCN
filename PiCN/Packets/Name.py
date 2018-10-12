@@ -7,12 +7,14 @@ import json
 import os
 from typing import List, Union
 
+
 class Name(object):
     """
     Internal representation of network name
     """
 
-    def __init__(self, name: Union[str, List[bytes]] = None):
+    def __init__(self, name: Union[str, List[bytes]] = None, suite='ndn2013'):
+        self.suite = suite
         self.digest = None
         if name:
             if isinstance(name, str):
@@ -33,7 +35,7 @@ class Name(object):
         if len(self._components) == 0:
             return '/'
         if type(self._components[0]) is str:
-            s =  '/' + '/'.join([c for c in self._components])
+            s = '/' + '/'.join([c for c in self._components])
             return s
         s = '/' + '/'.join([c.decode('ascii', 'replace') for c in self._components])
         return s
@@ -48,21 +50,23 @@ class Name(object):
     def to_json(self) -> str:
         """encoded name as JSON"""
         n = {}
-        n['comps'] = [ binascii.hexlify(c).decode('ascii', 'replace') for c in self._components ]
+        n['suite'] = self.suite
+        n['comps'] = [binascii.hexlify(c).decode('ascii', 'replace') for c in self._components]
         if self.digest:
             n['dgest'] = binascii.hexlify(self.digest).decode('ascii', 'replace')
         return json.dumps(n)
 
     def from_json(self, s: str) -> str:
         n = json.loads(s)
-        self._components = [ binascii.dehexlify(c) for c in n['comps'] ]
+        self.suite = n['suite']
+        self._components = [binascii.dehexlify(c) for c in n['comps']]
         self.digest = binascii.dehexlify(n['dgest']) if 'dgest' in n else None
         return self
 
-    def setDigest(self, digest : str = None):
+    def setDigest(self, digest: str = None):
         self.digest = digest
         return self
-        
+
     def __str__(self) -> str:
         return self.to_string()
 
@@ -71,6 +75,8 @@ class Name(object):
 
     def __eq__(self, other) -> bool:
         if type(other) is not Name:
+            return False
+        if self.suite != other.suite:
             return False
         return self.to_string() == other.to_string()
 
@@ -87,7 +93,7 @@ class Name(object):
                 else:
                     raise TypeError('Not a Name, str, List[str] or List[bytes]')
         elif type(other) is str:
-                components.append(other.encode('ascii'))
+            components.append(other.encode('ascii'))
         elif isinstance(other, Name):
             for comp in other._components:
                 components.append(comp)
@@ -135,6 +141,3 @@ class Name(object):
     @string_components.setter
     def string_components(self, string_components):
         self._components = [c.encode('ascii') for c in string_components]
-
-
-
