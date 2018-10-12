@@ -52,6 +52,17 @@ class test_BasicThunkLayer(unittest.TestCase):
 
     def test_generating_possible_names(self):
         """Test if the possible thunk names are generated correctly"""
+
+        self.fib.add_fib_entry(Name("/func/f1"), [1])
+        self.fib.add_fib_entry(Name("/func/f2"), [2])
+        self.fib.add_fib_entry(Name("/test/data"), [4])
+
         comp_str = "/func/f1(/func/f2(/test/data/d1),/func/f3(/test/data/d2))"
+        ast = self.parser.parse(comp_str)
+        name_list = self.thunklayer.generatePossibleThunkNames(ast)
 
+        compare_list = ['/func/f1(/func/f2(%/test/data/d1%),/func/f3(/test/data/d2))', '/func/f1(/func/f2(/test/data/d1),/func/f3(%/test/data/d2%))',
+                        '%/func/f1%(/func/f2(/test/data/d1),/func/f3(/test/data/d2))', '/func/f1(%/func/f2%(/test/data/d1),/func/f3(/test/data/d2))',
+                        '/func/f2(%/test/data/d1%)', '%/func/f2%(/test/data/d1)', '/test/data/d1', '/func/f3(%/test/data/d2%)', '/test/data/d2']
 
+        self.assertEqual(name_list, compare_list)

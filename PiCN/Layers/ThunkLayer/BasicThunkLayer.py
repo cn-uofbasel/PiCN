@@ -11,6 +11,7 @@ from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
 from PiCN.Layers.LinkLayer.FaceIDTable import BaseFaceIDTable
 from PiCN.Layers.NFNLayer.Parser import *
+from PiCN.Layers.NFNLayer.NFNOptimizer import BaseNFNOptimizer
 
 class BasicThunkLayer(LayerProcess):
 
@@ -22,6 +23,8 @@ class BasicThunkLayer(LayerProcess):
         self.pit = pit
         self.faceidtable = faceidtable
         self.parser = parser
+        self.optimizer = BaseNFNOptimizer(self.cs, self.fib, self.pit, self.faceidtable)
+        self.running_computations = {}
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         packet_id = data[0]
@@ -39,6 +42,7 @@ class BasicThunkLayer(LayerProcess):
         return
 
     def handleInterest(self, id: int, interest: Interest):
+        #TODO what about local function, data?
         if len(interest.name.components) < 2 or interest.name.components[-2] != b"THUNK":
             self.queue_to_higher.put([id, interest])
             return
@@ -51,6 +55,16 @@ class BasicThunkLayer(LayerProcess):
         nfn_name = self.parser.network_name_to_nfn_str(name)
         ast = self.parser.parse(nfn_name)
 
+        thunk_names = list(map(lambda x: self.addThunkMarker(self.parser.nfn_str_to_network_name(x)))
+                           ,self.generatePossibleThunkNames(ast))
+
+        self.running_computations[id] = []
+        for tn in thunk_names:
+            interest = Interest(thunk_names)
+            self.queue_to_lower.put([id, interest])
+            elm = self.running_computations[id]
+            elm.append(tn)
+            self.running_computations[id] = elm
 
 
         #TODO parse interest -> ast
@@ -81,29 +95,34 @@ class BasicThunkLayer(LayerProcess):
         ret.components[-2] = b"THUNK"
         return ret
 
-    def generatePossibleThunkNames(self, ast: AST, res: List) -> List:
+    def generatePossibleThunkNames(self, ast: AST, res: List = []) -> List:
         """Generate names that can be used for the planning"""
         if isinstance(ast, AST_FuncCall):
-            fib_entry = self.fib.find_fib_entry(ast._element)
-            if fib_entry:
-                ast._prepend = True
-                n = str(ast)
-                ast._prepend = False
-                if n not in res:
+            name_list = self.optimizer._get_names_from_ast(ast)
+            function_list = self.optimizer._get_functions_from_ast(ast)
+            prepend_list = name_list + function_list
+            fib_name_list = []
+            for n in prepend_list:
+                if self.fib.find_fib_entry(Name(n)) is not None:
+                   fib_name_list.append(n)
+            for name in fib_name_list:
+                n = self.optimizer._set_prepended_name(ast, Name(name), ast)
+                if n is not None:
                     res.append(n)
-            for p in ast.params:
-                n = self.generatePossibleThunkNames(p, res)
-                if n is not None and n not in res:
-                    res.append(n)
+            for n in ast.params:
+                names = self.generatePossibleThunkNames(n, res)
+                if names is None:
+                    continue
+                for it in names:
+                    if it and it not in res:
+                        res.append(it)
             return res
         elif isinstance(ast, AST_Name):
-            fib_entry = self.fib.find_fib_entry(ast._element)
-            if fib_entry:
-                ast._prepend = True
-                n = str(ast)
-                ast._prepend = False
-                if n not in res:
-                    res.append(n)
-                return res
+            return [ast._element]
         else:
-            return None
+            return res
+
+
+
+
+
