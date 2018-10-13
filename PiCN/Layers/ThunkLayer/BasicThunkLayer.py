@@ -42,7 +42,7 @@ class BasicThunkLayer(LayerProcess):
         return
 
     def handleInterest(self, id: int, interest: Interest):
-        #TODO what about local function, data?
+        #TODO what about local function, data, use info from meta data?
         if len(interest.name.components) < 2 or interest.name.components[-2] != b"THUNK":
             self.queue_to_higher.put([id, interest])
             return
