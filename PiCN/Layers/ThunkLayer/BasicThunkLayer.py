@@ -12,6 +12,7 @@ from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInforma
 from PiCN.Layers.LinkLayer.FaceIDTable import BaseFaceIDTable
 from PiCN.Layers.NFNLayer.Parser import *
 from PiCN.Layers.NFNLayer.NFNOptimizer import BaseNFNOptimizer
+from PiCN.Layers.ThunkLayer.ThunkTable import ThunkList
 
 class BasicThunkLayer(LayerProcess):
 
@@ -24,7 +25,7 @@ class BasicThunkLayer(LayerProcess):
         self.faceidtable = faceidtable
         self.parser = parser
         self.optimizer = BaseNFNOptimizer(self.cs, self.fib, self.pit, self.faceidtable)
-        self.running_computations = {}
+        self.running_computations = ThunkList()
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         packet_id = data[0]
@@ -58,13 +59,10 @@ class BasicThunkLayer(LayerProcess):
         thunk_names = list(map(lambda x: self.addThunkMarker(self.parser.nfn_str_to_network_name(x)))
                            ,self.generatePossibleThunkNames(ast))
 
-        self.running_computations[id] = []
+        self.running_computations.add_entry_to_thunk_table(name, id, thunk_names)
         for tn in thunk_names:
             interest = Interest(thunk_names)
             self.queue_to_lower.put([id, interest])
-            elm = self.running_computations[id]
-            elm.append(tn)
-            self.running_computations[id] = elm
 
 
         #TODO parse interest -> ast
