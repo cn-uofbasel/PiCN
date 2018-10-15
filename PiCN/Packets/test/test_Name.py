@@ -4,7 +4,7 @@ import unittest
 from PiCN.Packets import Name
 
 
-class TestContent(unittest.TestCase):
+class TestName(unittest.TestCase):
 
     def setUp(self):
         pass
