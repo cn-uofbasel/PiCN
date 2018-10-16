@@ -13,11 +13,12 @@ from PiCN.Layers.LinkLayer.FaceIDTable import BaseFaceIDTable
 from PiCN.Layers.NFNLayer.Parser import *
 from PiCN.Layers.NFNLayer.NFNOptimizer import BaseNFNOptimizer
 from PiCN.Layers.ThunkLayer.ThunkTable import ThunkList
+from PiCN.Layers.RepositoryLayer.Repository import BaseRepository
 
 class BasicThunkLayer(LayerProcess):
 
     def __init__(self, cs: BaseContentStore, fib: BaseForwardingInformationBase, pit: BasePendingInterestTable,
-                 faceidtable: BaseFaceIDTable, parser: DefaultNFNParser, log_level=255):
+                 faceidtable: BaseFaceIDTable, parser: DefaultNFNParser, repo: BaseRepository=None, log_level=255):
         super().__init__("ThunkLayer", log_level)
         self.cs = cs
         self.fib = fib
@@ -25,6 +26,7 @@ class BasicThunkLayer(LayerProcess):
         self.faceidtable = faceidtable
         self.parser = parser
         self.optimizer = BaseNFNOptimizer(self.cs, self.fib, self.pit, self.faceidtable)
+        self.repo = repo
         self.running_computations = ThunkList()
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
@@ -43,13 +45,16 @@ class BasicThunkLayer(LayerProcess):
         return
 
     def handleInterest(self, id: int, interest: Interest):
+        #TODO put to separate function (must be called multiple times)
         cs_entry = self.cs.find_content_object(interest.name) #if content is available local in CS, use it
         if cs_entry is not None:
             if cs_entry.content.content.startswith("mdo:"):
-                pass
+                pass  #TODO, handle size
             else:
-               pass
-        #TODO access to repo
+                pass  #TODO, handle size
+        if self.repo is not None:
+            if self.repo.is_content_available(interest.name):
+                data_size = self.repo.get_data_size(interest.name)
 
         if len(interest.name.components) < 2 or interest.name.components[-2] != b"THUNK":
             self.queue_to_higher.put([id, interest])

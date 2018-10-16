@@ -90,5 +90,12 @@ class test_SimpleFileSystemRepository(unittest.TestCase):
         self.assertEqual(c10, None)
 
 
+    def test_get_size(self):
+        """test the functionality of the get size function"""
+        c1 = self.repository.get_content(Name("/test/data/f1"))
+        size = len(c1.content)
+        self.assertEqual(size, self.repository.get_data_size(Name("/test/data/f1")))
+
+
 
 

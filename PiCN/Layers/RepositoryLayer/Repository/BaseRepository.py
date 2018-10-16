@@ -23,3 +23,14 @@ class BaseRepository:
     @abc.abstractmethod
     def set_prefix(self, prefix: Name):
         """Set the prefix for the repo"""
+
+    def get_data_size(self, icnname: Name):
+        """Returns the size, of a data object
+        :returns Size of data object if available
+        :returns None if data object is not available
+        """
+        if not self.is_content_available(icnname):
+            return None
+        data = self.get_content(icnname)
+        size = len(data.content)
+        return size
