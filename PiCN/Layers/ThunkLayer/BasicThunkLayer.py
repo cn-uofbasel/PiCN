@@ -47,14 +47,21 @@ class BasicThunkLayer(LayerProcess):
     def handleInterest(self, id: int, interest: Interest):
         #TODO put to separate function (must be called multiple times)
         cs_entry = self.cs.find_content_object(interest.name) #if content is available local in CS, use it
+        data_size = None
         if cs_entry is not None:
-            if cs_entry.content.content.startswith("mdo:"):
-                pass  #TODO, handle size
+            if cs_entry.content.content.startswith(b"mdo:"):
+                entry_splits = cs_entry.content.content.split(b":")
+                if len(entry_splits) > 2:
+                    data_size = int(entry_splits[1])
             else:
-                pass  #TODO, handle size
+                data_size = len(cs_entry.content.content)
         if self.repo is not None:
             if self.repo.is_content_available(interest.name):
                 data_size = self.repo.get_data_size(interest.name)
+
+        if data_size is not None:
+            pass #TODO
+
 
         if len(interest.name.components) < 2 or interest.name.components[-2] != b"THUNK":
             self.queue_to_higher.put([id, interest])
