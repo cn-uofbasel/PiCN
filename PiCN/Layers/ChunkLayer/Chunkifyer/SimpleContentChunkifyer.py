@@ -16,6 +16,7 @@ class SimpleContentChunkifyer(BaseChunkifyer):
         """Split content to chunks and generate metadata"""
         name = packet.name
         data = packet.content
+        content_size = len(packet.content)
         chunks = [data[i:i + self._chunksize] for i in range(0, len(data), self._chunksize)]
         num_of_chunks = len(chunks)
         meta_data = []
@@ -25,7 +26,7 @@ class SimpleContentChunkifyer(BaseChunkifyer):
             next = 0
             if i + self._num_of_names_in_metadata < num_of_chunks:
                 next = int(i/4)+1
-            meta_data.append(self.generate_meta_data(i, endindex, md_num, next, packet.name))
+            meta_data.append(self.generate_meta_data(i, endindex, md_num, next, packet.name, content_size))
 
         content = []
         for i in range(0, num_of_chunks):
@@ -42,9 +43,10 @@ class SimpleContentChunkifyer(BaseChunkifyer):
         return Content(name, data)
 
 
-    def generate_meta_data(self, startindex: int, endindex: int, md_num: int, next: int, name: Name) -> Content:
+    def generate_meta_data(self, startindex: int, endindex: int, md_num: int, next: int, name: Name, content_size: int)\
+            -> Content:
         """Generate the meta data"""
-        metadata = "mdo:"
+        metadata = "mdo:" + str(content_size) + ":"
         for i in range(startindex, endindex):
             metadata = metadata + name.to_string() + "/c" + str(i)
             if i != endindex - 1:
@@ -59,15 +61,16 @@ class SimpleContentChunkifyer(BaseChunkifyer):
         metadata_obj = Content(md_name_obj, metadata.encode('ascii'))
         return metadata_obj
 
-    def parse_meta_data(self, data: str) -> (Name, List[Name]):
+    def parse_meta_data(self, data: str) -> (Name, List[Name], int):
         """parse the meta data"""
         parts = data.split(":")
-        chunknames = parts[1].split(";")
-        next_md = parts[2]
+        content_size = parts[1]
+        chunknames = parts[2].split(";")
+        next_md = parts[3]
         names = [Name(s) for s in chunknames]
         md = None
         if next_md != "":
             md = Name(next_md)
-        return (md, names)
+        return (md, names, content_size)
 
 

@@ -43,7 +43,14 @@ class BasicThunkLayer(LayerProcess):
         return
 
     def handleInterest(self, id: int, interest: Interest):
-        #TODO what about local function, data, use info from meta data?
+        cs_entry = self.cs.find_content_object(interest.name) #if content is available local in CS, use it
+        if cs_entry is not None:
+            if cs_entry.content.content.startswith("mdo:"):
+                pass
+            else:
+               pass
+        #TODO access to repo
+
         if len(interest.name.components) < 2 or interest.name.components[-2] != b"THUNK":
             self.queue_to_higher.put([id, interest])
             return

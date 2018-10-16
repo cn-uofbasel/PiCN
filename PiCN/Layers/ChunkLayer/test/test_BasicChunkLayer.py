@@ -162,9 +162,9 @@ class test_BasicChunkLayer(unittest.TestCase):
         """test if received meta data are handled correctly"""
         self.chunkLayer.start_process()
         md1_n = Name("/test/data")
-        md1 = Content(md1_n, "mdo:/test/data/c0;/test/data/c1;/test/data/c2;/test/data/c3:/test/data/m1")
+        md1 = Content(md1_n, "mdo:300:/test/data/c0;/test/data/c1;/test/data/c2;/test/data/c3:/test/data/m1")
         md2_n = Name("/test/data/m1")
-        md2 = Content(md2_n, "mdo:/test/data/c4:")
+        md2 = Content(md2_n, "mdo:300:/test/data/c4:")
 
         request_table_entry = RequestTableEntry(md1_n)
 
@@ -294,7 +294,7 @@ class test_BasicChunkLayer(unittest.TestCase):
             data = self.chunkLayer.queue_to_lower.get(timeout=2.0)
         except:
             self.fail()
-        md = Content("/test/data", "mdo:/test/data/c0;/test/data/c1:")
+        md = Content("/test/data", "mdo:4296:/test/data/c0;/test/data/c1:")
         self.assertEqual(data[1], md)
 
     def test_content_from_lower_no_request_table_entry(self):
@@ -322,9 +322,9 @@ class test_BasicChunkLayer(unittest.TestCase):
         """test receiving metadata from lower layer"""
         self.chunkLayer.start_process()
         md1_n = Name("/test/data")
-        md1 = Content(md1_n, "mdo:/test/data/c0;/test/data/c1;/test/data/c2;/test/data/c3:/test/data/m1")
+        md1 = Content(md1_n, "mdo:300:/test/data/c0;/test/data/c1;/test/data/c2;/test/data/c3:/test/data/m1")
         md2_n = Name("/test/data/m1")
-        md2 = Content(md2_n, "mdo:/test/data/c4:")
+        md2 = Content(md2_n, "mdo:300:/test/data/c4:")
 
         self.chunkLayer._request_table.append(RequestTableEntry(md1_n))
 

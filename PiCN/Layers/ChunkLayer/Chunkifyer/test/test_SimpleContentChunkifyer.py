@@ -18,28 +18,28 @@ class test_SimpleContentChunkifyer(unittest.TestCase):
         """Test generating a simple metadata object"""
         name = Name("/test/data")
 
-        res = self.chunkifyer.generate_meta_data(2,4,0, 0,name)
+        res = self.chunkifyer.generate_meta_data(2,4,0, 0,name,300)
 
         self.assertEqual(res.name.to_string(), "/test/data")
-        self.assertEqual(res.content, "mdo:/test/data/c2;/test/data/c3:")
+        self.assertEqual(res.content, "mdo:300:/test/data/c2;/test/data/c3:")
 
     def test_generate_metadata_one_next(self):
         """Test generating a simple metadata object with one following"""
         name = Name("/test/data")
 
-        res = self.chunkifyer.generate_meta_data(2,4,0,1,name)
+        res = self.chunkifyer.generate_meta_data(2,4,0,1,name,300)
 
         self.assertEqual(res.name.to_string(), "/test/data")
-        self.assertEqual(res.content, "mdo:/test/data/c2;/test/data/c3:/test/data/m1")
+        self.assertEqual(res.content, "mdo:300:/test/data/c2;/test/data/c3:/test/data/m1")
 
     def test_generate_metadata_two_next(self):
         """Test generating a simple metadata object with two following"""
         name = Name("/test/data")
 
-        res = self.chunkifyer.generate_meta_data(2,4,1,2, name)
+        res = self.chunkifyer.generate_meta_data(2,4,1,2, name,300)
 
         self.assertEqual(res.name.to_string(), "/test/data/m1")
-        self.assertEqual(res.content, "mdo:/test/data/c2;/test/data/c3:/test/data/m2")
+        self.assertEqual(res.content, "mdo:300:/test/data/c2;/test/data/c3:/test/data/m2")
 
     def test_chunk_single_metadata(self):
         name = Name("/test/data")
@@ -49,7 +49,7 @@ class test_SimpleContentChunkifyer(unittest.TestCase):
         md, content = self.chunkifyer.chunk_data(content)
 
         md_name_comp = ['/test/data']
-        md_data_comp = ['mdo:/test/data/c0;/test/data/c1;/test/data/c2:']
+        md_data_comp = ['mdo:12288:/test/data/c0;/test/data/c1;/test/data/c2:']
 
         content_name_comp = ['/test/data/c0', '/test/data/c1', '/test/data/c2']
 
@@ -74,9 +74,9 @@ class test_SimpleContentChunkifyer(unittest.TestCase):
         md, chunked_content = self.chunkifyer.chunk_data(content)
 
         md_name_comp = ['/test/data', '/test/data/m1', '/test/data/m2']
-        md_data_comp = ['mdo:/test/data/c0;/test/data/c1;/test/data/c2;/test/data/c3:/test/data/m1',
-                        'mdo:/test/data/c4;/test/data/c5;/test/data/c6;/test/data/c7:/test/data/m2',
-                        'mdo:/test/data/c8;/test/data/c9:']
+        md_data_comp = ['mdo:40864:/test/data/c0;/test/data/c1;/test/data/c2;/test/data/c3:/test/data/m1',
+                        'mdo:40864:/test/data/c4;/test/data/c5;/test/data/c6;/test/data/c7:/test/data/m2',
+                        'mdo:40864:/test/data/c8;/test/data/c9:']
 
         content_name_comp = ['/test/data/c0', '/test/data/c1', '/test/data/c2', '/test/data/c3', '/test/data/c4',
                              '/test/data/c5', '/test/data/c6', '/test/data/c7', '/test/data/c8', '/test/data/c9']
@@ -103,9 +103,9 @@ class test_SimpleContentChunkifyer(unittest.TestCase):
         md, chunked_content = self.chunkifyer.chunk_data(content)
 
         md_name_comp = ['/test/data', '/test/data/m1', '/test/data/m2']
-        md_data_comp = ['mdo:/test/data/c0;/test/data/c1;/test/data/c2;/test/data/c3:/test/data/m1',
-                        'mdo:/test/data/c4;/test/data/c5;/test/data/c6;/test/data/c7:/test/data/m2',
-                        'mdo:/test/data/c8;/test/data/c9:']
+        md_data_comp = ['mdo:40864:/test/data/c0;/test/data/c1;/test/data/c2;/test/data/c3:/test/data/m1',
+                        'mdo:40864:/test/data/c4;/test/data/c5;/test/data/c6;/test/data/c7:/test/data/m2',
+                        'mdo:40864:/test/data/c8;/test/data/c9:']
 
         content_name_comp = ['/test/data/c0', '/test/data/c1', '/test/data/c2', '/test/data/c3', '/test/data/c4',
                              '/test/data/c5', '/test/data/c6', '/test/data/c7', '/test/data/c8', '/test/data/c9']
@@ -128,18 +128,20 @@ class test_SimpleContentChunkifyer(unittest.TestCase):
 
     def test_parse_metadata_next(self):
         """Test parse metadata with next metadata"""
-        md, names = self.chunkifyer.parse_meta_data(
-            "mdo:/test/data/c0;/test/data/c1;/test/data/c2;/test/data/c3:/test/data/m1")
+        md, names, size = self.chunkifyer.parse_meta_data(
+            "mdo:300:/test/data/c0;/test/data/c1;/test/data/c2;/test/data/c3:/test/data/m1")
 
         self.assertEqual(Name("/test/data/m1"), md)
         names_comp = [Name("/test/data/c0"), Name("/test/data/c1"), Name("/test/data/c2"), Name("/test/data/c3")]
         self.assertEqual(names, names_comp)
+        self.assertEqual(int(size), 300)
 
     def test_parse_metadata(self):
         """Test parse metadata"""
-        md, names = self.chunkifyer.parse_meta_data(
-            "mdo:/test/data/c0;/test/data/c1;/test/data/c2;/test/data/c3:")
+        md, names, size = self.chunkifyer.parse_meta_data(
+            "mdo:300:/test/data/c0;/test/data/c1;/test/data/c2;/test/data/c3:")
 
         self.assertEqual(None, md)
         names_comp = [Name("/test/data/c0"), Name("/test/data/c1"), Name("/test/data/c2"), Name("/test/data/c3")]
         self.assertEqual(names, names_comp)
+        self.assertEqual(int(size), 300)

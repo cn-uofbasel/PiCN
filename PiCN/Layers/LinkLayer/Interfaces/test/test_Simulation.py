@@ -251,7 +251,7 @@ class cases_Simulation():
         res, src = self.fetchiface.receive()
         self.assertEqual(src, "icnfwd1")
         c = self.encoder.decode(res)
-        self.assertEqual(c, Content(interest.name, "mdo:/test/data/f1/c0;/test/data/f1/c1;/test/data/f1/c2;/test/data/f1/c3:/test/data/f1/m1"))
+        self.assertEqual(c, Content(interest.name, "mdo:20000:/test/data/f1/c0;/test/data/f1/c1;/test/data/f1/c2;/test/data/f1/c3:/test/data/f1/m1"))
 
         mgmt_client1.shutdown()
 

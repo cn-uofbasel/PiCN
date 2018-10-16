@@ -116,7 +116,7 @@ class BasicChunkLayer(LayerProcess):
         if md_entry is None:
             return request_table_entry
         request_table_entry = self.remove_metadata_name_from_request_table(request_table_entry, packet.name)
-        md, chunks = self.chunkifyer.parse_meta_data(packet.content)
+        md, chunks, size = self.chunkifyer.parse_meta_data(packet.content)
         if md is not None:  # there is another md file
             request_table_entry.requested_md.append(md)
             to_lower.put([faceid, Interest(md)])
