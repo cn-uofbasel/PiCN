@@ -45,23 +45,12 @@ class BasicThunkLayer(LayerProcess):
         return
 
     def handleInterest(self, id: int, interest: Interest):
-        #TODO put to separate function (must be called multiple times)
-        cs_entry = self.cs.find_content_object(interest.name) #if content is available local in CS, use it
-        data_size = None
-        if cs_entry is not None:
-            if cs_entry.content.content.startswith(b"mdo:"):
-                entry_splits = cs_entry.content.content.split(b":")
-                if len(entry_splits) > 2:
-                    data_size = int(entry_splits[1])
-            else:
-                data_size = len(cs_entry.content.content)
-        if self.repo is not None:
-            if self.repo.is_content_available(interest.name):
-                data_size = self.repo.get_data_size(interest.name)
 
+        data_size = self.get_data_size(interest.name)
         if data_size is not None:
-            pass #TODO
-
+            content = Content(interest.name, "DataSize:" + str(data_size))
+            self.queue_to_lower.put(content)
+            return
 
         if len(interest.name.components) < 2 or interest.name.components[-2] != b"THUNK":
             self.queue_to_higher.put([id, interest])
@@ -78,14 +67,17 @@ class BasicThunkLayer(LayerProcess):
         thunk_names = list(map(lambda x: self.addThunkMarker(self.parser.nfn_str_to_network_name(x)))
                            ,self.generatePossibleThunkNames(ast))
 
-        self.running_computations.add_entry_to_thunk_table(name, id, thunk_names)
+        self.running_computations.add_entry_to_thunk_table(name, id, thunk_names) #Create new computation
         for tn in thunk_names:
-            interest = Interest(thunk_names)
+            data_size = self.get_data_size(tn)
+            if data_size is not None:
+                content = Content(interest.name, "DataSize:" + str(data_size))
+                self.running_computations.add_estimated_cost_to_awaiting_data(name, data_size) #if data local -> set cost
+                return
+            interest = Interest(tn)
             self.queue_to_lower.put([id, interest])
 
-
-        #TODO parse interest -> ast
-        #TODO create possible requests
+        #TODO check if all costs are satified. if yes reply to main request
         #TODO find cheapest cost, cache plans
 
     def handleContent(self, id: int, content: Content):
@@ -94,6 +86,20 @@ class BasicThunkLayer(LayerProcess):
     def handleNack(self, id: int, nack: Nack):
         pass
 
+    def get_data_size(self, name: Name) -> int:
+        cs_entry = self.cs.find_content_object(name) #if content is available local in CS, use it
+        data_size = None
+        if cs_entry is not None:
+            if cs_entry.content.content.startswith(b"mdo:"):
+                entry_splits = cs_entry.content.content.split(b":")
+                if len(entry_splits) > 2:
+                    data_size = int(entry_splits[1])
+            else:
+                data_size = len(cs_entry.content.content)
+        if self.repo is not None:
+            if self.repo.is_content_available(name):
+                data_size = self.repo.get_data_size(name)
+        return data_size
 
     def removeThunkMarker(self, name: Name) -> Name:
         """Remove the Thunk Marker from a Name"""
@@ -138,8 +144,3 @@ class BasicThunkLayer(LayerProcess):
             return [ast._element]
         else:
             return res
-
-
-
-
-
