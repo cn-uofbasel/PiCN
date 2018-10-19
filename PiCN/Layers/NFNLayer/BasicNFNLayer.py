@@ -156,6 +156,12 @@ class BasicNFNLayer(LayerProcess):
         """
         nfn_str, prepended_name = self.parser.network_name_to_nfn_str(interest.name)
         entry = self.computation_table.get_computation(interest.name)
+        if entry is None or entry.ast is None:
+            self.logger.info("Parsing error")
+            nack = Nack(interest.name, reason=NackReason.COMP_NOT_PARSED, interest=interest)
+            self.queue_to_lower.put([entry.id, nack])
+            self.computation_table.remove_computation(interest.name)
+            return
         try:
             if entry.ast.type == AST_FuncCall and entry.ast._element == "/ibi/pub":
                 self.logger.info("IBI Message: pub")
@@ -171,7 +177,9 @@ class BasicNFNLayer(LayerProcess):
                     self.queue_to_lower.put([entry.id, nack])
                     self.logger.info("Need AST_NAME and AST_String as params")
                     return
-                content = Content(entry.ast.params[0]._element, entry.ast.params[1]._element)
+                content_name = entry.ast.params[0]._element
+                content_blob = entry.ast.params[1]._element.replace("%n", "\n")
+                content = Content(content_name, content_blob)
                 if self.cs.find_content_object(content.name):
                     nack = Nack(interest.name, reason=NackReason.DUPLICATE, interest=interest)
                     self.queue_to_lower.put([entry.id, nack])
@@ -210,7 +218,6 @@ class BasicNFNLayer(LayerProcess):
             nack = Nack(interest.name, reason=NackReason.COMP_EXCEPTION, interest=interest)
             self.computation_table.remove_computation(interest.name)
             self.queue_to_lower.put([entry.id, nack])
-            print(E)
             return
 
         if self.optimizer.compute_fwd(prepended_name, entry.ast, interest):
