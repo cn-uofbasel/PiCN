@@ -23,7 +23,7 @@ class NackReason(Enum):
     - NDNLPv2: Congestion (Type Value 50)
     """
 
-    DUPLICATE = "duplicate nonce"
+    DUPLICATE = "duplicate content or nonce"
     """
     Semantics:  The upstream has detected a duplicate Nonce in the Interest sent by the downstream
 

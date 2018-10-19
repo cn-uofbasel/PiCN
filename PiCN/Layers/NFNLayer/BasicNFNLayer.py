@@ -172,6 +172,10 @@ class BasicNFNLayer(LayerProcess):
                     self.logger.info("Need AST_NAME and AST_String as params")
                     return
                 content = Content(entry.ast.params[0]._element, entry.ast.params[1]._element)
+                if self.cs.find_content_object(content.name):
+                    nack = Nack(interest.name, reason=NackReason.DUPLICATE, interest=interest)
+                    self.queue_to_lower.put([entry.id, nack])
+                    self.logger.info("Content already in cache")
                 self.cs.add_content_object(content, True)
                 self.computation_table.remove_computation(interest.name)
                 self.queue_to_lower.put([entry.id, Content(interest.name, "Content " + str(entry.ast.params[0]) + " added")])
