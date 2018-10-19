@@ -11,6 +11,7 @@ from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 
 
 def main(args):
+    #name = Name(args.name)
     name = unescape_str_to_Name(args.name)
     name.format = args.format
     #name = unescape_name(name)
