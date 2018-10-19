@@ -20,7 +20,7 @@ class DefaultNFNParser(object):
         self.floatToken = Token(TokenType.FLOAT, r'[0-9\+\-]', r'[0-9.Ee]', r'[0-9]')
         self.nameToken = Token(TokenType.NAME, r'/', r'[A-Za-z0-9/.]', r'[A-Za-z0-9]')
         self.varToken = Token(TokenType.VAR, r'[A-Za-z0-9]', r'[A-Za-z0-9]', r'[A-Za-z0-9]')
-        self.funcToken = Token(TokenType.FUNCCALL, r'/', r'[A-Za-z0-9/]', r'\(')
+        self.funcToken = Token(TokenType.FUNCCALL, r'/', r'[A-Za-z0-9/.]', r'\(')
         self.endFuncToken = Token(TokenType.ENDFUNCCALL, r'\)', r'', r'')
         self.paramSeparator = Token(TokenType.PARAMSEPARATOR, r',', r'', r'')
 
