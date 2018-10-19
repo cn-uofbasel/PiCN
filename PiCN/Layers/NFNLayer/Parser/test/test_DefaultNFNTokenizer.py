@@ -10,14 +10,14 @@ class test_DefaultNFNTokenizer(unittest.TestCase):
     """Test the default Tokenizer"""
 
     def setUp(self):
-        self.stringToken = Token(TokenType.STRING, '"', "[A-Za-z0-9]", '"')
-        self.intToken = Token(TokenType.INT, '[0-9\+\-]', "[0-9]", '[0-9]')
-        self.floatToken = Token(TokenType.FLOAT, '[0-9\+\-]', "[0-9.Ee]", '[0-9]')
-        self.nameToken = Token(TokenType.NAME, "/", "[A-Za-z0-9/]", "[A-Za-z0-9]")
-        self.varToken = Token(TokenType.VAR, "[A-Za-z0-9]", "[A-Za-z0-9]", "[A-Za-z0-9]")
-        self.funcToken = Token(TokenType.FUNCCALL, "/", "[A-Za-z0-9/]", "\(")
-        self.endFuncToken = Token(TokenType.ENDFUNCCALL, "\)", "", "")
-        self.paramSeparator = Token(TokenType.PARAMSEPARATOR, ",", "", "")
+        self.stringToken = Token(TokenType.STRING, r'"', r'[A-Za-z0-9 ]', r'"')
+        self.intToken = Token(TokenType.INT, r'[0-9\+\-]', r'[0-9]', r'[0-9]')
+        self.floatToken = Token(TokenType.FLOAT, r'[0-9\+\-]', r'[0-9.Ee]', r'[0-9]')
+        self.nameToken = Token(TokenType.NAME, r'/', r'[A-Za-z0-9/.]', r'[A-Za-z0-9]')
+        self.varToken = Token(TokenType.VAR, r'[A-Za-z0-9]', r'[A-Za-z0-9]', r'[A-Za-z0-9]')
+        self.funcToken = Token(TokenType.FUNCCALL, r'/', r'[A-Za-z0-9/]', r'\(')
+        self.endFuncToken = Token(TokenType.ENDFUNCCALL, r'\)', r'', r'')
+        self.paramSeparator = Token(TokenType.PARAMSEPARATOR, r',', r'', r'')
 
         self.tokenizer = DefaultNFNTokenizer()
         self.tokenizer.add_token(self.stringToken)
@@ -39,6 +39,13 @@ class test_DefaultNFNTokenizer(unittest.TestCase):
         tokens = self.tokenizer.tokenize(test_string)
         self.assertEqual(expected_res, tokens)
 
+    def test_string2(self):
+        """Test single string"""
+        test_string = '"test string"'
+        expected_res = [(TokenType.STRING, '"test string"')]
+        tokens = self.tokenizer.tokenize(test_string)
+        self.assertEqual(expected_res, tokens)
+
     def test_int(self):
         """Test single int"""
         test_string = "-1234"
@@ -57,6 +64,13 @@ class test_DefaultNFNTokenizer(unittest.TestCase):
         """Test single float"""
         test_string = "/test/data"
         expected_res = [(TokenType.NAME, "/test/data")]
+        tokens = self.tokenizer.tokenize(test_string)
+        self.assertEqual(expected_res, tokens)
+
+    def test_name2(self):
+        """Test single float"""
+        test_string = "/test/data.txt"
+        expected_res = [(TokenType.NAME, "/test/data.txt")]
         tokens = self.tokenizer.tokenize(test_string)
         self.assertEqual(expected_res, tokens)
 
