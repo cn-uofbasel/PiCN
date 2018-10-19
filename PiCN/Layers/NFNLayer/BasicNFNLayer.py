@@ -156,6 +156,31 @@ class BasicNFNLayer(LayerProcess):
         """
         nfn_str, prepended_name = self.parser.network_name_to_nfn_str(interest.name)
         entry = self.computation_table.get_computation(interest.name)
+        try:
+            if entry.ast.type == AST_FuncCall and entry.ast._element == "/ibi/pub":
+                self.logger.info("IBI Message")
+                if len(entry.ast.params) != 2:
+                    self.computation_table.remove_computation(interest.name)
+                    nack = Nack(interest.name, reason=NackReason.COMP_EXCEPTION, interest=interest)
+                    self.queue_to_lower.put([entry.id, nack])
+                    self.logger.info("Need 2 Parameter")
+                    return
+                if not isinstance(entry.ast.params[0], AST_Name) or not isinstance(entry.ast.params[1], AST_String):
+                    self.computation_table.remove_computation(interest.name)
+                    nack = Nack(interest.name, reason=NackReason.COMP_EXCEPTION, interest=interest)
+                    self.queue_to_lower.put([entry.id, nack])
+                    self.logger.info("Need AST_NAME and AST_String as params")
+                    return
+                content = Content(entry.ast.params[0]._element, entry.ast.params[1]._element)
+                self.cs.add_content_object(content, True)
+                self.computation_table.remove_computation(interest.name)
+                self.queue_to_lower.put([entry.id, Content(interest.name, "Content " + str(entry.ast.params[0]) + " added")])
+                self.logger.info("Adding content successful")
+                return
+        except:
+            nack = Nack(interest.name, reason=NackReason.COMP_EXCEPTION, interest=interest)
+            self.queue_to_lower.put([entry.id, nack])
+            return
 
         if self.optimizer.compute_fwd(prepended_name, entry.ast, interest):
             self.logger.info("Forward Computation: " + str(interest.name))

@@ -61,10 +61,6 @@ class NFNForwarder(object):
         pit = synced_data_struct_factory.manager.pit()
         faceidtable = synced_data_struct_factory.manager.faceidtable()
 
-        #add publish function
-        content = Content(Name("/ibi/pub"), """PYTHON\npub\ndef pub(name, content):\n    return add_to_cs(name, content)""")
-        cs.add_content_object(content, True)
-
         #setup chunkifier
         self.chunkifier = SimpleContentChunkifyer()
 

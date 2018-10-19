@@ -39,6 +39,13 @@ class test_DefaultNFNTokenizer(unittest.TestCase):
         tokens = self.tokenizer.tokenize(test_string)
         self.assertEqual(expected_res, tokens)
 
+    def test_string2(self):
+        """Test single string"""
+        test_string = '"/test/string"'
+        expected_res = [(TokenType.STRING, '"/test/string"')]
+        tokens = self.tokenizer.tokenize(test_string)
+        self.assertEqual(expected_res, tokens)
+
     def test_int(self):
         """Test single int"""
         test_string = "-1234"
