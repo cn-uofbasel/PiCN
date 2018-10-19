@@ -178,7 +178,7 @@ class BasicNFNLayer(LayerProcess):
                     self.logger.info("Need AST_NAME and AST_String as params")
                     return
                 content_name = entry.ast.params[0]._element
-                content_blob = entry.ast.params[1]._element.replace("%n", "\n")
+                content_blob = entry.ast.params[1]._element.replace("%n", "\n").replace("%P", "+").replace("%M", "-").replace("%T", "*").replace("%", '"')
                 content = Content(content_name, content_blob)
                 if self.cs.find_content_object(content.name):
                     nack = Nack(interest.name, reason=NackReason.DUPLICATE, interest=interest)
