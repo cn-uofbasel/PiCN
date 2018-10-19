@@ -158,7 +158,7 @@ class BasicNFNLayer(LayerProcess):
         entry = self.computation_table.get_computation(interest.name)
         try:
             if entry.ast.type == AST_FuncCall and entry.ast._element == "/ibi/pub":
-                self.logger.info("IBI Message")
+                self.logger.info("IBI Message: pub")
                 if len(entry.ast.params) != 2:
                     self.computation_table.remove_computation(interest.name)
                     nack = Nack(interest.name, reason=NackReason.COMP_EXCEPTION, interest=interest)
@@ -181,9 +181,37 @@ class BasicNFNLayer(LayerProcess):
                 self.queue_to_lower.put([entry.id, Content(interest.name, "Content " + str(entry.ast.params[0]) + " added")])
                 self.logger.info("Adding content successful")
                 return
-        except:
+            if entry.ast.type == AST_FuncCall and entry.ast._element == "/ibi/dir":
+                self.logger.info("IBI Message: dir")
+                if len(entry.ast.params) != 1:
+                    self.computation_table.remove_computation(interest.name)
+                    nack = Nack(interest.name, reason=NackReason.COMP_EXCEPTION, interest=interest)
+                    self.queue_to_lower.put([entry.id, nack])
+                    self.logger.info("Need 1 Parameter")
+                    return
+                if not isinstance(entry.ast.params[0], AST_Name):
+                    nack = Nack(interest.name, reason=NackReason.COMP_EXCEPTION, interest=interest)
+                    self.computation_table.remove_computation(interest.name)
+                    self.queue_to_lower.put([entry.id, nack])
+                    self.logger.info("Need AST_NAME params")
+                    return
+                content_objects = []
+                prefix = Name(entry.ast.params[0]._element)
+                for c in self.cs.get_container():
+                    print(prefix, str(c.name))
+                    if prefix.is_prefix_of(c.name):
+                        content_objects.append(str(c.name))
+                print("\n".join(content_objects))
+                self.queue_to_lower.put([entry.id, Content(interest.name, "\n".join(content_objects))])
+                self.computation_table.remove_computation(interest.name)
+                self.logger.info("Execute DIR successful")
+                return
+        except Exception as E:
+            self.logger.info("Exception during IBI Message handling")
             nack = Nack(interest.name, reason=NackReason.COMP_EXCEPTION, interest=interest)
+            self.computation_table.remove_computation(interest.name)
             self.queue_to_lower.put([entry.id, nack])
+            print(E)
             return
 
         if self.optimizer.compute_fwd(prepended_name, entry.ast, interest):
