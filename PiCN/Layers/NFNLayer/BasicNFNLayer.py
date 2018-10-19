@@ -198,7 +198,6 @@ class BasicNFNLayer(LayerProcess):
                 content_objects = []
                 prefix = Name(entry.ast.params[0]._element)
                 for c in self.cs.get_container():
-                    print(prefix, str(c.name))
                     if prefix.is_prefix_of(c.name):
                         content_objects.append(str(c.name))
                 print("\n".join(content_objects))

@@ -22,6 +22,10 @@ class ContentStoreMemoryExact(BaseContentStore):
         for c in self._container:
             if content == c.content:
                 return
+        if content.name.string_components[0] == "ibi":
+            return
+        if len(content.name.string_components) > 2 and content.name.string_components[-2].startswith("/ibi"):
+            return
         self._container.append(ContentStoreEntry(content, static=static))
 
     def remove_content_object(self, name: Name):
