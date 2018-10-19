@@ -8,7 +8,7 @@ class test_NFNPythonExecutor(unittest.TestCase):
     """Tests for the NFNPythonExecutor"""
 
     def setUp(self):
-        self.executor = NFNPythonExecutor()
+        self.executor = NFNPythonExecutor(None)
 
     def tearDown(self):
         pass

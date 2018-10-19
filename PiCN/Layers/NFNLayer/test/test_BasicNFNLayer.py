@@ -40,7 +40,7 @@ class test_BasicNFNLayer(unittest.TestCase):
         parser = DefaultNFNParser()
         comp_table = synced_data_struct_factory.manager.computation_table(self.r2cclient, parser)
 
-        self.executor = {"PYTHON": NFNPythonExecutor()}
+        self.executor = {"PYTHON": NFNPythonExecutor(None)}
 
         self.nfn_layer = BasicNFNLayer(cs, fib, pit, faceidtable, comp_table, self.executor, parser, self.r2cclient, log_level=255)
 

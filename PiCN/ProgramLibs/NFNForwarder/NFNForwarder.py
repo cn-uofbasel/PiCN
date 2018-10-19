@@ -27,6 +27,7 @@ from PiCN.Processes import PiCNSyncDataStructFactory
 from PiCN.Layers.LinkLayer import BasicLinkLayer
 from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface, AddressInfo, BaseInterface
 from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
+from PiCN.Packets import Content, Name
 
 class NFNForwarder(object):
     """NFN Forwarder for PICN"""
@@ -60,6 +61,10 @@ class NFNForwarder(object):
         pit = synced_data_struct_factory.manager.pit()
         faceidtable = synced_data_struct_factory.manager.faceidtable()
 
+        #add publish function
+        content = Content(Name("/ibi/pub"), """PYTHON\npub\ndef pub(name, content):\n    return add_to_cs(name, content)""")
+        cs.add_content_object(content, True)
+
         #setup chunkifier
         self.chunkifier = SimpleContentChunkifyer()
 
@@ -79,7 +84,7 @@ class NFNForwarder(object):
 
         # setup nfn
         self.icnlayer._interest_to_app = True
-        self.executors = {"PYTHON": NFNPythonExecutor()}
+        self.executors = {"PYTHON": NFNPythonExecutor(cs)}
         self.parser = DefaultNFNParser()
         self.r2cclient = TimeoutR2CHandler()
         comp_table = synced_data_struct_factory.manager.computation_table(self.r2cclient, self.parser)
@@ -105,6 +110,7 @@ class NFNForwarder(object):
         self.mgmt = Mgmt(self.icnlayer.cs, self.icnlayer.fib, self.icnlayer.pit, self.linklayer,
                          mgmt_port, self.stop_forwarder,
                          log_level=log_level)
+
 
     def start_forwarder(self):
         # start processes

@@ -4,12 +4,15 @@ from typing import List
 from types import FunctionType, CodeType
 
 from PiCN.Layers.NFNLayer.NFNExecutor import BaseNFNExecutor
+from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
+from PiCN.Packets import  Content, Name
 
 class NFNPythonExecutor(BaseNFNExecutor):
 
-    def __init__(self):
+    def __init__(self, cs: BaseContentStore):
         self._language = "PYTHON"
         self._sandbox = self._init_sandbox()
+        self.cs = cs
 
     def execute(self, function_code: str, params: List):
         try:
@@ -91,4 +94,15 @@ class NFNPythonExecutor(BaseNFNExecutor):
             "type": type,
             "zip": zip,
             "None": None,
+            "add_to_cs": self.add_to_cs,
             }
+
+    def add_to_cs(self, name: str, data: str) -> int:
+        name_obj = Name(name)
+        if name_obj is None:
+            return 0
+        content = Content(name_obj, data)
+        if content is None:
+            return 0
+        self.cs.add_content_object(content, True)
+        return 1
