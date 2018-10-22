@@ -3,6 +3,7 @@ import multiprocessing
 import random
 
 from typing import Dict, List
+import base64
 
 from PiCN.Packets import Interest, Content, Nack, NackReason, Name
 from PiCN.Processes import LayerProcess
@@ -178,7 +179,11 @@ class BasicNFNLayer(LayerProcess):
                     self.logger.info("Need AST_NAME and AST_String as params")
                     return
                 content_name = entry.ast.params[0]._element
-                content_blob = entry.ast.params[1]._element.replace("%n", "\n").replace("%P", "+").replace("%M", "-").replace("%T", "*").replace("%", '"')
+                content_blob_b64 = entry.ast.params[1]._element
+                try:
+                   content_blob = base64.b64decode(content_blob_b64)
+                except:
+                    content_blob = content_blob_b64
                 content = Content(content_name, content_blob)
                 if self.cs.find_content_object(content.name):
                     nack = Nack(interest.name, reason=NackReason.DUPLICATE, interest=interest)
