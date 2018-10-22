@@ -34,10 +34,6 @@ def unescape_name(name: Name):
 
 def unescape_str_to_Name(name: str) -> Name:
     r = []
-    name = name.replace("\n", "%n")
-    name = name.replace("+", "%P")
-    name = name.replace("-", "%M")
-    name = name.replace("*", "%T")
     if '[' not in name or ']' not in name:
         return Name(name)
     tmp_comps1 = name.split('[')
