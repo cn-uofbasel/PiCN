@@ -82,7 +82,10 @@ class Fetch(object):
         if timeout == 0:
             packet = self.lstack.queue_to_higher.get()[1]
         else:
-            packet = self.lstack.queue_to_higher.get(timeout=timeout)[1]
+            try:
+                packet = self.lstack.queue_to_higher.get(timeout=timeout)[1]
+            except:
+                return "Timeout when handling the request"
         if isinstance(packet, Content):
             return packet.content
         if isinstance(packet, Nack):
