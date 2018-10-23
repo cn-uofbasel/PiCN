@@ -67,7 +67,7 @@ class Fetch(object):
         # send packet
         self.lstack.start_all()
 
-    def fetch_data(self, name: Name, timeout=4.0) -> str:
+    def fetch_data(self, name: Name, timeout=10.0) -> str:
         """Fetch data from the server
         :param name Name to be fetched
         :param timeout Timeout to wait for a response. Use 0 for infinity
