@@ -2,6 +2,7 @@
 
 from typing import List
 from types import FunctionType, CodeType
+import multiprocessing
 
 from PiCN.Layers.NFNLayer.NFNExecutor import BaseNFNExecutor
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
@@ -36,10 +37,27 @@ class NFNPythonExecutor(BaseNFNExecutor):
                 if lf[1] is None:
                     continue
                 self._sandbox[lf[0]] = lf[1]
-            return entry_point(*params)
-        except:
-            #raise
+
+            #return entry_point(*params)
+
+            out = multiprocessing.Queue()
+
+            p = multiprocessing.Process(target=self.execute_function, args=[entry_point, params, out])
+            p.start()
+            try:
+                res = out.get(timeout=10)
+                return res
+            except:
+                p.terminate()
+        except Exception as E:
+            print(E)
+            raise E
             return None
+
+    def execute_function(self, entry_point, params, out: multiprocessing.Queue):
+        res = entry_point(*params)
+        out.put(res)
+
 
     def _get_entry_function_name(self, function: str) -> (str, str):
         code_parts = function.split('\n', 2)

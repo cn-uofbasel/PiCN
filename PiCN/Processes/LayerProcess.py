@@ -151,7 +151,7 @@ class LayerProcess(PiCNProcess):
                                                                             self._queue_from_higher,
                                                                             self._queue_to_lower,
                                                                             self._queue_to_higher])
-        self.process.daemon = True
+        #self.process.daemon = True
         self.process.start()
 
     def stop_process(self):
