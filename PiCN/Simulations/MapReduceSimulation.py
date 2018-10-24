@@ -178,7 +178,7 @@ class MapReduceSimulation(unittest.TestCase):
         name += '_(/lib/func1("helloworld1"),/lib/func2("helloworld2"),/lib/func3("helloworld3"),/lib/func4("helloworld4"))'
         name += "NFN"
 
-        res = self.fetch_tool1.fetch_data(name, timeout=0)
+        res = self.fetch_tool1.fetch_data(name, timeout=10)
         time.sleep(3)
         print(res)
         self.assertEqual("HELLOWORLD1HELLOWORLD2HELLOWORLD3HELLOWORLD4", res)
@@ -193,7 +193,7 @@ class MapReduceSimulation(unittest.TestCase):
         name += '_(/lib/func1(/repo/r1/data1),/lib/func2(/repo/r2/data2),/lib/func3(/repo/r3/data3),/lib/func4(/repo/r4/data4))'
         name += "NFN"
 
-        res = self.fetch_tool1.fetch_data(name, timeout=0)
+        res = self.fetch_tool1.fetch_data(name, timeout=10)
         time.sleep(3)
         print(res)
         self.assertEqual("DATA1DATA2DATA3DATA4", res)
@@ -208,7 +208,7 @@ class MapReduceSimulation(unittest.TestCase):
         name += '/lib/reduce4(/lib/func1(_),/lib/func2(/repo/r2/data2),/lib/func3(/repo/r3/data3),/lib/func4(/repo/r4/data4))'
         name += "NFN"
 
-        res = self.fetch_tool1.fetch_data(name, timeout=0)
+        res = self.fetch_tool1.fetch_data(name, timeout=10)
         time.sleep(3)
         print(res)
         self.assertEqual("DATA1DATA2DATA3DATA4", res)

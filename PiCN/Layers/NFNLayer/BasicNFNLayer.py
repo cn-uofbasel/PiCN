@@ -332,6 +332,8 @@ class BasicNFNLayer(LayerProcess):
 
         res = executor.execute(function_code=function_code, params=params)
         if res is None:
+            self.computation_table.remove_computation(interest.name)
+            self.computation_table.remove_computation(entry.original_name)
             self.queue_to_lower.put([entry.id,
                                      Nack(entry.original_name, NackReason.COMP_EXCEPTION, interest=entry.interest)])
             return
