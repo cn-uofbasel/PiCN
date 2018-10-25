@@ -45,7 +45,7 @@ class NFNPythonExecutor(BaseNFNExecutor):
             p = multiprocessing.Process(target=self.execute_function, args=[entry_point, params, out])
             p.start()
             try:
-                res = out.get(timeout=10)
+                res = out.get(timeout=3)
                 return res
             except:
                 p.terminate()
