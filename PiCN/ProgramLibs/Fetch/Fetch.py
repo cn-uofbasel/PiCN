@@ -47,7 +47,7 @@ class Fetch(object):
         self.chunklayer = BasicChunkLayer(self.chunkifyer, log_level=log_level)
         self.timeoutpreventionlayer = BasicTimeoutPreventionLayer(timeoutprevention_dict, None, log_level=log_level)
         self.lstack: LayerStack = LayerStack([
-            self.timeoutpreventionlayer,
+            #self.timeoutpreventionlayer,
             self.chunklayer,
             self.packetencodinglayer,
             self.linklayer
