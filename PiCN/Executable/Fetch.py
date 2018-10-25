@@ -20,7 +20,7 @@ def main(args):
     encoder = NdnTlvEncoder() if args.format == 'ndntlv' else SimpleStringEncoder
     fetchTool = Fetch(args.ip, args.port, encoder=encoder, autoconfig=args.autoconfig)
 
-    content = fetchTool.fetch_data(name)
+    content = fetchTool.fetch_data(name, timeout=10)
     print(content)
 
     fetchTool.stop_fetch()
