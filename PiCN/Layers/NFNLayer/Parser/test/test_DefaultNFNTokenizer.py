@@ -10,7 +10,7 @@ class test_DefaultNFNTokenizer(unittest.TestCase):
     """Test the default Tokenizer"""
 
     def setUp(self):
-        self.stringToken = Token(TokenType.STRING, r'"', r'[A-Za-z0-9 .:()= ]', r'"')
+        self.stringToken = Token(TokenType.STRING, r'"', r'[A-Za-z0-9 ,\_\-.:()= ]', r'"')
         self.intToken = Token(TokenType.INT, r'[0-9\+\-]', r'[0-9]', r'[0-9]')
         self.floatToken = Token(TokenType.FLOAT, r'[0-9\+\-]', r'[0-9.Ee]', r'[0-9]')
         self.nameToken = Token(TokenType.NAME, r'/', r'[A-Za-z0-9/.]', r'[A-Za-z0-9]')
@@ -62,8 +62,15 @@ class test_DefaultNFNTokenizer(unittest.TestCase):
 
     def test_string5(self):
         """Test single string"""
-        test_string = '"test.string"'
-        expected_res = [(TokenType.STRING, '"test.string"')]
+        test_string = '"3teststring"'
+        expected_res = [(TokenType.STRING, '"3teststring"')]
+        tokens = self.tokenizer.tokenize(test_string)
+        self.assertEqual(expected_res, tokens)
+
+    def test_string6(self):
+        """Test single string"""
+        test_string = '"test.string, World - go_go"'
+        expected_res = [(TokenType.STRING, '"test.string, World - go_go"')]
         tokens = self.tokenizer.tokenize(test_string)
         self.assertEqual(expected_res, tokens)
 
