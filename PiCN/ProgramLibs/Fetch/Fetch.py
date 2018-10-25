@@ -52,7 +52,7 @@ class Fetch(object):
             self.packetencodinglayer,
             self.linklayer
         ])
-        self.timeoutpreventionlayer.ageing()
+        #self.timeoutpreventionlayer.ageing()
         self.autoconfig = autoconfig
         if autoconfig:
             self.autoconfiglayer: AutoconfigClientLayer = AutoconfigClientLayer(self.linklayer)
