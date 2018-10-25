@@ -163,68 +163,6 @@ class BasicNFNLayer(LayerProcess):
             self.queue_to_lower.put([entry.id, nack])
             self.computation_table.remove_computation(interest.name)
             return
-        try:
-            if entry.ast.type == AST_FuncCall and entry.ast._element == "/ibi/pub":
-                self.logger.info("IBI Message: pub")
-                if len(entry.ast.params) != 2:
-                    self.computation_table.remove_computation(interest.name)
-                    nack = Nack(interest.name, reason=NackReason.COMP_EXCEPTION, interest=interest)
-                    self.queue_to_lower.put([entry.id, nack])
-                    self.logger.info("Need 2 Parameter")
-                    return
-                if not isinstance(entry.ast.params[0], AST_Name) or not isinstance(entry.ast.params[1], AST_String):
-                    self.computation_table.remove_computation(interest.name)
-                    nack = Nack(interest.name, reason=NackReason.COMP_EXCEPTION, interest=interest)
-                    self.queue_to_lower.put([entry.id, nack])
-                    self.logger.info("Need AST_NAME and AST_String as params")
-                    return
-                content_name = entry.ast.params[0]._element
-                content_blob_b64 = entry.ast.params[1]._element
-                try:
-                   content_blob = base64.b64decode(content_blob_b64)
-                except:
-                    content_blob = content_blob_b64
-                content = Content(content_name, content_blob)
-                if self.cs.find_content_object(content.name):
-                    nack = Nack(interest.name, reason=NackReason.DUPLICATE, interest=interest)
-                    self.queue_to_lower.put([entry.id, nack])
-                    self.logger.info("Content already in cache")
-                self.cs.add_content_object(content, True)
-                self.computation_table.remove_computation(interest.name)
-                self.queue_to_lower.put([entry.id, Content(interest.name, "Content " + str(entry.ast.params[0]) + " added")])
-                self.logger.info("Adding content successful")
-                return
-            if entry.ast.type == AST_FuncCall and entry.ast._element == "/ibi/dir":
-                self.logger.info("IBI Message: dir")
-                if len(entry.ast.params) != 1:
-                    self.computation_table.remove_computation(interest.name)
-                    nack = Nack(interest.name, reason=NackReason.COMP_EXCEPTION, interest=interest)
-                    self.queue_to_lower.put([entry.id, nack])
-                    self.logger.info("Need 1 Parameter")
-                    return
-                if not isinstance(entry.ast.params[0], AST_Name):
-                    nack = Nack(interest.name, reason=NackReason.COMP_EXCEPTION, interest=interest)
-                    self.computation_table.remove_computation(interest.name)
-                    self.queue_to_lower.put([entry.id, nack])
-                    self.logger.info("Need AST_NAME params")
-                    return
-                content_objects = []
-                prefix = Name(entry.ast.params[0]._element)
-                for c in self.cs.get_container():
-                    if prefix.is_prefix_of(c.name):
-                        content_objects.append(str(c.name))
-                print("\n".join(content_objects))
-                self.queue_to_lower.put([entry.id, Content(interest.name, "\n".join(content_objects))])
-                self.computation_table.remove_computation(interest.name)
-                self.logger.info("Execute DIR successful")
-                return
-        except Exception as E:
-            self.logger.info("Exception during IBI Message handling")
-            nack = Nack(interest.name, reason=NackReason.COMP_EXCEPTION, interest=interest)
-            self.computation_table.remove_computation(interest.name)
-            self.queue_to_lower.put([entry.id, nack])
-            return
-
         if self.optimizer.compute_fwd(prepended_name, entry.ast, interest):
             self.logger.info("Forward Computation: " + str(interest.name))
             rewritten_names = self.optimizer.rewrite(interest.name, entry.ast)
