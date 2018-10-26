@@ -78,4 +78,4 @@ class PendingInterstTableMemoryExact(BasePendingInterestTable):
         for pit_entry in updated:
             self.remove_pit_entry(pit_entry.name)
             self.container.append(pit_entry)
-        return updated
+        return updated, remove

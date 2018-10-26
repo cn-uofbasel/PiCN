@@ -193,7 +193,7 @@ class BasicICNLayer(LayerProcess):
         try:
             self.logger.debug("Ageing")
             #PIT ageing
-            retransmits = self.pit.ageing()
+            retransmits, removed_pit_entries = self.pit.ageing()
             for pit_entry in retransmits:
                 fib_entry = self.fib.find_fib_entry(pit_entry.name, pit_entry.fib_entries_already_used, pit_entry.faceids)
                 if not fib_entry:
@@ -201,6 +201,15 @@ class BasicICNLayer(LayerProcess):
                 for fid in fib_entry.faceid:
                     if not self.pit.test_faceid_was_nacked(pit_entry.name, fid):
                         self.queue_to_lower.put([fid, pit_entry.interest])
+            for pit_entry in removed_pit_entries:
+                if not pit_entry:
+                    continue
+                for fid in pit_entry.faceid:
+                    nack = Nack(pit_entry.name, NackReason.NO_CONTENT, pit_entry.interest)
+                    if pit_entry.local_app:
+                        self.queue_to_higher.put([fid, nack])
+                    else:
+                        self.queue_to_lower.put([fid, nack])
             #CS ageing
             self.cs.ageing()
         except Exception as e:

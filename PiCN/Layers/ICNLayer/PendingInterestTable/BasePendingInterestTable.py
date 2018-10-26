@@ -135,9 +135,9 @@ class BasePendingInterestTable(BaseICNDataStruct):
         """Add a used fib entry to the already used fib entries"""
 
     @abc.abstractmethod
-    def ageing(self) -> List[PendingInterestTableEntry]:
+    def ageing(self) -> (List[PendingInterestTableEntry], List[PendingInterestTableEntry]):
         """Update the entries periodically
-        :return List of PIT entries to be retransmitted
+        :return List of PIT entries to be retransmitted and a list of the removed entries
         """
 
     @abc.abstractmethod
