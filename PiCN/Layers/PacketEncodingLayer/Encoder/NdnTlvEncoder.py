@@ -27,6 +27,7 @@ class NdnTlvEncoder(BasicEncoder):
     """
 
     __nack_reason_values = {
+        NackReason.NOT_SET: 0,                   # extension NDNLPv2 compatible
         NackReason.CONGESTION: 50,                  # NDNLPv2 compatible
         NackReason.DUPLICATE: 100,                  # NDNLPv2 compatible
         NackReason.NO_ROUTE: 150,                   # NDNLPv2 compatible
@@ -36,11 +37,13 @@ class NdnTlvEncoder(BasicEncoder):
         NackReason.COMP_EXCEPTION: 163,             # extension: does not exist in NDNLPv2
         NackReason.COMP_TERMINATED: 164,            # extension: does not exist in NDNLPv2
         NackReason.COMP_NOT_RUNNING: 165,           # extension: does not exist in NDNLPv2
-        NackReason.COMP_NOT_PARSED: 166            # extension: does not exist in NDNLPv2
+        NackReason.COMP_NOT_PARSED: 166,            # extension: does not exist in NDNLPv2
+        NackReason.PIT_TIMEOUT: 167,                # extension: does not exist in NDNLPv2
     }
     """Mapping of NackReason Enum to wire format values"""
 
     __nack_reason_enum = {
+          0: NackReason.NOT_SET,                    # extension: does not exist in NDNLPv2
          50: NackReason.CONGESTION,                 # NDNLPv2 compatible
         100: NackReason.DUPLICATE,                  # NDNLPv2 compatible
         150: NackReason.NO_ROUTE,                   # NDNLPv2 compatible
@@ -49,8 +52,9 @@ class NdnTlvEncoder(BasicEncoder):
         162: NackReason.COMP_PARAM_UNAVAILABLE,     # extension: does not exist in NDNLPv2
         163: NackReason.COMP_EXCEPTION,             # extension: does not exist in NDNLPv2
         164: NackReason.COMP_TERMINATED,            # extension: does not exist in NDNLPv2
-        164: NackReason.COMP_NOT_RUNNING,           # extension: does not exist in NDNLPv2
-        165: NackReason.COMP_NOT_PARSED             # extension: does not exist in NDNLPv2
+        165: NackReason.COMP_NOT_RUNNING,           # extension: does not exist in NDNLPv2
+        166: NackReason.COMP_NOT_PARSED,            # extension: does not exist in NDNLPv2
+        167: NackReason.PIT_TIMEOUT,                # extension: does not exist in NDNLPv2
     }
     """Mapping of wire format nack reasons to NackReason Enum"""
 

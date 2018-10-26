@@ -44,6 +44,11 @@ class NackReason(Enum):
     Semantics: todo
     """
 
+    PIT_TIMEOUT = "pit timeout occured during forwarding"
+    """
+    Semantics: Occurs if there is a oit timeout during the forwarding process 
+    """
+
     COMP_QUEUE_FULL = "no resources to perform computation"
     """
     Semantics: Can only be replied by nodes generating on-demand content (like a NFN computation node).

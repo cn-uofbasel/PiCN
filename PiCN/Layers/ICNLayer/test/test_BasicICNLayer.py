@@ -317,6 +317,8 @@ class test_BasicICNLayer(unittest.TestCase):
 
         # test remove pit entry
         self.icn_layer.ageing()
+        nack = self.icn_layer.queue_to_lower.get(timeout=2.0)
+        self.assertEqual(nack, [1, Nack(rinterest.name, NackReason.PIT_TIMEOUT, rinterest)])
         self.assertTrue(self.icn_layer.queue_to_lower.empty())
         self.assertEqual(self.icn_layer.pit.get_container_size(), 0)
 
@@ -670,3 +672,67 @@ class test_BasicICNLayer(unittest.TestCase):
         self.icn_layer.queue_from_lower.put([2, n1])
         d4 = self.icn_layer.queue_to_lower.get(timeout=2.0)
         self.assertEqual([1, n1], d4)
+
+    def test_nack_after_pit_timeout(self):
+        i1 = Interest("/test/data")
+        n1 = Nack(i1.name, NackReason.PIT_TIMEOUT, i1)
+
+        self.icn_layer.fib.add_fib_entry(Name("/test"), [3,7])
+
+        self.icn_layer.start_process()
+        self.icn_layer.ageing()
+
+        self.icn_layer.queue_from_lower.put([1, i1])
+
+        r1 = self.icn_layer._queue_to_lower.get(timeout=8)
+        self.assertEqual(r1, [3, i1])
+        r2 = self.icn_layer._queue_to_lower.get(timeout=8)
+        self.assertEqual(r2, [7, i1])
+        r1 = self.icn_layer._queue_to_lower.get(timeout=8)
+        self.assertEqual(r1, [3, i1])
+        r2 = self.icn_layer._queue_to_lower.get(timeout=8)
+        self.assertEqual(r2, [7, i1])
+        r1 = self.icn_layer._queue_to_lower.get(timeout=8)
+        self.assertEqual(r1, [3, i1])
+        r2 = self.icn_layer._queue_to_lower.get(timeout=8)
+        self.assertEqual(r2, [7, i1])
+        r1 = self.icn_layer._queue_to_lower.get(timeout=8)
+        self.assertEqual(r1, [3, i1])
+        r2 = self.icn_layer._queue_to_lower.get(timeout=8)
+        self.assertEqual(r2, [7, i1])
+
+        nack = self.icn_layer._queue_to_lower.get(timeout=8)
+        self.assertEqual(nack, [1, n1])
+
+    def test_nack_after_pit_timeout_local_app(self):
+        i1 = Interest("/test/data")
+        n1 = Nack(i1.name, NackReason.PIT_TIMEOUT, i1)
+
+        self.icn_layer.fib.add_fib_entry(Name("/test"), [3,7])
+        self.icn_layer.queue_from_higher = multiprocessing.Queue()
+        self.icn_layer.queue_to_higher = multiprocessing.Queue()
+
+        self.icn_layer.start_process()
+        self.icn_layer.ageing()
+
+        self.icn_layer.queue_from_higher.put([1, i1])
+
+        r1 = self.icn_layer._queue_to_lower.get(timeout=8)
+        self.assertEqual(r1, [3, i1])
+        r2 = self.icn_layer._queue_to_lower.get(timeout=8)
+        self.assertEqual(r2, [7, i1])
+        r1 = self.icn_layer._queue_to_lower.get(timeout=8)
+        self.assertEqual(r1, [3, i1])
+        r2 = self.icn_layer._queue_to_lower.get(timeout=8)
+        self.assertEqual(r2, [7, i1])
+        r1 = self.icn_layer._queue_to_lower.get(timeout=8)
+        self.assertEqual(r1, [3, i1])
+        r2 = self.icn_layer._queue_to_lower.get(timeout=8)
+        self.assertEqual(r2, [7, i1])
+        r1 = self.icn_layer._queue_to_lower.get(timeout=8)
+        self.assertEqual(r1, [3, i1])
+        r2 = self.icn_layer._queue_to_lower.get(timeout=8)
+        self.assertEqual(r2, [7, i1])
+
+        nack = self.icn_layer._queue_to_higher.get(timeout=8)
+        self.assertEqual(nack, [1, n1])

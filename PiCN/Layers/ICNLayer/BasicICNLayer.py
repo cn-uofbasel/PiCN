@@ -204,9 +204,10 @@ class BasicICNLayer(LayerProcess):
             for pit_entry in removed_pit_entries:
                 if not pit_entry:
                     continue
-                for fid in pit_entry.faceid:
-                    nack = Nack(pit_entry.name, NackReason.NO_CONTENT, pit_entry.interest)
-                    if pit_entry.local_app:
+
+                for fid, local_app in zip(pit_entry.faceids, pit_entry.local_app):
+                    nack = Nack(pit_entry.name, NackReason.PIT_TIMEOUT, pit_entry.interest)
+                    if local_app is True:
                         self.queue_to_higher.put([fid, nack])
                     else:
                         self.queue_to_lower.put([fid, nack])
