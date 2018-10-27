@@ -74,9 +74,12 @@ class BasicICNLayer(LayerProcess):
         if fib_entry is not None:
             self.pit.set_number_of_forwards(interest.name, 0)
             for fid in fib_entry.faceid:
-                if self.pit is not None and not self.pit.test_faceid_was_nacked(interest.name, fid):
-                    self.pit.increase_number_of_forwards(interest.name)
-                    to_lower.put([fid, interest])
+                try:
+                    if not self.pit.test_faceid_was_nacked(interest.name, fid):
+                        self.pit.increase_number_of_forwards(interest.name)
+                        to_lower.put([fid, interest])
+                except:
+                    pass
         else:
             self.logger.info("No FIB entry, sending Nack: " + str(interest.name))
             nack = Nack(interest.name, NackReason.NO_ROUTE, interest=interest)
