@@ -106,7 +106,7 @@ class TimeoutPreventionSimulation(unittest.TestCase):
         print(res)
 
 
-    def test_timeout_prevention_if_no_comp_no_data(self):
+    def test_timeout_prevention_if_no_comp_no_data_fwd(self):
         """Simple test to see if timeout prevention works if no computation is available and no data are replied"""
         self.setup_faces_and_connections()
 
