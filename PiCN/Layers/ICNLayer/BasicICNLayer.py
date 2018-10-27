@@ -153,7 +153,7 @@ class BasicICNLayer(LayerProcess):
         else:
             self.pit.add_nacked_faceid(nack.name, face_id)
             if cur_pit_entry.number_of_forwards > 1:
-                self.logger.info("Ignoring Nack from FaceID " + str(face_id) + "for " + str(nack.name) + "since other faces (" + str(cur_pit_entry.number_of_forwards) + ") are still active")
+                self.logger.info("Ignoring Nack from FaceID " + str(face_id) + " for " + str(nack.name) + " since other faces (" + str(cur_pit_entry.number_of_forwards) + ") are still active")
                 self.pit.decrease_number_of_forwards(nack.name)
                 return
             self.pit.set_number_of_forwards(nack.name, 0)
