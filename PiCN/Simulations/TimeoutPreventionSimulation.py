@@ -37,7 +37,7 @@ class TimeoutPreventionSimulation(unittest.TestCase):
         self.fetch_tool1 = Fetch("nfn1", None, 255, self.encoder_type(), interfaces=[self.simulation_bus.add_interface("fetchtool1")])
 
         self.nfn1 = NFNForwarder(port=0, encoder=self.encoder_type(),
-                                 interfaces=[self.simulation_bus.add_interface("nfn1")], log_level=0, ageing_interval=1)
+                                 interfaces=[self.simulation_bus.add_interface("nfn1")], log_level=255, ageing_interval=1)
         self.nfn2 = NFNForwarder(port=0, encoder=self.encoder_type(),
                                  interfaces=[self.simulation_bus.add_interface("nfn2")], log_level=255, ageing_interval=1)
 
