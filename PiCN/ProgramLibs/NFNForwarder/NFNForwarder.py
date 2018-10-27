@@ -86,7 +86,7 @@ class NFNForwarder(object):
         self.nfnlayer = BasicNFNLayer(cs, fib, pit, faceidtable, comp_table, self.executors, self.parser, self.r2cclient, log_level=log_level)
 
         timeoutprevention_dict = synced_data_struct_factory.manager.timeoutprevention_dict()
-        self.timeoutpreventionlayer = BasicTimeoutPreventionLayer(timeoutprevention_dict, comp_table, log_level=log_level)
+        self.timeoutpreventionlayer = BasicTimeoutPreventionLayer(timeoutprevention_dict, comp_table, pit, log_level=log_level)
 
         self.lstack: LayerStack = LayerStack([
             self.nfnlayer,

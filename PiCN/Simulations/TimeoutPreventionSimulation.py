@@ -37,9 +37,11 @@ class TimeoutPreventionSimulation(unittest.TestCase):
         self.fetch_tool1 = Fetch("nfn1", None, 255, self.encoder_type(), interfaces=[self.simulation_bus.add_interface("fetchtool1")])
 
         self.nfn1 = NFNForwarder(port=0, encoder=self.encoder_type(),
-                                 interfaces=[self.simulation_bus.add_interface("nfn1")], log_level=255, ageing_interval=1)
+                                 interfaces=[self.simulation_bus.add_interface("nfn1")], log_level=0, ageing_interval=1)
         self.nfn2 = NFNForwarder(port=0, encoder=self.encoder_type(),
                                  interfaces=[self.simulation_bus.add_interface("nfn2")], log_level=255, ageing_interval=1)
+
+        self.simulation_bus.add_interface("deadend")
 
 
         self.nfn1.icnlayer.pit.set_pit_timeout(0)
@@ -91,12 +93,29 @@ class TimeoutPreventionSimulation(unittest.TestCase):
         print(res)
 
     def test_timeout_prevention_if_no_comp(self):
-        """Simple test to see if timeout prevention works if no computation is available"""
+        """Simple test to see if timeout prevention works if no computation is available and no fwd rule"""
         self.setup_faces_and_connections()
 
         name = Name("/lib/func/f2")
         name += '_("helloworld")'
         name += "NFN"
+
+        res = self.fetch_tool1.fetch_data(name, timeout=0)
+        self.assertEqual("Received Nack: one or many input data (function or data) is unavailable", res)
+        time.sleep(3)
+        print(res)
+
+
+    def test_timeout_prevention_if_no_comp_no_data(self):
+        """Simple test to see if timeout prevention works if no computation is available and no data are replied"""
+        self.setup_faces_and_connections()
+
+        name = Name("/lib/func/f2")
+        name += '_("helloworld")'
+        name += "NFN"
+
+        self.mgmt_client2.add_face("deadend", None, 0)
+        self.mgmt_client2.add_forwarding_rule(Name("/lib"), [0])
 
         res = self.fetch_tool1.fetch_data(name, timeout=0)
         self.assertEqual("Received Nack: one or many input data (function or data) is unavailable", res)

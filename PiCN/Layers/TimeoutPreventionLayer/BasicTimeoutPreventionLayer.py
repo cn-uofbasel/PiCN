@@ -9,6 +9,7 @@ from typing import Dict
 from PiCN.Processes import LayerProcess
 from PiCN.Packets import Interest, Content, Nack, NackReason, Name
 from PiCN.Layers.NFNLayer.NFNComputationTable import BaseNFNComputationTable
+from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
 
 class TimeoutPreventionMessageDict(object):
     """Datastructure, that contains R2C messages and the matching handlers"""
@@ -71,13 +72,15 @@ class BasicTimeoutPreventionLayer(LayerProcess):
     """BasicR2CLayer maintains a list of messages for which R2C messages should be sent.
     Moreover, it contains handler for incomming R2C messages"""
 
-    def __init__(self, message_dict: TimeoutPreventionMessageDict, nfn_comp_table: BaseNFNComputationTable, log_level = 255):
+    def __init__(self, message_dict: TimeoutPreventionMessageDict, nfn_comp_table: BaseNFNComputationTable,
+                 pit: BasePendingInterestTable=None, log_level=255):
         super().__init__("TimeoutPrev", log_level)
         self.timeout_interval = 2
         self.ageing_interval = 1
         self.message_dict = message_dict
         self.computation_table = nfn_comp_table
         self.running_computations = [] #todo, this field is required because computation table does not sync fast enough. is this correct, fix BaseMangager access.
+        self.pit = pit
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         packet_id = data[0]
@@ -173,6 +176,8 @@ class BasicTimeoutPreventionLayer(LayerProcess):
                         self.queue_to_lower.put([entry.packetid, Interest(name=name)])
             for n in removes:
                 self.message_dict.remove_entry(n)
+                if self.pit is not None:
+                    self.pit.remove_pit_entry(n)
         except Exception as e:
             self.logger.warning("Exception during ageing: " + str(e))
             return

@@ -72,6 +72,7 @@ class BasicICNLayer(LayerProcess):
         else:
             fib_entry = self.fib.find_fib_entry(interest.name)
         if fib_entry is not None:
+            self.pit.set_number_of_forwards(interest.name, 0)
             for fid in fib_entry.faceid:
                 if not self.pit.test_faceid_was_nacked(interest.name, fid):
                     self.pit.increase_number_of_forwards(interest.name)
@@ -204,13 +205,6 @@ class BasicICNLayer(LayerProcess):
             for pit_entry in removed_pit_entries:
                 if not pit_entry:
                     continue
-
-                for fid, local_app in zip(pit_entry.faceids, pit_entry.local_app):
-                    nack = Nack(pit_entry.name, NackReason.PIT_TIMEOUT, pit_entry.interest)
-                    if local_app is True:
-                        self.queue_to_higher.put([fid, nack])
-                    else:
-                        self.queue_to_lower.put([fid, nack])
             #CS ageing
             self.cs.ageing()
         except Exception as e:
