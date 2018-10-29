@@ -132,13 +132,13 @@ picn-mgmt --port 9001 newcontent "/data/obj1:World"
 Now we are ready to run a Named Function as described above:
 ```console
 picn-fetch 127.0.0.1 9000 '/func/combine/_("Hello",%2Fdata%2Fobj1)/NFN'
-or
+   or
 picn-fetch 127.0.0.1 9000 '/func/combine/[_("Hello",/data/obj1)]/NFN'
 ``` 
 or 
 ```console
 picn-fetch 127.0.0.1 9000 '/data/obj1/%2Ffunc%2Fcombine("Hello",_)/NFN'
-or
+   or
 picn-fetch 127.0.0.1 9000 '/data/obj1/[/func/combine("Hello",_)]/NFN'
 ``` 
 It does not matter which name of both is chosen, since the network will decide where to compute. 
