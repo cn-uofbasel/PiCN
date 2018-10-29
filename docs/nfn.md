@@ -45,6 +45,21 @@ For example, in data centers it is often useful to forward an interest towards t
 
 In NFN a parameter can be a NFN expression, too. Therefore, NFN supports **function chaining**.
 
+Note: The fetch tool supports an alternativ way to encode an interest message, which is easyer to read and write. Instead
+of escaping the "/" we can put the NFN expressions within "[" <nfn-expression> "]":
+
+Thus, when forwarding to **/func/combine** the interest is encoded as:
+
+```console
+/func/combine/[_("Hello",/data/obj1)]/NFN
+```
+
+And, when forwarding to **/data/obj1** the interest is encoded as:
+
+```console
+/data/obj1/[/func/combine("Hello",_)]/NFN
+```
+
 ## Encoding a Named Function in a Content Object
 
 A Named Function contains the actual code to be executed. Popular Named Functions may be available on many content stores.
@@ -112,19 +127,23 @@ and we add a data object to the second node:
 
 ```console
 picn-mgmt --port 9001 newcontent "/data/obj1:World"
-"
 ```
 
 Now we are ready to run a Named Function as described above:
 ```console
 picn-fetch 127.0.0.1 9000 '/func/combine/_("Hello",%2Fdata%2Fobj1)/NFN'
+or
+picn-fetch 127.0.0.1 9000 '/func/combine/[_("Hello",/data/obj1)]/NFN'
 ``` 
 or 
 ```console
-picn-fetch 127.0.0.1 9000 '/data/obj1/%2Ffunc%2Fcombine("Hello",_)/NFN
+picn-fetch 127.0.0.1 9000 '/data/obj1/%2Ffunc%2Fcombine("Hello",_)/NFN'
+or
+picn-fetch 127.0.0.1 9000 '/data/obj1/[/func/combine("Hello",_)]/NFN'
 ``` 
 It does not matter which name of both is chosen, since the network will decide where to compute. 
 The name prepended for the user is only meaningful for the first hop. 
+
 
 In both cases the result will be: **HelloWorld**. 
 

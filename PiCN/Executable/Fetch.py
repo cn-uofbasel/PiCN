@@ -11,11 +11,14 @@ from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 
 
 def main(args):
-    name = Name(args.name)
-    #name = unescape_str_to_Name(args.name)
-    name.format = args.format
-    name = unescape_name(name)
+    name_str = args.name
 
+    if '[' in name_str and ']' in name_str:
+        name = unescape_str_to_Name(args.name)
+    else:
+        name = Name(args.name)
+        name = unescape_name(name)
+    name.format = args.format
 
     encoder = NdnTlvEncoder() if args.format == 'ndntlv' else SimpleStringEncoder
     fetchTool = Fetch(args.ip, args.port, encoder=encoder, autoconfig=args.autoconfig)

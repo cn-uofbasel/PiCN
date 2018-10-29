@@ -37,3 +37,10 @@ name += "NFN"
 
 res = fetch_tool.fetch_data(name, timeout=20)
 print(res)
+
+nfn_fwd0.stop_forwarder()
+nfn_fwd1.stop_forwarder()
+fetch_tool.stop_fetch()
+simulation_bus.stop_process()
+mgmt_client0.shutdown()
+mgmt_client1.shutdown()
