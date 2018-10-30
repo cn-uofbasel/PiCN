@@ -83,8 +83,12 @@ class BasicThunkLayer(LayerProcess):
     def handleContent(self, id: int, content: Content):
         pass
 
+        #TODO check if content is required
+        #TODO find cheapest cost, cache plans (all required? how to find out if all are available)
+
     def handleNack(self, id: int, nack: Nack):
         pass
+        #TODO Remove from required table
 
     def get_data_size(self, name: Name) -> int:
         cs_entry = self.cs.find_content_object(name) #if content is available local in CS, use it

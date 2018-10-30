@@ -40,13 +40,14 @@ def main(args):
 
     # Generate interest packet
     name_str = args.name
+    name_str = name_str.replace(", ", ",")
     if args.code is not None and "#" in name_str:
         try:
             f_content = read_content(args.code)
         except:
             print("Could not open file!")
             return
-        base64_content = '"' + base64.b64encode(f_content.encode()).decode() + '"'
+        base64_content = '"BASE64:' + base64.b64encode(f_content.encode()).decode() + '"'
         name_str = name_str.replace('#', base64_content)
     name = unescape_str_to_Name(name_str)
 
