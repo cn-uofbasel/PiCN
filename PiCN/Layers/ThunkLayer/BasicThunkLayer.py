@@ -69,21 +69,27 @@ class BasicThunkLayer(LayerProcess):
 
         self.running_computations.add_entry_to_thunk_table(name, id, thunk_names) #Create new computation
         for tn in thunk_names:
-            data_size = self.get_data_size(tn)
+            data_size = self.get_data_size(self.removeThunkMarker(tn))
             if data_size is not None:
                 content = Content(interest.name, "DataSize:" + str(data_size))
                 self.running_computations.add_estimated_cost_to_awaiting_data(name, data_size) #if data local -> set cost
-                return
+                continue
             interest = Interest(tn)
             self.queue_to_lower.put([id, interest])
 
-        #TODO check if all costs are satified. if yes reply to main request
-        #TODO find cheapest cost, cache plans
+        if self.all_data_available(interest.name):
+            self.compute_cost() #TODO
+            #TODO check if all costs are satified. if yes reply to main request
+            #TODO find cheapest cost, cache plans
 
     def handleContent(self, id: int, content: Content):
+        #check if content is required if yes add to list, otherwise directly to upper
+        #check if all data are available after adding the content.
+
         pass
 
     def handleNack(self, id: int, nack: Nack):
+        #if in chunklist, remove the entry
         pass
 
     def get_data_size(self, name: Name) -> int:
@@ -118,8 +124,10 @@ class BasicThunkLayer(LayerProcess):
         ret.components[-2] = b"THUNK"
         return ret
 
-    def generatePossibleThunkNames(self, ast: AST, res: List = []) -> List:
+    def generatePossibleThunkNames(self, ast: AST, res: List = None) -> List:
         """Generate names that can be used for the planning"""
+        if res == None:
+            res = []
         if isinstance(ast, AST_FuncCall):
             name_list = self.optimizer._get_names_from_ast(ast)
             function_list = self.optimizer._get_functions_from_ast(ast)
@@ -144,3 +152,22 @@ class BasicThunkLayer(LayerProcess):
             return [ast._element]
         else:
             return res
+
+    def all_data_available(self, name: Name) -> bool:
+        """Check if all dependencies for a name are available
+        :returns True if all dependencies are available
+        :returns False if there are dependencies missing
+        ":returns None: if name is not in list
+        """
+        e = self.running_computations.get_entry_from_name(name)
+        if e is None:
+            return None
+
+        for d in e.awaiting_data:
+            if e.awaiting_data[d] is None:
+                return False
+        return True
+
+    def compute_cost(self):
+        pass
+

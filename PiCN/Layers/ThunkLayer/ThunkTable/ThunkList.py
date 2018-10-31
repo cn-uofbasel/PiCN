@@ -16,7 +16,7 @@ class ThunkList(BaseThunkTable):
         """Add a new entry to the thunktable"""
         self.container.append(ThunkTableEntry(name, id, awaiting_data))
 
-    def get_entry_from_name(self, name: Name):
+    def get_entry_from_name(self, name: Name) -> ThunkTableEntry:
         """Get an entry given the name"""
         for e in self.container:
             if e.name == name:

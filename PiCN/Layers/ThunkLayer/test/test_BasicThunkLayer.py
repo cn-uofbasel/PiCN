@@ -11,6 +11,7 @@ from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseMemoryPrefix
 from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
 from PiCN.Layers.NFNLayer.Parser import *
+from PiCN.Layers.ThunkLayer.ThunkTable import ThunkList
 
 class test_BasicThunkLayer(unittest.TestCase):
     """Tests for the BasicThunkLayer"""
@@ -22,9 +23,14 @@ class test_BasicThunkLayer(unittest.TestCase):
         self.faceidtable = FaceIDDict()
         self.parser = DefaultNFNParser()
         self.thunklayer = BasicThunkLayer(self.cs, self.fib, self.pit, self.faceidtable, self.parser)
+        self.thunklayer.running_computations = ThunkList()
+
+        self.thunklayer.start_process()
 
     def tearDown(self):
-        pass
+        for e in self.thunklayer.running_computations.container:
+            self.thunklayer.running_computations.remove_entry_from_thunk_table(e.name)
+        self.thunklayer.parser = BasicThunkLayer(self.cs, self.fib, self.pit, self.faceidtable, self.parser)
 
     def test_remove_thunk_marker(self):
         """Test if the system removes the thunk marker correctly"""
@@ -65,4 +71,81 @@ class test_BasicThunkLayer(unittest.TestCase):
                         '%/func/f1%(/func/f2(/test/data/d1),/func/f3(/test/data/d2))', '/func/f1(%/func/f2%(/test/data/d1),/func/f3(/test/data/d2))',
                         '/func/f2(%/test/data/d1%)', '%/func/f2%(/test/data/d1)', '/test/data/d1', '/func/f3(%/test/data/d2%)', '/test/data/d2']
 
+        #self.assertEqual(len(name_list), len(compare_list))
         self.assertEqual(name_list, compare_list)
+
+
+
+    def test_if_data_available_when_name_not_in_list(self):
+        """Test if all_data_available returns None if name does not exist"""
+        self.fib.add_fib_entry(Name("/func/f1"), [1])
+
+        comp_str = "/fct/f1(/dat/data/d1)"
+        name = Name("/fct/f1")
+        name += "_(/dat/data/d1)"
+        name += "NFN"
+
+        ast = self.parser.parse(comp_str)
+        name_list = self.thunklayer.generatePossibleThunkNames(ast)
+
+        self.thunklayer.running_computations.add_entry_to_thunk_table(name, 1, name_list)
+
+        res = self.thunklayer.all_data_available(Name("/test/data2"))
+        self.assertIsNone(res)
+
+    def test_if_data_available_when_one_data_available_not_all(self):
+        """Test if all_data_available returns False if not all data cost are available"""
+        self.fib.add_fib_entry(Name("/func/f1"), [1])
+
+        comp_str = "/fct/f1(/dat/data/d1)"
+        name = Name("/fct/f1")
+        name += "_(/dat/data/d1)"
+        name += "NFN"
+
+        ast = self.parser.parse(comp_str)
+        name_list = self.thunklayer.generatePossibleThunkNames(ast)
+
+        self.thunklayer.running_computations.add_entry_to_thunk_table(name, 1, name_list)
+
+        self.thunklayer.running_computations.add_estimated_cost_to_awaiting_data(name_list[1], 3)
+
+        res = self.thunklayer.all_data_available(name)
+        self.assertFalse(res)
+
+    def test_if_data_available_when_one_data_available_not_all(self):
+        """Test if all_data_available returns False if no data cost are available"""
+        self.fib.add_fib_entry(Name("/func/f1"), [1])
+
+        comp_str = "/fct/f1(/dat/data/d1)"
+        name = Name("/fct/f1")
+        name += "_(/dat/data/d1)"
+        name += "NFN"
+
+        ast = self.parser.parse(comp_str)
+        name_list = self.thunklayer.generatePossibleThunkNames(ast)
+
+        self.thunklayer.running_computations.add_entry_to_thunk_table(name, 1, name_list)
+
+        res = self.thunklayer.all_data_available(name)
+        self.assertFalse(res)
+
+
+    def test_data_available_when_all_available(self):
+        """Test if all_data_available returns None if name does not exist"""
+        self.fib.add_fib_entry(Name("/func/f1"), [1])
+
+        comp_str = "/fct/f1(/dat/data/d1)"
+        name = Name("/fct/f1")
+        name += "_(/dat/data/d1)"
+        name += "NFN"
+
+        ast = self.parser.parse(comp_str)
+        name_list = self.thunklayer.generatePossibleThunkNames(ast)
+
+        self.thunklayer.running_computations.add_entry_to_thunk_table(name, 1, name_list)
+
+        for n in name_list:
+            self.thunklayer.running_computations.add_estimated_cost_to_awaiting_data(n, 3)
+
+        res = self.thunklayer.all_data_available(name)
+        self.assertTrue(res)
