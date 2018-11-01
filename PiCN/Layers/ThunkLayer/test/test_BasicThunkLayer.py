@@ -23,13 +23,13 @@ class test_BasicThunkLayer(unittest.TestCase):
         self.faceidtable = FaceIDDict()
         self.parser = DefaultNFNParser()
         self.thunklayer = BasicThunkLayer(self.cs, self.fib, self.pit, self.faceidtable, self.parser)
-        self.thunklayer.running_computations = ThunkList()
+        self.thunklayer.active_thunk_table = ThunkList()
 
         self.thunklayer.start_process()
 
     def tearDown(self):
-        for e in self.thunklayer.running_computations.container:
-            self.thunklayer.running_computations.remove_entry_from_thunk_table(e.name)
+        for e in self.thunklayer.active_thunk_table.container:
+            self.thunklayer.active_thunk_table.remove_entry_from_thunk_table(e.name)
         self.thunklayer.parser = BasicThunkLayer(self.cs, self.fib, self.pit, self.faceidtable, self.parser)
 
     def test_remove_thunk_marker(self):
@@ -88,7 +88,7 @@ class test_BasicThunkLayer(unittest.TestCase):
         ast = self.parser.parse(comp_str)
         name_list = self.thunklayer.generatePossibleThunkNames(ast)
 
-        self.thunklayer.running_computations.add_entry_to_thunk_table(name, 1, name_list)
+        self.thunklayer.active_thunk_table.add_entry_to_thunk_table(name, 1, name_list)
 
         res = self.thunklayer.all_data_available(Name("/test/data2"))
         self.assertIsNone(res)
@@ -105,9 +105,9 @@ class test_BasicThunkLayer(unittest.TestCase):
         ast = self.parser.parse(comp_str)
         name_list = self.thunklayer.generatePossibleThunkNames(ast)
 
-        self.thunklayer.running_computations.add_entry_to_thunk_table(name, 1, name_list)
+        self.thunklayer.active_thunk_table.add_entry_to_thunk_table(name, 1, name_list)
 
-        self.thunklayer.running_computations.add_estimated_cost_to_awaiting_data(name_list[1], 3)
+        self.thunklayer.active_thunk_table.add_estimated_cost_to_awaiting_data(name_list[1], 3)
 
         res = self.thunklayer.all_data_available(name)
         self.assertFalse(res)
@@ -124,7 +124,7 @@ class test_BasicThunkLayer(unittest.TestCase):
         ast = self.parser.parse(comp_str)
         name_list = self.thunklayer.generatePossibleThunkNames(ast)
 
-        self.thunklayer.running_computations.add_entry_to_thunk_table(name, 1, name_list)
+        self.thunklayer.active_thunk_table.add_entry_to_thunk_table(name, 1, name_list)
 
         res = self.thunklayer.all_data_available(name)
         self.assertFalse(res)
@@ -142,10 +142,10 @@ class test_BasicThunkLayer(unittest.TestCase):
         ast = self.parser.parse(comp_str)
         name_list = self.thunklayer.generatePossibleThunkNames(ast)
 
-        self.thunklayer.running_computations.add_entry_to_thunk_table(name, 1, name_list)
+        self.thunklayer.active_thunk_table.add_entry_to_thunk_table(name, 1, name_list)
 
         for n in name_list:
-            self.thunklayer.running_computations.add_estimated_cost_to_awaiting_data(n, 3)
+            self.thunklayer.active_thunk_table.add_estimated_cost_to_awaiting_data(n, 3)
 
         res = self.thunklayer.all_data_available(name)
         self.assertTrue(res)

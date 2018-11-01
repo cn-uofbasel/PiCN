@@ -27,7 +27,7 @@ class BasicThunkLayer(LayerProcess):
         self.parser = parser
         self.optimizer = BaseNFNOptimizer(self.cs, self.fib, self.pit, self.faceidtable)
         self.repo = repo
-        self.running_computations = ThunkList()
+        self.active_thunk_table = ThunkList()
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         packet_id = data[0]
@@ -67,12 +67,12 @@ class BasicThunkLayer(LayerProcess):
         thunk_names = list(map(lambda x: self.addThunkMarker(self.parser.nfn_str_to_network_name(x)))
                            ,self.generatePossibleThunkNames(ast))
 
-        self.running_computations.add_entry_to_thunk_table(name, id, thunk_names) #Create new computation
+        self.active_thunk_table.add_entry_to_thunk_table(name, id, thunk_names) #Create new computation
         for tn in thunk_names:
             data_size = self.get_data_size(self.removeThunkMarker(tn))
             if data_size is not None:
                 content = Content(interest.name, "DataSize:" + str(data_size))
-                self.running_computations.add_estimated_cost_to_awaiting_data(name, data_size) #if data local -> set cost
+                self.active_thunk_table.add_estimated_cost_to_awaiting_data(name, data_size) #if data local -> set cost
                 continue
             interest = Interest(tn)
             self.queue_to_lower.put([id, interest])
@@ -159,7 +159,7 @@ class BasicThunkLayer(LayerProcess):
         :returns False if there are dependencies missing
         ":returns None: if name is not in list
         """
-        e = self.running_computations.get_entry_from_name(name)
+        e = self.active_thunk_table.get_entry_from_name(name)
         if e is None:
             return None
 
@@ -168,6 +168,10 @@ class BasicThunkLayer(LayerProcess):
                 return False
         return True
 
-    def compute_cost(self):
+    def compute_cost(self, name: Name, ast: AST):
+        dataset = self.active_thunk_table.get_entry_from_name(name)
+        if dataset is None:
+            return None
+        
         pass
 
