@@ -67,9 +67,11 @@ class test_BasicThunkLayer(unittest.TestCase):
         ast = self.parser.parse(comp_str)
         name_list = self.thunklayer.generatePossibleThunkNames(ast)
 
-        compare_list = ['/func/f1(/func/f2(%/test/data/d1%),/func/f3(/test/data/d2))', '/func/f1(/func/f2(/test/data/d1),/func/f3(%/test/data/d2%))',
-                        '%/func/f1%(/func/f2(/test/data/d1),/func/f3(/test/data/d2))', '/func/f1(%/func/f2%(/test/data/d1),/func/f3(/test/data/d2))',
-                        '/func/f2(%/test/data/d1%)', '%/func/f2%(/test/data/d1)', '/test/data/d1', '/func/f3(%/test/data/d2%)', '/test/data/d2']
+        compare_list = ['/func/f1', '/func/f1(/func/f2(%/test/data/d1%),/func/f3(/test/data/d2))',
+                        '/func/f1(/func/f2(/test/data/d1),/func/f3(%/test/data/d2%))', '%/func/f1%(/func/f2(/test/data/d1),'
+                        '/func/f3(/test/data/d2))', '/func/f1(%/func/f2%(/test/data/d1),/func/f3(/test/data/d2))', '/func/f2',
+                        '/func/f2(%/test/data/d1%)', '%/func/f2%(/test/data/d1)', '/test/data/d1', '/func/f3(%/test/data/d2%)',
+                        '/test/data/d2']
 
         #self.assertEqual(len(name_list), len(compare_list))
         self.assertEqual(name_list, compare_list)
@@ -78,7 +80,7 @@ class test_BasicThunkLayer(unittest.TestCase):
 
     def test_if_data_available_when_name_not_in_list(self):
         """Test if all_data_available returns None if name does not exist"""
-        self.fib.add_fib_entry(Name("/func/f1"), [1])
+        self.fib.add_fib_entry(Name("/fct/f1"), [1])
 
         comp_str = "/fct/f1(/dat/data/d1)"
         name = Name("/fct/f1")
@@ -95,7 +97,7 @@ class test_BasicThunkLayer(unittest.TestCase):
 
     def test_if_data_available_when_one_data_available_not_all(self):
         """Test if all_data_available returns False if not all data cost are available"""
-        self.fib.add_fib_entry(Name("/func/f1"), [1])
+        self.fib.add_fib_entry(Name("/fct/f1"), [1])
 
         comp_str = "/fct/f1(/dat/data/d1)"
         name = Name("/fct/f1")
@@ -114,7 +116,7 @@ class test_BasicThunkLayer(unittest.TestCase):
 
     def test_if_data_available_when_one_data_available_not_all(self):
         """Test if all_data_available returns False if no data cost are available"""
-        self.fib.add_fib_entry(Name("/func/f1"), [1])
+        self.fib.add_fib_entry(Name("/fct/f1"), [1])
 
         comp_str = "/fct/f1(/dat/data/d1)"
         name = Name("/fct/f1")
@@ -132,7 +134,8 @@ class test_BasicThunkLayer(unittest.TestCase):
 
     def test_data_available_when_all_available(self):
         """Test if all_data_available returns None if name does not exist"""
-        self.fib.add_fib_entry(Name("/func/f1"), [1])
+        self.fib.add_fib_entry(Name("/fct/f1"), [1])
+        self.fib.add_fib_entry(Name("/dat"), [2])
 
         comp_str = "/fct/f1(/dat/data/d1)"
         name = Name("/fct/f1")

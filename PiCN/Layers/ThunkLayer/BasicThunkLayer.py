@@ -12,7 +12,7 @@ from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInforma
 from PiCN.Layers.LinkLayer.FaceIDTable import BaseFaceIDTable
 from PiCN.Layers.NFNLayer.Parser import *
 from PiCN.Layers.NFNLayer.NFNOptimizer import BaseNFNOptimizer
-from PiCN.Layers.ThunkLayer.ThunkTable import ThunkList
+from PiCN.Layers.ThunkLayer.ThunkTable import ThunkList, ThunkTableEntry
 from PiCN.Layers.RepositoryLayer.Repository import BaseRepository
 
 class BasicThunkLayer(LayerProcess):
@@ -133,6 +133,8 @@ class BasicThunkLayer(LayerProcess):
             function_list = self.optimizer._get_functions_from_ast(ast)
             prepend_list = name_list + function_list
             fib_name_list = []
+            if self.fib.find_fib_entry(Name(ast._element)):
+                res.append(ast._element)
             for n in prepend_list:
                 if self.fib.find_fib_entry(Name(n)) is not None:
                    fib_name_list.append(n)
@@ -168,10 +170,29 @@ class BasicThunkLayer(LayerProcess):
                 return False
         return True
 
-    def compute_cost(self, name: Name, ast: AST):
-        dataset = self.active_thunk_table.get_entry_from_name(name)
-        if dataset is None:
-            return None
-        
-        pass
+    def compute_cost(self, name: Name, ast: AST, dataset: ThunkTableEntry, required_requests: List = None) -> (int, List):
+        """computes the cheapest costs and the way to achieve them
+        :returns a tuple of the cost and the required requrests to achieve this costs"""
+        if required_requests is None:
+            required_requests = []
+        if ast.type == AST_FuncCall:
+            ast._prepend = True
+            ast_str = str(ast)
+            ast._prepend = False
+            overall_cost = dataset.awaiting_data.get(ast_str) #FIXME do not only use a single prepended name, but all possible
+            function_cost = dataset.awaiting_data.get(ast._element)
+            parameter_cost = []
+            for p in ast.params:
+                cost, requests = self.compute_cost(name, p, dataset)
+                parameter_cost.append((cost, requests))
+            inner_cost = function_cost + sum(list(map(lambda x: x[0], parameter_cost)))
+            if inner_cost > overall_cost:
+                return (overall_cost, [ast_str])  #in this case, forwarding is the cheapest solution
+            else:
+                return (inner_cost, list(map(lambda x: x[1], parameter_cost)).append(ast._element))
+            #TODO: check if overall cost is smaller than sum of other. if yes -> forward. else split
 
+        elif ast.type == AST_Name:
+            pass
+        else:
+            return (0, [])
