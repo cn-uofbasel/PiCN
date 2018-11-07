@@ -197,5 +197,4 @@ class test_BasicThunkLayer(unittest.TestCase):
         self.assertTrue(res)
 
         res = self.thunklayer.compute_cost_and_requests(ast, self.thunklayer.active_thunk_table.get_entry_from_name(name))
-        print(res)
-        #self.assertEqual(res, (15, '/fct/f1(%/dat/data/d1%)'))
+        self.assertEqual(res, (15, ['/dat/data/d1', '/fct/f1']))
