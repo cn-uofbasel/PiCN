@@ -195,7 +195,7 @@ class BasicThunkLayer(LayerProcess):
         :returns a tuple of the cost and the required requrests to achieve this costs"""
         if required_requests is None:
             required_requests = []
-        if ast.type == AST_FuncCall:
+        if isinstance(ast, AST_FuncCall):
             overall_cost = self.get_cheapest_prepended_name(ast, dataset)
             function_cost = dataset.awaiting_data.get(ast._element)
             parameter_cost = []
@@ -207,7 +207,7 @@ class BasicThunkLayer(LayerProcess):
                 return overall_cost  #in this case, forwarding is the cheapest solution
             else:
                 return (inner_cost, list(map(lambda x: x[1], parameter_cost)).append(ast._element))
-        elif ast.type == AST_Name:
+        elif isinstance(ast, AST_Name):
             cost = dataset.awaiting_data.get(ast._element)
             return (cost, ast._element)
         else:
