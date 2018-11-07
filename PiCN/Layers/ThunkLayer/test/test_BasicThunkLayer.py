@@ -152,3 +152,28 @@ class test_BasicThunkLayer(unittest.TestCase):
 
         res = self.thunklayer.all_data_available(name)
         self.assertTrue(res)
+
+
+    def test_computing_cost_and_requests_simple(self):
+        """Test if the cheapest cost and requests are computed correctly for a simple computation"""
+        self.fib.add_fib_entry(Name("/fct/f1"), [1])
+        self.fib.add_fib_entry(Name("/dat"), [2])
+        comp_str = "/fct/f1(/dat/data/d1)"
+        name = Name("/fct/f1")
+        name += "_(/dat/data/d1)"
+        name += "NFN"
+        ast = self.parser.parse(comp_str)
+        name_list = self.thunklayer.generatePossibleThunkNames(ast)
+        self.thunklayer.active_thunk_table.add_entry_to_thunk_table(name, 1, name_list)
+
+        self.thunklayer.active_thunk_table.add_estimated_cost_to_awaiting_data(name_list[0], 10)
+        self.thunklayer.active_thunk_table.add_estimated_cost_to_awaiting_data(name_list[1], 20)
+        self.thunklayer.active_thunk_table.add_estimated_cost_to_awaiting_data(name_list[2], 30)
+        self.thunklayer.active_thunk_table.add_estimated_cost_to_awaiting_data(name_list[3], 40)
+
+        res = self.thunklayer.all_data_available(name)
+        self.assertTrue(res)
+
+        res = self.thunklayer.compute_cost_and_requests(ast, self.thunklayer.active_thunk_table.get_entry_from_name(name))
+
+        print(res)

@@ -170,29 +170,46 @@ class BasicThunkLayer(LayerProcess):
                 return False
         return True
 
-    def compute_cost(self, name: Name, ast: AST, dataset: ThunkTableEntry, required_requests: List = None) -> (int, List):
+
+    def get_cheapest_prepended_name(self, ast, dataset: ThunkTableEntry) -> (int, List):
+        """prepend each name, find cheapest costs for the current layer
+        :returns a touple of cost and name
+        """
+        function_names = self.optimizer._get_functions_from_ast(ast)
+        data_names = self.optimizer._get_names_from_ast(ast)
+        name_list = data_names + function_names
+        cost = None
+        for name in name_list:
+            n = self.optimizer._set_prepended_name(ast, Name(name), ast)
+            if n is None:
+                continue
+            entry_cost = dataset.awaiting_data.get(n)
+            if entry_cost is None:
+                continue
+            if cost is None or cost[0] > entry_cost:
+                cost = (entry_cost, n)
+        return cost
+
+    def compute_cost_and_requests(self, ast: AST, dataset: ThunkTableEntry, required_requests: List = None) -> (int, List):
         """computes the cheapest costs and the way to achieve them
         :returns a tuple of the cost and the required requrests to achieve this costs"""
         if required_requests is None:
             required_requests = []
         if ast.type == AST_FuncCall:
-            ast._prepend = True
-            ast_str = str(ast)
-            ast._prepend = False
-            overall_cost = dataset.awaiting_data.get(ast_str) #FIXME do not only use a single prepended name, but all possible
+            overall_cost = self.get_cheapest_prepended_name(ast, dataset)
             function_cost = dataset.awaiting_data.get(ast._element)
             parameter_cost = []
             for p in ast.params:
-                cost, requests = self.compute_cost(name, p, dataset)
+                cost, requests = self.compute_cost_and_requests(p, dataset, required_requests)
                 parameter_cost.append((cost, requests))
             inner_cost = function_cost + sum(list(map(lambda x: x[0], parameter_cost)))
-            if inner_cost > overall_cost:
-                return (overall_cost, [ast_str])  #in this case, forwarding is the cheapest solution
+            if inner_cost > overall_cost[0]:
+                return overall_cost  #in this case, forwarding is the cheapest solution
             else:
                 return (inner_cost, list(map(lambda x: x[1], parameter_cost)).append(ast._element))
-            #TODO: check if overall cost is smaller than sum of other. if yes -> forward. else split
-
         elif ast.type == AST_Name:
-            pass
+            cost = dataset.awaiting_data.get(ast._element)
+            return (cost, ast._element)
         else:
             return (0, [])
+        #FIXME: REQUIRED_REQUESTS NEED TO BE FILLED, is not yet correctly filled
