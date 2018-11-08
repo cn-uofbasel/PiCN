@@ -1,6 +1,7 @@
 """This is the BasicThunk layer used to check if it is possible to compute a result, and determine the
 cost of computing the result"""
 import multiprocessing
+import sys
 
 from typing import List
 
@@ -190,19 +191,22 @@ class BasicThunkLayer(LayerProcess):
                 cost = (entry_cost, n)
         return cost
 
-    def compute_cost_and_requests(self, ast: AST, dataset: ThunkTableEntry, required_requests: List = None) -> (int, List):
+    def compute_cost_and_requests(self, ast: AST, dataset: ThunkTableEntry) -> (int, List):
         """computes the cheapest costs and the way to achieve them
         :returns a tuple of the cost and the required requrests to achieve this costs"""
-        if required_requests is None:
-            required_requests = []
         if isinstance(ast, AST_FuncCall):
             overall_cost = self.get_cheapest_prepended_name(ast, dataset)
             function_cost = dataset.awaiting_data.get(ast._element)
             parameter_cost = []
             for p in ast.params:
-                cost, requests = self.compute_cost_and_requests(p, dataset, required_requests)
+                cost, requests = self.compute_cost_and_requests(p, dataset)
                 parameter_cost.append((cost, requests))
-            inner_cost = function_cost + sum(list(map(lambda x: x[0], parameter_cost)))
+            if function_cost is None:
+                inner_cost = sys.maxsize
+            else:
+               inner_cost = function_cost + sum(list(map(lambda x: x[0], parameter_cost)))
+            if overall_cost is None:
+                overall_cost = (sys.maxsize, None)
             if inner_cost > overall_cost[0]:
                 return overall_cost  #in this case, forwarding is the cheapest solution
             else:
