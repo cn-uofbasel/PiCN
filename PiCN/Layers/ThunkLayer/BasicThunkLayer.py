@@ -206,10 +206,9 @@ class BasicThunkLayer(LayerProcess):
             if inner_cost > overall_cost[0]:
                 return overall_cost  #in this case, forwarding is the cheapest solution
             else:
-                return (inner_cost, list(map(lambda x: x[1], parameter_cost)) + [ast._element])
+                return (inner_cost, list(filter(lambda x: x is not None ,list(map(lambda x: x[1], parameter_cost)) + [ast._element])))
         elif isinstance(ast, AST_Name):
             cost = dataset.awaiting_data.get(ast._element)
             return (cost, ast._element)
         else:
-            return (0, [])
-        #FIXME: REQUIRED_REQUESTS NEED TO BE FILLED, is not yet correctly filled
+            return (0, None)
