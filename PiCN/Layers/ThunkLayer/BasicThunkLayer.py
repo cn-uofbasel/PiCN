@@ -45,7 +45,7 @@ class BasicThunkLayer(LayerProcess):
         to_lower.put(data)
         return
 
-    def handleInterest(self, id: int, interest: Interest):
+    def handleInterest(self, id: int, interest: Interest, from_higher):
 
         data_size = self.get_data_size(interest.name)
         if data_size is not None:
@@ -53,12 +53,12 @@ class BasicThunkLayer(LayerProcess):
             self.queue_to_lower.put(content)
             return
 
-        if len(interest.name.components) < 2 or interest.name.components[-2] != b"THUNK":
-            self.queue_to_higher.put([id, interest])
-            return
-
-        if interest.name.components != b"NFN":
-            self.queue_to_higher.put([id, interest])
+        if not self.isthunk():
+            if from_higher:
+                self.queue_to_lower.put([id, interest])
+                return
+            else:
+                self.queue_to_higher.put([id, interest])
             return
 
         name = self.removeThunkMarker(interest.name)
@@ -79,18 +79,44 @@ class BasicThunkLayer(LayerProcess):
             self.queue_to_lower.put([id, interest])
 
         if self.all_data_available(interest.name):
-            self.compute_cost() #TODO
-            #TODO check if all costs are satified. if yes reply to main request
-            #TODO find cheapest cost, cache plans
+            #self.compute_cost() #TODO
+            pass
 
-    def handleContent(self, id: int, content: Content):
+    def handleContent(self, id: int, content: Content, from_higher):
         #check if content is required if yes add to list, otherwise directly to upper
         #check if all data are available after adding the content.
+        if not self.isthunk():
+            if from_higher:
+                self.queue_to_lower.put([id, content])
+                return
+            else:
+                self.queue_to_higher.put([id, content])
+            return
+        if from_higher: #only expect thunk content from lower
+            self.queue_to_lower.put([id, content])
+        try:
+            cost = int(content.content)
+        except:
+            cost = sys.maxsize
+        self.active_thunk_table.add_estimated_cost_to_awaiting_data(content.name, cost)
 
-        pass
+        for e in self.active_thunk_table.container:
+            if self.all_data_available(e.name):
+                name = self.removeThunkMarker(e.name)
+                nfn_name = self.parser.network_name_to_nfn_str(name)
+                ast = self.parser.parse(nfn_name)
+                cost, path = self.compute_cost_and_requests(ast)
+                #todo: ship content with cost, store path in path-cache-table
 
-    def handleNack(self, id: int, nack: Nack):
+    def handleNack(self, id: int, nack: Nack, from_higher):
         #if in chunklist, remove the entry
+        if not self.isthunk():
+            if from_higher:
+                self.queue_to_lower.put([id, nack])
+                return
+            else:
+                self.queue_to_higher.put([id, nack])
+            return
         pass
 
     def get_data_size(self, name: Name) -> int:
@@ -216,3 +242,12 @@ class BasicThunkLayer(LayerProcess):
             return (cost, ast._element)
         else:
             return (0, None)
+
+    def isthunk(self, interest: Interest) -> bool:
+        """ Check if a request is a thunk
+        :returns True if it is a thunk request, else False"""
+        if len(interest.name.components) < 2 or interest.name.components[-2] != b"THUNK":
+            return False
+        if interest.name.components != b"NFN":
+            return False
+        return True
