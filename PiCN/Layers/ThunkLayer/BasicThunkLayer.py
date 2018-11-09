@@ -117,7 +117,16 @@ class BasicThunkLayer(LayerProcess):
             else:
                 self.queue_to_higher.put([id, nack])
             return
-        pass
+        request_name = self.removeThunkMarker(nack.name)
+        self.active_thunk_table.remove_awaiting_data(request_name)
+        removes = []
+        for e in self.active_thunk_table.container:
+            if len(self.active_thunk_table.get_entry_from_name(e.name).awaiting_data) == 0:
+                removes.append(e)
+        for e in removes:
+            self.active_thunk_table.remove_entry_from_thunk_table(e.name)
+            nack = Nack(e.name, NackReason.NO_ROUTE, Interest(e.name))
+            self.queue_to_lower.put([e.id, nack])
 
     def get_data_size(self, name: Name) -> int:
         cs_entry = self.cs.find_content_object(name) #if content is available local in CS, use it
