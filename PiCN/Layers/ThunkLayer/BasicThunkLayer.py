@@ -100,6 +100,10 @@ class BasicThunkLayer(LayerProcess):
             cost = sys.maxsize
         self.active_thunk_table.add_estimated_cost_to_awaiting_data(content.name, cost)
 
+        self.check_and_compute_cost()
+
+    def check_and_compute_cost(self):
+        """check if all data are available and start computation"""
         for e in self.active_thunk_table.container:
             if self.all_data_available(e.name):
                 name = self.removeThunkMarker(e.name)
@@ -109,7 +113,6 @@ class BasicThunkLayer(LayerProcess):
                 #todo: ship content with cost, store path in path-cache-table
 
     def handleNack(self, id: int, nack: Nack, from_higher):
-        #if in chunklist, remove the entry
         if not self.isthunk():
             if from_higher:
                 self.queue_to_lower.put([id, nack])
@@ -117,7 +120,18 @@ class BasicThunkLayer(LayerProcess):
             else:
                 self.queue_to_higher.put([id, nack])
             return
-        self.active_thunk_table.remove_awaiting_data(nack.name)
+        request_name = self.removeThunkMarker(nack.name)
+        self.active_thunk_table.remove_awaiting_data(request_name) #got nack for the entry, remove it
+        removes = []
+        for e in self.active_thunk_table.container: #remove entrys which cannot be solved anymore
+            if len(self.active_thunk_table.get_entry_from_name(e.name).awaiting_data) == 0:
+                removes.append(e)
+            self.check_and_compute_cost()
+        for e in removes:
+            self.active_thunk_table.remove_entry_from_thunk_table(e.name)
+            nack = Nack(e.name, NackReason.NO_ROUTE, Interest(e.name))
+            self.queue_to_lower.put([e.id, nack])
+
 
     def get_data_size(self, name: Name) -> int:
         cs_entry = self.cs.find_content_object(name) #if content is available local in CS, use it
