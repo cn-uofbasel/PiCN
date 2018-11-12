@@ -13,13 +13,14 @@ from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInforma
 from PiCN.Layers.LinkLayer.FaceIDTable import BaseFaceIDTable
 from PiCN.Layers.NFNLayer.Parser import *
 from PiCN.Layers.NFNLayer.NFNOptimizer import BaseNFNOptimizer
-from PiCN.Layers.ThunkLayer.ThunkTable import ThunkList, ThunkTableEntry
+from PiCN.Layers.ThunkLayer.ThunkTable import ThunkList, ThunkTableEntry, BaseThunkTable
 from PiCN.Layers.RepositoryLayer.Repository import BaseRepository
+from PiCN.Layers.ThunkLayer.PlanTable import PlanTable
 
 class BasicThunkLayer(LayerProcess):
 
     def __init__(self, cs: BaseContentStore, fib: BaseForwardingInformationBase, pit: BasePendingInterestTable,
-                 faceidtable: BaseFaceIDTable, parser: DefaultNFNParser, repo: BaseRepository=None, log_level=255):
+                 faceidtable: BaseFaceIDTable, thunkTable: BaseThunkTable, planTable: PlanTable, parser: DefaultNFNParser, repo: BaseRepository=None, log_level=255):
         super().__init__("ThunkLayer", log_level)
         self.cs = cs
         self.fib = fib
@@ -28,7 +29,8 @@ class BasicThunkLayer(LayerProcess):
         self.parser = parser
         self.optimizer = BaseNFNOptimizer(self.cs, self.fib, self.pit, self.faceidtable)
         self.repo = repo
-        self.active_thunk_table = ThunkList()
+        self.active_thunk_table = thunkTable
+        self.planTable = planTable
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         packet_id = data[0]
@@ -77,10 +79,7 @@ class BasicThunkLayer(LayerProcess):
                 continue
             interest = Interest(tn)
             self.queue_to_lower.put([id, interest])
-
-        if self.all_data_available(interest.name):
-            #self.compute_cost() #TODO
-            pass
+        self.check_and_compute_cost()
 
     def handleContent(self, id: int, content: Content, from_higher):
         #check if content is required if yes add to list, otherwise directly to upper
@@ -99,7 +98,6 @@ class BasicThunkLayer(LayerProcess):
         except:
             cost = sys.maxsize
         self.active_thunk_table.add_estimated_cost_to_awaiting_data(content.name, cost)
-
         self.check_and_compute_cost()
 
     def check_and_compute_cost(self):
@@ -110,7 +108,9 @@ class BasicThunkLayer(LayerProcess):
                 nfn_name = self.parser.network_name_to_nfn_str(name)
                 ast = self.parser.parse(nfn_name)
                 cost, path = self.compute_cost_and_requests(ast)
-                #todo: ship content with cost, store path in path-cache-table
+                content = Content(e.name, str(cost))
+                self.queue_to_lower.put([e.id, content])
+                #todo, add to plan table
 
     def handleNack(self, id: int, nack: Nack, from_higher):
         if not self.isthunk():

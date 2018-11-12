@@ -12,6 +12,7 @@ from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformation
 from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
 from PiCN.Layers.NFNLayer.Parser import *
 from PiCN.Layers.ThunkLayer.ThunkTable import ThunkList
+from PiCN.Layers.ThunkLayer.PlanTable import PlanTable
 
 class test_BasicThunkLayer(unittest.TestCase):
     """Tests for the BasicThunkLayer"""
@@ -22,7 +23,9 @@ class test_BasicThunkLayer(unittest.TestCase):
         self.pit = PendingInterstTableMemoryExact()
         self.faceidtable = FaceIDDict()
         self.parser = DefaultNFNParser()
-        self.thunklayer = BasicThunkLayer(self.cs, self.fib, self.pit, self.faceidtable, self.parser)
+        self.thunkTable = ThunkList()
+        self.planTable = PlanTable()
+        self.thunklayer = BasicThunkLayer(self.cs, self.fib, self.pit, self.faceidtable, self.thunkTable, self.planTable, self.parser)
         self.thunklayer.active_thunk_table = ThunkList()
 
         self.thunklayer.start_process()
@@ -30,7 +33,6 @@ class test_BasicThunkLayer(unittest.TestCase):
     def tearDown(self):
         for e in self.thunklayer.active_thunk_table.container:
             self.thunklayer.active_thunk_table.remove_entry_from_thunk_table(e.name)
-        self.thunklayer.parser = BasicThunkLayer(self.cs, self.fib, self.pit, self.faceidtable, self.parser)
 
     def test_remove_thunk_marker(self):
         """Test if the system removes the thunk marker correctly"""
