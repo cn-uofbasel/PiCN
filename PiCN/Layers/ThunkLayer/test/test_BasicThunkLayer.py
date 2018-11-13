@@ -450,7 +450,6 @@ class test_BasicThunkLayer(unittest.TestCase):
         n2 += 'NFN'
         self.assertEqual(res2, [1, Interest(n2)])
 
-
         content1 = Content(res1[1].name, str(9))
         self.thunklayer.queue_from_lower.put([1, content1])
         content2 = Content(res2[1].name, str(9))
@@ -491,7 +490,6 @@ class test_BasicThunkLayer(unittest.TestCase):
         n2 += 'THUNK'
         n2 += 'NFN'
         self.assertEqual(res2, [1, Interest(n2)])
-
 
         content1 = Content(res1[1].name, str(9))
         self.thunklayer.queue_from_lower.put([1, content1])
