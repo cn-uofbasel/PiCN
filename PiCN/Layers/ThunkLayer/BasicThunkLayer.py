@@ -109,9 +109,8 @@ class BasicThunkLayer(LayerProcess):
                 nfn_name = self.parser.network_name_to_nfn_str(name)
                 ast = self.parser.parse(nfn_name)
                 cost, path = self.compute_cost_and_requests(ast)
-                #todo, add to plan table
-                removes.append(e)
                 self.planTable.add_plan(e.name, path, cost)
+                removes.append(e)
                 content = Content(e.name, str(cost))
                 self.queue_to_lower.put([e.id, content])
         for r in removes:
