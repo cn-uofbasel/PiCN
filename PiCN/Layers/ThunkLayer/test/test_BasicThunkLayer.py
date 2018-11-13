@@ -1,5 +1,6 @@
 """Tests for the BasicThunkLayer"""
 
+import multiprocessing
 import unittest
 
 from PiCN.Layers.ThunkLayer import BasicThunkLayer
@@ -26,13 +27,15 @@ class test_BasicThunkLayer(unittest.TestCase):
         self.thunkTable = ThunkList()
         self.planTable = PlanTable()
         self.thunklayer = BasicThunkLayer(self.cs, self.fib, self.pit, self.faceidtable, self.thunkTable, self.planTable, self.parser)
-        self.thunklayer.active_thunk_table = ThunkList()
+        self.thunklayer.queue_to_higher = multiprocessing.Queue()
+        self.thunklayer.queue_to_lower = multiprocessing.Queue()
+        self.thunklayer.queue_from_higher = multiprocessing.Queue()
+        self.thunklayer.queue_from_lower = multiprocessing.Queue()
 
         self.thunklayer.start_process()
 
     def tearDown(self):
-        for e in self.thunklayer.active_thunk_table.container:
-            self.thunklayer.active_thunk_table.remove_entry_from_thunk_table(e.name)
+        self.thunklayer.stop_process()
 
     def test_remove_thunk_marker(self):
         """Test if the system removes the thunk marker correctly"""
@@ -279,3 +282,16 @@ class test_BasicThunkLayer(unittest.TestCase):
         res = self.thunklayer.compute_cost_and_requests(ast, self.thunklayer.active_thunk_table.get_entry_from_name(name))
         self.assertEqual(res, (60, '/fct/f1(%/dat/data/d1%,"Hello World",/fct/f2(/dat/d2))'))
 
+    def test_none_thunk_request_from_lower(self):
+        """Test that a normal interest is forwared from to higher"""
+        interest = Interest("/test/data")
+        self.thunklayer.queue_from_lower.put([1, interest])
+        res = self.thunklayer.queue_to_higher.get(timeout=2)
+        self.assertEqual(res, [1, interest])
+
+    def test_none_thunk_request_from_higher(self):
+        """Test that a normal interest is forwared from to higher"""
+        interest = Interest("/test/data")
+        self.thunklayer.queue_from_higher.put([1, interest])
+        res = self.thunklayer.queue_to_lower.get(timeout=2)
+        self.assertEqual(res, [1, interest])

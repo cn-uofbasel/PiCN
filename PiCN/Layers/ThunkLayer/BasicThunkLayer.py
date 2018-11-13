@@ -37,7 +37,7 @@ class BasicThunkLayer(LayerProcess):
         packet = data[1]
 
         if isinstance(packet, Interest):
-            self.handleInterest(packet_id, packet)
+            self.handleInterest(packet_id, packet, from_higher=False)
         elif isinstance(packet, Content):
             self.handleContent(packet_id, packet)
         elif isinstance(packet, Nack):
@@ -55,7 +55,7 @@ class BasicThunkLayer(LayerProcess):
             self.queue_to_lower.put(content)
             return
 
-        if not self.isthunk():
+        if not self.isthunk(interest.name):
             if from_higher:
                 self.queue_to_lower.put([id, interest])
                 return
@@ -84,7 +84,7 @@ class BasicThunkLayer(LayerProcess):
     def handleContent(self, id: int, content: Content, from_higher):
         #check if content is required if yes add to list, otherwise directly to upper
         #check if all data are available after adding the content.
-        if not self.isthunk():
+        if not self.isthunk(content.name):
             if from_higher:
                 self.queue_to_lower.put([id, content])
                 return
@@ -261,11 +261,11 @@ class BasicThunkLayer(LayerProcess):
         else:
             return (0, None)
 
-    def isthunk(self, interest: Interest) -> bool:
+    def isthunk(self, name: Name) -> bool:
         """ Check if a request is a thunk
         :returns True if it is a thunk request, else False"""
-        if len(interest.name.components) < 2 or interest.name.components[-2] != b"THUNK":
+        if len(name.components) < 2 or name.components[-2] != b"THUNK":
             return False
-        if interest.name.components != b"NFN":
+        if name.components != b"NFN":
             return False
         return True
