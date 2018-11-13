@@ -247,7 +247,7 @@ class BasicThunkLayer(LayerProcess):
             if entry_cost is None:
                 continue
             if cost is None or cost[0] > entry_cost:
-                cost = (entry_cost, [n])
+                cost = (entry_cost, n)
         return cost
 
     def compute_cost_and_requests(self, ast: AST, dataset: ThunkTableEntry) -> (int, List):
@@ -255,7 +255,7 @@ class BasicThunkLayer(LayerProcess):
         :returns a tuple of the cost and the required requrests to achieve this costs"""
         if isinstance(ast, AST_FuncCall):
             overall_cost = self.get_cheapest_prepended_name(ast, dataset)
-            function_cost = dataset.awaiting_data.get(ast._element)
+            function_cost = dataset.awaiting_data.get(Name(ast._element))
             parameter_cost = []
             for p in ast.params:
                 cost, requests = self.compute_cost_and_requests(p, dataset)
@@ -269,10 +269,10 @@ class BasicThunkLayer(LayerProcess):
             if inner_cost > overall_cost[0]:
                 return overall_cost  #in this case, forwarding is the cheapest solution
             else:
-                return (inner_cost, list(filter(lambda x: x is not None ,list(map(lambda x: x[1], parameter_cost)) + [ast._element])))
+                return (inner_cost, list(filter(lambda x: x is not None ,list(map(lambda x: x[1], parameter_cost)) + [Name(ast._element)])))
         elif isinstance(ast, AST_Name):
-            cost = dataset.awaiting_data.get(ast._element)
-            return (cost, [ast._element])
+            cost = dataset.awaiting_data.get(Name(ast._element))
+            return (cost, Name(ast._element))
         else:
             return (0, None)
 

@@ -180,7 +180,14 @@ class test_BasicThunkLayer(unittest.TestCase):
         name += "_(/dat/data/d1)"
         name += "NFN"
         ast = self.parser.parse(comp_str)
-        name_list = self.thunklayer.generatePossibleThunkNames(ast)
+        thunk_list = self.thunklayer.generatePossibleThunkNames(ast)
+        name_list = []
+        for t in thunk_list:
+            if '(' in t and ')' in t:
+                n = self.parser.nfn_str_to_network_name(t)
+            else:
+                n = Name(t)
+            name_list.append(n)
         self.thunklayer.active_thunk_table.add_entry_to_thunk_table(name, 1, name_list)
 
         self.thunklayer.active_thunk_table.add_estimated_cost_to_awaiting_data(name_list[0], 10)
@@ -192,7 +199,7 @@ class test_BasicThunkLayer(unittest.TestCase):
         self.assertTrue(res)
 
         res = self.thunklayer.compute_cost_and_requests(ast, self.thunklayer.active_thunk_table.get_entry_from_name(name))
-        self.assertEqual(res, (20, '/fct/f1(%/dat/data/d1%)'))
+        self.assertEqual(res, (20, self.parser.nfn_str_to_network_name('/fct/f1(%/dat/data/d1%)')))
 
     def test_computing_cost_and_requests_simple2(self):
         """Test if the cheapest cost and requests are computed correctly for a simple computation"""
@@ -203,7 +210,14 @@ class test_BasicThunkLayer(unittest.TestCase):
         name += "_(/dat/data/d1)"
         name += "NFN"
         ast = self.parser.parse(comp_str)
-        name_list = self.thunklayer.generatePossibleThunkNames(ast)
+        thunk_list = self.thunklayer.generatePossibleThunkNames(ast)
+        name_list = []
+        for t in thunk_list:
+            if '(' in t and ')' in t:
+                n = self.parser.nfn_str_to_network_name(t)
+            else:
+                n = Name(t)
+            name_list.append(n)
         self.thunklayer.active_thunk_table.add_entry_to_thunk_table(name, 1, name_list)
 
         self.thunklayer.active_thunk_table.add_estimated_cost_to_awaiting_data(name_list[0], 10)
@@ -215,7 +229,7 @@ class test_BasicThunkLayer(unittest.TestCase):
         self.assertTrue(res)
 
         res = self.thunklayer.compute_cost_and_requests(ast, self.thunklayer.active_thunk_table.get_entry_from_name(name))
-        self.assertEqual(res, (15, ['/dat/data/d1', '/fct/f1']))
+        self.assertEqual(res, (15, [Name('/dat/data/d1'), Name('/fct/f1')]))
 
     def test_computing_cost_and_requests_simple3(self):
         """Test if the cheapest cost and requests are computed correctly for a simple computation"""
@@ -226,7 +240,14 @@ class test_BasicThunkLayer(unittest.TestCase):
         name += '_(/dat/data/d1,"Hello World")'
         name += "NFN"
         ast = self.parser.parse(comp_str)
-        name_list = self.thunklayer.generatePossibleThunkNames(ast)
+        thunk_list = self.thunklayer.generatePossibleThunkNames(ast)
+        name_list = []
+        for t in thunk_list:
+            if '(' in t and ')' in t:
+                n = self.parser.nfn_str_to_network_name(t)
+            else:
+                n = Name(t)
+            name_list.append(n)
         self.thunklayer.active_thunk_table.add_entry_to_thunk_table(name, 1, name_list)
 
         self.thunklayer.active_thunk_table.add_estimated_cost_to_awaiting_data(name_list[0], 10)
@@ -238,7 +259,7 @@ class test_BasicThunkLayer(unittest.TestCase):
         self.assertTrue(res)
 
         res = self.thunklayer.compute_cost_and_requests(ast, self.thunklayer.active_thunk_table.get_entry_from_name(name))
-        self.assertEqual(res, (15, ['/dat/data/d1', '/fct/f1']))
+        self.assertEqual(res, (15, [Name('/dat/data/d1'), Name('/fct/f1')]))
 
     def test_computing_cost_and_requests1(self):
         """Test if the cheapest cost and requests are computed correctly for a computation"""
@@ -258,6 +279,7 @@ class test_BasicThunkLayer(unittest.TestCase):
                 n = Name(t)
             name_list.append(n)
 
+
         self.thunklayer.active_thunk_table.add_entry_to_thunk_table(name, 1, name_list)
 
         self.thunklayer.active_thunk_table.add_estimated_cost_to_awaiting_data(name_list[0], 10)
@@ -275,7 +297,7 @@ class test_BasicThunkLayer(unittest.TestCase):
         self.assertTrue(res)
 
         res = self.thunklayer.compute_cost_and_requests(ast, self.thunklayer.active_thunk_table.get_entry_from_name(name))
-        self.assertEqual(res, (40, ['/dat/data/d1', '/fct/f2(%/dat/d2%)', '/fct/f1']))
+        self.assertEqual(res, (40, [Name('/dat/data/d1'), self.parser.nfn_str_to_network_name('/fct/f2(%/dat/d2%)'), Name('/fct/f1')]))
 
     def test_computing_cost_and_requests2(self):
         """Test if the cheapest cost and requests are computed correctly for a computation, where not all datapath are available"""
@@ -286,7 +308,14 @@ class test_BasicThunkLayer(unittest.TestCase):
         name += '_(/dat/data/d1,"Hello World",/fct/f2(/dat/d2))'
         name += "NFN"
         ast = self.parser.parse(comp_str)
-        name_list = self.thunklayer.generatePossibleThunkNames(ast)
+        thunk_list = self.thunklayer.generatePossibleThunkNames(ast)
+        name_list = []
+        for t in thunk_list:
+            if '(' in t and ')' in t:
+                n = self.parser.nfn_str_to_network_name(t)
+            else:
+                n = Name(t)
+            name_list.append(n)
         self.thunklayer.active_thunk_table.add_entry_to_thunk_table(name, 1, name_list)
 
         self.thunklayer.active_thunk_table.add_estimated_cost_to_awaiting_data(name_list[0], 10)
@@ -301,7 +330,7 @@ class test_BasicThunkLayer(unittest.TestCase):
         self.assertTrue(res)
 
         res = self.thunklayer.compute_cost_and_requests(ast, self.thunklayer.active_thunk_table.get_entry_from_name(name))
-        self.assertEqual(res, (60, '/fct/f1(%/dat/data/d1%,"Hello World",/fct/f2(/dat/d2))'))
+        self.assertEqual(res, (60, self.parser.nfn_str_to_network_name('/fct/f1(%/dat/data/d1%,"Hello World",/fct/f2(/dat/d2))')))
 
     def test_none_thunk_request_from_lower(self):
         """Test that a normal interest is forwared from lower to higher"""
