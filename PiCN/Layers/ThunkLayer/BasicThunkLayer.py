@@ -111,6 +111,7 @@ class BasicThunkLayer(LayerProcess):
                 content = Content(e.name, str(cost))
                 self.queue_to_lower.put([e.id, content])
                 #todo, add to plan table
+                self.
 
     def handleNack(self, id: int, nack: Nack, from_higher):
         if not self.isthunk():
