@@ -78,7 +78,7 @@ class DefaultNFNParser(object):
             return None #Syntax error
         return root
 
-    def network_name_to_nfn_str(self, name: Name) -> str:
+    def network_name_to_nfn_str(self, name: Name) -> (str, Name):
         if len(name.components) == 2:
             return name.string_components[0], None
         if name.string_components [-1] != "NFN":

@@ -62,13 +62,19 @@ class BasicThunkLayer(LayerProcess):
             else:
                 self.queue_to_higher.put([id, interest])
             return
-
         name = self.removeThunkMarker(interest.name)
-        nfn_name = self.parser.network_name_to_nfn_str(name)
-        ast = self.parser.parse(nfn_name)
+        nfn_str, prepended_name = self.parser.network_name_to_nfn_str(name)
+        ast = self.parser.parse(nfn_str)
 
-        thunk_names = list(map(lambda x: self.addThunkMarker(self.parser.nfn_str_to_network_name(x)))
-                           ,self.generatePossibleThunkNames(ast))
+        thunks = self.generatePossibleThunkNames(ast)
+        thunk_names = []
+
+        for t in thunks:
+            if '(' in t and ')' in t:
+                n = self.parser.nfn_str_to_network_name(t)
+            else:
+                n = Name(t)
+            thunk_names.append(n)
 
         self.active_thunk_table.add_entry_to_thunk_table(name, id, thunk_names) #Create new computation
         for tn in thunk_names:
@@ -77,7 +83,7 @@ class BasicThunkLayer(LayerProcess):
                 content = Content(interest.name, "DataSize:" + str(data_size))
                 self.active_thunk_table.add_estimated_cost_to_awaiting_data(name, data_size) #if data local -> set cost
                 continue
-            interest = Interest(tn)
+            interest = Interest(self.addThunkMarker(tn))
             self.queue_to_lower.put([id, interest])
         self.check_and_compute_cost()
 
@@ -103,7 +109,7 @@ class BasicThunkLayer(LayerProcess):
     def check_and_compute_cost(self):
         """check if all data are available and start computation"""
         removes = []
-        for e in self.active_thunk_table.container:
+        for e in self.active_thunk_table.get_container():
             if self.all_data_available(e.name):
                 name = self.removeThunkMarker(e.name)
                 nfn_name = self.parser.network_name_to_nfn_str(name)
@@ -162,9 +168,12 @@ class BasicThunkLayer(LayerProcess):
 
     def addThunkMarker(self, name: Name) -> Name:
         """Add a thunk marker to a Name"""
+        ret = Name(name.components[:])
+        if name.components[-1] != b"NFN":
+            ret += "THUNK"
+            return ret
         if len(name.components) < 2 or name.components[-2] == b"THUNK":
             return name
-        ret = Name(name.components[:])
         ret.components.append(ret.components[-1])
         ret.components[-2] = b"THUNK"
         return ret
@@ -214,7 +223,6 @@ class BasicThunkLayer(LayerProcess):
             if e.awaiting_data[d] is None:
                 return False
         return True
-
 
     def get_cheapest_prepended_name(self, ast, dataset: ThunkTableEntry) -> (int, List):
         """prepend each name, find cheapest costs for the current layer
@@ -266,6 +274,6 @@ class BasicThunkLayer(LayerProcess):
         :returns True if it is a thunk request, else False"""
         if len(name.components) < 2 or name.components[-2] != b"THUNK":
             return False
-        if name.components != b"NFN":
+        if name.components[-1] != b"NFN":
             return False
         return True

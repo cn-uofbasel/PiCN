@@ -54,3 +54,6 @@ class BaseThunkTable(object):
     @abc.abstractmethod
     def remove_awaiting_data(self, awaiting_name: Name):
         """Removes awaiting data name from all """
+
+    def get_container(self):
+        return self.container

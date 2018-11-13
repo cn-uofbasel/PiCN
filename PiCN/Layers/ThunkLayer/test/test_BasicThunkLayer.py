@@ -14,18 +14,31 @@ from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
 from PiCN.Layers.NFNLayer.Parser import *
 from PiCN.Layers.ThunkLayer.ThunkTable import ThunkList
 from PiCN.Layers.ThunkLayer.PlanTable import PlanTable
+from PiCN.Processes.PiCNSyncDataStructFactory import PiCNSyncDataStructFactory
 
 class test_BasicThunkLayer(unittest.TestCase):
     """Tests for the BasicThunkLayer"""
 
     def setUp(self):
-        self.cs = ContentStoreMemoryExact()
-        self.fib = ForwardingInformationBaseMemoryPrefix()
-        self.pit = PendingInterstTableMemoryExact()
-        self.faceidtable = FaceIDDict()
+        factory = PiCNSyncDataStructFactory()
+
+        factory.register("cs", ContentStoreMemoryExact)
+        factory.register("fib", ForwardingInformationBaseMemoryPrefix)
+        factory.register("pit", PendingInterstTableMemoryExact)
+        factory.register("faceidtable", FaceIDDict)
+        factory.register("thunkTable", ThunkList)
+        factory.register("planTable", PlanTable)
+        factory.create_manager()
+
+        self.cs = factory.manager.cs()
+        self.fib = factory.manager.fib()
+        self.pit = factory.manager.pit()
+        self.faceidtable = factory.manager.faceidtable()
+        self.thunkTable = factory.manager.thunkTable()
+        self.planTable = factory.manager.planTable()
+
         self.parser = DefaultNFNParser()
-        self.thunkTable = ThunkList()
-        self.planTable = PlanTable()
+
         self.thunklayer = BasicThunkLayer(self.cs, self.fib, self.pit, self.faceidtable, self.thunkTable, self.planTable, self.parser)
         self.thunklayer.queue_to_higher = multiprocessing.Queue()
         self.thunklayer.queue_to_lower = multiprocessing.Queue()
@@ -323,3 +336,36 @@ class test_BasicThunkLayer(unittest.TestCase):
         self.thunklayer.queue_from_higher.put([1, nack])
         res = self.thunklayer.queue_to_lower.get(timeout=2)
         self.assertEqual(res, [1, nack])
+
+    def test_simple_thunk_request_from_lower(self):
+        """test receiving a thunk request from the network"""
+        self.thunklayer.fib.add_fib_entry(Name("/dat"), [2])
+        self.thunklayer.fib.add_fib_entry(Name("/fct"), [1])
+
+        name = Name("/fct/f1")
+        name += "_(/dat/data/d1)"
+        name += "THUNK"
+        name += "NFN"
+        interest = Interest(name)
+        self.thunklayer.queue_from_lower.put([1,interest])
+
+        res1 = self.thunklayer.queue_to_lower.get(timeout=2)
+        res2 = self.thunklayer.queue_to_lower.get(timeout=2)
+        res3 = self.thunklayer.queue_to_lower.get(timeout=2)
+        res4 = self.thunklayer.queue_to_lower.get(timeout=2)
+
+        self.assertEqual(res1, [1, Interest(Name('/fct/f1/THUNK'))])
+
+        n2 = Name("/dat/data/d1")
+        n2 += '/fct/f1(_)'
+        n2 += 'THUNK'
+        n2 += 'NFN'
+        self.assertEqual(res2, [1, Interest(n2)])
+
+        n3 = Name("/fct/f1")
+        n3 += '_(/dat/data/d1)'
+        n3 += 'THUNK'
+        n3 += 'NFN'
+        self.assertEqual(res3, [1, Interest(n3)])
+
+        self.assertEqual(res4, [1, Interest(Name('/dat/data/d1/THUNK'))])
