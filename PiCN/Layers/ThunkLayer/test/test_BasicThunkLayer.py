@@ -416,6 +416,90 @@ class test_BasicThunkLayer(unittest.TestCase):
         content4 = Content(res4[1].name, str(12))
         self.thunklayer.queue_from_lower.put([1, content4])
 
+        res = self.thunklayer.queue_to_lower.get(timeout=2)
+        c = Content(name, str(6))
+        self.assertEqual(res, [1, c])
+
+    def test_simple_thunk_request_from_lower_data_local_mdo_cached(self):
+        """test receiving a thunk request from the network with some data local meta data cached"""
+        self.thunklayer.fib.add_fib_entry(Name("/dat"), [2])
+        self.thunklayer.fib.add_fib_entry(Name("/fct"), [1])
+
+        self.thunklayer.cs.add_content_object(Content(Name("/fct/f1"), "mdo:2:data"))
+
+        name = Name("/fct/f1")
+        name += "_(/dat/data/d1)"
+        name += "THUNK"
+        name += "NFN"
+        interest = Interest(name)
+        self.thunklayer.queue_from_lower.put([1,interest])
+
+        res1 = self.thunklayer.queue_to_lower.get(timeout=2)
+        res2 = self.thunklayer.queue_to_lower.get(timeout=2)
+        res3 = self.thunklayer.queue_to_lower.get(timeout=2)
+
+        n1 = Name("/dat/data/d1")
+        n1 += '/fct/f1(_)'
+        n1 += 'THUNK'
+        n1 += 'NFN'
+        self.assertEqual(res1, [1, Interest(n1)])
+
+        n2 = Name("/fct/f1")
+        n2 += '_(/dat/data/d1)'
+        n2 += 'THUNK'
+        n2 += 'NFN'
+        self.assertEqual(res2, [1, Interest(n2)])
+
+
+        content1 = Content(res1[1].name, str(9))
+        self.thunklayer.queue_from_lower.put([1, content1])
+        content2 = Content(res2[1].name, str(9))
+        self.thunklayer.queue_from_lower.put([1, content2])
+        content3 = Content(res3[1].name, str(2))
+        self.thunklayer.queue_from_lower.put([1, content3])
+
+        res = self.thunklayer.queue_to_lower.get()
+        c = Content(name, str(4))
+        self.assertEqual(res, [1, c])
+
+    def test_simple_thunk_request_from_lower_data_local_cached(self):
+        """test receiving a thunk request from the network with some data local data cached"""
+        self.thunklayer.fib.add_fib_entry(Name("/dat"), [2])
+        self.thunklayer.fib.add_fib_entry(Name("/fct"), [1])
+
+        self.thunklayer.cs.add_content_object(Content(Name("/fct/f1"), "data"))
+
+        name = Name("/fct/f1")
+        name += "_(/dat/data/d1)"
+        name += "THUNK"
+        name += "NFN"
+        interest = Interest(name)
+        self.thunklayer.queue_from_lower.put([1,interest])
+
+        res1 = self.thunklayer.queue_to_lower.get(timeout=2)
+        res2 = self.thunklayer.queue_to_lower.get(timeout=2)
+        res3 = self.thunklayer.queue_to_lower.get(timeout=2)
+
+        n1 = Name("/dat/data/d1")
+        n1 += '/fct/f1(_)'
+        n1 += 'THUNK'
+        n1 += 'NFN'
+        self.assertEqual(res1, [1, Interest(n1)])
+
+        n2 = Name("/fct/f1")
+        n2 += '_(/dat/data/d1)'
+        n2 += 'THUNK'
+        n2 += 'NFN'
+        self.assertEqual(res2, [1, Interest(n2)])
+
+
+        content1 = Content(res1[1].name, str(9))
+        self.thunklayer.queue_from_lower.put([1, content1])
+        content2 = Content(res2[1].name, str(9))
+        self.thunklayer.queue_from_lower.put([1, content2])
+        content3 = Content(res3[1].name, str(2))
+        self.thunklayer.queue_from_lower.put([1, content3])
+
         res = self.thunklayer.queue_to_lower.get()
         c = Content(name, str(6))
         self.assertEqual(res, [1, c])

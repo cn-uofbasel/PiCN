@@ -49,12 +49,6 @@ class BasicThunkLayer(LayerProcess):
 
     def handleInterest(self, id: int, interest: Interest, from_higher):
 
-        data_size = self.get_data_size(interest.name)
-        if data_size is not None:
-            content = Content(interest.name, "DataSize:" + str(data_size))
-            self.queue_to_lower.put(content)
-            return
-
         if not self.isthunk(interest.name):
             if from_higher:
                 self.queue_to_lower.put([id, interest])
@@ -62,6 +56,14 @@ class BasicThunkLayer(LayerProcess):
             else:
                 self.queue_to_higher.put([id, interest])
             return
+
+        if interest.name.components[-1] == b'THUNK':
+            data_size = self.get_data_size(interest.name)
+            if data_size is not None:
+                content = Content(interest.name, str(data_size))
+                self.queue_to_lower.put(content)
+                return
+
         name = self.removeThunkMarker(interest.name)
         nfn_str, prepended_name = self.parser.network_name_to_nfn_str(name)
         ast = self.parser.parse(nfn_str)
@@ -80,8 +82,9 @@ class BasicThunkLayer(LayerProcess):
         for tn in thunk_names:
             data_size = self.get_data_size(self.removeThunkMarker(tn))
             if data_size is not None:
-                content = Content(interest.name, "DataSize:" + str(data_size))
-                self.active_thunk_table.add_estimated_cost_to_awaiting_data(name, data_size) #if data local -> set cost
+                #content = Content(interest.name, str(data_size))
+                #self.queue_to_lower.put([id, content])
+                self.active_thunk_table.add_estimated_cost_to_awaiting_data(tn, data_size) #if data local -> set cost
                 continue
             interest = Interest(self.addThunkMarker(tn))
             self.queue_to_lower.put([id, interest])
@@ -147,13 +150,13 @@ class BasicThunkLayer(LayerProcess):
         cs_entry = self.cs.find_content_object(name) #if content is available local in CS, use it
         data_size = None
         if cs_entry is not None:
-            if cs_entry.content.content.startswith(b"mdo:"):
-                entry_splits = cs_entry.content.content.split(b":")
+            if cs_entry.content.content.startswith("mdo:"):
+                entry_splits = cs_entry.content.content.split(":")
                 if len(entry_splits) > 2:
                     data_size = int(entry_splits[1])
             else:
                 data_size = len(cs_entry.content.content)
-        if self.repo is not None:
+        elif self.repo is not None:
             if self.repo.is_content_available(name):
                 data_size = self.repo.get_data_size(name)
         return data_size
