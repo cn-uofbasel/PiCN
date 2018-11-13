@@ -249,7 +249,15 @@ class test_BasicThunkLayer(unittest.TestCase):
         name += '_(/dat/data/d1,"Hello World",/fct/f2(/dat/d2))'
         name += "NFN"
         ast = self.parser.parse(comp_str)
-        name_list = self.thunklayer.generatePossibleThunkNames(ast)
+        thunk_list = self.thunklayer.generatePossibleThunkNames(ast)
+        name_list = []
+        for t in thunk_list:
+            if '(' in t and ')' in t:
+                n = self.parser.nfn_str_to_network_name(t)
+            else:
+                n = Name(t)
+            name_list.append(n)
+
         self.thunklayer.active_thunk_table.add_entry_to_thunk_table(name, 1, name_list)
 
         self.thunklayer.active_thunk_table.add_estimated_cost_to_awaiting_data(name_list[0], 10)

@@ -247,7 +247,7 @@ class BasicThunkLayer(LayerProcess):
             if entry_cost is None:
                 continue
             if cost is None or cost[0] > entry_cost:
-                cost = (entry_cost, n)
+                cost = (entry_cost, [n])
         return cost
 
     def compute_cost_and_requests(self, ast: AST, dataset: ThunkTableEntry) -> (int, List):
@@ -272,7 +272,7 @@ class BasicThunkLayer(LayerProcess):
                 return (inner_cost, list(filter(lambda x: x is not None ,list(map(lambda x: x[1], parameter_cost)) + [ast._element])))
         elif isinstance(ast, AST_Name):
             cost = dataset.awaiting_data.get(ast._element)
-            return (cost, ast._element)
+            return (cost, [ast._element])
         else:
             return (0, None)
 
