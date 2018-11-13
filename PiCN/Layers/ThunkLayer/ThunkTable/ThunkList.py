@@ -37,10 +37,13 @@ class ThunkList(BaseThunkTable):
 
     def add_estimated_cost_to_awaiting_data(self, name: Name, cost: int):
         """Add cost to an entry, if cost are lower than existing"""
+        container_new = []
         for e in self.container:
             if name in e.awaiting_data:
                 if e.awaiting_data.get(name) is None or e.awaiting_data.get(name) > cost:
                     e.awaiting_data[name] = cost
+            container_new.append(e)
+        self.container = container_new
 
     def remove_entry_from_thunk_table(self, name: Name):
         """Remove entry from the thunktable"""

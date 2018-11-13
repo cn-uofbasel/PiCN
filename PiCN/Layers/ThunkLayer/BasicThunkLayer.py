@@ -103,7 +103,7 @@ class BasicThunkLayer(LayerProcess):
             cost = int(content.content)
         except:
             cost = sys.maxsize
-        self.active_thunk_table.add_estimated_cost_to_awaiting_data(content.name, cost)
+        self.active_thunk_table.add_estimated_cost_to_awaiting_data(self.removeThunkMarker(content.name), cost)
         self.check_and_compute_cost()
 
     def check_and_compute_cost(self):
@@ -112,12 +112,12 @@ class BasicThunkLayer(LayerProcess):
         for e in self.active_thunk_table.get_container():
             if self.all_data_available(e.name):
                 name = self.removeThunkMarker(e.name)
-                nfn_name = self.parser.network_name_to_nfn_str(name)
-                ast = self.parser.parse(nfn_name)
-                cost, path = self.compute_cost_and_requests(ast)
+                nfn_str, prepended_name = self.parser.network_name_to_nfn_str(name)
+                ast = self.parser.parse(nfn_str)
+                cost, path = self.compute_cost_and_requests(ast, e)
                 self.planTable.add_plan(e.name, path, cost)
                 removes.append(e)
-                content = Content(e.name, str(cost))
+                content = Content(self.addThunkMarker(e.name), str(cost))
                 self.queue_to_lower.put([e.id, content])
         for r in removes:
             self.active_thunk_table.remove_entry_from_thunk_table(r.name)
@@ -160,9 +160,12 @@ class BasicThunkLayer(LayerProcess):
 
     def removeThunkMarker(self, name: Name) -> Name:
         """Remove the Thunk Marker from a Name"""
+        ret = Name(name.components[:])
+        if len(name.components) > 1 and name.components[-1] == b'THUNK':
+            del ret.components[-1]
+            return ret
         if len(name.components) < 2 or name.components[-2] != b"THUNK":
             return name
-        ret = Name(name.components[:])
         del ret.components[-2]
         return ret
 
@@ -236,6 +239,10 @@ class BasicThunkLayer(LayerProcess):
             n = self.optimizer._set_prepended_name(ast, Name(name), ast)
             if n is None:
                 continue
+            if '(' in n or ')' in n:
+                n = self.parser.nfn_str_to_network_name(n)
+            else:
+                n = Name(n)
             entry_cost = dataset.awaiting_data.get(n)
             if entry_cost is None:
                 continue
@@ -272,6 +279,8 @@ class BasicThunkLayer(LayerProcess):
     def isthunk(self, name: Name) -> bool:
         """ Check if a request is a thunk
         :returns True if it is a thunk request, else False"""
+        if len(name.components) > 1 and name.components[-1] == b"THUNK":
+            return True
         if len(name.components) < 2 or name.components[-2] != b"THUNK":
             return False
         if name.components[-1] != b"NFN":

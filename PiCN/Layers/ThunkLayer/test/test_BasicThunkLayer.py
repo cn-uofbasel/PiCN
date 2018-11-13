@@ -369,3 +369,16 @@ class test_BasicThunkLayer(unittest.TestCase):
         self.assertEqual(res3, [1, Interest(n3)])
 
         self.assertEqual(res4, [1, Interest(Name('/dat/data/d1/THUNK'))])
+
+        content1 = Content(res1[1].name, str(3))
+        self.thunklayer.queue_from_lower.put([1, content1])
+        content2 = Content(res2[1].name, str(6))
+        self.thunklayer.queue_from_lower.put([1, content2])
+        content3 = Content(res3[1].name, str(9))
+        self.thunklayer.queue_from_lower.put([1, content3])
+        content4 = Content(res4[1].name, str(12))
+        self.thunklayer.queue_from_lower.put([1, content4])
+
+        res = self.thunklayer.queue_to_lower.get()
+        c = Content(name, str(6))
+        self.assertEqual(res, [1, c])
