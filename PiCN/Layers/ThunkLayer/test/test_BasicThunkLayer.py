@@ -283,15 +283,43 @@ class test_BasicThunkLayer(unittest.TestCase):
         self.assertEqual(res, (60, '/fct/f1(%/dat/data/d1%,"Hello World",/fct/f2(/dat/d2))'))
 
     def test_none_thunk_request_from_lower(self):
-        """Test that a normal interest is forwared from to higher"""
+        """Test that a normal interest is forwared from lower to higher"""
         interest = Interest("/test/data")
         self.thunklayer.queue_from_lower.put([1, interest])
         res = self.thunklayer.queue_to_higher.get(timeout=2)
         self.assertEqual(res, [1, interest])
 
     def test_none_thunk_request_from_higher(self):
-        """Test that a normal interest is forwared from to higher"""
+        """Test that a normal interest is forwared from higher to lower"""
         interest = Interest("/test/data")
         self.thunklayer.queue_from_higher.put([1, interest])
         res = self.thunklayer.queue_to_lower.get(timeout=2)
         self.assertEqual(res, [1, interest])
+
+    def test_none_thunk_content_from_lower(self):
+        """test that a normal content is forwared from lower to higher"""
+        content = Content("/test/data")
+        self.thunklayer.queue_from_lower.put([1, content])
+        res = self.thunklayer.queue_to_higher.get(timeout=2)
+        self.assertEqual(res, [1, content])
+
+    def test_none_thunk_content_from_higher(self):
+        """test that a normal content is forwared from higher to lower"""
+        content = Content("/test/data")
+        self.thunklayer.queue_from_higher.put([1, content])
+        res = self.thunklayer.queue_to_lower.get(timeout=2)
+        self.assertEqual(res, [1, content])
+
+    def test_none_thunk_nack_from_lower(self):
+        """test that a normal nack is forwared from lower to higher"""
+        nack = Nack("/test/data", NackReason.NO_CONTENT, interest=Interest("/test/data"))
+        self.thunklayer.queue_from_lower.put([1, nack])
+        res = self.thunklayer.queue_to_higher.get(timeout=2)
+        self.assertEqual(res, [1, nack])
+
+    def test_none_thunk_nack_from_higher(self):
+        """test that a normal nack is forwared from higher to lower"""
+        nack = Nack("/test/data", NackReason.NO_CONTENT, interest=Interest("/test/data"))
+        self.thunklayer.queue_from_higher.put([1, nack])
+        res = self.thunklayer.queue_to_lower.get(timeout=2)
+        self.assertEqual(res, [1, nack])

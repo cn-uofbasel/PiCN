@@ -39,9 +39,9 @@ class BasicThunkLayer(LayerProcess):
         if isinstance(packet, Interest):
             self.handleInterest(packet_id, packet, from_higher=False)
         elif isinstance(packet, Content):
-            self.handleContent(packet_id, packet)
+            self.handleContent(packet_id, packet, from_higher=False)
         elif isinstance(packet, Nack):
-            self.handleNack(packet_id, packet)
+            self.handleNack(packet_id, packet, from_higher=False)
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         to_lower.put(data)
@@ -117,7 +117,7 @@ class BasicThunkLayer(LayerProcess):
             self.active_thunk_table.remove_entry_from_thunk_table(r.name)
 
     def handleNack(self, id: int, nack: Nack, from_higher):
-        if not self.isthunk():
+        if not self.isthunk(nack.name):
             if from_higher:
                 self.queue_to_lower.put([id, nack])
                 return
