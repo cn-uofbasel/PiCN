@@ -102,16 +102,20 @@ class BasicThunkLayer(LayerProcess):
 
     def check_and_compute_cost(self):
         """check if all data are available and start computation"""
+        removes = []
         for e in self.active_thunk_table.container:
             if self.all_data_available(e.name):
                 name = self.removeThunkMarker(e.name)
                 nfn_name = self.parser.network_name_to_nfn_str(name)
                 ast = self.parser.parse(nfn_name)
                 cost, path = self.compute_cost_and_requests(ast)
+                #todo, add to plan table
+                removes.append(e)
+                self.planTable.add_plan(e.name, path, cost)
                 content = Content(e.name, str(cost))
                 self.queue_to_lower.put([e.id, content])
-                #todo, add to plan table
-                self.
+        for r in removes:
+            self.active_thunk_table.remove_entry_from_thunk_table(r.name)
 
     def handleNack(self, id: int, nack: Nack, from_higher):
         if not self.isthunk():

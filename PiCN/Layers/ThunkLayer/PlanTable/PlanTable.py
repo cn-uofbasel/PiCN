@@ -16,7 +16,13 @@ class PlanTable(object):
         self.container[name] = (requests, cost)
 
     def get_plan(self, name: Name) -> List[Name]:
-        self.container.get(name)[0]
+        res = self.container.get(name)
+        if res is None:
+            return None
+        return res[0]
 
     def get_cost(self, name: Name) -> int:
-        self.container.get(name)[1]
+        res = self.container.get(name)
+        if res is None:
+            return None
+        return res[1]
