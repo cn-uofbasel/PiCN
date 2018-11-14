@@ -26,6 +26,9 @@ class test_NFNForwarderThunks(unittest.TestCase):
         self.forwarder2_port = self.forwarder2.linklayer.interfaces[0].get_port()
         self.forwarder3_port = self.forwarder3.linklayer.interfaces[0].get_port()
 
+        self.forwarder1.icnlayer.pit.set_pit_timeout(10)
+        self.forwarder1.icnlayer.pit.set_pit_retransmits(10)
+
         self.client = Fetch("127.0.0.1", self.forwarder1_port, 255, self.get_encoder())
         self.mgmt1 = MgmtClient(self.forwarder1_port)
         self.mgmt2 = MgmtClient(self.forwarder2_port)
@@ -82,4 +85,18 @@ class test_NFNForwarderThunks(unittest.TestCase):
         name += "NFN"
         res = self.client.fetch_data(name, timeout=4)
         self.assertEqual(res, "620")
+        #print(self.forwarder1.thunk_layer.planTable.get_plan(self.forwarder1.thunk_layer.removeThunkMarker(name)))
+
+    def test_simple_thunk_query_additional_fwd_rule_to_fct_and_data(self):
+        """Test a simple thunk query. Add additional rule to have cheap computation at fct and data location"""
+        self.mgmt2.add_face("127.0.0.1", self.forwarder3_port, 0)
+        self.mgmt2.add_forwarding_rule(Name("/fct"), [0])
+        self.mgmt3.add_face("127.0.0.1", self.forwarder2_port, 0)
+        self.mgmt3.add_forwarding_rule(Name("/dat"), [0])
+        name = Name("/fct/f1")
+        name += "_(/dat/data/d1)"
+        name += "THUNK"
+        name += "NFN"
+        res = self.client.fetch_data(name, timeout=0)
+        self.assertEqual(res, "39")
         #print(self.forwarder1.thunk_layer.planTable.get_plan(self.forwarder1.thunk_layer.removeThunkMarker(name)))
