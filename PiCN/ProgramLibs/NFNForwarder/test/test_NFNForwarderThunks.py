@@ -56,5 +56,6 @@ class test_NFNForwarderThunks(unittest.TestCase):
         name += "_(/dat/data/d1)"
         name += "THUNK"
         name += "NFN"
-        res = self.client.fetch_data(name, timeout=0)
+        res = self.client.fetch_data(name, timeout=4)
         self.assertEqual(res, "659")
+        #print(self.forwarder1.thunk_layer.planTable.get_plan(self.forwarder1.thunk_layer.removeThunkMarker(name)))
