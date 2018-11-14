@@ -84,7 +84,7 @@ class BasicThunkLayer(LayerProcess):
             if data_size is not None:
                 #content = Content(interest.name, str(data_size))
                 #self.queue_to_lower.put([id, content])
-                self.active_thunk_table.add_estimated_cost_to_awaiting_data(tn, data_size) #if data local -> set cost
+                self.active_thunk_table.add_estimated_cost_to_awaiting_data(tn, 0)#data_size) #if data local -> set cost to 0
                 continue
             interest = Interest(self.addThunkMarker(tn))
             self.queue_to_lower.put([id, interest])

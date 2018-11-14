@@ -1,11 +1,11 @@
 """Tests for the BasicThunkLayer"""
 
 import multiprocessing
+import shutil
 import unittest
+import os
 
 from PiCN.Layers.ThunkLayer import BasicThunkLayer
-from PiCN.Packets import Name
-from PiCN.Processes import LayerProcess
 from PiCN.Packets import Interest, Content, Nack, NackReason, Name
 from PiCN.Layers.ICNLayer.PendingInterestTable import PendingInterstTableMemoryExact
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
@@ -15,11 +15,18 @@ from PiCN.Layers.NFNLayer.Parser import *
 from PiCN.Layers.ThunkLayer.ThunkTable import ThunkList
 from PiCN.Layers.ThunkLayer.PlanTable import PlanTable
 from PiCN.Processes.PiCNSyncDataStructFactory import PiCNSyncDataStructFactory
+from PiCN.Layers.RepositoryLayer.Repository import SimpleFileSystemRepository
+
 
 class test_BasicThunkLayer(unittest.TestCase):
     """Tests for the BasicThunkLayer"""
 
     def setUp(self):
+        try:
+            shutil.rmtree(self.path)
+            os.remove("/tmp/repo")
+        except:
+            pass
         factory = PiCNSyncDataStructFactory()
 
         factory.register("cs", ContentStoreMemoryExact)
@@ -38,8 +45,10 @@ class test_BasicThunkLayer(unittest.TestCase):
         self.planTable = factory.manager.planTable()
 
         self.parser = DefaultNFNParser()
+        self.repo = SimpleFileSystemRepository("/tmp/repo", Name("/dat/data"), multiprocessing.Manager())
 
-        self.thunklayer = BasicThunkLayer(self.cs, self.fib, self.pit, self.faceidtable, self.thunkTable, self.planTable, self.parser)
+        self.thunklayer = BasicThunkLayer(self.cs, self.fib, self.pit, self.faceidtable, self.thunkTable, self.planTable,
+                                          self.parser, self.repo)
         self.thunklayer.queue_to_higher = multiprocessing.Queue()
         self.thunklayer.queue_to_lower = multiprocessing.Queue()
         self.thunklayer.queue_from_higher = multiprocessing.Queue()
@@ -49,6 +58,11 @@ class test_BasicThunkLayer(unittest.TestCase):
 
     def tearDown(self):
         self.thunklayer.stop_process()
+        try:
+            shutil.rmtree(self.path)
+            os.remove("/tmp/repo")
+        except:
+            pass
 
     def test_remove_thunk_marker(self):
         """Test if the system removes the thunk marker correctly"""
@@ -458,7 +472,7 @@ class test_BasicThunkLayer(unittest.TestCase):
         self.thunklayer.queue_from_lower.put([1, content3])
 
         res = self.thunklayer.queue_to_lower.get()
-        c = Content(name, str(4))
+        c = Content(name, str(2))
         self.assertEqual(res, [1, c])
 
     def test_simple_thunk_request_from_lower_data_local_cached(self):
@@ -498,6 +512,45 @@ class test_BasicThunkLayer(unittest.TestCase):
         content3 = Content(res3[1].name, str(2))
         self.thunklayer.queue_from_lower.put([1, content3])
 
+        res = self.thunklayer.queue_to_lower.get(timeout=2)
+        c = Content(name, str(2))
+        self.assertEqual(res, [1, c])
+
+    def test_simple_thunk_request_from_lower_data_local_repo(self):
+        """test receiving a thunk request from the network with some data local data in a repo"""
+        self.thunklayer.fib.add_fib_entry(Name("/fct"), [1])
+
+        self.path = "/tmp/repo"
+        try:
+            os.stat(self.path)
+        except:
+            os.mkdir(self.path)
+        with open( self.path + "/d2", 'w+') as content_file:
+            content_file.write("data2")
+
+        name = Name("/fct/f1")
+        name += "_(/dat/data/d2)"
+        name += "THUNK"
+        name += "NFN"
+        interest = Interest(name)
+        self.thunklayer.queue_from_lower.put([1,interest])
+
+        res1 = self.thunklayer.queue_to_lower.get(timeout=2)
+        res2 = self.thunklayer.queue_to_lower.get(timeout=2)
+
+        self.assertEqual(res1, [1, Interest("/fct/f1/THUNK")])
+
+        n1 = Name("/fct/f1")
+        n1 += '_(/dat/data/d2)'
+        n1 += 'THUNK'
+        n1 += 'NFN'
+        self.assertEqual(res2, [1, Interest(n1)])
+
+        content1 = Content(res1[1].name, str(4))
+        self.thunklayer.queue_from_lower.put([1, content1])
+        content2 = Content(res2[1].name, str(9))
+        self.thunklayer.queue_from_lower.put([1, content2])
+
         res = self.thunklayer.queue_to_lower.get()
-        c = Content(name, str(6))
+        c = Content(name, str(4))
         self.assertEqual(res, [1, c])
