@@ -21,18 +21,21 @@ from PiCN.Layers.TimeoutPreventionLayer import BasicTimeoutPreventionLayer, Time
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder, SimpleStringEncoder
 from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
+from PiCN.Layers.ThunkLayer import BasicThunkLayer
 from PiCN.Logger import Logger
 from PiCN.Mgmt import Mgmt
 from PiCN.Processes import PiCNSyncDataStructFactory
 from PiCN.Layers.LinkLayer import BasicLinkLayer
 from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface, AddressInfo, BaseInterface
 from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
+from PiCN.Layers.ThunkLayer.PlanTable import PlanTable
+from PiCN.Layers.ThunkLayer.ThunkTable import ThunkList
 
 class NFNForwarder(object):
     """NFN Forwarder for PICN"""
     # TODO add chunking layer
     def __init__(self, port=9000, log_level=255, encoder: BasicEncoder=None, interfaces: List[BaseInterface]=None,
-                 ageing_interval: int = 3):
+                 ageing_interval: int = 3, use_thunks=False):
         # debug level
         logger = Logger("NFNForwarder", log_level)
         logger.info("Start PiCN NFN Forwarder on port " + str(port))
@@ -53,12 +56,19 @@ class NFNForwarder(object):
 
         synced_data_struct_factory.register("computation_table", NFNComputationList)
         synced_data_struct_factory.register("timeoutprevention_dict", TimeoutPreventionMessageDict)
+        if use_thunks:
+            synced_data_struct_factory.register("thunktable", ThunkList)
+            synced_data_struct_factory.register("plantable", PlanTable)
+
         synced_data_struct_factory.create_manager()
 
         cs = synced_data_struct_factory.manager.cs()
         fib = synced_data_struct_factory.manager.fib()
         pit = synced_data_struct_factory.manager.pit()
         faceidtable = synced_data_struct_factory.manager.faceidtable()
+        if use_thunks:
+            thunktable = synced_data_struct_factory.manager.thunktable()
+            plantable = synced_data_struct_factory.manager.plantable()
 
         #setup chunkifier
         self.chunkifier = SimpleContentChunkifyer()
@@ -84,18 +94,31 @@ class NFNForwarder(object):
         self.r2cclient = TimeoutR2CHandler()
         comp_table = synced_data_struct_factory.manager.computation_table(self.r2cclient, self.parser)
         self.nfnlayer = BasicNFNLayer(cs, fib, pit, faceidtable, comp_table, self.executors, self.parser, self.r2cclient, log_level=log_level)
+        if use_thunks:
+            self.thunk_layer = BasicThunkLayer(cs, fib, pit, faceidtable, thunktable, plantable, self.parser, log_level=log_level)
 
         timeoutprevention_dict = synced_data_struct_factory.manager.timeoutprevention_dict()
         self.timeoutpreventionlayer = BasicTimeoutPreventionLayer(timeoutprevention_dict, comp_table, pit=pit, log_level=log_level)
 
-        self.lstack: LayerStack = LayerStack([
-            self.nfnlayer,
-            self.chunklayer,
-            self.timeoutpreventionlayer,
-            self.icnlayer,
-            self.packetencodinglayer,
-            self.linklayer
-        ])
+        if use_thunks:
+            self.lstack: LayerStack = LayerStack([
+                self.nfnlayer,
+                self.chunklayer,
+                self.timeoutpreventionlayer,
+                self.thunk_layer,
+                self.icnlayer,
+                self.packetencodinglayer,
+                self.linklayer
+            ])
+        else:
+            self.lstack: LayerStack = LayerStack([
+                self.nfnlayer,
+                self.chunklayer,
+                self.timeoutpreventionlayer,
+                self.icnlayer,
+                self.packetencodinglayer,
+                self.linklayer
+            ])
 
         self.icnlayer.cs = cs
         self.icnlayer.fib = fib

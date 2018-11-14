@@ -46,6 +46,10 @@ def main(argv):
         logger.info("Using MapReduce Optimizer")
         forwarder.nfnlayer.optimizer = MapReduceOptimizer(forwarder.icnlayer.cs, forwarder.icnlayer.fib,
                                                               forwarder.icnlayer.pit, forwarder.linklayer.faceidtable)
+    elif args.optimizer == "Thunks":
+        forwarder = PiCN.ProgramLibs.NFNForwarder.NFNForwarder(args.port, log_level, encoder, use_thunks=True)
+        logger.info("Using Thunks for Planning and Optimizing")
+        #TODO set thunk optimizer as soon as it is available
     else:
         forwarder = PiCN.ProgramLibs.NFNForwarder.NFNForwarder(args.port, log_level, encoder)
 
@@ -60,6 +64,6 @@ if __name__ == "__main__":
     parser.add_argument('-p', '--port', type=int, default=9000, help="UDP port (default: 9000)")
     parser.add_argument('-f', '--format', choices=['ndntlv','simple'], type=str, default='ndntlv', help='Packet Format (default: ndntlv)')
     parser.add_argument('-l', '--logging', choices=['debug','info', 'warning', 'error', 'none'], type=str, default='info', help='Logging Level (default: info)')
-    parser.add_argument('-e', '--optimizer', choices=['ToDataFirst', 'Edge', 'MapReduce'], type=str, default="ToDataFirst", help="Choose the NFN Optimizer")
+    parser.add_argument('-e', '--optimizer', choices=['ToDataFirst', 'Edge', 'MapReduce', 'Thunks'], type=str, default="ToDataFirst", help="Choose the NFN Optimizer")
     args = parser.parse_args()
     main(args)

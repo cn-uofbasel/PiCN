@@ -147,7 +147,10 @@ class BasicThunkLayer(LayerProcess):
 
 
     def get_data_size(self, name: Name) -> int:
-        cs_entry = self.cs.find_content_object(name) #if content is available local in CS, use it
+        if self.cs is not None:
+            cs_entry = self.cs.find_content_object(name) #if content is available local in CS, use it
+        else:
+            cs_entry = None
         data_size = None
         if cs_entry is not None:
             if cs_entry.content.content.startswith("mdo:"):

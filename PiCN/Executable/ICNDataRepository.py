@@ -19,9 +19,8 @@ def main(args):
         encoder = NdnTlvEncoder()
     else:
         encoder = SimpleStringEncoder(log_level=log_level)
-
     repo = ICNDataRepository(args.datapath, prefix,
-                             args.port, log_level, encoder=encoder, autoconfig=args.autoconfig)
+                             args.port, log_level, encoder=encoder, autoconfig=args.autoconfig, use_thunks=args.thunks)
     repo.start_repo()
 
     repo.linklayer.process.join()
@@ -38,6 +37,6 @@ if __name__ == "__main__":
                         help='prefix for all content stored in this repo')
     parser.add_argument('port', type=int, default=9000,
                         help="the repo's UDP and TCP port (TCP only for MGMT)")
-
+    parser.add_argument('--thunks', action="store_true")
     args = parser.parse_args()
     main(args)
