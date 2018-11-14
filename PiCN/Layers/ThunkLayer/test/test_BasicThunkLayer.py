@@ -555,8 +555,24 @@ class test_BasicThunkLayer(unittest.TestCase):
         self.assertEqual(res, [1, c])
 
     def test_thunk_request_for_data_in_repo(self):
-        """test receiving a thunk request for data, if data is in rope"""
+        """test receiving a thunk request for data, if data is in repo"""
         interest = Interest(Name("/dat/data/d2/THUNK"))
         self.thunklayer.queue_from_lower.put([3, interest])
         res = self.thunklayer.queue_to_lower.get(timeout=2)
         self.assertEqual(res, [3, Content(interest.name, str(5))])
+
+    def test_thunk_request_for_data_in_cache_mdo(self):
+        """test receiving a thunk request for data, if data is in cache as MDO"""
+        self.thunklayer.cs.add_content_object(Content(Name("/fct/f1"), "mdo:2:data"))
+        interest = Interest(Name("/fct/f1/THUNK"))
+        self.thunklayer.queue_from_lower.put([3, interest])
+        res = self.thunklayer.queue_to_lower.get(timeout=2)
+        self.assertEqual(res, [3, Content(interest.name, str(2))])
+
+    def test_thunk_request_for_data_in_cache(self):
+        """test receiving a thunk request for data, if data is in cache"""
+        self.thunklayer.cs.add_content_object(Content(Name("/fct/f1"), "data"))
+        interest = Interest(Name("/fct/f1/THUNK"))
+        self.thunklayer.queue_from_lower.put([3, interest])
+        res = self.thunklayer.queue_to_lower.get(timeout=2)
+        self.assertEqual(res, [3, Content(interest.name, str(4))])
