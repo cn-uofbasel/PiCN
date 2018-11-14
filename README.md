@@ -10,7 +10,7 @@ PiCN is a...
 * our platform to build the next generation of [NFN](docs/nfn.md).
 * a simple [Simulation System](docs/simulation.md) for ICN and NFN 
 
-PiCN is written in Python 3.6+ and tested on Linux, Mac OS X and Windows. More than 200 unit tests are included.
+PiCN is written in Python 3.6+ and tested on Linux, Mac OS X and Windows. More than 400 unit tests are included.
 
 ## Features
 
