@@ -72,6 +72,7 @@ class BasicThunkLayer(LayerProcess):
         ast = self.parser.parse(nfn_str)
 
         thunks = self.generatePossibleThunkNames(ast)
+        self.logger.info("THUNKNAMES: "+ str(thunks))
         thunk_names = []
 
         for t in thunks:
@@ -205,7 +206,7 @@ class BasicThunkLayer(LayerProcess):
             function_list = self.optimizer._get_functions_from_ast(ast)
             prepend_list = name_list + function_list
             fib_name_list = []
-            if self.fib.find_fib_entry(Name(ast._element)):
+            if self.fib.find_fib_entry(Name(ast._element)) or self.cs.find_content_object(Name(ast._element)):
                 res.append(ast._element)
             for n in prepend_list:
                 if self.fib.find_fib_entry(Name(n)) is not None:
@@ -278,7 +279,10 @@ class BasicThunkLayer(LayerProcess):
             if function_cost is None:
                 inner_cost = sys.maxsize
             else:
-               inner_cost = function_cost + sum(list(map(lambda x: x[0], parameter_cost)))
+                try:
+                    inner_cost = function_cost + sum(list(map(lambda x: x[0], parameter_cost)))
+                except:
+                    inner_cost = sys.maxsize
             if overall_cost is None:
                 overall_cost = (sys.maxsize, None)
             if inner_cost > overall_cost[0]:

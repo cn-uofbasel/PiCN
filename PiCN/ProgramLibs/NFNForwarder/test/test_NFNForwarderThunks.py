@@ -59,3 +59,27 @@ class test_NFNForwarderThunks(unittest.TestCase):
         res = self.client.fetch_data(name, timeout=4)
         self.assertEqual(res, "659")
         #print(self.forwarder1.thunk_layer.planTable.get_plan(self.forwarder1.thunk_layer.removeThunkMarker(name)))
+
+    def test_simple_thunk_query_additional_fwd_rule_to_fct(self):
+        """Test a simple thunk query. Add additional rule to have cheap computation at data location"""
+        self.mgmt2.add_face("127.0.0.1", self.forwarder3_port, 0)
+        self.mgmt2.add_forwarding_rule(Name("/fct"), [0])
+        name = Name("/fct/f1")
+        name += "_(/dat/data/d1)"
+        name += "THUNK"
+        name += "NFN"
+        res = self.client.fetch_data(name, timeout=4)
+        self.assertEqual(res, "39")
+        #print(self.forwarder1.thunk_layer.planTable.get_plan(self.forwarder1.thunk_layer.removeThunkMarker(name)))
+
+    def test_simple_thunk_query_additional_fwd_rule_to_data(self):
+        """Test a simple thunk query. Add additional rule to have cheap computation at fct location"""
+        self.mgmt3.add_face("127.0.0.1", self.forwarder2_port, 0)
+        self.mgmt3.add_forwarding_rule(Name("/dat"), [0])
+        name = Name("/fct/f1")
+        name += "_(/dat/data/d1)"
+        name += "THUNK"
+        name += "NFN"
+        res = self.client.fetch_data(name, timeout=4)
+        self.assertEqual(res, "620")
+        #print(self.forwarder1.thunk_layer.planTable.get_plan(self.forwarder1.thunk_layer.removeThunkMarker(name)))
