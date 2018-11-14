@@ -58,10 +58,10 @@ class BasicThunkLayer(LayerProcess):
             return
 
         if interest.name.components[-1] == b'THUNK':
-            data_size = self.get_data_size(interest.name)
+            data_size = self.get_data_size(self.removeThunkMarker(interest.name))
             if data_size is not None:
-                content = Content(interest.name, str(data_size))
-                self.queue_to_lower.put(content)
+                content = Content(self.addThunkMarker(interest.name), str(data_size))
+                self.queue_to_lower.put([id, content])
                 return
 
         name = self.removeThunkMarker(interest.name)
@@ -175,6 +175,8 @@ class BasicThunkLayer(LayerProcess):
     def addThunkMarker(self, name: Name) -> Name:
         """Add a thunk marker to a Name"""
         ret = Name(name.components[:])
+        if name.components[-1] == b'THUNK':
+            return name
         if name.components[-1] != b"NFN":
             ret += "THUNK"
             return ret

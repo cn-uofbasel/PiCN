@@ -27,6 +27,13 @@ class test_BasicThunkLayer(unittest.TestCase):
             os.remove("/tmp/repo")
         except:
             pass
+        self.path = "/tmp/repo"
+        try:
+            os.stat(self.path)
+        except:
+            os.mkdir(self.path)
+        with open( self.path + "/d2", 'w+') as content_file:
+            content_file.write("data2")
         factory = PiCNSyncDataStructFactory()
 
         factory.register("cs", ContentStoreMemoryExact)
@@ -520,14 +527,6 @@ class test_BasicThunkLayer(unittest.TestCase):
         """test receiving a thunk request from the network with some data local data in a repo"""
         self.thunklayer.fib.add_fib_entry(Name("/fct"), [1])
 
-        self.path = "/tmp/repo"
-        try:
-            os.stat(self.path)
-        except:
-            os.mkdir(self.path)
-        with open( self.path + "/d2", 'w+') as content_file:
-            content_file.write("data2")
-
         name = Name("/fct/f1")
         name += "_(/dat/data/d2)"
         name += "THUNK"
@@ -554,3 +553,10 @@ class test_BasicThunkLayer(unittest.TestCase):
         res = self.thunklayer.queue_to_lower.get()
         c = Content(name, str(4))
         self.assertEqual(res, [1, c])
+
+    def test_thunk_request_for_data_in_repo(self):
+        """test receiving a thunk request for data, if data is in rope"""
+        interest = Interest(Name("/dat/data/d2/THUNK"))
+        self.thunklayer.queue_from_lower.put([3, interest])
+        res = self.thunklayer.queue_to_lower.get(timeout=2)
+        self.assertEqual(res, [3, Content(interest.name, str(5))])
