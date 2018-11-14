@@ -165,6 +165,10 @@ class BasicICNLayer(LayerProcess):
             pit_entry = self.pit.find_pit_entry(nack.name) #read modified entry from pit
             fib_entry = self.fib.find_fib_entry(nack.name, pit_entry.fib_entries_already_used, pit_entry.faceids) #read new fib entry
             if fib_entry is None or fib_entry.faceid == [face_id]: #FIXME WHAT IS THE RIGHT CONDITION HERE?
+                if self._interest_to_app and not from_local and 'THUNK' in str(nack.name):
+                    self.logger.info("Sending Thunk Nack to upper")
+                    self.queue_to_higher.put([face_id, nack])
+                    return
                 self.logger.info("Sending NACK to previous node(s)")
                 re_add = False
                 for i in range(0, len(pit_entry.faceids)):
@@ -208,6 +212,9 @@ class BasicICNLayer(LayerProcess):
             for pit_entry in removed_pit_entries:
                 if not pit_entry:
                     continue
+                for fid, local in zip(pit_entry.faceids, pit_entry.local_app):
+                    if local is True:
+                        self.queue_to_higher.put([fid, Nack(pit_entry.name, NackReason.PIT_TIMEOUT, pit_entry.interest)])
             #CS ageing
             self.cs.ageing()
         except Exception as e:

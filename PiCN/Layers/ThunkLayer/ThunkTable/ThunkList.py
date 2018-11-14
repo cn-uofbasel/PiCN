@@ -48,6 +48,8 @@ class ThunkList(BaseThunkTable):
     def remove_entry_from_thunk_table(self, name: Name):
         """Remove entry from the thunktable"""
         entry = self.get_entry_from_name(name)
+        if entry is None:
+            return
         self.container.remove(entry)
 
     def remove_awaiting_data(self, awaiting_name: Name):

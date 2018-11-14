@@ -37,10 +37,13 @@ class BasicThunkLayer(LayerProcess):
         packet = data[1]
 
         if isinstance(packet, Interest):
+            self.logger.debug("Handle interest: " + str(packet.name))
             self.handleInterest(packet_id, packet, from_higher=False)
         elif isinstance(packet, Content):
+            self.logger.debug("Handle content: " + str(packet.name) + " | " + str(packet.content))
             self.handleContent(packet_id, packet, from_higher=False)
         elif isinstance(packet, Nack):
+            self.logger.debug("Handle nack: " + str(packet.name))
             self.handleNack(packet_id, packet, from_higher=False)
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
@@ -120,8 +123,12 @@ class BasicThunkLayer(LayerProcess):
                 cost, path = self.compute_cost_and_requests(ast, e)
                 self.planTable.add_plan(e.name, path, cost)
                 removes.append(e)
-                content = Content(self.addThunkMarker(e.name), str(cost))
-                self.queue_to_lower.put([e.id, content])
+                if cost != sys.maxsize:
+                    content = Content(self.addThunkMarker(e.name), str(cost))
+                    self.queue_to_lower.put([e.id, content])
+                else:
+                    nack = Nack(self.addThunkMarker(e.name), NackReason.COMP_PARAM_UNAVAILABLE, Interest(self.addThunkMarker(e.name)))
+                    self.queue_to_lower.put([e.id, nack])
         for r in removes:
             self.active_thunk_table.remove_entry_from_thunk_table(r.name)
 
@@ -136,7 +143,7 @@ class BasicThunkLayer(LayerProcess):
         request_name = self.removeThunkMarker(nack.name)
         self.active_thunk_table.remove_awaiting_data(request_name) #got nack for the entry, remove it
         removes = []
-        for e in self.active_thunk_table.container: #remove entrys which cannot be solved anymore
+        for e in self.active_thunk_table.get_container(): #remove entrys which cannot be solved anymore
             if len(self.active_thunk_table.get_entry_from_name(e.name).awaiting_data) == 0:
                 removes.append(e)
             self.check_and_compute_cost()
