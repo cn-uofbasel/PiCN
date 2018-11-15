@@ -82,7 +82,7 @@ class DefaultNFNParser(object):
         if len(name.components) == 2:
             return name.string_components[0], None
         if name.string_components [-1] != "NFN":
-            return None, None
+            return name, None
         prepended_name = Name()
         prepended_name.string_components = name.string_components[:-2]
         nfn_comp = name.string_components[-2].replace("_", prepended_name.to_string())

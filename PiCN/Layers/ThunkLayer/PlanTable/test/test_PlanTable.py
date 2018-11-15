@@ -71,6 +71,8 @@ class test_PlanTable(unittest.TestCase):
     def test_compute_fwd_subcomps(self):
         """Test if computation forward is correct for subcomps"""
         name1 = Name("/test/data/d1")
+        name1 += "/func/f1(_)"
+        name1 += "NFN"
         name2 = Name("/hello/world/d2")
         name3 = Name("/test/data/d3")
         name3 += "/func/f1(_)"
@@ -100,8 +102,34 @@ class test_PlanTable(unittest.TestCase):
 
     def test_rewrite(self):
         """Test rewrites"""
-        pass
+        name1 = Name("/test/data/d3")
+        name1 += "/func/f1(_)"
+        name1 += "NFN"
+        name2 = Name("/func/f1")
+        name2 += "_(/test/data/d3)"
+        name2 += "NFN"
+        self.planTable.add_plan(name1, [name2], 5)
+        res1 = self.planTable.rewirte(name1)
+        self.assertEqual(res1, name2)
 
     def test_rewrite_subcomp(self):
         """Test rewrites for subcomp"""
-        pass
+        name1 = Name("/test/data/d1")
+        name1 += "/func/f1(_)"
+        name1 += "NFN"
+        name2 = Name("/hello/world/d2")
+        name3 = Name("/test/data/d3")
+        name3 += "/func/f1(_)"
+        name3 += "NFN"
+        self.planTable.add_plan(name1, [name2, name3], 5)
+        res0 = self.planTable.rewirte(name1)
+        self.assertIsNone(res0)
+        res1 = self.planTable.rewirte(name2)
+        self.assertEqual(res1, name2)
+        res2 = self.planTable.rewirte(name3)
+        self.assertEqual(res2, name3)
+        name4 = Name("/func/f1")
+        name4 += "_(/test/data/d3)"
+        name4 += "NFN"
+        res3 = self.planTable.rewirte(name4)
+        self.assertEqual(res3, name3)
