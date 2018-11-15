@@ -4,12 +4,13 @@ import unittest
 
 from PiCN.Layers.ThunkLayer.PlanTable import PlanTable
 from PiCN.Packets import Name
+from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
 
 class test_PlanTable(unittest.TestCase):
     """Testing the plan table"""
 
     def setUp(self):
-        self.planTable = PlanTable()
+        self.planTable = PlanTable(DefaultNFNParser())
 
     def test_add_entry(self):
         name = Name("/test/data")

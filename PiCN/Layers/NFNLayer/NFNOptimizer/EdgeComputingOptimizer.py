@@ -50,7 +50,7 @@ class EdgeComputingOptimizer(BaseNFNOptimizer):
                 return False
         return True
 
-    def rewrite(self, prepended_prefix: Name, ast: AST) -> List[str]:
+    def rewrite(self, name: Name, ast: AST) -> List[str]:
         names = self._get_names_from_ast(ast)
         functions = self._get_functions_from_ast(ast)
         names_in_fib = []

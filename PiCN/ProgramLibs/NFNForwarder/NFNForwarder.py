@@ -66,9 +66,11 @@ class NFNForwarder(object):
         fib = synced_data_struct_factory.manager.fib()
         pit = synced_data_struct_factory.manager.pit()
         faceidtable = synced_data_struct_factory.manager.faceidtable()
+
+        self.parser = DefaultNFNParser()
         if use_thunks:
             thunktable = synced_data_struct_factory.manager.thunktable()
-            plantable = synced_data_struct_factory.manager.plantable()
+            plantable = synced_data_struct_factory.manager.plantable(self.parser)
 
         #setup chunkifier
         self.chunkifier = SimpleContentChunkifyer()
@@ -90,7 +92,6 @@ class NFNForwarder(object):
         # setup nfn
         self.icnlayer._interest_to_app = True
         self.executors = {"PYTHON": NFNPythonExecutor()}
-        self.parser = DefaultNFNParser()
         self.r2cclient = TimeoutR2CHandler()
         comp_table = synced_data_struct_factory.manager.computation_table(self.r2cclient, self.parser)
         self.nfnlayer = BasicNFNLayer(cs, fib, pit, faceidtable, comp_table, self.executors, self.parser, self.r2cclient, log_level=log_level)

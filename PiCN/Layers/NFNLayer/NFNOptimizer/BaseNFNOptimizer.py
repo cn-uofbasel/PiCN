@@ -46,10 +46,10 @@ class BaseNFNOptimizer(object):
         """
 
     @abc.abstractmethod
-    def rewrite(self, prepended_prefix: Name, ast: AST) -> List[str]:
+    def rewrite(self, name: Name, ast: AST) -> List[str]:
         """rewrite the NFN interest. Creates a list of rewrites, ordered by priority. First is to be used first, others
         are backups, in case no result could be received using the first rewrite.
-        :param prepended_prefix: Prefix that was prepended to the interest
+        :param name: Name of the interest
         :param ast: The Abstract Syntax Tree for the current computation
         :return List of computation strings, including a marker which name should be prepended. List ordered by priority
         """

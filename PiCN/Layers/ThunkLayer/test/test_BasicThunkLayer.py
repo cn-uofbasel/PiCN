@@ -49,9 +49,9 @@ class test_BasicThunkLayer(unittest.TestCase):
         self.pit = factory.manager.pit()
         self.faceidtable = factory.manager.faceidtable()
         self.thunkTable = factory.manager.thunkTable()
-        self.planTable = factory.manager.planTable()
 
         self.parser = DefaultNFNParser()
+        self.planTable = factory.manager.planTable(self.parser)
         self.repo = SimpleFileSystemRepository("/tmp/repo", Name("/dat/data"), multiprocessing.Manager())
 
         self.thunklayer = BasicThunkLayer(self.cs, self.fib, self.pit, self.faceidtable, self.thunkTable, self.planTable,

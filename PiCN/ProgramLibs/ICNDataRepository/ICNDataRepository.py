@@ -69,8 +69,9 @@ class ICNDataRepository(object):
         synced_data_struct_factory.create_manager()
         faceidtable = synced_data_struct_factory.manager.faceidtable()
         if use_thunks:
+            self.parser = DefaultNFNParser()
             thunktable = synced_data_struct_factory.manager.thunktable()
-            plantable = synced_data_struct_factory.manager.plantable()
+            plantable = synced_data_struct_factory.manager.plantable(self.parser)
 
         if interfaces is not None:
             self.interfaces = interfaces
@@ -85,7 +86,6 @@ class ICNDataRepository(object):
         self.repolayer = BasicRepositoryLayer(self.repo, log_level=log_level)
 
         if use_thunks:
-            self.parser = DefaultNFNParser()
             self.thunklayer = BasicThunkLayer(None, None, None, faceidtable, thunktable, plantable, self.parser, self.repo, log_level=log_level)
             logger.info("Using Thunks")
 
