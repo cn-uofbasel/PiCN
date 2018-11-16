@@ -115,7 +115,7 @@ picn-mgmt --port 9001 newcontent "/data/obj1:World"
 
 Now we are ready to call the Named Function:
 ```console
-picn-fetch 127.0.0.1 9000 '/func/combine("Hello",/data/obj1)'
+picn-fetch 127.0.0.1 9000 '/func/combine("Hello",/data/obj1)/NFN'
 ```
 The result will be: **HelloWorld**. 
 
