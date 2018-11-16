@@ -24,26 +24,8 @@ NFN relies on the forwarding by using longest prefix matching, similar to ICN.
 Therefore, all components behind the first name are ignored.
 Since there are two ICN names, this interest can either be forwarded to **/func/combine**
 or to **/data/obj1**.
-The forwarding strategy on the nodes in the network decides, which name is prepended. A network node can 
-rewrite the name of an interest. 
-
-When forwarding to **/func/combine** the interest is encoded as:
-```console
-/func/combine/[_("Hello",/data/obj1)]/NFN
-```
-
-When forwarding to **/data/obj1** the interest is encoded as:
-```console
-/data/obj1/[/func/combine("Hello",_)]/NFN
-```
-NOTE: '[' and ']' marks the start end the end of a long single component.
-
-As one can easily see, a NFN interest consists of three main parts: 
-* a prefix, where each prefix is encoded into an individual name component.
-* a computation, which is encoded in a single name component marked by '[ ]'. It contains a placeholder ("**_**") used to define where the prepended name is integraded into the computation.
-* a last component to identify the interest as NFN interest (**NFN** as last component).
-
-Since the network automatically rewrites an interest message, a user do not need to care about prepending a name.
+The forwarding strategy on the nodes in the network decides, which name is prepended. Each network node can 
+rewrite the name of an interest and prepend a different name or split the computation to subcomputations for parallel execution. Since the network automatically rewrites an interest message, a user do not need to care about prepending a name or parallelization.
 
 ## Encoding a Named Function in a Content Object
 
