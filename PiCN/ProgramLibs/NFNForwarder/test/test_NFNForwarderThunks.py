@@ -7,6 +7,7 @@ from PiCN.ProgramLibs.Fetch import Fetch
 from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from PiCN.Mgmt import MgmtClient
 from PiCN.Packets import *
+from PiCN.Layers.NFNLayer.NFNOptimizer import ThunkPlanExecutor
 
 class test_NFNForwarderThunks(unittest.TestCase):
     """Test NFN Forwarder with Thunks"""
@@ -20,6 +21,7 @@ class test_NFNForwarderThunks(unittest.TestCase):
     def setUp(self):
         self.encoder = self.get_encoder()
         self.forwarder1 = NFNForwarder(0, encoder=self.get_encoder(), log_level=255, use_thunks=True)
+
         self.forwarder2 = NFNForwarder(0, encoder=self.get_encoder(), log_level=255, use_thunks=True)
         self.forwarder3 = NFNForwarder(0, encoder=self.get_encoder(), log_level=255, use_thunks=True)
         self.forwarder1_port = self.forwarder1.linklayer.interfaces[0].get_port()
@@ -44,8 +46,11 @@ class test_NFNForwarderThunks(unittest.TestCase):
         self.mgmt1.add_forwarding_rule(Name("/dat"), [0])
         self.mgmt1.add_forwarding_rule(Name("/fct"), [1])
 
-        self.mgmt2.add_new_content(Name("/dat/data/d1"), "This is our test content object"*20)
-        self.mgmt3.add_new_content(Name("/fct/f1"), "PYTHON\nf\ndef f(a):\n    return a.upper()")
+        self.content1 = "This is our test content object"*20
+        self.function1 = "PYTHON\nf\ndef f(a):\n    return a.upper()"
+
+        self.mgmt2.add_new_content(Name("/dat/data/d1"), self.content1)
+        self.mgmt3.add_new_content( Name("/fct/f1"), self.function1)
 
     def tearDown(self):
         self.forwarder1.stop_forwarder()
@@ -62,6 +67,11 @@ class test_NFNForwarderThunks(unittest.TestCase):
         res = self.client.fetch_data(name, timeout=4)
         self.assertEqual(res, "659")
         #print(self.forwarder1.thunk_layer.planTable.get_plan(self.forwarder1.thunk_layer.removeThunkMarker(name)))
+        name2 = Name("/fct/f1")
+        name2 += "_(/dat/data/d1)"
+        name2 += "NFN"
+        res2 = self.client.fetch_data(name2)
+        self.assertEqual(res2, self.content1.upper())
 
     def test_simple_thunk_query_additional_fwd_rule_to_fct(self):
         """Test a simple thunk query. Add additional rule to have cheap computation at data location"""
@@ -74,6 +84,11 @@ class test_NFNForwarderThunks(unittest.TestCase):
         res = self.client.fetch_data(name, timeout=4)
         self.assertEqual(res, "39")
         #print(self.forwarder1.thunk_layer.planTable.get_plan(self.forwarder1.thunk_layer.removeThunkMarker(name)))
+        name2 = Name("/fct/f1")
+        name2 += "_(/dat/data/d1)"
+        name2 += "NFN"
+        res2 = self.client.fetch_data(name2)
+        self.assertEqual(res2, self.content1.upper())
 
     def test_simple_thunk_query_additional_fwd_rule_to_data(self):
         """Test a simple thunk query. Add additional rule to have cheap computation at fct location"""
@@ -86,6 +101,11 @@ class test_NFNForwarderThunks(unittest.TestCase):
         res = self.client.fetch_data(name, timeout=4)
         self.assertEqual(res, "620")
         #print(self.forwarder1.thunk_layer.planTable.get_plan(self.forwarder1.thunk_layer.removeThunkMarker(name)))
+        name2 = Name("/fct/f1")
+        name2 += "_(/dat/data/d1)"
+        name2 += "NFN"
+        res2 = self.client.fetch_data(name2)
+        self.assertEqual(res2, self.content1.upper())
 
     def test_simple_thunk_query_additional_fwd_rule_to_fct_and_data(self):
         """Test a simple thunk query. Add additional rule to have cheap computation at fct and data location"""
@@ -100,3 +120,8 @@ class test_NFNForwarderThunks(unittest.TestCase):
         res = self.client.fetch_data(name, timeout=50)
         self.assertEqual(res, "39")
         #print(self.forwarder1.thunk_layer.planTable.get_plan(self.forwarder1.thunk_layer.removeThunkMarker(name)))
+        name2 = Name("/fct/f1")
+        name2 += "_(/dat/data/d1)"
+        name2 += "NFN"
+        res2 = self.client.fetch_data(name2)
+        self.assertEqual(res2, self.content1.upper())

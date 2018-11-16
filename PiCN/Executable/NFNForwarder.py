@@ -49,7 +49,6 @@ def main(argv):
     elif args.optimizer == "Thunks":
         forwarder = PiCN.ProgramLibs.NFNForwarder.NFNForwarder(args.port, log_level, encoder, use_thunks=True)
         logger.info("Using Thunks for Planning and Optimizing")
-        #TODO set thunk optimizer as soon as it is available
     else:
         forwarder = PiCN.ProgramLibs.NFNForwarder.NFNForwarder(args.port, log_level, encoder)
 

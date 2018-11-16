@@ -30,6 +30,7 @@ from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface, AddressInfo, BaseInt
 from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
 from PiCN.Layers.ThunkLayer.PlanTable import PlanTable
 from PiCN.Layers.ThunkLayer.ThunkTable import ThunkList
+from PiCN.Layers.NFNLayer.NFNOptimizer import ThunkPlanExecutor
 
 class NFNForwarder(object):
     """NFN Forwarder for PICN"""
@@ -97,6 +98,7 @@ class NFNForwarder(object):
         self.nfnlayer = BasicNFNLayer(cs, fib, pit, faceidtable, comp_table, self.executors, self.parser, self.r2cclient, log_level=log_level)
         if use_thunks:
             self.thunk_layer = BasicThunkLayer(cs, fib, pit, faceidtable, thunktable, plantable, self.parser, log_level=log_level)
+            self.nfnlayer.optimizer = ThunkPlanExecutor(cs, fib, pit, faceidtable, plantable)
 
         timeoutprevention_dict = synced_data_struct_factory.manager.timeoutprevention_dict()
         self.timeoutpreventionlayer = BasicTimeoutPreventionLayer(timeoutprevention_dict, comp_table, pit=pit, log_level=log_level)
