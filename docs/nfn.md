@@ -4,6 +4,9 @@ Named Function Networking (NFN) provides
 * a way to call and combine Named Functions by using interest messages.
 * a forwarding engine which decides where a result is computed. 
 
+**The goal of NFN is to enable users to write simple programs without careing about the network, and the network will find a good execution location for the computation.** 
+NFN can be used for Edge/Fog/Cloudcomputing. Depending on the location of the input data it will go for the edge or the cloud.
+
 **Note**: NFN has a [Sandboxed Python Execution Environment](nfn.md#sandboxing).
 
 ## NFN Introduction
@@ -22,10 +25,15 @@ In NFN a parameter can be a NFN expression, too. Therefore, NFN supports **funct
 
 NFN relies on the forwarding by using longest prefix matching, similar to ICN. 
 Therefore, all components behind the first name are ignored.
-Since there are two ICN names, this interest can either be forwarded to **/func/combine**
-or to **/data/obj1**.
-The forwarding strategy on the nodes in the network decides, which name is prepended. Each network node can 
+Since there are two ICN names, this interest can either be forwarded towards **/func/combine**
+or towards **/data/obj1**.
+
+The forwarding strategy on the nodes in the network decides, which name is prepended. Thus, the network optimizes 
+where a computation is executed, without user interaction.
+
+Each network node can 
 rewrite the name of an interest and prepend a different name or split the computation to subcomputations for parallel execution. Since the network automatically rewrites an interest message, a user do not need to care about prepending a name or parallelization.
+
 
 ## Encoding a Named Function in a Content Object
 
