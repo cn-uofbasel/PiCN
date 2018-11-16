@@ -16,49 +16,34 @@ A simple NFN interest could look like:
 /func/combine("Hello",/data/obj1)
 ```
 
-In this case we have a function **/func/combine** with two parameters.
+In this tutorial we have a function **/func/combine** with two parameters.
 The first parameter is a string, while the second parameter is a data name. 
+In NFN a parameter can be a NFN expression, too. Therefore, NFN supports **function chaining**.
 
 NFN relies on the forwarding by using longest prefix matching, similar to ICN. 
 Therefore, all components behind the first name are ignored.
 Since there are two ICN names, this interest can either be forwarded to **/func/combine**
 or to **/data/obj1**.
+The forwarding strategy on the nodes in the network decides, which name is prepended. A network node can 
+rewrite the name of an interest. 
 
 When forwarding to **/func/combine** the interest is encoded as:
-
-```console
-/func/combine/_("Hello",%2Fdata%2Fobj1)/NFN
-```
-
-When forwarding to **/data/obj1** the interest is encoded as:
-
-```console
-/data/obj1/%2Ffunc%2Fcombine("Hello",_)/NFN
-```
-As one can easily see, a NFN interest consists of three main parts: 
-* a prefix, where each prefix is encoded into an individual name component.
-* a computation, which is encoded in a single name component (we escape inner names and squash them in one name component), and contains a placeholder ("**_**") used to define where the prepended name is integraded into the computation.
-* a last component to identify the interest as NFN interest (**NFN** as last component).
-
-After a user expressed either one or the other interest, the network can reorder the interest to optimize the location, where an interest is executed. 
-For example, in data centers it is often useful to forward an interest towards the input data, since input data are usually larger than the function code.
-
-In NFN a parameter can be a NFN expression, too. Therefore, NFN supports **function chaining**.
-
-Note: The fetch tool supports an alternativ way to encode an interest message, which is easyer to read and write. Instead
-of escaping the "/" we can put the NFN expressions within "[" <nfn-expression> "]":
-
-Thus, when forwarding to **/func/combine** the interest is encoded as:
-
 ```console
 /func/combine/[_("Hello",/data/obj1)]/NFN
 ```
 
-And, when forwarding to **/data/obj1** the interest is encoded as:
-
+When forwarding to **/data/obj1** the interest is encoded as:
 ```console
 /data/obj1/[/func/combine("Hello",_)]/NFN
 ```
+NOTE: '[' and ']' marks the start end the end of a long single component.
+
+As one can easily see, a NFN interest consists of three main parts: 
+* a prefix, where each prefix is encoded into an individual name component.
+* a computation, which is encoded in a single name component marked by '[ ]'. It contains a placeholder ("**_**") used to define where the prepended name is integraded into the computation.
+* a last component to identify the interest as NFN interest (**NFN** as last component).
+
+Since the network automatically rewrites an interest message, a user do not need to care about prepending a name.
 
 ## Encoding a Named Function in a Content Object
 
@@ -89,7 +74,6 @@ def func1(a, b):
 def private_func(a, b):
     return a+b
 ```
-
 
 ## Getting Started with PiCN and NFN
 
@@ -129,23 +113,11 @@ and we add a data object to the second node:
 picn-mgmt --port 9001 newcontent "/data/obj1:World"
 ```
 
-Now we are ready to run a Named Function as described above:
+Now we are ready to call the Named Function:
 ```console
-picn-fetch 127.0.0.1 9000 '/func/combine/_("Hello",%2Fdata%2Fobj1)/NFN'
-   or
-picn-fetch 127.0.0.1 9000 '/func/combine/[_("Hello",/data/obj1)]/NFN'
-``` 
-or 
-```console
-picn-fetch 127.0.0.1 9000 '/data/obj1/%2Ffunc%2Fcombine("Hello",_)/NFN'
-   or
-picn-fetch 127.0.0.1 9000 '/data/obj1/[/func/combine("Hello",_)]/NFN'
-``` 
-It does not matter which name of both is chosen, since the network will decide where to compute. 
-The name prepended for the user is only meaningful for the first hop. 
-
-
-In both cases the result will be: **HelloWorld**. 
+picn-fetch 127.0.0.1 9000 '/func/combine("Hello",/data/obj1)'
+```
+The result will be: **HelloWorld**. 
 
 ## Sandboxing
 
