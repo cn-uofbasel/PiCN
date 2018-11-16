@@ -8,16 +8,21 @@ from PiCN.Packets import Name
 from PiCN.ProgramLibs.Fetch import Fetch
 from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
-
+from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
+from PiCN.Layers.NFNLayer.NFNOptimizer import BaseNFNOptimizer
 
 def main(args):
     name_str = args.name
+    name = None
+    if 'NFN' in name_str and '_' not in name_str:
+        name = parse_nfn_str(name_str)
 
-    if '[' in name_str and ']' in name_str:
-        name = unescape_str_to_Name(args.name)
-    else:
-        name = Name(args.name)
-        name = unescape_name(name)
+    if name is None:
+        if '[' in name_str and ']' in name_str:
+            name = unescape_str_to_Name(args.name)
+        else:
+            name = Name(args.name)
+            name = unescape_name(name)
     name.format = args.format
 
     encoder = NdnTlvEncoder() if args.format == 'ndntlv' else SimpleStringEncoder
@@ -52,6 +57,29 @@ def unescape_str_to_Name(name: str) -> Name:
     name += comps[2]
 
     return name
+
+def parse_nfn_str(name: str) -> Name:
+    name = name.replace("""'""", "")
+    parser = DefaultNFNParser()
+    optimizer = BaseNFNOptimizer(None, None, None, None)
+    if '/NFN' in name:
+        name = name.replace("/NFN", "")
+    ast = parser.parse(name)
+    if ast is None:
+        return None
+    names = optimizer._get_names_from_ast(ast)
+    if names is None or names == []:
+        names = optimizer._get_functions_from_ast(ast)
+    if names is None or names == []:
+        return None
+    prepend_name = Name(names[0])
+    if prepend_name is None:
+        return None
+    name_str = optimizer._set_prepended_name(ast, prepend_name, ast)
+    if name_str is None:
+        return None
+    res = parser.nfn_str_to_network_name(name_str)
+    return res
 
 
 if __name__ == "__main__":
