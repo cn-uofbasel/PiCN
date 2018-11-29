@@ -42,7 +42,7 @@ class cases_FetchNFN(object):
 
         self.ICNRepo: ICNDataRepository = ICNDataRepository("/tmp/repo_unit_test", Name("/test/data"), 0,
                                                             encoder=self.get_encoder(), log_level=255)
-        self.forwarder1: NFNForwarder = NFNForwarder(0, log_level=0, encoder=self.get_encoder())
+        self.forwarder1: NFNForwarder = NFNForwarder(0, log_level=255, encoder=self.get_encoder())
         self.forwarder2: NFNForwarder = NFNForwarder(0, log_level=255, encoder=self.get_encoder())
 
         self.repo_port = self.ICNRepo.linklayer.interfaces[0].get_port()
@@ -216,7 +216,7 @@ class cases_FetchNFN(object):
                 content = self.fetch.fetch_data(fetch_name, timeout=20)
         except:
             self.fail
-        self.assertEqual(5, content)
+        self.assertEqual("5", content)
 
 class test_FetchNFN_SimplePacketEncoder(cases_FetchNFN, unittest.TestCase):
     """Runs tests with the SimplePacketEncoder"""
