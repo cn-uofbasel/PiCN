@@ -241,7 +241,8 @@ class BasicNFNLayer(LayerProcess):
             return
         executor: BaseNFNExecutor = self.executors.get(self.get_nf_code_language(function_code))
         if executor is None:
-            self.logger.info("Cannot compute, because executor is not available")
+            self.logger.info("Cannot compute, because executor is not available for language: " +
+                             self.get_nf_code_language(function_code))
             self.queue_to_lower.put([entry.id,
                                      Nack(entry.original_name, NackReason.COMP_EXCEPTION, interest=entry.interest)])
             return
@@ -261,7 +262,6 @@ class BasicNFNLayer(LayerProcess):
                 params.append(entry.available_data[search_name])
             elif not isinstance(e.type, AST):
                 params.append(e.type(e._element))
-
         res = executor.execute(function_code=function_code, params=params)
         if res is None:
             self.queue_to_lower.put([entry.id,

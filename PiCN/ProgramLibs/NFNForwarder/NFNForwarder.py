@@ -15,7 +15,7 @@ from PiCN.Layers.ChunkLayer.Chunkifyer import SimpleContentChunkifyer
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseMemoryPrefix
 from PiCN.Layers.ICNLayer.PendingInterestTable import PendingInterstTableMemoryExact
 from PiCN.Layers.NFNLayer.R2C import TimeoutR2CHandler
-from PiCN.Layers.NFNLayer.NFNExecutor import NFNPythonExecutor
+from PiCN.Layers.NFNLayer.NFNExecutor import NFNPythonExecutor, BaseNFNExecutor
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationList
 from PiCN.Layers.TimeoutPreventionLayer import BasicTimeoutPreventionLayer, TimeoutPreventionMessageDict
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
@@ -36,7 +36,7 @@ class NFNForwarder(object):
     """NFN Forwarder for PICN"""
     # TODO add chunking layer
     def __init__(self, port=9000, log_level=255, encoder: BasicEncoder=None, interfaces: List[BaseInterface]=None,
-                 ageing_interval: int = 3, use_thunks=False):
+                 executors: BaseNFNExecutor = None, ageing_interval: int = 3, use_thunks=False):
         # debug level
         logger = Logger("NFNForwarder", log_level)
         logger.info("Start PiCN NFN Forwarder on port " + str(port))
@@ -92,7 +92,10 @@ class NFNForwarder(object):
 
         # setup nfn
         self.icnlayer._interest_to_app = True
-        self.executors = {"PYTHON": NFNPythonExecutor()}
+        if executors is None:
+            self.executors = {"PYTHON": NFNPythonExecutor()}
+        else:
+            self.executors = executors
         self.r2cclient = TimeoutR2CHandler()
         comp_table = synced_data_struct_factory.manager.computation_table(self.r2cclient, self.parser)
         self.nfnlayer = BasicNFNLayer(cs, fib, pit, faceidtable, comp_table, self.executors, self.parser, self.r2cclient, log_level=log_level)

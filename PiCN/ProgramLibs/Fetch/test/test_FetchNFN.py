@@ -5,15 +5,17 @@ import os
 import shutil
 import time
 import unittest
+import base64
+import platform
 
 from PiCN.ProgramLibs.Fetch import Fetch
 from PiCN.ProgramLibs.NFNForwarder import NFNForwarder
 
 from PiCN.Mgmt import MgmtClient
-from PiCN.Packets import Name, Nack
+from PiCN.Packets import Name, Nack, Content
 from PiCN.ProgramLibs.ICNDataRepository import ICNDataRepository
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
-
+from PiCN.Layers.NFNLayer.NFNExecutor import NFNPythonExecutor, x86Executor
 
 class cases_FetchNFN(object):
 
@@ -40,7 +42,7 @@ class cases_FetchNFN(object):
 
         self.ICNRepo: ICNDataRepository = ICNDataRepository("/tmp/repo_unit_test", Name("/test/data"), 0,
                                                             encoder=self.get_encoder(), log_level=255)
-        self.forwarder1: NFNForwarder = NFNForwarder(0, log_level=255, encoder=self.get_encoder())
+        self.forwarder1: NFNForwarder = NFNForwarder(0, log_level=0, encoder=self.get_encoder())
         self.forwarder2: NFNForwarder = NFNForwarder(0, log_level=255, encoder=self.get_encoder())
 
         self.repo_port = self.ICNRepo.linklayer.interfaces[0].get_port()
@@ -185,6 +187,36 @@ class cases_FetchNFN(object):
         except:
             self.fail()
         self.assertEqual(self.data3.upper(), content)
+
+
+    def test_fetch_single_data_from_repo_over_forwarder_native_code(self):
+        """Test fetch data from repo over forwarder using native code"""
+        if platform.system() != 'Darwin':
+            self.skipTest("Test only for OSX available")
+        execs = {"PYTHON": NFNPythonExecutor(), "x86": x86Executor()}
+        self.forwarder1 = NFNForwarder(0, log_level=0, encoder=self.get_encoder(), executors=execs)
+        self.fwd_port1 = self.forwarder1.linklayer.interfaces[0].get_port()
+        self.fetch = Fetch("127.0.0.1", self.fwd_port1, encoder=self.get_encoder())
+        self.ICNRepo.start_repo()
+        self.forwarder1.start_forwarder()
+        self.forwarder2.start_forwarder()
+        time.sleep(2)
+        self.add_face_and_forwadingrule()
+        nfnfile = open('NFN-x86-file-osx', 'r')
+        content_obj = nfnfile.read()
+        self.forwarder1.icnlayer.cs.add_content_object(Content("/func/native/test", content_obj))
+        #self.mgmtClient1.add_new_content(Name("/func/native/test"), content_obj)
+        time.sleep(5)
+        fetch_name = Name("/func/native/test")
+        fetch_name += '_("hello")'
+        fetch_name += 'NFN'
+        try:
+            content = None
+            while content is None or content == 'Received Nack: no forwarding rule':
+                content = self.fetch.fetch_data(fetch_name, timeout=20)
+        except:
+            self.fail
+        self.assertEqual(5, content)
 
 class test_FetchNFN_SimplePacketEncoder(cases_FetchNFN, unittest.TestCase):
     """Runs tests with the SimplePacketEncoder"""
