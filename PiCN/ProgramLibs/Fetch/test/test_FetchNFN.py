@@ -69,12 +69,15 @@ class cases_FetchNFN(object):
             os.remove(self.path)
         except:
             pass
-        self.mgmtClient1.shutdown()
-        self.mgmtClient2.shutdown()
-        self.ICNRepo.stop_repo()
-        self.forwarder1.stop_forwarder()
-        self.forwarder2.stop_forwarder()
-        self.fetch.stop_fetch()
+        try:
+            self.mgmtClient1.shutdown()
+            self.mgmtClient2.shutdown()
+            self.ICNRepo.stop_repo()
+            self.forwarder1.stop_forwarder()
+            self.forwarder2.stop_forwarder()
+            self.fetch.stop_fetch()
+        except:
+            pass
 
     def test_fetch_single_data_from_repo_over_forwarder(self):
         """Test fetch data from repo over forwarder"""
@@ -192,7 +195,6 @@ class cases_FetchNFN(object):
     def test_fetch_single_data_from_repo_over_forwarder_native_code(self):
         """Test fetch data from repo over forwarder using native code"""
         if platform.system() != 'Darwin':
-            self.add_face_and_forwadingrule()
             self.skipTest("Test only for OSX available")
         execs = {"PYTHON": NFNPythonExecutor(), "x86": x86Executor()}
         self.forwarder1 = NFNForwarder(0, log_level=255, encoder=self.get_encoder(), executors=execs)
