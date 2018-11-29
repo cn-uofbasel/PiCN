@@ -194,7 +194,7 @@ class cases_FetchNFN(object):
         if platform.system() != 'Darwin':
             self.skipTest("Test only for OSX available")
         execs = {"PYTHON": NFNPythonExecutor(), "x86": x86Executor()}
-        self.forwarder1 = NFNForwarder(0, log_level=0, encoder=self.get_encoder(), executors=execs)
+        self.forwarder1 = NFNForwarder(0, log_level=255, encoder=self.get_encoder(), executors=execs)
         self.fwd_port1 = self.forwarder1.linklayer.interfaces[0].get_port()
         self.fetch = Fetch("127.0.0.1", self.fwd_port1, encoder=self.get_encoder())
         self.ICNRepo.start_repo()
