@@ -3,3 +3,4 @@
 
 from .BaseNFNExecutor import BaseNFNExecutor
 from .NFNPythonExecutor import NFNPythonExecutor
+from .x86Executor import x86Executor
