@@ -41,7 +41,6 @@ class x86Executor(BaseNFNExecutor):
             entry_point = eval(expr)
             if entry_point is None:
                 print("function not found:", entry_function_name)
-
                 #libfile.close()
                 return None
             params_ready = []
@@ -50,7 +49,6 @@ class x86Executor(BaseNFNExecutor):
                     params_ready.append(p.encode())
                 else:
                     params_ready.append(p)
-
             res = entry_point(*params_ready)
             #libfile.close()
             return res
