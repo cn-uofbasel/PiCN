@@ -59,44 +59,50 @@ class BasicLinkLayer(LayerProcess):
     def _run_poll(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
                   to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):
         while True:
-            poller = select.poll()
-            READ_ONLY = select.POLLIN | select.POLLPRI | select.POLLHUP | select.POLLERR
-            fds = list(map(lambda x: x.file_descriptor, self.interfaces))
-            for fd in fds:
-                poller.register(fd, READ_ONLY)
-            poller.register(from_higher._reader, READ_ONLY)
-            ready_fds = poller.poll()
-            for fd in ready_fds:
-                if fd[0] == from_higher._reader.fileno():
-                    data = from_higher.get()
-                    self.data_from_higher(to_lower, to_higher, data)
-                else:
-                    interfaces = list(filter(lambda x: x.file_descriptor.fileno() == fd[0], self.interfaces))
-                    try:
-                        interface = interfaces[0]
-                    except:
-                        return
-                    data = interface.receive()
-                    self.data_from_lower(interface, to_higher, data)
+            try:
+                poller = select.poll()
+                READ_ONLY = select.POLLIN | select.POLLPRI | select.POLLHUP | select.POLLERR
+                fds = list(map(lambda x: x.file_descriptor, self.interfaces))
+                for fd in fds:
+                    poller.register(fd, READ_ONLY)
+                poller.register(from_higher._reader, READ_ONLY)
+                ready_fds = poller.poll()
+                for fd in ready_fds:
+                    if fd[0] == from_higher._reader.fileno():
+                        data = from_higher.get()
+                        self.data_from_higher(to_lower, to_higher, data)
+                    else:
+                        interfaces = list(filter(lambda x: x.file_descriptor.fileno() == fd[0], self.interfaces))
+                        try:
+                            interface = interfaces[0]
+                        except:
+                            return
+                        data = interface.receive()
+                        self.data_from_lower(interface, to_higher, data)
+            except:
+                pass
 
     def _run_select(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
                     to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):
         while True:
-            fds = list(map(lambda x: x.file_descriptor, self.interfaces))
-            fds.append(from_higher._reader)
-            ready_fds, _, _ = select.select(fds, [], [])
-            for fd in ready_fds:
-                if fd == from_higher._reader:
-                    data = from_higher.get()
-                    self.data_from_higher(to_lower, to_higher, data)
-                else:
-                    interfaces = list(filter(lambda x: x.file_descriptor == fd, self.interfaces))
-                    try:
-                        interface = interfaces[0]
-                    except:
-                        return
-                    data = interface.receive()
-                    self.data_from_lower(interface, to_higher, data)
+            try:
+                fds = list(map(lambda x: x.file_descriptor, self.interfaces))
+                fds.append(from_higher._reader)
+                ready_fds, _, _ = select.select(fds, [], [])
+                for fd in ready_fds:
+                    if fd == from_higher._reader:
+                        data = from_higher.get()
+                        self.data_from_higher(to_lower, to_higher, data)
+                    else:
+                        interfaces = list(filter(lambda x: x.file_descriptor == fd, self.interfaces))
+                        try:
+                            interface = interfaces[0]
+                        except:
+                            return
+                        data = interface.receive()
+                        self.data_from_lower(interface, to_higher, data)
+            except:
+                pass
 
     def _run_sleep(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
                    to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):

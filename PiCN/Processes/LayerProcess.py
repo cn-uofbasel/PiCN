@@ -79,12 +79,15 @@ class LayerProcess(PiCNProcess):
         if from_higher:
             poller.register(from_higher._reader, READ_ONLY)
         while True:
-            ready_vars = poller.poll()
-            for filno, var in ready_vars:
-                if from_lower and filno == from_lower._reader.fileno() and not from_lower.empty():
-                    self.data_from_lower(to_lower, to_higher, from_lower.get())
-                elif from_higher and filno == from_higher._reader.fileno() and not from_higher.empty():
-                    self.data_from_higher(to_lower, to_higher, from_higher.get())
+            try:
+                ready_vars = poller.poll()
+                for filno, var in ready_vars:
+                    if from_lower and filno == from_lower._reader.fileno() and not from_lower.empty():
+                        self.data_from_lower(to_lower, to_higher, from_lower.get())
+                    elif from_higher and filno == from_higher._reader.fileno() and not from_higher.empty():
+                        self.data_from_higher(to_lower, to_higher, from_higher.get())
+            except:
+                pass
 
     def _run_select(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
              to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):
@@ -100,14 +103,17 @@ class LayerProcess(PiCNProcess):
         if from_higher:
             in_queues.append(from_higher._reader)
         while True:
-            if len(in_queues) == 0:
-                continue
-            ready_vars, _, _ = select.select(in_queues, [], [])
-            for var in ready_vars:
-                if from_lower and var == from_lower._reader and not from_lower.empty():
-                    self.data_from_lower(to_lower, to_higher, from_lower.get())
-                elif from_higher and var == from_higher._reader and not from_higher.empty():
-                    self.data_from_higher(to_lower, to_higher, from_higher.get())
+            try:
+                if len(in_queues) == 0:
+                    continue
+                ready_vars, _, _ = select.select(in_queues, [], [])
+                for var in ready_vars:
+                    if from_lower and var == from_lower._reader and not from_lower.empty():
+                        self.data_from_lower(to_lower, to_higher, from_lower.get())
+                    elif from_higher and var == from_higher._reader and not from_higher.empty():
+                        self.data_from_higher(to_lower, to_higher, from_higher.get())
+            except:
+                pass
 
     def _run_sleep(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
                    to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):
@@ -119,14 +125,17 @@ class LayerProcess(PiCNProcess):
             :param to_higher: Queue to send data to higher Layer
          """
         while True:
-            dequeued: bool = False
-            if from_lower and not from_lower.empty():
-                self.data_from_lower(to_lower, to_higher, from_lower.get())
-                dequeued = True
-            if from_higher and not from_higher.empty():
-                self.data_from_higher(to_lower, to_higher, from_higher.get())
-            if not dequeued:
-                time.sleep(0.3)
+            try:
+                dequeued: bool = False
+                if from_lower and not from_lower.empty():
+                    self.data_from_lower(to_lower, to_higher, from_lower.get())
+                    dequeued = True
+                if from_higher and not from_higher.empty():
+                    self.data_from_higher(to_lower, to_higher, from_higher.get())
+                if not dequeued:
+                    time.sleep(0.3)
+            except:
+                pass
 
     def _run(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
              to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue):
