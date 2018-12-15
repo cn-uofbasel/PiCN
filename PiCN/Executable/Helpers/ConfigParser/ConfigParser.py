@@ -35,6 +35,18 @@ class ConfigParser(object):
             raise CouldNotParseError()
 
         # PiCN configuration syntax validation
+        if "logging" in self.__conf:
+            if not isinstance(self.__conf["logging"], str) or self.__conf["logging"] not in ["error", "warning", "info", "debug"]:
+                raise MalformedConfigurationError("Logging must one of the strings 'error', 'warning', 'info', 'debug' or unspecified")
+
+        if "format" in self.__conf:
+            if not isinstance(self.__conf["format"], str) or self.__conf["format"] not in ["ndntlv", "simple"]:
+                raise MalformedConfigurationError("Format must one of the strings 'ndntlv', 'simple' or unspecified")
+
+        if "udp_port" in self.__conf:
+            if not isinstance(self.__conf["udp_port"], int) or not (0 < self.__conf["udp_port"] <= 65535):
+                raise MalformedConfigurationError("udp_port must be an valid port number")
+
         if "faces" in self.__conf:
             if not isinstance(self.__conf["faces"], list):
                 raise MalformedConfigurationError()
@@ -71,14 +83,18 @@ class ConfigParser(object):
                 if not isinstance(r["face"], int) or r["face"] < 0 or r["face"] >= len(self.__conf["faces"]):
                     raise MalformedConfigurationError("Invalid face id of a forwarding rule")
 
+        # extract logging, format, udp_port
+        self.__logging = self.__conf["logging"]
+        self.__format = self.__conf["format"]
+        self.__udp_port = self.__conf["udp_port"]
+
+
         # extract faces
         def face_map(f):
             if f["type"] == "udp":
                 comps = f["address"].split(':')
                 return ("udp", (comps[0], int(comps[1])))
-
         self.__faces = list(map(face_map, self.__conf["faces"]))
-        print(self.__faces)
 
         # extract fwdrules
         def fwdrules_map(r):
@@ -86,12 +102,31 @@ class ConfigParser(object):
                 return (r["face"], Name(r["prefix"]))
             except:
                 raise MalformedConfigurationError("Invalid prefix of a forwarding rule (not a name)")
-
         self.__fwdrules = list(map(fwdrules_map, self.__conf["fwdrules"]))
-        print(self.__fwdrules)
 
     @property
-    def faces(self):
+    def logging(self) -> str:
+        """ Get log level
+        :return: Log level as string ('error', 'warning', 'info', 'debug') or None (if unspecified)
+        """
+        return self.__logging
+
+    @property
+    def format(self) -> str:
+        """ Get packet format
+        :return: Packet format as string ('ndntlv', 'simple') or None (if unspecified)
+        """
+        return self.__format
+
+    @property
+    def udp_port(self) -> int:
+        """ Get udp port
+        :return: UDP port as integer or None (if unspecified)
+        """
+        return self.__udp_port
+
+    @property
+    def faces(self) -> list:
         """ Get all faces as a list of (type, address) tuples. Type is currently always 'udp' (though this might change
         in future); address for a udp faces is a (IP address, port number) tuple. Implicit, each face has an identifier
         which is used by forwarding rules. The ID of each face is the position in the list (starting with 0 for the
@@ -101,6 +136,6 @@ class ConfigParser(object):
         return self.__faces
 
     @property
-    def fwdrules(self):
+    def fwdrules(self) -> list:
         """ Get all forwarding rules as a list of (face ID, Name) tuples. """
         return self.__fwdrules

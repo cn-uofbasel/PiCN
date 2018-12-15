@@ -4,6 +4,10 @@ import argparse
 import logging
 
 import PiCN.ProgramLibs.ICNForwarder
+from PiCN.Executable.Helpers.ConfigParser import ConfigParser
+import PiCN.Executable.Helpers.ConfigParser.CouldNotOpenConfigError
+import PiCN.Executable.Helpers.ConfigParser.CouldNotParseError
+import PiCN.Executable.Helpers.ConfigParser.MalformedConfigurationError
 from PiCN.Logger import Logger
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
 
@@ -22,6 +26,15 @@ def main(args):
     else:
         log_level = 255
     logger = Logger("ICNForwarder", log_level)
+
+    # Config file
+    if args.config:
+        try:
+            conf = ConfigParser(args.config)
+        except CouldNotOpenConfigError:
+            pass
+
+
 
     # Info
     logger.info("Starting a CCN Forwarder...")
@@ -42,6 +55,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='PiCN Forwarder')
     parser.add_argument('-p', '--port', type=int, default=9000, help="UDP port (default: 9000)")
     parser.add_argument('-f', '--format', choices=['ndntlv','simple'], type=str, default='ndntlv', help='Packet Format (default: ndntlv)')
+    parser.add_argument('-c', '--config', type=str, default=None, help="Path to configuration file")
     parser.add_argument('-a', '--autoconfig', action='store_true', help='Enable autoconfig server')
     parser.add_argument('-l', '--logging', choices=['debug','info', 'warning', 'error', 'none'], type=str, default='info', help='Logging Level (default: info)')
     args = parser.parse_args()
