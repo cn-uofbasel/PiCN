@@ -37,9 +37,9 @@ class ICNForwarder(object):
 
         # packet encoder
         if encoder is None:
-            self.encoder = SimpleStringEncoder()
+            self.encoder = SimpleStringEncoder(log_level=log_level)
         else:
-            encoder.set_log_level(log_level)
+            encoder.set_log_level(log_level=log_level)
             self.encoder = encoder
 
         # setup data structures

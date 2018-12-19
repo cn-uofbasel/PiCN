@@ -7,7 +7,6 @@ from PiCN.Logger import Logger
 class BasicEncoder(object):
     """Abstract Encoder for the BasicPacketEncoding Layer"""
 
-    @abc.abstractmethod
     def __init__(self, logger_name="BasicEncoder", log_level = 255):
         self.__logger_name = logger_name
         self.__log_level = log_level
@@ -16,11 +15,11 @@ class BasicEncoder(object):
     def set_log_level(self, log_level):
         self.logger.setLevel(log_level)
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def encode(self, packet: Packet):
         """encode a packet to wireformat"""
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def decode(self, wire_data) -> Packet:
         """decode a packet to Packet data structure"""
 
