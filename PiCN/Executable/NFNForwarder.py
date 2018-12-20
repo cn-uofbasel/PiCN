@@ -31,7 +31,7 @@ def main(argv):
     logger.info("Packet Format:  " + args.format)
 
     # Packet encoder
-    encoder = NdnTlvEncoder(log_level) if args.format == 'ndntlv' else SimpleStringEncoder
+    encoder = NdnTlvEncoder(log_level) if args.format == 'ndntlv' else SimpleStringEncoder(log_level)
 
 
     if args.optimizer == "Edge":

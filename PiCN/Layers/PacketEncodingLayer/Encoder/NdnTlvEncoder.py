@@ -59,7 +59,7 @@ class NdnTlvEncoder(BasicEncoder):
     """Mapping of wire format nack reasons to NackReason Enum"""
 
     def __init__(self, log_level=255):
-        BasicEncoder.__init__(self, logger_name="NdnTlvEnc", log_level=log_level)
+        super().__init__(logger_name="NdnTlvEnc", log_level=log_level)
 
     def encode(self, packet: Packet) -> bytearray:
         """
