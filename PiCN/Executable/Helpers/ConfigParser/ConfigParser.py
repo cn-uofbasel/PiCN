@@ -31,8 +31,8 @@ class ConfigParser(object):
                 self.__conf = toml.load(f)
         except OSError:
             raise CouldNotOpenConfigError()
-        except TomlError:
-            raise CouldNotParseError()
+        except TomlError as e:
+            raise CouldNotParseError() # TODO -- extract line and position from e
 
         # PiCN configuration syntax validation
         if "logging" in self.__conf:
@@ -84,9 +84,18 @@ class ConfigParser(object):
                     raise MalformedConfigurationError("Invalid face id of a forwarding rule")
 
         # extract logging, format, udp_port
-        self.__logging = self.__conf["logging"]
-        self.__format = self.__conf["format"]
-        self.__udp_port = self.__conf["udp_port"]
+        try:
+            self.__logging = self.__conf["logging"]
+        except:
+            self.__logging = None
+        try:
+            self.__format = self.__conf["format"]
+        except:
+            self.__format = None
+        try:
+            self.__udp_port = self.__conf["udp_port"]
+        except:
+            self.__udp_port = None
 
 
         # extract faces
