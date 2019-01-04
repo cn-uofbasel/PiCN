@@ -20,7 +20,7 @@ def main(args):
 
     # Parse Configuration file
     conf = None
-    if args.config:
+    if args.config != "none":
         try:
             conf = ConfigParser(args.config)
             logger.info("Successfully parsed configuration file.")
@@ -82,7 +82,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='PiCN Forwarder')
     parser.add_argument('-p', '--port', type=int, default=None, help=f'UDP port (default: {default_port})')
     parser.add_argument('-f', '--format', choices=['ndntlv', 'simple'], type=str, default=None, help=f'Packet Format (default: {default_format})')
-    parser.add_argument('-c', '--config', type=str, default=None, help="Path to configuration file")
+    parser.add_argument('-c', '--config', type=str, default="none", help="Path to configuration file")
     parser.add_argument('-a', '--autoconfig', action='store_true', help='Enable autoconfig server')
     parser.add_argument('-l', '--logging', choices=['debug', 'info', 'warning', 'error', 'none'], type=str, default=None, help=f'Logging Level (default: {default_logging})')
     args = parser.parse_args()
