@@ -125,7 +125,7 @@ you@machine:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newforwardingrule /the/prefi
 ### Request Content
 
 ```console
-you@machine:~$ picn-heartbeat-peek --port 9000 --plain /the/prefix/square/5/1/pNFN
+you@machine:~$ picn-twophase-peek --port 9000 --plain /the/prefix/square/5/1/pNFN
 ```
 
 ![Two-Phase Peek Output](https://raw.githubusercontent.com/cn-uofbasel/PiCN/master/PiCN/Playground/docs/img/screenshot-twophase-peek.png "Two-Phase Peek Output")
