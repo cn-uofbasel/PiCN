@@ -95,6 +95,7 @@ More details: [PiCN NFN](docs/nfn.md)
 
 * [PiCN Toolbox](docs/toolbox.md)
 * [Setting up a Network](docs/network_setup.md)
+* [PiCN runnables as systemd service](https://github.com/cn-uofbasel/PiCN-systemd-service)
 * [Packet Formats](docs/packet_formats.md)
 
 ### Internals
