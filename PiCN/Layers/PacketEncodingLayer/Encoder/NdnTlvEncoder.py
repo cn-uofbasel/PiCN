@@ -187,7 +187,7 @@ class NdnTlvEncoder(BasicEncoder):
         # Add signature value
         packet_without_sig = encoder.getOutput().tobytes()
         m = hashlib.sha256()
-        m.update(packet_without_sig[-32:])
+        m.update(packet_without_sig[:-32])
         sig = m.digest()
         packet_with_sig = packet_without_sig[:-32] + sig
         return packet_with_sig
