@@ -8,6 +8,7 @@ from PiCNExternal.pyndn.encoding.tlv.tlv.tlv_decoder import TlvDecoder
 from PiCNExternal.pyndn.encoding.tlv.tlv.tlv import Tlv
 
 from random import SystemRandom
+import hashlib
 
 
 class NdnTlvEncoder(BasicEncoder):
@@ -166,14 +167,14 @@ class NdnTlvEncoder(BasicEncoder):
 
     def encode_data(self, name: Name, payload: bytearray) -> bytearray:
         """
-        Assembly a data packet
+        Assembly a data packet including a signature according to NDN packet format specification 0.3 (DigestSha256).
         :param name: Name
         :param payload: Payload
         :return: Data-TLV
         """
         encoder = TlvEncoder()
         # Add signature (DigestSha256, zeroed)
-        encoder.writeBlobTlv(Tlv.SignatureValue, bytearray(32))
+        encoder.writeBlobTlv(Tlv.SignatureValue, bytearray(32)) # signature value to set later
         encoder.writeBlobTlv(Tlv.SignatureInfo, bytearray([Tlv.SignatureType, 1, 0]))
         # Add content
         encoder.writeBlobTlv(Tlv.Content, payload)
@@ -183,7 +184,13 @@ class NdnTlvEncoder(BasicEncoder):
         encoder.writeBuffer(self.encode_name(name))
         # Add data type and len
         encoder.writeTypeAndLength(Tlv.Data, len(encoder))
-        return encoder.getOutput().tobytes()
+        # Add signature value
+        packet_without_sig = encoder.getOutput().tobytes()
+        m = hashlib.sha256()
+        m.update(packet_without_sig[-32:])
+        sig = m.digest()
+        packet_with_sig = packet_without_sig[:-32] + sig
+        return packet_with_sig
 
     def encode_nack(self, name: Name, reason: NackReason, interest: Interest) -> bytearray:
         """
