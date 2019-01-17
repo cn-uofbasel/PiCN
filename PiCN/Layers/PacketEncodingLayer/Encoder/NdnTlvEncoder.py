@@ -172,6 +172,9 @@ class NdnTlvEncoder(BasicEncoder):
         :return: Data-TLV
         """
         encoder = TlvEncoder()
+        # Add signature (DigestSha256, zeroed)
+        encoder.writeBlobTlv(Tlv.SignatureValue, bytearray(32))
+        encoder.writeBlobTlv(Tlv.SignatureInfo, bytearray([Tlv.SignatureType, 1, 0]))
         # Add content
         encoder.writeBlobTlv(Tlv.Content, payload)
         # Add meta info (empty)
