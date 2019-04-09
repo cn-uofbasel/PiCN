@@ -34,7 +34,7 @@ class cases_ICNDataRepository(object):
         with open(self.path + "/f2", 'w+') as content_file:
             content_file.write(self.data2)
         with open(self.path + "/f3", 'w+') as content_file:
-            content_file.write('B' * 20000)
+            content_file.write('B' * 5000 + 'C' * 5000 + 'DE' * 5000)
 
         self.ICNRepo: ICNDataRepository = ICNDataRepository("/tmp/repo_unit_test", Name("/test/data"), 0,
                                                             encoder=self.get_encoder(), log_level=255)
