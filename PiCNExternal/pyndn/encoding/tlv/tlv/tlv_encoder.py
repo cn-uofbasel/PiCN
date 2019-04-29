@@ -213,6 +213,8 @@ class TlvEncoder(object):
         self.writeBuffer(value)
         self.writeTypeAndLength(type, len(value))
 
+
+
     def writeOptionalBlobTlv(self, type, value):
         """
         If the byte array is None or zero length then do nothing, otherwise
@@ -236,3 +238,5 @@ class TlvEncoder(object):
         # Create a memoryview from getArray() to make sure we don't copy.
         return memoryview(
          self._output.getArray())[len(self._output.getArray()) - self._length:]
+
+

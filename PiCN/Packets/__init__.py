@@ -7,3 +7,6 @@ from .Nack import Nack
 from .Packet import Packet
 from .UnknownPacket import UnknownPacket
 from .NackReason import NackReason
+from .SignatureType import SignatureType
+from .Signature import Signature
+

@@ -64,6 +64,9 @@ class Tlv(object):
     StatusCode =       139
     StatusText =       140
 
+
+
+
     SignatureType_DigestSha256 = 0
     SignatureType_SignatureSha256WithRsa = 1
     SignatureType_SignatureSha256WithEcdsa = 3
@@ -126,3 +129,7 @@ class Tlv(object):
     ValidityPeriod_ValidityPeriod = 253
     ValidityPeriod_NotBefore = 254
     ValidityPeriod_NotAfter = 255
+
+
+    ProvenienceSignature=150
+
