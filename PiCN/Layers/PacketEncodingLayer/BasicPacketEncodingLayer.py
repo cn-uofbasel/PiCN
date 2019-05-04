@@ -35,6 +35,7 @@ class BasicPacketEncodingLayer(LayerProcess):
         face_id, packet = self.check_data(data)
         if face_id == None or packet == None:
             return
+        decoded_packet = None
         try:
             decoded_packet = self.decode(packet)
         except Exception as e:
