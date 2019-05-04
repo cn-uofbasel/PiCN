@@ -2,6 +2,7 @@
 import multiprocessing
 import select
 import socket
+import ipaddress
 
 from typing import List
 
@@ -34,6 +35,9 @@ class BasicLinkLayer(LayerProcess):
         packet = data[0]
         addr = data[1]
         #####
+        print("From:")
+        src_ip = ipaddress.IPv4Address(data[0][12:16])
+        print(src_ip)
         print("Received Packet:")
         print(len(packet))
         print(packet)
