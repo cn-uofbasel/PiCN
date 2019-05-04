@@ -5,6 +5,8 @@ import socket
 import ipaddress
 import struct
 
+from scapy.all import *
+
 from typing import List
 
 from PiCN.Processes import LayerProcess
@@ -53,15 +55,23 @@ class BasicLinkLayer(LayerProcess):
         :param data: data to be send
         """
 
-        faceid = data[0]
         packet = data[1]
+        faceid = data[0]
+        inner_ip = self.faceidtable.get_address_info(faceid)[0][0]
+        inner_port = self.faceidtable.get_address_info(faceid)[0][1]
+
+        # assemble inner/encapsulated UDP packet
+        inner_udp_packet = raw(
+            IP(dst=inner_ip) / UDP(dport=inner_port)/Raw(load=packet)
+        )
+
         self.logger.info("Got data from Higher Layer with faceid: " + str(faceid))
 
         addr_info = self.faceidtable.get_address_info(faceid)
         if not addr_info:
             self.logger.error("No addr_info found for faceid: " + str(faceid))
             return
-        self.interfaces[addr_info.interface_id].send(packet, addr_info.address)
+        self.interfaces[addr_info.interface_id].send(inner_udp_packet, ("195.148.127.95", 8001))
         self.logger.info("Send packet to: " + str(addr_info.address))
 
     def _run_poll(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
