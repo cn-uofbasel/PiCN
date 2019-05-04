@@ -35,6 +35,7 @@ class BasicLinkLayer(LayerProcess):
         addr = data[1]
         #####
         print("Received Packet:")
+        print(len(packet))
         print(packet)
         ## NEW:
         #udp_packet = data[0]
