@@ -33,21 +33,24 @@ class BasicLinkLayer(LayerProcess):
         :param data: received data
         """
         ## OLD:
-        packet = data[0]
-        addr = data[1]
+        # packet = data[0]
+        # addr = data[1]
         #####
         print("From:")
         src_ip = ipaddress.IPv4Address(data[0][12:16])
         print(src_ip)
         print("Received Packet:")
-        print(len(packet))
-        print(packet)
+        # print(len(packet))
+        # print(packet)
 
         src_port = struct.unpack("!H", data[0][20:22])[0]
         print("Src_port: ", src_port)
 
         payload = data[0][28:]
         print("Payload: ", payload)
+
+        addr = (src_ip, src_port)
+        packet = payload
         ## NEW:
         #udp_packet = data[0]
         #print(udp_packet)
