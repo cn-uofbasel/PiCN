@@ -43,8 +43,11 @@ class BasicLinkLayer(LayerProcess):
         print(len(packet))
         print(packet)
 
-        src_port = struct.unpack("!H", data[0][24:26])
+        src_port = struct.unpack("!H", data[0][20:24])[0]
         print("Src_port: ", src_port)
+
+        payload = data[0][28:]
+        print("Payload: ", payload)
         ## NEW:
         #udp_packet = data[0]
         #print(udp_packet)
