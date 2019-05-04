@@ -32,28 +32,14 @@ class BasicLinkLayer(LayerProcess):
         :param to_higher: queue to the higher layer
         :param data: received data
         """
-        ## OLD:
-        # packet = data[0]
-        # addr = data[1]
-        #####
-        print("From:")
-        src_ip = str(ipaddress.IPv4Address(data[0][12:16]))
-        print(src_ip)
-        print("Received Packet:")
-        # print(len(packet))
-        # print(packet)
+        encapsulated_udp_packet = data[0]
 
-        src_port = struct.unpack("!H", data[0][20:22])[0]
-        print("Src_port: ", src_port)
+        # extract src ip, port and payload from encapsulated udp packet
+        encap_src_ip = str(ipaddress.IPv4Address(encapsulated_udp_packet[12:16]))
+        encap_src_port = struct.unpack("!H", encapsulated_udp_packet[20:22])[0]
+        packet = encapsulated_udp_packet[28:]
 
-        payload = data[0][28:]
-        print("Payload: ", payload)
-
-        addr = (src_ip, src_port)
-        packet = payload
-        ## NEW:
-        #udp_packet = data[0]
-        #print(udp_packet)
+        addr = (encap_src_ip, encap_src_port)
 
         addr_info = AddressInfo(addr, self.interfaces.index(interface))
         faceid = self.faceidtable.get_or_create_faceid(addr_info)
