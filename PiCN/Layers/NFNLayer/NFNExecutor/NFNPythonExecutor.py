@@ -4,6 +4,7 @@ from typing import List
 from types import FunctionType, CodeType
 
 from PiCN.Layers.NFNLayer.NFNExecutor import BaseNFNExecutor
+from PiCN.Demos.MapDetection.MapDetection import map_detection
 
 class NFNPythonExecutor(BaseNFNExecutor):
 
@@ -91,4 +92,5 @@ class NFNPythonExecutor(BaseNFNExecutor):
             "type": type,
             "zip": zip,
             "None": None,
+            "map_detection": map_detection,
             }
