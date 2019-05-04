@@ -5,7 +5,7 @@ import socket
 import ipaddress
 import struct
 
-from scapy.all import *
+from scapy.all import IP, UDP, Raw, raw
 
 from typing import List
 
@@ -57,12 +57,11 @@ class BasicLinkLayer(LayerProcess):
 
         packet = data[1]
         faceid = data[0]
-        inner_ip = self.faceidtable.get_address_info(faceid)[0][0]
-        inner_port = self.faceidtable.get_address_info(faceid)[0][1]
+        inner_ip, inner_port = self.faceidtable.get_address_info(faceid).address
 
         # assemble inner/encapsulated UDP packet
         inner_udp_packet = raw(
-            IP(dst=inner_ip) / UDP(dport=inner_port)/Raw(load=packet)
+            IP(dst=inner_ip) / UDP(dport=inner_port) / Raw(load=packet)
         )
 
         self.logger.info("Got data from Higher Layer with faceid: " + str(faceid))
