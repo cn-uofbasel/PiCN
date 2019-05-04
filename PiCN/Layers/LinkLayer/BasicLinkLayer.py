@@ -3,6 +3,7 @@ import multiprocessing
 import select
 import socket
 import ipaddress
+import struct
 
 from typing import List
 
@@ -41,6 +42,9 @@ class BasicLinkLayer(LayerProcess):
         print("Received Packet:")
         print(len(packet))
         print(packet)
+
+        src_port = struct.unpack("!H", data[0][24:26])
+        print("Src_port: ", src_port)
         ## NEW:
         #udp_packet = data[0]
         #print(udp_packet)
