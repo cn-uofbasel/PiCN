@@ -30,8 +30,12 @@ class BasicLinkLayer(LayerProcess):
         :param to_higher: queue to the higher layer
         :param data: received data
         """
+        ## OLD:
         packet = data[0]
         addr = data[1]
+        ## NEW:
+        #udp_packet = data[0]
+        #print(udp_packet)
 
         addr_info = AddressInfo(addr, self.interfaces.index(interface))
         faceid = self.faceidtable.get_or_create_faceid(addr_info)
