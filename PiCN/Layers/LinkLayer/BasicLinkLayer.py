@@ -37,7 +37,7 @@ class BasicLinkLayer(LayerProcess):
         # addr = data[1]
         #####
         print("From:")
-        src_ip = ipaddress.IPv4Address(data[0][12:16])
+        src_ip = str(ipaddress.IPv4Address(data[0][12:16]))
         print(src_ip)
         print("Received Packet:")
         # print(len(packet))
