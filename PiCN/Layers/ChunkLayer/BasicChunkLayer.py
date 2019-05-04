@@ -140,7 +140,9 @@ class BasicChunkLayer(LayerProcess):
         if request_table_entry.chunked and len(request_table_entry.requested_chunks) == 0 \
                 and len(request_table_entry.requested_md) == 0:  # all chunks are available
             data = request_table_entry.chunks
-            data = sorted(data, key=lambda content: content.name.to_string())
+            #data = sorted(data, key=lambda content: content.name.to_string()) #broken with more than 10 chunks
+            data = sorted(data,
+                          key=lambda content: int(''.join(filter(str.isdigit, content.name.string_components[-1]))))
             cont = self.chunkifyer.reassamble_data(request_table_entry.name, data)
             to_higher.put([faceid, cont])
             return None
