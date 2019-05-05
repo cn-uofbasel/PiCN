@@ -4,7 +4,7 @@ This is a repository....
 
 ## Idea
 
-See our slides.
+See our [slides](docs/Iothon/iothon2019-UofBasel.pdf).
 
 ## Code
 
@@ -18,7 +18,10 @@ Arduino:
 
 PiCN (NDN/NFN Forwarder)
 
-*PiCN/Layers/LinkLayer/BasicLinkLayer.py
+* PiCN/Layers/LinkLayer/BasicLinkLayer.py
+
+
+
 
 ---
 
