@@ -24,9 +24,10 @@ def main(args):
             name = Name(args.name)
             name = unescape_name(name)
     name.format = args.format
+    log_level = 255
 
-    encoder = NdnTlvEncoder() if args.format == 'ndntlv' else SimpleStringEncoder
-    fetchTool = Fetch(args.ip, args.port, encoder=encoder, autoconfig=args.autoconfig)
+    encoder = NdnTlvEncoder() if args.format == 'ndntlv' else SimpleStringEncoder()
+    fetchTool = Fetch(ip=args.ip, port=args.port, log_level=log_level, encoder=encoder, autoconfig=args.autoconfig)
 
     content = fetchTool.fetch_data(name, timeout=10)
     print(content)
@@ -84,7 +85,7 @@ def parse_nfn_str(name: str) -> Name:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='ICN Fetch Tool')
-    parser.add_argument('--format', choices=['ndntlv', ' simple'], type=str,
+    parser.add_argument('--format', choices=['ndntlv', 'simple'], type=str,
                         default='ndntlv', help='default is: "ndntlv"')
     parser.add_argument('-a', '--autoconfig', action='store_true')
     parser.add_argument('ip', type=str,

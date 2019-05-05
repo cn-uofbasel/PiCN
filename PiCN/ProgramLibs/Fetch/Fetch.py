@@ -17,12 +17,12 @@ from PiCN.Layers.TimeoutPreventionLayer import BasicTimeoutPreventionLayer, Time
 class Fetch(object):
     """Fetch Tool for PiCN"""
 
-    def __init__(self, ip: str, port: int, log_level = 255, encoder: BasicEncoder=None, autoconfig: bool = False,
+    def __init__(self, ip: str, port: int, log_level=255, encoder: BasicEncoder=None, autoconfig: bool = False,
                  interfaces=None):
 
         # create encoder and chunkifyer
         if encoder is None:
-            self.encoder = SimpleStringEncoder(log_level = log_level)
+            self.encoder = SimpleStringEncoder(log_level=log_level)
         else:
             encoder.set_log_level(log_level)
             self.encoder = encoder
