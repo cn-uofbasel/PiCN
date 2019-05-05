@@ -8,17 +8,21 @@ See our [slides](docs/Iothon/iothon2019-UofBasel.pdf).
 
 ## Code
 
+Setup:
+
+![alt text](docs/Iothon/iothon.png)
+
 ### Touched and added files:
 
 Arduino:
 
 * PiCN/Arduino5gSketches/OffloadingReqeustingArduino.ino
 * PiCN/Arduino5gSketches/SensorNumpad.ino
-* starter/picn-setup
 
-PiCN (NDN/NFN Forwarder)
+PiCN (NDN/NFN Forwarder):
 
 * PiCN/Layers/LinkLayer/BasicLinkLayer.py
+* starter/picn-setup
 
 
 
