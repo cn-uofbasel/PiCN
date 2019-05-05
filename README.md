@@ -1,3 +1,28 @@
+# Computational Subsidiarity: A Project for Iothon 2019
+
+This is a repository....
+
+## Idea
+
+See our slides.
+
+## Code
+
+### Touched and added files:
+
+Arduino:
+
+* PiCN/Arduino5gSketches/OffloadingReqeustingArduino.ino
+* PiCN/Arduino5gSketches/SensorNumpad.ino
+* starter/picn-setup
+
+PiCN (NDN/NFN Forwarder)
+
+*PiCN/Layers/LinkLayer/BasicLinkLayer.py
+
+---
+
+
 *This is work in progress! Everything can change at any moment! :-)*
 
 # PiCN 

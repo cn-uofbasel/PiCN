@@ -29,7 +29,7 @@ class SimpleStringEncoder(BasicEncoder):
         return None
 
     def decode(self, wire_data) -> Packet:
-        data: str = wire_data.decode()
+        data: str = wire_data.decode(encoding="ascii")
         if data[0] == "I":
             self.logger.info("Decode interest")
             name = data.split(":")[1]
