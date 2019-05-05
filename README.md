@@ -16,13 +16,13 @@ See our [slides](docs/Iothon/iothon2019-UofBasel.pdf).
 
 Arduino:
 
-* PiCN/Arduino5gSketches/OffloadingReqeustingArduino.ino
-* PiCN/Arduino5gSketches/SensorNumpad.ino
+* [PiCN/Arduino5gSketches/OffloadingReqeustingArduino.ino](PiCN/Arduino5gSketches/OffloadingReqeustingArduino.ino)
+* [PiCN/Arduino5gSketches/SensorNumpad.ino](PiCN/Arduino5gSketches/SensorNumpad.ino)
 
 PiCN (NDN/NFN Forwarder):
 
-* PiCN/Layers/LinkLayer/BasicLinkLayer.py
-* starter/picn-setup
+* [PiCN/Layers/LinkLayer/BasicLinkLayer.py](PiCN/Layers/LinkLayer/BasicLinkLayer.py)
+* [starter/picn-setup](starter/picn-setup)
 
 
 
