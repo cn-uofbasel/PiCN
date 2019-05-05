@@ -13,7 +13,7 @@ from PiCN.Packets import Interest, Content
 def main(args):
 
     # Packet encoder
-    encoder = NdnTlvEncoder() if args.format == 'ndntlv' else SimpleStringEncoder
+    encoder = NdnTlvEncoder() if args.format == 'ndntlv' else SimpleStringEncoder()
 
     # Generate interest packet
     interest: Interest = Interest(args.name)
