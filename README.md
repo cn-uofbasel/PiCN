@@ -1,6 +1,6 @@
 # Computational Subsidiarity: A Project for Iothon 2019
 
-This is a repository....
+In this repository we document our ideas and collect our code written for the Iothon 2019.
 
 ## Idea
 
@@ -8,7 +8,7 @@ See our [slides](docs/Iothon/iothon2019-UofBasel.pdf).
 
 ## Code
 
-Setup:
+### Setup:
 
 ![alt text](docs/Iothon/iothon.png)
 
