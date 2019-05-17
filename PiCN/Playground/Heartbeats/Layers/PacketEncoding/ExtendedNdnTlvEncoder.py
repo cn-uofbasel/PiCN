@@ -27,6 +27,7 @@ class ExtendedNdnTlvEncoder(NdnTlvEncoder):
                 return packet.wire_format
             else:
                 return self.encode_data(packet.name, packet.get_bytes())
+
         if isinstance(packet, Nack):
             self.logger.info("Encode NACK")
             if isinstance(packet.wire_format, bytes):

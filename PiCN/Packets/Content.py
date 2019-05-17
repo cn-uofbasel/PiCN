@@ -42,3 +42,10 @@ class Content(Packet):
         if type(other) is not Content:
             return False
         return self.name == other.name and self._content == other._content
+
+
+
+    def verify_signature(self):
+        pass
+    #todo implement
+

@@ -23,18 +23,30 @@ class Signature:
         pass
     """
 
+
     def to_string(self)-> str:
         cut="%"
         s=str(self.signatureType)+cut+str(self.identityLocator)+cut+str(self.identityProf)+cut+str(self.outputSignature)+cut+str(self.inputProvenience)+cut+str(self.signatureSignature)
         return s
 
+    def to_bytearray(self):
+        return bytearray(self.to_string(), 'utf-8')
+#TODO to_bytearray
+
 
     def disp_test(self):
         if(self.signatureType==None):
             print("sig tipe=NOne")
-        print("test objekt Signature: ", self.signatureType)
+        print("test objekt Signature: ", self.to_string())
 
 
+    def signature_type_as_int(self) -> int:
+        if self.signatureType==SignatureType.PROVENIENCE_SIGNATURE:
+            return 2
+        if self.signatureType==SignatureType.DEFAULT_SIGNATURE:
+            return 1
+        else:
+            return 0
 
 
 

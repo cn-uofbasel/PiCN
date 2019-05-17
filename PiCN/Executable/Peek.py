@@ -39,11 +39,16 @@ def main(args):
 
     # Print
     if args.plain is False:
+        print("<<<<<<<<<<<<<<<<<<<<<< peek not decoda data")
+
         printer = NdnTlvPrinter(wire_packet)
         printer.formatted_print()
     else:
         encoder = NdnTlvEncoder()
         if encoder.is_content(wire_packet):
+            print("<<<<<<<<<<<<<<<<<<<<<< peek decoda data")
+
+
             sys.stdout.buffer.write(encoder.decode_data(wire_packet)[1])
         else:
             sys.exit(-2)
