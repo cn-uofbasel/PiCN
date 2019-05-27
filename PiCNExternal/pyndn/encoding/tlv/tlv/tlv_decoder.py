@@ -24,6 +24,7 @@ This module defines the TlvDecoder class for decoding in the NDN-TLV wire
 format.
 """
 
+
 class TlvDecoder(object):
     """
     Create a new TlvDecoder to decode the input using NDN-TLV.
@@ -104,6 +105,9 @@ class TlvDecoder(object):
           the TLV length exceeds the buffer length.
         """
         type = self.readVarNumber()
+
+
+
         if type != expectedType:
             raise ValueError("Did not get the expected TLV type")
 
@@ -128,7 +132,10 @@ class TlvDecoder(object):
         :raises ValueError: if did not get the expected TLV type or
           the TLV length exceeds the buffer length.
         """
-        return self.readTypeAndLength(expectedType) + self._offset
+
+        type_len=self.readTypeAndLength(expectedType)
+
+        return type_len + self._offset
 
     def finishNestedTlvs(self, endOffset):
         """
@@ -178,10 +185,13 @@ class TlvDecoder(object):
             # No more sub TLVs to look at.
             return False
         else:
+
             saveOffset = self._offset
             type = self.readVarNumber()
             # Restore offset.
             self._offset = saveOffset
+
+
 
             return type == expectedType
 
@@ -288,7 +298,7 @@ class TlvDecoder(object):
 
         :param int expectedType: The expected type.
         :return: The bytes in the value as a slice on the byte array.  This is
-          not necessarily a copy of the bytes in the input buffer.  If you need
+          not necessarily a copy of the bytes in the input buffer. If you need
           a copy, then you must make a copy of the return value.
         :rtype: memoryview or equivalent
         :raises ValueError: if did not get the expected TLV type.

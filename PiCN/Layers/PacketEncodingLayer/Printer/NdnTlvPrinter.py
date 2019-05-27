@@ -62,6 +62,7 @@ class NdnTlvPrinter(object):
                           28: "KeyLocator",
                           29: "KeyDigest",
                           31: "Delegation",
+                          34: "Signature",
                           80: "Fragment (link protocol)",           # NDN Link Protocol v2
                           81: "Sequence (link protocol)",           # NDN Link Protocol v2
                           82: "FragIndex (link protocol)",          # NDN Link Protocol v2
