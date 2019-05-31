@@ -7,11 +7,11 @@ from PiCN.Packets import SignatureType
 class Signature:
 
     #signature can be empty
-    def __init__(self, signatureType=SignatureType.NO_SIGNATURE, identityLocator=None, identityProf=None, outputSignature=None, Signature=None, signatureSignature=None, bytarray=None):
+    def __init__(self, signatureType=SignatureType.NO_SIGNATURE, identityLocator=None, identityProof=None, outputSignature=None, Signature=None, signatureSignature=None, bytarray=None):
 
         self.signatureType=signatureType
         self.identityLocator=identityLocator
-        self.identityProf=identityProf
+        self.identityProof=identityProof
         self.outputSignature=outputSignature
         self.inputProvenience=Signature
         self.signatureSignature=signatureSignature
@@ -26,7 +26,7 @@ class Signature:
 
     def to_string(self)-> str:
         cut="%"
-        s=str(self.signatureType)+cut+str(self.identityLocator)+cut+str(self.identityProf)+cut+str(self.outputSignature)+cut+str(self.inputProvenience)+cut+str(self.signatureSignature)
+        s= str(self.signatureType) + cut + str(self.identityLocator) + cut + str(self.identityProof) + cut + str(self.outputSignature) + cut + str(self.inputProvenience) + cut + str(self.signatureSignature)
         return s
 
     def to_bytearray(self):

@@ -64,7 +64,7 @@ class NdnTlvEncoder(BasicEncoder):
 
 
     #todo expression
-    def encode(self, packet: Packet, expression="/data/obj1") -> bytearray:
+    def encode(self, packet: Packet) -> bytearray:
         """
         Python object (PiCN's internal representation) to NDN TLV wire format
         :param packet: Packet in PiCN's representation
@@ -81,7 +81,7 @@ class NdnTlvEncoder(BasicEncoder):
             if isinstance(packet.wire_format, bytes):
                 return packet.wire_format
             else:
-                return self.encode_data(packet.name, packet.get_bytes(),expression)
+                return self.encode_data(packet.name, packet.get_bytes())
         if isinstance(packet, Nack):
             self.logger.info("Encode NACK")
             if isinstance(packet.wire_format, bytes):
@@ -185,187 +185,109 @@ class NdnTlvEncoder(BasicEncoder):
         return encoder.getOutput().tobytes()
 
 
-    def get_signature(self,packet_without_sig,payload,signatureType,expression,inputByteArray=None):
+    def get_signature(self,private_key, packet_without_sig, payload: bytearray, name: Name, signature: Signature,inputByteArray=None):
         """
 
-        :param packet_without_sig, payload (bytes), SignatureType:
-        :return: Signature
+        :param packet_without_sig, payload (bytes) ,name
+        :param signature, the Identity locator and input proviniance can not be calculated.
+        :return: Signature, default Signature or proviniance signature (calculates identity proof, output signature and signaturesignature
         """
         #encoder = TlvEncoder()
 
-        if(signatureType == SignatureType.NO_SIGNATURE):
-            sig=Signature() #empty signature
-            return sig
 
 
-        if (signatureType == SignatureType.DEFAULT_SIGNATURE):
+        if (signature.signatureType == SignatureType.DEFAULT_SIGNATURE):
             m = hashlib.sha256()
             m.update(packet_without_sig[:-32])
             sig = m.digest()
             #only set outputSignature
             return Signature(SignatureType.DEFAULT_SIGNATURE, None, None, sig, None, None)
 
-        if (signatureType == SignatureType.PROVENIENCE_SIGNATURE):
-            # TODO input provenience
+        elif (signature.signatureType == SignatureType.PROVENIENCE_SIGNATURE):
+
 
             # output signature
             m = hashlib.sha256()
             m.update(payload)
-            outputSig = m.digest()
+            signature.outputSignature = m.digest()
             #encoder.writeBlobTlv(Tlv.SignatureValue, outputSig)
 
             # identity proof
-            # mm = hashlib.sha256()
-            # m.update(self.encode_name(name)+payload)#error
-
-            m = hashlib.sha256()
-            #(payload+expression).hash()
-            m.update(payload)
+            m2 = hashlib.sha256()
+            namebytearr=bytearray()
+            namebytearr.extend(name.to_string().encode())
+            m2.update(payload+namebytearr)
             #m.update(expression)
-            identityProof = m.digest()
+            signature.identityProof = m2.digest()
 
             #encoder.writeBlobTlv(Tlv.SignatureValue, identityProof)
 
 
+
+
+
             # TODO key locator, Signature provenience, SigSig
-            return Signature(SignatureType.PROVENIENCE_SIGNATURE, None, identityProof, outputSig, None, None)
+            return signature
 
-    def encode_and_write_signature_info(self, signature_type,encoder):
-
-
-        sig_info = [signature_type]
-        len1 = len(sig_info)
-        sig_info = sig_info.extend(len1)
-        sig_info = sig_info.extend(Tlv.SignatureInfo)
-
-        encoder.writeBlobTlv(Tlv.SignatureInfo, sig_info)
-
-        print("test encode_signature_info()")
-        print(sig_info)
-
-        len2 = len(sig_info)
-        sig_info2 = sig_info.extend(len2)
-        sig_info2 = sig_info.extend(Tlv.Signature)
-
-        encoder.writeBlobTlv(Tlv.Signature, sig_info2)
+        else:
+            #SignatureType.NO_SIGNATURE
+            sig = Signature()  # empty signature
+            return sig
 
     def encode_signature_info(self,signature_type)-> bytearray:
         """
         :param signature_type
         :return: signature info Tlv
         """
-        print("encode_signature_info()---Tlv.Signature--Tlv.SignatureInfo")
-        print(Tlv.Signature)
-        print(Tlv.SignatureInfo)
-
-        """
-        sig_info=[signature_type]
-        len1=[len(sig_info)]
-        sig_info=sig_info.extend(len1)
-        sig_info = sig_info.extend(Tlv.SignatureInfo)
-        len2 = [len(sig_info)]
-        sig_info = sig_info.extend(len2)
-        sig_info = sig_info.extend(Tlv.Signature)
-        return bytearray(sig_info)
-        """
         signature_type_arr = [signature_type]
         len1 = [len(signature_type_arr)]
+
         sig_info= [Tlv.SignatureInfo]+len1+signature_type_arr
-        len2=len(sig_info)
-
-        sig_info=[Tlv.SignatureType]+[len2]+sig_info
-        #wy is ther an other result if ther is an other Tly type
-        #sig_info = [Tlv.Signature] + [len2] + sig_info
-
+        len2=[len(sig_info)]
+        #len2 = [0]
+        sig_info = [Tlv.SignatureType] + len1 + signature_type_arr
         return bytearray(sig_info)
 
-
-
-        #return bytearray([Tlv.Signature,3,Tlv.SignatureInfo,1,signature_type])
-
-
-    def encode_data(self, name: Name, payload: bytearray,expression,
-                    signature=Signature()) -> bytearray:#signature
+    def encode_data(self, name: Name, payload: bytearray, private_key=2,
+                    signature_type=SignatureType.NO_SIGNATURE, identity_locator=None, input_proveniance=None) -> bytearray:#signature
         """
         Assembly a data packet including a signature according to NDN packet format specification 0.3 (DigestSha256).
         :param name: Name
         :param payload: Payload
+        :param signature_type
+        :param identity_locator (optional)
+        :param input_proveniance (optionyl)
         :return: Data-TLV
         """
         encoder = TlvEncoder()
 
-
         # Add signature (DigestSha256, zeroed)
 
-        #signature signature (signs the hole packet)
+        signature = Signature(signature_type,identity_locator,None,None,input_proveniance)
+
 
         #for testing
         #TODO remove
         signature.signatureType = SignatureType.PROVENIENCE_SIGNATURE
+        #signature.signatureType = SignatureType.DEFAULT_SIGNATURE
 
         if(signature.signatureType!=SignatureType.PROVENIENCE_SIGNATURE):
              # signature value to set later
              signatureLength=32
         else:
             #get signatur (.provenience) as input?
-            #TODO calc and add length provenience?
+            #TODO calc and add length provenience and keylocator?
             signatureLength=128
             # signature value to set later
 
-        #this is the original line for the Signature Info
-        #encoder.writeBlobTlv(Tlv.SignatureInfo, bytearray([Tlv.SignatureType, 1, 0]))
-
-
-
-        #this works
-        signature_info=self.encode_signature_info(signature.signature_type_as_int())
-
-        signature_info_len=len(signature_info)
-
-
-
-        print("bytearray(signatureLength)")
-        print(signatureLength)
-        print(bytearray(signatureLength))
-        print("signature_info")
-        print(signature_info)
-
-
         # empty field for signature, fill in later
         encoder.writeBlobTlv(Tlv.SignatureValue, bytearray(signatureLength))
-
-        #fill in signature info
+        # fill in signature info
+        signature_info = self.encode_signature_info(signature.signature_type_as_int())
+        signature_info_len = len(signature_info)
         encoder.writeBlobTlv(Tlv.SignatureInfo, signature_info)
 
-        print("bytearray([signatureLength+signature_info_len])")
-        print(bytearray([signatureLength+signature_info_len]))
-        print("signatureLength+signature_info_len")
-        print(signatureLength+signature_info_len)
-        print(signatureLength)
-        print(signature_info_len)
-
-
         encoder.writeTypeAndLength(Tlv.Signature,(signatureLength+signature_info_len))
-        #encoder.writeBlobTlv(Tlv.Signature,bytearray([signatureLength+signature_info_len]))
-        #encoder.writeTypeAndLength(Tlv.Signature,signatureLength+signature_info_len+2)
-
-
-        #self.encode_and_write_signature_info(signature.signature_type_as_int(),encoder)
-
-
-        #encoder.writeBlobTlv(Tlv.Signature, signature_info)
-
-        #this doesn't work
-        #signature_info = bytearray([signature.signature_type_as_int()])
-        #signature_info=bytearray(signature.signatureType)
-        #signature_info=bytearray([Tlv.SignatureInfo,1,signature.signatureType])
-
-
-
-
-        #encoder.writeBlobTlv(Tlv.SignatureInfo, bytearray([signature.signatureType, 1, 0]))
-        # encoder.writeBlobTlv(Tlv.SignatureInfo, bytearray([Tlv.SignatureType, 1, 0]))
-
 
         # Add content
         encoder.writeBlobTlv(Tlv.Content, payload)
@@ -380,34 +302,12 @@ class NdnTlvEncoder(BasicEncoder):
         packet_without_sig = encoder.getOutput().tobytes()
 
 
-        sig=self.get_signature(packet_without_sig,payload,signature.signatureType,expression)
+        sig = self.get_signature(private_key,packet_without_sig, payload, name, signature )
 
         packet_with_sig = packet_without_sig[:-(signatureLength)]# + sig#.tobytes()
 
-        """ 
-        encoder_sig = TlvEncoder()
-        #encoder_sig.writeOptionalBlobTlv(Tlv.SignatureValue,sig.to_string())#wrong parameter type
-                                                                    #encode_sinature()
-        encoder_sig.writeOptionalBlobTlv(Tlv.SignatureValue, bytearray(sig.to_string(), 'utf-8'))
-        encoded_sig=encoder_sig.getOutput().tobytes()
-        """
         encoded_sig=self.encode_signature(sig)
         packet_with_sig = packet_with_sig + encoded_sig
-        #old try not working
-        #packet_with_sig = packet_with_sig+bytearray(sig.to_string(), 'utf-8')
-
-
-        #print(bytearray(sig.to_string(),'utf-8'))
-        #bytes()
-
-
-
-        """m = hashlib.sha256()
-        m.update(packet_without_sig[:-32])
-        sig = m.digest()
-        packet_with_sig = packet_without_sig[:-32] + sig
-        """
-
 
         return packet_with_sig
 
@@ -498,10 +398,9 @@ class NdnTlvEncoder(BasicEncoder):
         # Does not yet parse meta data, but:
         # Lets the decoder jump over meta data.
 
-        print("decode_meta_info()-----endoffset")
-        print(endOffset)
+
         decoder.finishNestedTlvs(endOffset)
-        print(endOffset)
+
 
     def decode_interest(self, input: bytearray) -> Name:
         """
@@ -515,12 +414,11 @@ class NdnTlvEncoder(BasicEncoder):
 
     def decode_signature_component(self, decoder: TlvDecoder) -> bytearray:
         """
-        Decode a signature component
+        Decode a signature component, e.g. signature info, signature value
         :param decoder: Decoder
         :return: Value of signature component
         """
 
-        print("decode_signature_component()")
         savePosition = decoder.getOffset()
         type = decoder.readVarNumber()
         decoder.seek(savePosition)
@@ -534,30 +432,24 @@ class NdnTlvEncoder(BasicEncoder):
         """
         # TODO implement
 
-        print("decode_signature()")
+
         #endOffset = decoder.readNestedTlvsStart(Tlv.SignatureType)
         endOffset = decoder.readNestedTlvsStart(Tlv.Signature)#21
         offset = decoder.getOffset()
 
-        print("<<<<<<endoffset")
-        print(endOffset)
-
-        print("<<<<<<<<<<<<<<<<<decoder.peekType(Tlv.ProvenienceSignature, endOffset): is true")
-
         sign_info = self.decode_signature_component(decoder)
         # sign = decoder.readBlobTlv(Tlv.ProvenienceSignature)
         # sign = sign.tobytes()
-        print("sign_component")
+
+        print("<<<<<<sign_info")
         print(sign_info)
-        print("type(sign_info)")
-        print(type(sign_info))
 
-
-        if sign_info==b'\x16\x01\x02':
+        #todo verify signature
+        if sign_info==b'\x1b\x01\x02':
             #is PROVENIENCE_SIGNATURE
             sign = self.decode_signature_component(decoder)
 
-        elif sign_info == b'\x16\x01\x01':
+        elif sign_info == b'\x1b\x01\x01':
             # is DEFAULT_SIGNATURE
             sign = self.decode_signature_component(decoder)
 
@@ -565,18 +457,8 @@ class NdnTlvEncoder(BasicEncoder):
             #no signature
             sign = self.decode_signature_component(decoder)
 
-        """
-        sign_info_d=sign_info.decode()
-        print(sign_info_d)
-        print("type(sign_info_d.decode())")
-        print(type(sign_info_d))
-        """
-
-        print("sign")
+        print("<<<<sign")
         print(sign)
-        print("type sign")
-        print(type(sign))
-
 
         """
         #while  offset < endOffset:
@@ -614,7 +496,7 @@ class NdnTlvEncoder(BasicEncoder):
         :return: Name and payload
         """
 
-        print("input!!!")
+        print("<<<<<<<<<<<<input")
         print(input)
 
         decoder = TlvDecoder(input)
@@ -628,7 +510,7 @@ class NdnTlvEncoder(BasicEncoder):
         #before payload
         signature=self.decode_signature(decoder)
 
-        print(signature)
+
 
         return (name, payload)
 

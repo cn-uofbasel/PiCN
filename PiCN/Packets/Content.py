@@ -47,5 +47,5 @@ class Content(Packet):
 
     def verify_signature(self):
         pass
-    #todo implement
+        #todo implement
 
