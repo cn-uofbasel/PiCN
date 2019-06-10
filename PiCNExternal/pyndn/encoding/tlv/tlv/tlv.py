@@ -52,6 +52,10 @@ class Tlv(object):
     SelectedDelegation = 32
 
     Signature=         34
+    IdentityProof =     35
+    OutputSignature =   36
+    InputProviniance =  37
+    SignatureSignature =38
 
     FaceInstance =     128
     ForwardingEntry =  129

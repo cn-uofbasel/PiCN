@@ -31,13 +31,18 @@ class Signature:
 
     def to_bytearray(self):
         return bytearray(self.to_string(), 'utf-8')
-#TODO to_bytearray
 
 
+    def len(self):
+        return len(self.to_string())-5
+
+
+    # for testing
     def disp_test(self):
         if(self.signatureType==None):
             print("sig tipe=NOne")
         print("test objekt Signature: ", self.to_string())
+
 
 
     def signature_type_as_int(self) -> int:

@@ -31,8 +31,8 @@ class NdnTlvPrinter(object):
         0027 |        70 61 79 6C 6F 61 64                                         payload
 
     """
-
-    __has_blob_value = {8, 1, 10, 13, 14, 17, 12, 24, 25, 21, 23, 27, 29, 801}
+    #removed 23 signature value and 22 SignatureInfo
+    __has_blob_value = {8, 1, 10, 13, 14, 17, 12, 21, 24, 25, 27, 29, 35, 36 ,38, 801}
 
     __known_type_names = {
                            5: "Interest Packet",
@@ -63,6 +63,10 @@ class NdnTlvPrinter(object):
                           29: "KeyDigest",
                           31: "Delegation",
                           34: "Signature",
+                          35: "IdentityProof",
+                          36:"OutputSignature",
+                          37:"InputProviniance",
+                          38:"SignatureSignature",
                           80: "Fragment (link protocol)",           # NDN Link Protocol v2
                           81: "Sequence (link protocol)",           # NDN Link Protocol v2
                           82: "FragIndex (link protocol)",          # NDN Link Protocol v2
@@ -105,6 +109,7 @@ class NdnTlvPrinter(object):
         print()
         self.__print_tlv()
         print()
+
 
 
     def __get_type_name(self, n):
@@ -153,7 +158,6 @@ class NdnTlvPrinter(object):
         type_value_description = self.__get_type_name(type_value)
         NdnTlvPrinter.print_without_newline(" -- <type='{}', length={}>".format(type_value_description, length))
 
-
         self.__indention_level += 1
         if type_value_description == "UNKNOWN":
             NdnTlvPrinter.__print_blob(self, length)
@@ -164,6 +168,7 @@ class NdnTlvPrinter(object):
                 next_tlv_start = self.__position + length
                 while(self.__position < next_tlv_start):
                     self.__print_tlv()
+
             self.__indention_level -= 1
 
 
