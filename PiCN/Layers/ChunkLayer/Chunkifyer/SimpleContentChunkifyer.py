@@ -25,7 +25,7 @@ class SimpleContentChunkifyer(BaseChunkifyer):
             md_num = int(i/self._num_of_names_in_metadata)
             next = 0
             if i + self._num_of_names_in_metadata < num_of_chunks:
-                next = int(i/4)+1
+                next = int(i/self._num_of_names_in_metadata)+1
             meta_data.append(self.generate_meta_data(i, endindex, md_num, next, packet.name, content_size))
 
         content = []
