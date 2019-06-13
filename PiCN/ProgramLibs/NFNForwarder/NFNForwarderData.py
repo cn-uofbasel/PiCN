@@ -4,7 +4,8 @@ from typing import List
 
 from PiCN.LayerStack import LayerStack
 from PiCN.Layers.ChunkLayer.Chunkifyer import SimpleContentChunkifyer
-from PiCN.Layers.ChunkLayer.DataUploadChunklayer import DataTest3
+from PiCN.Layers.ChunkLayer.DataOffloadingChunkLayer import DataOffloadingChunklayer
+from PiCN.Layers.ChunkLayer.DataOffloadingChunkLayerSimple import DataOffloadingChunklayerSimple
 from PiCN.Layers.ICNLayer import BasicICNLayer
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseMemoryPrefix
@@ -86,7 +87,8 @@ class NFNForwarderData(object):
         self.linklayer = BasicLinkLayer(interfaces, faceidtable, log_level=log_level)
         self.packetencodinglayer = BasicPacketEncodingLayer(self.encoder, log_level=log_level)
         self.icnlayer = BasicICNLayer(log_level=log_level, ageing_interval=ageing_interval)
-        self.chunklayer = DataTest3(cs, pit, fib, num_of_forwards=num_of_forwards, chunk_size=chunk_size, log_level=log_level)
+        self.chunklayer = DataOffloadingChunklayer(cs, pit, fib, num_of_forwards=num_of_forwards, chunk_size=chunk_size, log_level=log_level)
+
 
 
         # setup nfn
