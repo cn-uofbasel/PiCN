@@ -1,10 +1,10 @@
-"""Simulate a simple Data Offloading Scenario
+"""Simulate a simple data-offloading scenario
 
-Scenario consists of three Road Side Units (RSU) and a Client moving around freely.
+Scenario consists of three Road Side Units (RSU) and a client moving around freely.
 
-RSU1 <--------> RSU2 <-----------> RSU3
+RSU0 <--------> RSU1 <--------> RSU2 <-----------> RSU3
 
-        client ->
+        car ->
 
 Test1
 The client sends an interest to RSU1 which involves data that is stored on the client itself.
@@ -29,8 +29,8 @@ from PiCN.ProgramLibs.ICNForwarder import ICNForwarder
 from PiCN.ProgramLibs.NFNForwarder.NFNForwarderData import NFNForwarderData
 
 
-class TestNeighbours(unittest.TestCase):
-    """run the simple Data Offloading Scenario Simulation"""
+class TestDisconnections(unittest.TestCase):
+    """Run the data-offloading simulation"""
 
     def setUp(self):
         self.encoder_type = SimpleStringEncoder()
@@ -59,6 +59,8 @@ class TestNeighbours(unittest.TestCase):
                                                                      self.rsus[i].icnlayer.pit,
                                                                      self.rsus[i].linklayer.faceidtable)
             self.mgmt_clients.append(MgmtClient(self.rsus[i].mgmt.mgmt_sock.getsockname()[1]))
+            self.fetch_tools[i].timeoutpreventionlayer.timeout_interval = 30
+
 
     def tearDown(self):
         self.car.stop_forwarder()
@@ -80,39 +82,41 @@ class TestNeighbours(unittest.TestCase):
 
         self.simulation_bus.start_process()
 
-        # setup rsu0
+        function = "PYTHON\nf\ndef f(a):\n return a + ' World'"
+
+        # Setup rsu0
         self.mgmt_clients[0].add_face("car", None, 0)
         self.mgmt_clients[0].add_face("rsu1", None, 0)
         self.mgmt_clients[0].add_forwarding_rule(Name("/car"), [0])
         self.mgmt_clients[0].add_forwarding_rule(Name("/nR"), [1])
-        self.mgmt_clients[0].add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n return a + ' World'")
+        self.mgmt_clients[0].add_new_content(Name("/rsu/func/f1"), function)
 
-        # setup rsu1
+        # Setup rsu1
         self.mgmt_clients[1].add_face("car", None, 0)
         self.mgmt_clients[1].add_face("rsu0", None, 0)
         self.mgmt_clients[1].add_face("rsu2", None, 0)
         self.mgmt_clients[1].add_forwarding_rule(Name("/car"), [0])
         self.mgmt_clients[1].add_forwarding_rule(Name("/nL"), [1])
         self.mgmt_clients[1].add_forwarding_rule(Name("/nR"), [2])
-        self.mgmt_clients[1].add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n return a + ' World'")
+        self.mgmt_clients[1].add_new_content(Name("/rsu/func/f1"), function)
 
-        # setup rsu2
+        # Setup rsu2
         self.mgmt_clients[2].add_face("car", None, 0)
         self.mgmt_clients[2].add_face("rsu1", None, 0)
         self.mgmt_clients[2].add_face("rsu3", None, 0)
         self.mgmt_clients[2].add_forwarding_rule(Name("/car"), [0])
         self.mgmt_clients[2].add_forwarding_rule(Name("/nL"), [1])
         self.mgmt_clients[2].add_forwarding_rule(Name("/nR"), [2])
-        self.mgmt_clients[2].add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n return a + ' World'")
+        self.mgmt_clients[2].add_new_content(Name("/rsu/func/f1"), function)
 
-        # setup rsu3
+        # Setup rsu3
         self.mgmt_clients[3].add_face("car", None, 0)
         self.mgmt_clients[3].add_face("rsu2", None, 0)
         self.mgmt_clients[3].add_forwarding_rule(Name("/car"), [0])
         self.mgmt_clients[3].add_forwarding_rule(Name("/nL"), [1])
-        self.mgmt_clients[3].add_new_content(Name("/rsu/func/f1"), "PYTHON\nf\ndef f(a):\n return a + ' World'")
+        self.mgmt_clients[3].add_new_content(Name("/rsu/func/f1"), function)
 
-        # setup car
+        # Setup car
         self.mgmt_client_car.add_face("rsu0", None, 0)
         self.mgmt_client_car.add_face("rsu1", None, 0)
         self.mgmt_client_car.add_face("rsu2", None, 0)
@@ -121,46 +125,69 @@ class TestNeighbours(unittest.TestCase):
         self.d = Content(Name("/car/data/test1"), "Test" * 10)
         self.meta_data, self.data = self.chunkifyer.chunk_data(self.d)
 
-        for md in self.meta_data:
+        for md in self.meta_data[:]:
             self.car.icnlayer.cs.add_content_object(md)
 
-        # only load n-2 chunks to car to simulate car getting out of each while uploading
+        # Only load first 6 chunks to car to simulate car getting out of each while uploading
         for d in self.data[:5]:
             self.mgmt_client_car.add_new_content(d.name, d.content)
 
-
-
-    def test_nfn_interest(self):
+    def test_two_disconnections(self):
         self.setup_faces_and_connections()
 
         name = Name("/rsu/func/f1")
         name += '_(/car/data/test1)'
         name += "NFN"
 
-        res = self.fetch_tools[0].fetch_data(name)
-        print(res)
+        print("RSU 0 FETCHING")
+        res0 = self.fetch_tools[0].fetch_data(name, timeout=10)
+        print(res0)
 
         sleep(1)
-        print("\n" * 20 + "RSU 2 STARTING")
+        print("\n" * 20 + "RSU 1 FETCHING")
 
         for d in self.data[5:-2]:
             self.mgmt_client_car.add_new_content(d.name, d.content)
         for d in self.data[:5]:
             self.car.icnlayer.cs.remove_content_object(d.name)
-        for md in self.meta_data:
-            self.car.icnlayer.cs.remove_content_object(md.name)
 
-        res2 = self.fetch_tools[1].fetch_data(name, 30)
-        print(res2)
+        res1 = self.fetch_tools[1].fetch_data(name, timeout=10)
+        print(res1)
 
         sleep(1)
-        print("\n" * 20 + "RSU 3 STARTING")
+        print("\n" * 20 + "RSU 2 FETCHING")
 
         for d in self.data[-2:]:
             self.mgmt_client_car.add_new_content(d.name, d.content)
         for d in self.data[:-2]:
             self.car.icnlayer.cs.remove_content_object(d.name)
 
-        res3 = self.fetch_tools[2].fetch_data(name)
-        print(res3)
-        self.assertEqual(self.d.content + " World", res3)
+        res2 = self.fetch_tools[2].fetch_data(name, timeout=10)
+        print(res2)
+        self.assertEqual(self.d.content + " World", res2)
+
+    def test_skip_two_rsus(self):
+
+        # Increase the number of forwards
+        for rsu in self.rsus:
+            rsu.chunklayer.set_number_of_forwards(2)
+
+        self.setup_faces_and_connections()
+        name = Name("/rsu/func/f1")
+        name += '_(/car/data/test1)'
+        name += "NFN"
+
+        res0 = self.fetch_tools[0].fetch_data(name, timeout=10)
+        print(res0)
+
+        sleep(1)
+        print("\n" * 20 + "RSU 4 STARTING")
+
+        for d in self.data[5:]:
+            self.mgmt_client_car.add_new_content(d.name, d.content)
+        for d in self.data[:5]:
+            self.car.icnlayer.cs.remove_content_object(d.name)
+
+        res1 = self.fetch_tools[3].fetch_data(name, timeout=10)
+        print(res1)
+        self.assertEqual(self.d.content + " World", res1)
