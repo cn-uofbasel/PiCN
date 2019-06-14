@@ -3,12 +3,17 @@ This is a simplified version of the code in monodepth_simple.py from https://git
 """
 
 import os
+import io
+import shutil
+import requests
+import zipfile
+import urllib3
 
 from PiCN.definitions import ROOT_DIR
 from PIL import Image
 from PiCN.Demos.DetectionMap.Monodepth.MonodepthModel import *
 
-def get_disparity_map(image, model_path: str= "Demos/DetectionMap/Monodepth/Model/model_cityscapes/model_cityscapes"):
+def get_disparity_map(image, model_path: str= "Demos/DetectionMap/Monodepth/Model/model_cityscapes"):
     """
     Get the disparity map from an input image.
     The input image is assumed to be the left image of a stereo image.
@@ -20,6 +25,18 @@ def get_disparity_map(image, model_path: str= "Demos/DetectionMap/Monodepth/Mode
     tf.reset_default_graph()
     original_height, original_width = image.shape[:2]
     model_path = os.path.join(ROOT_DIR, model_path)
+
+    # Check if model exists. If not it gets downloaded from github
+    if not os.path.exists(os.path.dirname(model_path)):
+        print("Model for monodepth not found. \nDownloading from GitHub...")
+        path = os.path.join(ROOT_DIR, "Demos/DetectionMap/Monodepth")
+        url = "https://github.com/cn-uofbasel/PiCN/releases/download/0.0.1/MonodepthModel.zip"
+
+        response = requests.get(url)
+        print("Download done!")
+        with zipfile.ZipFile(io.BytesIO(response.content)) as zf:
+            for info in zf.infolist():
+                zf.extract(info, path)
 
     params = monodepth_parameters(
         encoder="vgg",

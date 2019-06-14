@@ -1,6 +1,9 @@
+import io
 import os
+import zipfile
 
 import matplotlib.pyplot as plt
+import requests
 
 from PiCN.definitions import ROOT_DIR
 from PiCN.Demos.DetectionMap.DetectionMapObject import *
@@ -14,11 +17,25 @@ def detect_objects(image, id: int=0):
     :param image: The input image
     :return: List of dicts containing the name and the x, y-coordinates of the classified objects
     """
-    labels_file = open(os.path.join(ROOT_DIR, "Demos/DetectionMap/YOLO/Model/labels"))
+    # Check if model exists. If not it gets downloaded from github
+    model_path = os.path.join(ROOT_DIR, "Demos/DetectionMap/YOLO/Model")
+
+    if not os.path.exists(model_path):
+        print("Model for object detection not found. \nDownloading from GitHub...")
+        path = os.path.join(ROOT_DIR, "Demos/DetectionMap/YOLO")
+        url = "https://github.com/cn-uofbasel/PiCN/releases/download/0.0.1/YOLO.zip"
+
+        response = requests.get(url)
+        print("Download done!")
+        with zipfile.ZipFile(io.BytesIO(response.content)) as zf:
+            for info in zf.infolist():
+                zf.extract(info, path)
+
+    labels_file = open(os.path.join(model_path, "labels"))
     labels = labels_file.read().strip().split("\n")
     labels_file.close()
 
-    labels_include_file = open(os.path.join(ROOT_DIR, "Demos/DetectionMap/YOLO/Model/labels_included"))
+    labels_include_file = open(os.path.join(model_path, "labels_included"))
     labels_include = labels_include_file.read().strip().split("\n")
     labels_include_file.close()
 
@@ -26,8 +43,8 @@ def detect_objects(image, id: int=0):
     colors = np.random.randint(0, 255, size=(len(labels), 3),
                                dtype="uint8")
 
-    config_path = os.path.join(ROOT_DIR, "Demos/DetectionMap/YOLO/Model/yolov3.cfg")
-    weights_path = os.path.join(ROOT_DIR, "Demos/DetectionMap/YOLO/Model/yolov3.weights")
+    config_path = os.path.join(model_path, "yolov3.cfg")
+    weights_path = os.path.join(model_path, "yolov3.weights")
     net = cv2.dnn.readNetFromDarknet(config_path, weights_path)
     ln = net.getLayerNames()
     ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
@@ -74,8 +91,8 @@ def detect_objects(image, id: int=0):
             #             0.5, color, 2)
 
     # Make sure the given folder exists, if not create it
-    if not os.path.exists(os.path.join(ROOT_DIR, f"Demos/DetectionMap/Assets/Classified")):
-        os.makedirs(os.path.join(ROOT_DIR, f"Demos/DetectionMap/Assets/Classified"))
+    if not os.path.exists(os.path.join(ROOT_DIR, "Demos/DetectionMap/Assets/Classified")):
+        os.makedirs(os.path.join(ROOT_DIR, "Demos/DetectionMap/Assets/Classified"))
 
     plt.imsave(os.path.join(ROOT_DIR, f"Demos/DetectionMap/Assets/Classified/classified{id}.jpg"), image)
 
