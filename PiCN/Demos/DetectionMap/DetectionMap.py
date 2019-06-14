@@ -114,8 +114,8 @@ class DetectedObjectGPS:
             gmap.scatter([lat], [lon], color, size=1.5, marker=False)
 
         # Make sure the given folder exists, if not create it
-        if not os.path.exists(os.path.join(ROOT_DIR, f"Demos/DetectionMap/Assets/Maps")):
-            os.makedirs(os.path.join(ROOT_DIR, f"Demos/DetectionMap/Assets/Maps"))
+        if not os.path.exists(os.path.join(ROOT_DIR, "Demos/DetectionMap/Assets/Maps")):
+            os.makedirs(os.path.join(ROOT_DIR, "Demos/DetectionMap/Assets/Maps"))
 
         gmap.draw(os.path.join(ROOT_DIR, f"Demos/DetectionMap/Assets/Maps/map{id}.html"))
 

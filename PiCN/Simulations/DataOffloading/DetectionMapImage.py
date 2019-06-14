@@ -163,7 +163,7 @@ class DetectionMapSimulation(unittest.TestCase):
         name += "NFN"
 
         print("RSU 0 FETCHING")
-        result = self.fetch_tools[0].fetch_data(name, 60)
+        result = self.fetch_tools[0].fetch_data(name, 360)
         print(result)
 
         sleep(3)

@@ -188,7 +188,7 @@ class DetectionMapVideoSimulation(unittest.TestCase):
 
             print("\t" * 5)
             print("RSU 0 FETCHING")
-            result = self.fetch_tools[0].fetch_data(name, 30)
+            result = self.fetch_tools[0].fetch_data(name, 360)
             print(result)
             sleep(1)
 
