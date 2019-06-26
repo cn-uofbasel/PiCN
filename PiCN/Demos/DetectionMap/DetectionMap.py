@@ -21,7 +21,7 @@ class DetectedObjectGPS:
         self.classified_map_detections = []
 
 
-    def run(self, start_point: LatLon, start_bearing, image, scaling_factor: int=1, id: int=0):
+    def run(self, start_point: LatLon, start_bearing, image, scaling_factor_z: int=1, scaling_factor_x: int=1, id: int=0):
         """
         Create the disparity map, run the object detection algorithm and calculate the GPS-coordinates of the
         classified objects using the disparity map.
@@ -37,10 +37,12 @@ class DetectedObjectGPS:
         disparity_map = get_disparity_map(image)
         print("Detecting objects...")
         detections, self.colors = detect_objects(image, id)
-        gps = self.get_gps_of_detected_objects(image, start_point, start_bearing, disparity_map, detections, scaling_factor)
+        gps = self.get_gps_of_detected_objects(image, start_point, start_bearing, disparity_map, detections,
+                                               scaling_factor_z, scaling_factor_x)
         return gps
 
-    def get_gps_of_detected_objects(self, image, position: LatLon, start_bearing, disparity_map, detections, scaling_factor):
+    def get_gps_of_detected_objects(self, image, position: LatLon, start_bearing, disparity_map, detections,
+                                    scaling_factor_z, scaling_factor_x):
         """
         Use the GPS coordinates of the camera (car) and the disparity map to calculate the GPS coordinates of the
         detected objects.
@@ -50,7 +52,7 @@ class DetectedObjectGPS:
         :param start_bearing: The viewing direction of the camera as the deviation from north in degrees
         :param disparity_map: The disparity map as an image
         :param detections: List of dicts containing the name and the x, y-coordinates of the classified objects
-        :param scaling_factor: A factor which scales x and z distances
+        :param scaling_factor_z: A factor which scales x and z distances
         :return: The GPS-coordinates of the detected objects
         """
         original_width = image.shape[1]
@@ -58,8 +60,9 @@ class DetectedObjectGPS:
         for detection in detections:
             u, v = detection["coords"]
             z = self.basline * self.focal_length / (disparity_map[v, u] * self.training_width)
-            z *= scaling_factor
+            z *= scaling_factor_z
             x = (u - original_width / 2) * z / (original_width / self.training_width) / self.focal_length
+            x *= scaling_factor_x
             distance, bearing = self.xz_to_dist_bearing(x, z, start_bearing)
             new_gps = position.destination(distance, bearing)
             gps.append(new_gps)
@@ -161,11 +164,11 @@ def detection_map(map_det_obj_str: str, build_map: int, id: int):
     :return: Dict containing the names and the GPS-coordinates of all detected object
     """
     map_det_obj = DetectionMapObject.from_string(map_det_obj_str)
-    image, lat, lon, start_bearing, scaling_factor = map_det_obj.unpack()
+    image, lat, lon, start_bearing, scaling_factor_z, scaling_factor_x = map_det_obj.unpack()
     start_point = LatLon(lat, lon)
 
     d = DetectedObjectGPS()
-    gps = d.run(start_point, start_bearing, image, scaling_factor, id)
+    gps = d.run(start_point, start_bearing, image, scaling_factor_z, scaling_factor_x, id)
 
     x, z = d.gps_to_global_xz(start_point, start_bearing, gps)
     d.plot_data(x, z, id)
@@ -185,17 +188,17 @@ def detection_map_2(map_det_obj_str1: str, map_det_obj_str2: str, build_map: boo
     """
     # image from car 1
     map_det_obj1 = DetectionMapObject.from_string(map_det_obj_str1)
-    image1, lat1, lon1, start_bearing1, scaling_factor1 = map_det_obj1.unpack()
+    image1, lat1, lon1, start_bearing1, scaling_factor_z1, scaling_factor_x1 = map_det_obj1.unpack()
     start_point1 = LatLon(lat1, lon1)
 
     # image from car 2
     map_det_obj2 = DetectionMapObject.from_string(map_det_obj_str2)
-    image2, lat2, lon2, start_bearing2, scaling_factor2 = map_det_obj2.unpack()
+    image2, lat2, lon2, start_bearing2, scaling_factor_z2, scaling_factor_x2 = map_det_obj2.unpack()
     start_point2 = LatLon(lat2, lon2)
 
     d = DetectedObjectGPS()
-    gps = d.run(start_point1, start_bearing1, image1, scaling_factor1, 0)
-    gps += d.run(start_point2, start_bearing2, image2, scaling_factor2, 1)
+    gps = d.run(start_point1, start_bearing1, image1, scaling_factor_z1, scaling_factor_x1, 0)
+    gps += d.run(start_point2, start_bearing2, image2, scaling_factor_z2, scaling_factor_x2, 1)
 
     x, z = d.gps_to_global_xz(start_point1, start_bearing1, gps)
     d.plot_data(x, z)
@@ -204,27 +207,3 @@ def detection_map_2(map_det_obj_str1: str, map_det_obj_str2: str, build_map: boo
         d.create_map(lat1, lon1)
 
     return d.classified_map_detections
-
-
-# def map_detection_video(map_det_obj_str: str, build_map: int, id: int):
-#     """
-#     Map detection function for a single image.
-#
-#     :param map_det_obj_str: String representing a MapDetectionObj
-#     :param build_map: Pass 1 if a map should be created, 0 otherwise (booleans are not supported yet)
-#     :return: Dict containing the names and the GPS-coordinates of all detected object
-#     """
-#     map_det_obj = DetectionMapObject.from_string(map_det_obj_str)
-#     image, lat, lon, start_bearing, scaling_factor = map_det_obj.unpack()
-#     start_point = LatLon(lat, lon)
-#
-#     d = DetectedObjectGPS()
-#     gps = d.run(start_point, start_bearing, image, scaling_factor, id)
-#
-#     x, z = d.gps_to_global_xz(start_point, start_bearing, gps)
-#     d.plot_data(x, z, id, 40, 80)
-#
-#     if build_map:
-#         d.create_map(lat, lon, id)
-#
-#     return d.classified_map_detections
