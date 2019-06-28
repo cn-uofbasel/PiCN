@@ -10,6 +10,6 @@ class SignatureType(Enum):
 
     DEFAULT_SIGNATURE = 1
 
-    PROVENIENCE_SIGNATURE = 2
+    PROVENANCE_SIGNATURE = 2
 
     #NoSignature="test"

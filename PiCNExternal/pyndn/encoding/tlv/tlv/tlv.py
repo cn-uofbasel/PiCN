@@ -56,6 +56,7 @@ class Tlv(object):
     OutputSignature =   36
     InputProviniance =  37
     SignatureSignature =38
+    ArgumentIdentifier =39
 
     FaceInstance =     128
     ForwardingEntry =  129

@@ -32,7 +32,7 @@ class NdnTlvPrinter(object):
 
     """
     #removed 23 signature value and 22 SignatureInfo
-    __has_blob_value = {8, 1, 10, 13, 14, 17, 12, 21, 24, 25, 27, 29, 35, 36 ,38, 801}
+    __has_blob_value = {8, 1, 10, 13, 14, 17, 12, 21, 24, 25, 27, 29, 35, 36 ,38, 39, 801}
 
     __known_type_names = {
                            5: "Interest Packet",
@@ -67,6 +67,7 @@ class NdnTlvPrinter(object):
                           36:"OutputSignature",
                           37:"InputProviniance",
                           38:"SignatureSignature",
+                          39:"ArgumentIdentifier",
                           80: "Fragment (link protocol)",           # NDN Link Protocol v2
                           81: "Sequence (link protocol)",           # NDN Link Protocol v2
                           82: "FragIndex (link protocol)",          # NDN Link Protocol v2
@@ -228,8 +229,15 @@ class NdnTlvPrinter(object):
             self.__position += 1
             idx += 1
             NdnTlvPrinter.print_without_newline(NdnTlvPrinter.byte_to_hex(e))
-            if idx % 8 == 0:
+
+            #if (idx % 8 == 0 & idx != len):
+            if idx % 8 == 0 :
                 NdnTlvPrinter.print_without_newline("\t".expandtabs(50 - 3 * self.__indention_level))
                 NdnTlvPrinter.print_without_newline(re.sub(r'\s', '\xff', self.__bytes_to_printable_char(self.__wire_format[self.__position - 8 : self.__position])))
+        """
+        if idx != len:
+            NdnTlvPrinter.print_without_newline("\t".expandtabs(50 + (8 - idx % 8) * 3 - 3 * self.__indention_level))
+        """
         NdnTlvPrinter.print_without_newline("\t".expandtabs(50 + (8 - idx % 8) * 3 - 3 * self.__indention_level))
         NdnTlvPrinter.print_without_newline(re.sub(r'\s', '\x00', self.__bytes_to_printable_char(self.__wire_format[self.__position - (idx % 8): self.__position])))
+        #print("<<test>>")
