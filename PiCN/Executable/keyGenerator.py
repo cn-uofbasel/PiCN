@@ -5,10 +5,7 @@ import Crypto
 from Crypto.PublicKey import RSA
 from Crypto import Random
 import ast
-
-
-
-#todo dir for saving keys
+import os, sys
 
 
 def main(args):
@@ -18,15 +15,24 @@ def main(args):
     random_generator = Random.new().read
     key = RSA.generate(args.len, random_generator)  # generate pub and priv key
 
-
-
     public_key = key.exportKey('DER')
     privat_key = key.exportKey('DER', 8)
 
-    f = open('public_key', 'bw')
+    #relative path
+    fileDir = os.path.dirname(os.path.abspath(__file__))
+    #print(fileDir)
+    parentDir = os.path.dirname(fileDir)
+    #print(parentDir)
+
+    newPath = os.path.join(parentDir, 'keys')  # Get the directory for StringFunctions
+    #print(newPath)
+    newPath+='/'
+    #sys.path.append(newPath)  # Add path into PYTHONPATH
+
+    f = open(newPath+'key.pub', 'bw')
     f.write(public_key)
     f.close()
-    f = open('privat_key', 'bw')
+    f = open(newPath+'key.priv', 'bw')
     f.write(privat_key)
     f.close()
 

@@ -9,6 +9,7 @@ from PiCNExternal.pyndn.encoding.tlv.tlv.tlv import Tlv
 
 from random import SystemRandom
 import hashlib
+import os
 
 from PiCN.Layers.PacketEncodingLayer.Printer.NdnTlvPrinter import NdnTlvPrinter
 
@@ -435,17 +436,37 @@ class NdnTlvEncoder(BasicEncoder):
         (provenance,_)=self.get_provenance_for_testing(payload, name, rec_depth)
         signature=Signature(SignatureType.PROVENANCE_SIGNATURE,None,None,None, provenance)
 
-
         if provenance is not None:
 
-
             signature.argumentIdentifier=argumentIdentifier
-
 
         return (self.get_signature(2, packet_without_sigt, payload, name, signature), argumentIdentifier)
 
 
-    def encode_data(self, name: Name, payload: bytearray, private_key=2,
+    def get_keys(self,privat_key: bool):
+        """
+        reads key from file
+        :param privat_key:
+        :return:
+        """
+        # relative path
+        absFilePath = os.path.abspath(__file__)
+        fileDir = os.path.dirname(os.path.abspath(__file__))
+        for i in range(3) :
+            fileDir = os.path.dirname(fileDir)
+            print(fileDir)
+
+        newPath = os.path.join(fileDir, 'keys')  # Get the directory for StringFunctions
+        newPath += '/'
+        # sys.path.append(newPath)  # Add path into PYTHONPATH
+
+        if privat_key:
+            f = open(newPath + 'key.priv', 'br')
+        else:
+            f = open(newPath + 'key.pub', 'br')
+        return f.read()
+
+    def encode_data(self, name: Name, payload: bytearray,
                     signature_type=SignatureType.NO_SIGNATURE, identity_locator=None, input_provenance=None,argumentIdentifier=None) -> bytearray:#signature
         """
         Assembly a data packet including a signature according to NDN packet format specification 0.3 (DigestSha256).
@@ -880,3 +901,4 @@ class NdnTlvEncoder(BasicEncoder):
             return input[0] == 0x64 and input[3] == 0x03 and input[4] == 0x20
         except:
             return False
+
