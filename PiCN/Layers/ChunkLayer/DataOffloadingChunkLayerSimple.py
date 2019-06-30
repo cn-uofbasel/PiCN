@@ -140,6 +140,7 @@ class DataOffloadingChunklayerSimple(LayerProcess):
             if "CL" in string_components[-1]:
                 matching_content = self.get_matching_content(packet)
                 if last == b"CL0" or isinstance(matching_content, Content):   # If there is matching content, return it
+                    print(">>>>>>>>>>> MATCHING", matching_content.name)
                     to_lower.put([faceid, matching_content])
                 else:  # Otherwise try to pass on to neighbour
                     to_lower.put([faceid, Interest(self.decrease_name(packet.name))])

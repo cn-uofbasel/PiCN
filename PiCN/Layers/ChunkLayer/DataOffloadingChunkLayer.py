@@ -45,6 +45,7 @@ class CaEntry(object):
         self.size = 0
         self.ca = None
         self.completely_available = False
+        self.chunks = []
 
 
 class DataOffloadingChunklayer(LayerProcess):
@@ -241,7 +242,7 @@ class DataOffloadingChunklayer(LayerProcess):
                                 ca_entry.received_all = True
                                 request_entry = self.get_request_entry(unpacked)
                                 if request_entry and not request_entry.requested_md and not self.pass_through:
-                                    self.creat_chunk_interests(faceid, request_entry, to_lower)
+                                    self.creat_chunk_interests(faceid, request_entry, ca_entry, to_lower)
 
                         self._ca_table[unpacked] = ca_entry
                     else:  # This is not the requesting node --> pass on to neighbour
@@ -301,9 +302,9 @@ class DataOffloadingChunklayer(LayerProcess):
             # either the packet is CA content or there is no CA content available
             if not self.pass_through:
                 if ca_content:
-                    self.creat_chunk_interests(faceid, request_entry, to_lower)
+                    self.creat_chunk_interests(faceid, request_entry, CaEntry(), to_lower)
                 elif self._ca_table.get(request_entry.name).received_all:  # We have an answer from both neighbours
-                    self.creat_chunk_interests(faceid, request_entry, to_lower)
+                    self.creat_chunk_interests(faceid, request_entry, self._ca_table.get(request_entry.name), to_lower)
 
                 # if ca_content or self._ca_table.get(request_entry.name).received_all:
                 #     self.creat_chunk_interests(faceid, request_entry, to_lower)
@@ -340,17 +341,17 @@ class DataOffloadingChunklayer(LayerProcess):
         ca_entry.received_all = True
 
         chunks_str = content.content.split(";")
-        chunks = [Name(chunk) for chunk in chunks_str]
+        ca_entry.chunks = [Name(chunk) for chunk in chunks_str]
 
         request_entry = self.get_request_entry(content.name)
         if request_entry and not self.pass_through:
             if chunks_str[0] == "complete":  # Neighbour has complete data
-                chunks.pop(0)
+                ca_entry.chunks.pop(0)
                 ca_entry.completely_available = True  # Ignore requested_md, because neighbour has all chunks
             self._ca_table[content.name] = ca_entry
             self._request_table.remove(request_entry)
             # Create interests for all chunks that are available from neighbour
-            for chunk in chunks:
+            for chunk in ca_entry.chunks:
                 print("TO NEIGHBOUR:", self.pack_ca(chunk, ca_entry))
                 if chunk not in request_entry.requested_chunks and chunk not in [i.name for i in request_entry.chunks]:
                     request_entry.requested_chunks.append(chunk)
@@ -360,10 +361,9 @@ class DataOffloadingChunklayer(LayerProcess):
             # If there is no name in requested_md try to request the remaining chunks.
             # This is only necessary to get a NACK, so the simulation continues.
             if not request_entry.requested_md:
-                for chunk in request_entry.requested_chunks:
-                    if chunk not in chunks:
-                        print("TO ORIGINAL SOURCE:", chunk)
-                        to_lower.put([faceid, Interest(chunk)])
+                for chunk in [i for i in request_entry.requested_chunks if i not in ca_entry.chunks]:
+                    print("TO ORIGINAL SOURCE:", chunk)
+                    to_lower.put([faceid, Interest(chunk)])
 
     def get_request_entry(self, name: Name):
         """
@@ -419,9 +419,9 @@ class DataOffloadingChunklayer(LayerProcess):
         else:
             return Nack(packet.name, NackReason.NO_CONTENT, packet)
 
-    def creat_chunk_interests(self, faceid: int, request_entry: RequestTableEntry, to_lower: multiprocessing.Queue):
+    def creat_chunk_interests(self, faceid: int, request_entry: RequestTableEntry, ca_entry: CaEntry, to_lower: multiprocessing.Queue):
         """Create interests for all the chunks in requested_md of the specified request table entry."""
-        for chunk in request_entry.requested_chunks:
+        for chunk in [i for i in request_entry.requested_chunks if i not in ca_entry.chunks]:
             print("TO ORIGINAL SOURCE:", chunk)
             to_lower.put([faceid, Interest(chunk)])
 
@@ -438,6 +438,7 @@ class DataOffloadingChunklayer(LayerProcess):
         content_size = int(content_size)
         if content_size > ca_entry.size:
             ca_entry.ca = packet
+            ca_entry.size = content_size
 
     def pack_ca(self, name: Name, ca_entry: CaEntry) -> Name:
         """Prepend the recipient, append "CL" and the number of forwards."""

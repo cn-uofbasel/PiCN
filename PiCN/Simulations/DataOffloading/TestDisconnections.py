@@ -16,7 +16,8 @@ While uploading the connection is interrupted. The client connects to the next R
 
 """
 import unittest
-from time import sleep
+from time import sleep, time
+
 
 from PiCN.Layers.ChunkLayer.Chunkifyer import SimpleContentChunkifyer
 from PiCN.Layers.LinkLayer.Interfaces import SimulationBus
@@ -140,6 +141,7 @@ class TestDisconnections(unittest.TestCase):
         name += "NFN"
 
         print("RSU 0 FETCHING")
+        start = time()
         res0 = self.fetch_tools[0].fetch_data(name, timeout=10)
         print(res0)
 
@@ -163,31 +165,31 @@ class TestDisconnections(unittest.TestCase):
             self.car.icnlayer.cs.remove_content_object(d.name)
 
         res2 = self.fetch_tools[2].fetch_data(name, timeout=10)
-        print(res2)
+        print(res2, time()-start)
         self.assertEqual(self.d.content + " World", res2)
 
-    def test_skip_two_rsus(self):
-
-        # Increase the number of forwards
-        for rsu in self.rsus:
-            rsu.chunklayer.set_number_of_forwards(2)
-
-        self.setup_faces_and_connections()
-        name = Name("/rsu/func/f1")
-        name += '_(/car/data/test1)'
-        name += "NFN"
-
-        res0 = self.fetch_tools[0].fetch_data(name, timeout=10)
-        print(res0)
-
-        sleep(1)
-        print("\n" * 20 + "RSU 4 STARTING")
-
-        for d in self.data[5:]:
-            self.mgmt_client_car.add_new_content(d.name, d.content)
-        for d in self.data[:5]:
-            self.car.icnlayer.cs.remove_content_object(d.name)
-
-        res1 = self.fetch_tools[3].fetch_data(name, timeout=10)
-        print(res1)
-        self.assertEqual(self.d.content + " World", res1)
+    # def test_skip_two_rsus(self):
+    #
+    #     # Increase the number of forwards
+    #     for rsu in self.rsus:
+    #         rsu.chunklayer.set_number_of_forwards(2)
+    #
+    #     self.setup_faces_and_connections()
+    #     name = Name("/rsu/func/f1")
+    #     name += '_(/car/data/test1)'
+    #     name += "NFN"
+    #
+    #     res0 = self.fetch_tools[0].fetch_data(name, timeout=10)
+    #     print(res0)
+    #
+    #     sleep(1)
+    #     print("\n" * 20 + "RSU 4 STARTING")
+    #
+    #     for d in self.data[5:]:
+    #         self.mgmt_client_car.add_new_content(d.name, d.content)
+    #     for d in self.data[:5]:
+    #         self.car.icnlayer.cs.remove_content_object(d.name)
+    #
+    #     res1 = self.fetch_tools[3].fetch_data(name, timeout=10)
+    #     print(res1)
+    #     self.assertEqual(self.d.content + " World", res1)
