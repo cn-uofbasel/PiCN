@@ -10,6 +10,11 @@ from PiCNExternal.pyndn.encoding.tlv.tlv.tlv import Tlv
 from random import SystemRandom
 import hashlib
 import os
+import Crypto
+from Crypto.PublicKey import RSA
+from Crypto import Random
+import ast
+
 
 from PiCN.Layers.PacketEncodingLayer.Printer.NdnTlvPrinter import NdnTlvPrinter
 
@@ -62,12 +67,12 @@ class NdnTlvEncoder(BasicEncoder):
     }
     """Mapping of wire format nack reasons to NackReason Enum"""
 
-    def __init__(self, log_level=255,identity_loator=None, publicKey=None):
+    def __init__(self, log_level=255,identity_loator=None):
         super().__init__(logger_name="NdnTlvEnc", log_level=log_level)
 
 
     #todo expression
-    def encode(self, packet: Packet) -> bytearray:
+    def encode(self, packet: Packet, key_location=None) -> bytearray:
         """
         Python object (PiCN's internal representation) to NDN TLV wire format
         :param packet: Packet in PiCN's representation
@@ -84,7 +89,7 @@ class NdnTlvEncoder(BasicEncoder):
             if isinstance(packet.wire_format, bytes):
                 return packet.wire_format
             else:
-                return self.encode_data(packet.name, packet.get_bytes())
+                return self.encode_data(packet.name, packet.get_bytes(), key_location=key_location)
         if isinstance(packet, Nack):
             self.logger.info("Encode NACK")
             if isinstance(packet.wire_format, bytes):
@@ -130,11 +135,83 @@ class NdnTlvEncoder(BasicEncoder):
             self.logger.info("Decode failed (unknown packet type)")
             return UnknownPacket(wire_format=wire_data)
 
+
+
     ### Helpers ###
-    def encode_signature(self, sig) -> bytearray:
+    def read_priv_key(self,path):
         """
-        :param signature
-        :return encoded signature in tlv packets
+        read private key from filesystem
+        :param path: File system path to privat key (string)
+        :return: private key (bytes)
+        :raise an error if the file is not found
+        """
+        # read private key from file system and return (converted to appropriate format)
+        if type(path) is not type(None):
+            if path[-1:] is not '/':
+                path += '/'
+
+        if path is None:
+            # relative path
+            fileDir = os.path.dirname(os.path.abspath(__file__))
+            parentDir=fileDir
+            for i in range(3):
+                parentDir = os.path.dirname(parentDir)
+
+            path = os.path.join(parentDir, 'keys')  # Get the directory for StringFunctions
+            path += '/'
+
+        if not os.path.isfile(path + 'key.pub'):
+            raise ValueError('no file found: ' + path + "key.pub doesn't exist")
+
+        f = open(path + 'key.priv', 'br')
+        return f.read()
+
+    def read_pub_key(self,path):
+        """
+        read public key from file system
+        :param: path: File system path to privat key (string)
+        :return: public key (bytes)
+        :raise an error if the file is not found
+        """
+        # correct missing / in filelocation input
+        if type(path) is not type(None):
+            if path[-1:] is not '/':
+                path += '/'
+        if not os.path.isfile(path + 'key.pub'):
+            raise ValueError('no file found: '+path+"key.pub doesn't exist")
+
+        f = open(path + 'key.pub', 'br')
+        return f.read()
+
+    def sign(self,data, priv_key):
+        """
+
+        :param data: (bytes)
+        :param priv_key: private key from Crypto
+        :return: signed data
+        """
+        key = RSA.importKey(priv_key)
+        sig = key.sign(data, 32)
+
+        return sig
+
+    def verify(self,test_content, sig, pub_key):
+        """
+        :param test_content: the expected signature
+        :param sig: signed data
+        :param pub_key: public key from Crypto
+        :return: (bool)
+        """
+        key = RSA.importKey(pub_key)
+        encrypted = key.verify(test_content, sig)
+
+        return encrypted
+
+    def encode_signature(self, sig:Signature, key_location) -> bytearray:
+        """
+        :param signature (Signature)
+        :param key_location: File system path to privat key (string)
+        :return encoded and signed signature a tlv packet
         """
         encoder = TlvEncoder()
 
@@ -145,62 +222,40 @@ class NdnTlvEncoder(BasicEncoder):
             (sig,_)=sig
 
         if sig is None:
+            print("Signature is none")
             return None
 
-
-
         if(sig.signatureType==SignatureType.PROVENANCE_SIGNATURE):
-            """
+            private_key=self.read_priv_key(key_location)
 
-            encoder2 = TlvEncoder()
-            encoder2.writeBlobTlv(Tlv.SignatureSignature, sig.signatureSignature)
-            encoder2.writeBlobTlv(Tlv.InputProviniance, sig.inputProvenience)
-            encoder2.writeBlobTlv(Tlv.OutputSignature, sig.outputSignature)
-            encoder2.writeBlobTlv(Tlv.IdentityProof, sig.identityProof)
-            #encoder2.writeBlobTlv(Tlv.KeyLocator, sig.identityLocator)
-            encoder2.writeTypeAndLength(Tlv.SignatureValue,siglen)
+            singed_sigsig=self.sign(sig.signatureSignature,private_key)[0]
+            b_signed_sigsig=singed_sigsig.to_bytes((singed_sigsig.bit_length() + 7) // 8,byteorder='big')
+            encoder.writeBlobTlv(Tlv.SignatureSignature, b_signed_sigsig)
 
-            print("encoder output")
-            printer = NdnTlvPrinter(encoder2.getOutput())
-            printer.formatted_print()
 
-            """
 
-            encoder.writeBlobTlv(Tlv.SignatureSignature, sig.signatureSignature)
+
 
             if sig.inputProvenance is not None:
-
-                tlv_provenance=self.encode_signature(sig.inputProvenance)
+                tlv_provenance=self.encode_signature(sig.inputProvenance,key_location)
                 encoder.writeBlobTlv(Tlv.InputProviniance, tlv_provenance)
                 if sig.argumentIdentifier is not None:
-
-                    encoder.writeBlobTlv(Tlv.ArgumentIdentifier, sig.argumentIdentifier)
+                    singed_argument_identifier = self.sign(sig.argumentIdentifier, private_key)[0]
+                    b_singed_argument_identifier = singed_sigsig.to_bytes((singed_argument_identifier.bit_length() + 7) // 8, byteorder='big')
+                    encoder.writeBlobTlv(Tlv.ArgumentIdentifier, b_singed_argument_identifier)
             else:
                 encoder.writeBlobTlv(Tlv.InputProviniance, sig.inputProvenance)
 
+            singed_output_signature = self.sign(sig.outputSignature, private_key)[0]
+            b_singed_output_signature = singed_sigsig.to_bytes((singed_output_signature.bit_length() + 7) // 8, byteorder='big')
+            encoder.writeBlobTlv(Tlv.OutputSignature, b_singed_output_signature)
 
-            encoder.writeBlobTlv(Tlv.OutputSignature, sig.outputSignature)
-            encoder.writeBlobTlv(Tlv.IdentityProof, sig.identityProof)
+            singed_identity_proof = self.sign(sig.identityProof, private_key)[0]
+            b_singed_identity_proof = singed_sigsig.to_bytes((singed_identity_proof.bit_length() + 7) // 8, byteorder='big')
+            encoder.writeBlobTlv(Tlv.IdentityProof, b_singed_identity_proof)
+            #don't sign key locator
             encoder.writeBlobTlv(Tlv.KeyLocator, sig.identityLocator)
 
-            """
-            print("<<<<<<<<test length:")
-            print(len(sig.signatureSignature))
-            print(type(sig.inputProvenience))
-            print(sig.inputProvenience)
-            print(len(sig.outputSignature))
-            print(len(sig.identityProof))
-            print(type(sig.identityLocator))
-            print(sig.identityProof)
-
-
-
-
-            print(">>>>>>>>>>>>>>>>>>>>>>test signature parts:")
-            print(sig.signatureSignature)
-            print(sig.identityLocator)
-            print(sig.identityProof)
-            """
             #encoder.writeTypeAndLength(Tlv.SignatureValue, siglen)
             #encoder.writeOptionalBlobTlv(Tlv.SignatureValue, sig.to_bytearray())
             encoded_sig=encoder.getOutput()#.tobytes()
@@ -211,36 +266,6 @@ class NdnTlvEncoder(BasicEncoder):
             pass
         else:
             pass
-
-        """
-        sigsig_arr=[sig.signatureSignature]
-        sigsig_len=[len(sigsig_arr)]
-        inputProvenience_arr = [sig.inputProvenience]
-        inputProvenience_len = [len(inputProvenience_arr)]
-
-        outputSignature_arr = [sig.outputSignature]
-        outputSignature_len = [len(outputSignature_arr)]
-
-        identityProof_arr = [sig.identityProof]
-        identityProof_len = [len(identityProof_arr)]
-        identityLocator_arr = [sig.identityLocator]
-        identityLocator_len = [len(identityLocator_arr)]
-
-        combined=[Tlv.KeyLocator]+identityLocator_len+identityLocator_arr +\
-                 [Tlv.IdentityProof]+identityProof_len+identityProof_arr +\
-                 [Tlv.OutputSignature]+outputSignature_len+outputSignature_arr +\
-                 [Tlv.InputProviniance]+inputProvenience_len+inputProvenience_arr +\
-                 [Tlv.SignatureSignature]+sigsig_len+sigsig_arr
-        combined_len=[len(combined)]
-
-        encoded_sig=[Tlv.SignatureValue]+combined_len+combined
-
-        print("><<<<<<<<<<<<<<<<combined")
-        print(combined)
-
-        return bytearray(encoded_sig)
-        """
-
 
     def encode_name(self, name: Name) -> bytearray:
         """
@@ -280,14 +305,14 @@ class NdnTlvEncoder(BasicEncoder):
         return encoder.getOutput().tobytes()
 
 
-    def get_signature(self,private_key, packet_without_sig, payload: bytearray, name: Name, signature: Signature,inputByteArray=None):
+    def get_signature(self, packet_without_sig, payload: bytearray, name: Name, signature: Signature,inputByteArray=None):
         """
-        :param private_key
         :param packet_without_sig, payload (bytes) ,name
         :param signature (Identity locator and input proviniance can not be calculated)
         :return: Signature, default Signature or proviniance signature (calculates identity proof, output signature and signaturesignature)
         """
         #encoder = TlvEncoder()
+
 
 
         if (signature.signatureType == SignatureType.DEFAULT_SIGNATURE):
@@ -298,7 +323,15 @@ class NdnTlvEncoder(BasicEncoder):
             return Signature(SignatureType.DEFAULT_SIGNATURE, None, None, sig, None, None)
 
         elif (signature.signatureType == SignatureType.PROVENANCE_SIGNATURE):
+            """
+            priv_key = self.get_keys(True)
+            key = RSA.importKey(priv_key)
 
+            encrypted = key.encrypt(b'encrypt this message', 32)
+
+            print("\n encripted:")
+            print(encrypted)
+            """
 
             # output signature
             m = hashlib.sha256()
@@ -313,8 +346,6 @@ class NdnTlvEncoder(BasicEncoder):
             m2.update(payload+namebytearr)
             #m.update(expression)
             signature.identityProof = m2.digest()
-
-            # TODO key locator, Signature provenience, SigSig
 
             m = hashlib.sha256()
             m.update(signature.to_bytearray())
@@ -356,26 +387,27 @@ class NdnTlvEncoder(BasicEncoder):
         sig_info = [Tlv.SignatureType] + len1 + signature_type_arr
         return bytearray(sig_info)
 
-    def length_of_signature_parts(self, signature:Signature):
-        length = 10
+    def length_of_signature_parts(self, signature:Signature,sig_len):
+        length = 12
         if signature.identityLocator is not None:
-            length += 32
+            length += sig_len
         if signature.identityProof is not None:
-            length += 32
+            length += sig_len
         if signature.outputSignature is not None:
-            length += 32
+            length += sig_len
         if signature.argumentIdentifier is not None:
-            length += 34
+            length += sig_len
         if signature.inputProvenance is not None:
-            length += self.input_proveniance_lenth(signature.inputProvenance)
+            length += self.input_proveniance_lenth(signature.inputProvenance,sig_len)
         if signature.signatureSignature is not None:
-            length += 32
+            length += sig_len
         return length
 
-    def input_proveniance_lenth(self, provenance: Signature) -> int:
+    def input_proveniance_lenth(self, provenance: Signature, sig_len) -> int:
         """
         calculate the legth of the input proviniance
-        :param provenance
+        :param provenance (Signature)
+        :param sig_len (int) length of a sigature part
         :return: length: int length of the sub tlv
         """
         length = 0
@@ -391,9 +423,9 @@ class NdnTlvEncoder(BasicEncoder):
 
         if type(provenance) is list:
             for p in provenance:
-                length += self.length_of_signature_parts(p)
+                length += self.length_of_signature_parts(p,sig_len)
         else:
-            length += self.length_of_signature_parts(provenance)
+            length += self.length_of_signature_parts(provenance,sig_len)
         """ 
         length += 10
         if provenance.identityLocator is not None:
@@ -440,22 +472,21 @@ class NdnTlvEncoder(BasicEncoder):
 
             signature.argumentIdentifier=argumentIdentifier
 
-        return (self.get_signature(2, packet_without_sigt, payload, name, signature), argumentIdentifier)
+        return self.get_signature(packet_without_sigt, payload, name, signature), argumentIdentifier
 
 
+#todo remove
     def get_keys(self,privat_key: bool):
         """
         reads key from file
-        :param privat_key:
-        :return:
+        :param privat_key: True gor private key, False for public key
+        :return: key
         """
         # relative path
         absFilePath = os.path.abspath(__file__)
         fileDir = os.path.dirname(os.path.abspath(__file__))
         for i in range(3) :
             fileDir = os.path.dirname(fileDir)
-            print(fileDir)
-
         newPath = os.path.join(fileDir, 'keys')  # Get the directory for StringFunctions
         newPath += '/'
         # sys.path.append(newPath)  # Add path into PYTHONPATH
@@ -466,8 +497,8 @@ class NdnTlvEncoder(BasicEncoder):
             f = open(newPath + 'key.pub', 'br')
         return f.read()
 
-    def encode_data(self, name: Name, payload: bytearray,
-                    signature_type=SignatureType.NO_SIGNATURE, identity_locator=None, input_provenance=None,argumentIdentifier=None) -> bytearray:#signature
+    def encode_data(self, name: Name, payload: bytearray, key_location=None,
+                    signature_type=SignatureType.NO_SIGNATURE, identity_locator=None, input_provenance=None,argument_identifier=None) -> bytearray:#signature
         """
         Assembly a data packet including a signature according to NDN packet format specification 0.3 (DigestSha256).
         :param name: Name
@@ -505,26 +536,25 @@ class NdnTlvEncoder(BasicEncoder):
             #TODO calc and add length provenience and keylocator?
             #min length+ typ,length for sub tlv
 
-            #length for identity proof, output sig and sigsig are 32, +2 is for typ and length
+            #length of a signatur path depends on key size
+            priv_key=self.read_priv_key(key_location)
+            sign=self.sign(b'test',priv_key)[0]
+            b_sign = sign.to_bytes((sign.bit_length() + 7) // 8, byteorder='big')
+            sig_len = len(b_sign) # old 32
+            
             iden_loc_len = 0+2
-            iden_proof_len = 32+2
-            output_sig_len = 32+2
+            iden_proof_len = sig_len+2
+            output_sig_len = sig_len+2
             input_proveniance_len = 0
-            sigsig_len = 32+2
-
-
-
+            sigsig_len = sig_len+2
 
             signatureLength=iden_proof_len+output_sig_len+sigsig_len
 
             if signature.inputProvenance is None:
                 signatureLength+=2
             else:
-                argument_identifier_len = 32 + 2
-
-
-
-                signatureLength +=self.input_proveniance_lenth(signature.inputProvenance)+argument_identifier_len
+                argument_identifier_len = sig_len + 2
+                signatureLength +=self.input_proveniance_lenth(signature.inputProvenance, sig_len)+argument_identifier_len
 
             if signature.identityLocator is None:
                 signatureLength += iden_loc_len
@@ -560,14 +590,14 @@ class NdnTlvEncoder(BasicEncoder):
         # Add signature value
         packet_without_sig = encoder.getOutput().tobytes()
 
-        sig = self.get_signature(private_key,packet_without_sig, payload, name, signature )
-
+        sig = self.get_signature(packet_without_sig, payload, name, signature )
 
         packet_with_sig = packet_without_sig[:-(signatureLength)]# + sig#.tobytes()
 
 
         #encoded_sig=self.encode_signature(sig,signatureLength)
-        encoded_sig = self.encode_signature(sig)
+        encoded_sig = self.encode_signature(sig,key_location)
+
         packet_with_sig = packet_with_sig + encoded_sig
 
         return packet_with_sig
@@ -692,16 +722,6 @@ class NdnTlvEncoder(BasicEncoder):
         sign_info = self.decode_signature_component(decoder)
         # sign = decoder.readBlobTlv(Tlv.ProvenienceSignature)
         # sign = sign.tobytes()
-
-
-        """
-        print("<<<<<<<<<<sign info")
-        print(sign_info)
-        decoder2=TlvDecoder(sign_info)
-        signature_info_test=decoder2.readNestedTlvsStart(Tlv.SignatureType)
-        print(signature_info_test)
-        print(signature_info_test==SignatureType.PROVENIENCE_SIGNATURE)
-        """
 
 
         if sign_info==b'\x1b\x01\x02':
@@ -901,4 +921,6 @@ class NdnTlvEncoder(BasicEncoder):
             return input[0] == 0x64 and input[3] == 0x03 and input[4] == 0x20
         except:
             return False
+
+
 
