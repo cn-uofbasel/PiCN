@@ -71,7 +71,7 @@ def get_disparity_map(image, id: int, model_path: str= "Demos/DetectionMap/Monod
 
     # Make sure directory exists
     if not os.path.exists(os.path.join(ROOT_DIR, "Demos/DetectionMap/Assets/DisparityMaps")):
-        os.makedirs(os.path.join(ROOT_DIR, "Demos/DetectionMap/Assets/Maps"))
+        os.makedirs(os.path.join(ROOT_DIR, "Demos/DetectionMap/Assets/DisparityMaps"))
 
     path = os.path.join(ROOT_DIR, f"Demos/DetectionMap/Assets/DisparityMaps/dispmap{id}.jpg")
     plt.imsave(path, disparity_map_pp, cmap='plasma')
