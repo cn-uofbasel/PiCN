@@ -140,7 +140,6 @@ class DataOffloadingChunklayerSimple(LayerProcess):
             if "CL" in string_components[-1]:
                 matching_content = self.get_matching_content(packet)
                 if last == b"CL0" or isinstance(matching_content, Content):   # If there is matching content, return it
-                    print(">>>>>>>>>>> MATCHING", matching_content.name)
                     to_lower.put([faceid, matching_content])
                 else:  # Otherwise try to pass on to neighbour
                     to_lower.put([faceid, Interest(self.decrease_name(packet.name))])
@@ -164,8 +163,11 @@ class DataOffloadingChunklayerSimple(LayerProcess):
                     request_entry = self.get_request_entry(packet.name)
                     if request_entry:
                         cl_entry = self._cl_table.get(request_entry.name)
+                        if cl_entry.interest_requested: # If we already resent requests to source, don't consider it
+                            return
                         cl_entry.recipient = Name(components[:1])
                         self._cl_table[request_entry.name] = cl_entry
+
                 else:  # This is not the requesting node --> pass on to neighbour
                     to_lower.put([faceid, Content(self.increase_name(packet.name), packet.content)])
                     return
@@ -238,6 +240,9 @@ class DataOffloadingChunklayerSimple(LayerProcess):
                 request_entry.requested_chunks.append(chunk)
                 if not self.pass_through:
                     if cl_content:
+                        cl_entry = self._cl_table.get(request_entry.name)
+                        if cl_entry.interest_requested:
+                            break
                         chunk = self.pack_cl(chunk)
                     to_lower.put([faceid, Interest(chunk)])
         if md is not None:  # There is another md file
@@ -246,10 +251,13 @@ class DataOffloadingChunklayerSimple(LayerProcess):
             if not self.pass_through:
                 if cl_content:
                     cl_entry = self._cl_table.get(request_entry.name)
-                    cl_entry.interest = [faceid, Interest(packet.name)]
-                    self._cl_table[request_entry.name] = cl_entry
-                    md = self.pack_cl(md)
-                to_lower.put([faceid, Interest(md)])
+                    if not cl_entry.interest_requested:
+                        cl_entry.interest = [faceid, Interest(packet.name)]
+                        self._cl_table[request_entry.name] = cl_entry
+                        md = self.pack_cl(md)
+                        to_lower.put([faceid, Interest(md)])
+                else:
+                    to_lower.put([faceid, Interest(md)])
         else:
             request_entry.last_chunk = chunks[-1]
         self._chunk_table[packet.name] = (packet, time.time())
@@ -334,20 +342,22 @@ class DataOffloadingChunklayerSimple(LayerProcess):
         """
         Start requesting the missing files from the original source.
         """
-        if request_entry.requested_chunks:
-            for chunk in request_entry.requested_chunks:
-                to_lower.put([faceid, Interest(chunk)])
+        if not cl_entry.interest_requested:
+            if request_entry.requested_chunks:
+                # Request again all chunks that have been requested but not satisfied yet
+                for chunk in request_entry.requested_chunks:
+                    to_lower.put([faceid, Interest(chunk)])
 
-        # If requested_md is not empty, clear it and append the name of the last received metdata
-        if request_entry.requested_md:
-            self._request_table.remove(request_entry)
-            request_entry.requested_md.clear()
-            request_entry.requested_md.append(cl_entry.interest[1].name)
-            self._request_table.append(request_entry)
-
-        # Request the last received metadata again, since we don't know the next md name
-        cl_entry.interest_requested = True
-        to_lower.put(cl_entry.interest)
+            # If requested_md is not empty, request them again from source
+            if request_entry.requested_md:
+                for md in request_entry.requested_md:
+                    to_lower.put([faceid, Interest(md)])
+            else:  # if empty, request last seen md again from source
+                self._request_table.remove(request_entry)
+                request_entry.requested_md.append(cl_entry.interest[1].name)
+                self._request_table.append(request_entry)
+                to_lower.put(cl_entry.interest)
+            cl_entry.interest_requested = True
 
     def set_number_of_forwards(self, number_of_forwards: int):
         self.num_of_forwards = number_of_forwards
