@@ -4,16 +4,15 @@ This is a simplified version of the code in monodepth_simple.py from https://git
 
 import os
 import io
-import shutil
 import requests
 import zipfile
-import urllib3
 
+import matplotlib.pyplot as plt
 from PiCN.definitions import ROOT_DIR
 from PIL import Image
 from PiCN.Demos.DetectionMap.Monodepth.MonodepthModel import *
 
-def get_disparity_map(image, model_path: str= "Demos/DetectionMap/Monodepth/Model/model_cityscapes"):
+def get_disparity_map(image, id: int, model_path: str= "Demos/DetectionMap/Monodepth/Model/model_cityscapes"):
     """
     Get the disparity map from an input image.
     The input image is assumed to be the left image of a stereo image.
@@ -69,6 +68,13 @@ def get_disparity_map(image, model_path: str= "Demos/DetectionMap/Monodepth/Mode
     disparity_map = sess.run(model.disp_left_est[0], feed_dict={left: images})
     disparity_map_pp = post_process_disparity(disparity_map.squeeze()).astype(np.float32)
     disparity_map_pp = np.array(Image.fromarray(disparity_map_pp.squeeze()).resize((original_width, original_height)))
+
+    # Make sure directory exists
+    if not os.path.exists(os.path.join(ROOT_DIR, "Demos/DetectionMap/Assets/DisparityMaps")):
+        os.makedirs(os.path.join(ROOT_DIR, "Demos/DetectionMap/Assets/Maps"))
+
+    path = os.path.join(ROOT_DIR, f"Demos/DetectionMap/Assets/DisparityMaps/dispmap{id}.jpg")
+    plt.imsave(path, disparity_map_pp, cmap='plasma')
     return disparity_map_pp
 
 def post_process_disparity(disparity_map):

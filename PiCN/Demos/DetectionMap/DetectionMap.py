@@ -34,7 +34,7 @@ class DetectedObjectGPS:
         """
 
         print("Calculating depth map...")
-        disparity_map = get_disparity_map(image)
+        disparity_map = get_disparity_map(image, id)
         print("Detecting objects...")
         detections, self.colors = detect_objects(image, id)
         gps = self.get_gps_of_detected_objects(image, start_point, start_bearing, disparity_map, detections,
