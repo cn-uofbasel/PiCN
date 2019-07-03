@@ -73,7 +73,6 @@ class Helper:
             ratio = output_width / w
             output_height = int(h * ratio)
             image = cv2.resize(image, (output_width, output_height), interpolation=cv2.INTER_AREA)
-            print(image.shape[:2])
             return image
         elif resize_factor:
             return cv2.resize(image, None, fx=resize_factor, fy=resize_factor, interpolation=cv2.INTER_AREA)
