@@ -8,16 +8,30 @@ from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from PiCN.Layers.PacketEncodingLayer.Printer.NdnTlvPrinter import NdnTlvPrinter
 from PiCN.Packets import Interest, Content
-
+import os
 
 def main(args):
+    # correct missing / in filelocation input
+    if type(args.filelocation) is not type(None):
+        if args.filelocation[-1:] is not '/':
+            args.filelocation += '/'
+    if args.filelocation is None:
+        fileDir = os.path.dirname(os.path.abspath(__file__))
+        parentDir = os.path.dirname(fileDir)
+        newPath = os.path.join(parentDir, 'keys')  # Get the directory for StringFunctions
+        newPath+='/'
+    else:
+        newPath=args.filelocation
+
+    print("\n\n peek path")
+    print(newPath)
 
     # Packet encoder
     encoder = NdnTlvEncoder() if args.format == 'ndntlv' else SimpleStringEncoder
 
     # Generate interest packet
     interest: Interest = Interest(args.name)
-    encoded_interest = encoder.encode(interest)
+    encoded_interest = encoder.encode(interest, newPath)
 
     # Send interest packet
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -62,5 +76,6 @@ if __name__ == "__main__":
     parser.add_argument('-f', '--format', choices=['ndntlv','simple'], type=str, default='ndntlv', help='Packet Format (default: ndntlv)')
     parser.add_argument('--plain', help="plain output (writes payload to stdout or returns -2 for NACK)", action="store_true")
     parser.add_argument('name', type=str, help="CCN name of the content object to fetch")
+    parser.add_argument('-k', '--filelocation', type=str, help="Location of the key files (default: /PiCN/keys/)")
     args = parser.parse_args()
     main(args)

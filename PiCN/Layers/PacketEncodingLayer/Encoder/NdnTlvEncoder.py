@@ -67,8 +67,9 @@ class NdnTlvEncoder(BasicEncoder):
     }
     """Mapping of wire format nack reasons to NackReason Enum"""
 
-    def __init__(self, log_level=255,identity_loator=None):
+    def __init__(self, log_level=255,file_location=None):
         super().__init__(logger_name="NdnTlvEnc", log_level=log_level)
+        self.key_file_location = file_location
 
 
     #todo expression
@@ -78,6 +79,7 @@ class NdnTlvEncoder(BasicEncoder):
         :param packet: Packet in PiCN's representation
         :return: Packet in NDN TLV representation
         """
+
         if isinstance(packet, Interest):
             self.logger.info("Encode interest")
             if isinstance(packet.wire_format, bytes):
@@ -89,6 +91,7 @@ class NdnTlvEncoder(BasicEncoder):
             if isinstance(packet.wire_format, bytes):
                 return packet.wire_format
             else:
+                print("iscontent")
                 return self.encode_data(packet.name, packet.get_bytes(), key_location=key_location)
         if isinstance(packet, Nack):
             self.logger.info("Encode NACK")
@@ -497,25 +500,33 @@ class NdnTlvEncoder(BasicEncoder):
             f = open(newPath + 'key.pub', 'br')
         return f.read()
 
-    def encode_data(self, name: Name, payload: bytearray, key_location=None,
+    def encode_data(self, name: Name, payload: bytearray, key_location,
                     signature_type=SignatureType.NO_SIGNATURE, identity_locator=None, input_provenance=None,argument_identifier=None) -> bytearray:#signature
         """
         Assembly a data packet including a signature according to NDN packet format specification 0.3 (DigestSha256).
         :param name: Name
         :param payload: Payload
+        :param key_location string, path to key file
         :param signature_type
         :param identity_locator (optional)
         :param input_provenance (optional)
         :param argumentIdentifier (optional)
         :return: Data-TLV
         """
+        if key_location is None:
+            key_location= self.key_file_location
+
+        print("\n\n test key_location")
+        print(key_location)
+
+
         encoder = TlvEncoder()
 
         # Add signature (DigestSha256, zeroed)
 
         # for testing proviniance
         # TODO remove
-        (input_provenance,argumentIdentifier) = self.get_provenance_for_testing(payload, name,2)
+        (input_provenance,argumentIdentifier) = self.get_provenance_for_testing(payload, name,0)
 
         #input_provenance=[input_provenance,input_provenance]
 
@@ -541,7 +552,7 @@ class NdnTlvEncoder(BasicEncoder):
             sign=self.sign(b'test',priv_key)[0]
             b_sign = sign.to_bytes((sign.bit_length() + 7) // 8, byteorder='big')
             sig_len = len(b_sign) # old 32
-            
+
             iden_loc_len = 0+2
             iden_proof_len = sig_len+2
             output_sig_len = sig_len+2
