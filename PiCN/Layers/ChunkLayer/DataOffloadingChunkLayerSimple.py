@@ -241,7 +241,7 @@ class DataOffloadingChunklayerSimple(LayerProcess):
                 if not self.pass_through:
                     if cl_content:
                         cl_entry = self._cl_table.get(request_entry.name)
-                        if cl_entry.interest_requested:
+                        if cl_entry.nack_L and cl_entry.nack_R:
                             break
                         chunk = self.pack_cl(chunk)
                     to_lower.put([faceid, Interest(chunk)])
@@ -251,7 +251,7 @@ class DataOffloadingChunklayerSimple(LayerProcess):
             if not self.pass_through:
                 if cl_content:
                     cl_entry = self._cl_table.get(request_entry.name)
-                    if not cl_entry.interest_requested:
+                    if not (cl_entry.nack_L and cl_entry.nack_R):
                         cl_entry.interest = [faceid, Interest(packet.name)]
                         self._cl_table[request_entry.name] = cl_entry
                         md = self.pack_cl(md)
@@ -352,7 +352,7 @@ class DataOffloadingChunklayerSimple(LayerProcess):
             if request_entry.requested_md:
                 for md in request_entry.requested_md:
                     to_lower.put([faceid, Interest(md)])
-            else:  # if empty, request last seen md again from source
+            else:  # if empty, request orginal interest from source
                 self._request_table.remove(request_entry)
                 request_entry.requested_md.append(cl_entry.interest[1].name)
                 self._request_table.append(request_entry)
