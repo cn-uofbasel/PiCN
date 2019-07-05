@@ -78,5 +78,6 @@ if __name__ == "__main__":
     parser.add_argument('-l', '--logging', choices=['debug','info', 'warning', 'error', 'none'], type=str, default='info', help='Logging Level (default: info)')
     parser.add_argument('-e', '--optimizer', choices=['ToDataFirst', 'Edge', 'MapReduce', 'Thunks'], type=str, default="ToDataFirst", help="Choose the NFN Optimizer")
     parser.add_argument('-k', '--filelocation', type=str, help="Location of the key files (default: /PiCN/keys/)")
+    #                               key locaion
     args = parser.parse_args()
     main(args)

@@ -31,7 +31,7 @@ def main(args):
 
     # Generate interest packet
     interest: Interest = Interest(args.name)
-    encoded_interest = encoder.encode(interest, newPath)
+    encoded_interest = encoder.encode(interest)
 
     # Send interest packet
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -58,9 +58,14 @@ def main(args):
         printer = NdnTlvPrinter(wire_packet)
         printer.formatted_print()
     else:
-        encoder = NdnTlvEncoder()
+        encoder = NdnTlvEncoder(file_location=newPath)
         if encoder.is_content(wire_packet):
             print("<<<<<<<<<<<<<<<<<<<<<< peek decode data")
+
+            printer = NdnTlvPrinter(wire_packet)
+            printer.formatted_print()
+
+            print("end")
 
 
             sys.stdout.buffer.write(encoder.decode_data(wire_packet)[1])
