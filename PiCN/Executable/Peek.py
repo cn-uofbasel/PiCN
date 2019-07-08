@@ -10,6 +10,7 @@ from PiCN.Layers.PacketEncodingLayer.Printer.NdnTlvPrinter import NdnTlvPrinter
 from PiCN.Packets import Interest, Content
 import os
 
+
 def main(args):
     # correct missing / in filelocation input
     if type(args.filelocation) is not type(None):
@@ -82,5 +83,6 @@ if __name__ == "__main__":
     parser.add_argument('--plain', help="plain output (writes payload to stdout or returns -2 for NACK)", action="store_true")
     parser.add_argument('name', type=str, help="CCN name of the content object to fetch")
     parser.add_argument('-k', '--filelocation', type=str, help="Location of the key files (default: /PiCN/keys/)")
+
     args = parser.parse_args()
     main(args)
