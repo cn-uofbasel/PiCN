@@ -16,8 +16,8 @@ from Crypto import Random
 def main(args):
     key_content_obj_location=correct_fileinput(args.key_content_obj_location)
     ca_priv_key_location = correct_fileinput(args.ca_priv_key_location)
-    key_content_obj_location=find_default_path(key_content_obj_location,"keys")
-    ca_priv_key_location=find_default_path(ca_priv_key_location,"CAkeys")
+    #key_content_obj_location=find_default_path(key_content_obj_location,"keys")
+    #ca_priv_key_location=find_default_path(ca_priv_key_location,"CAkeys")
 
     f = open(key_content_obj_location + 'pubkey.ca', 'rb')
     pubkey_ca=f.read()
@@ -26,47 +26,65 @@ def main(args):
     f = open(ca_priv_key_location + 'CA_key.pub', 'rb')
     ca_pub_key = f.read()
 
-
+    """
+    print("\n content object:")
     printer = NdnTlvPrinter(pubkey_ca)
     printer.formatted_print()
+    """
+    name, user_public_key = decode_key(pubkey_ca)
+    #with new encoding
+    decoder = TlvDecoder(user_public_key)
 
+    user_public_key=decoder.readBlobTlv(Tlv.ContentType_Key).tobytes()
 
-    name, payload=decode_key(pubkey_ca)
-
-    printer = NdnTlvPrinter(payload)
+    """
+    print("\n name")
+    print(name)
+    
+    print("\n test user_public_key")
+    encoder = TlvEncoder()
+    encoder.writeBlobTlv(Tlv.Data, user_public_key)
+    a = encoder.getOutput().tobytes()
+    printer = NdnTlvPrinter(a)
     printer.formatted_print()
+    """
 
     key = RSA.importKey(ca_priv_key)
 
+    to_sign = bytearray(name.to_string() + str(user_public_key)+str(ca_pub_key),'utf-8')
 
-    to_sign = name.to_string()+str(payload)+str(ca_priv_key)
+
 
     m = hashlib.sha256()
-    m.update(bytes(to_sign, 'utf-8'))  #
+    m.update(to_sign)
     sig_h = m.digest()
     sig = key.sign(sig_h, 2)[0]
 
 
 
 
-    content_obj_sig=encode_key(name,payload,ca_pub_key,str(sig))
+    content_obj_sig=encode_key(name,user_public_key,ca_pub_key,sig)
 
     f = open(key_content_obj_location + 'public_key_signed_by_CA', 'wb')
     f.write(content_obj_sig)
     f.close()
-    """
+    print("Contetn Object saved to " + key_content_obj_location + 'public_key_signed_by_CA')
+    print("Done")
+
     printer = NdnTlvPrinter(content_obj_sig)
     printer.formatted_print()
-    """
 
-def decode_key(input: bytearray) -> ([bytearray], bytearray):
-    decoder = TlvDecoder(input)
+
+
+
+def decode_key(input_key: bytearray) -> ([bytearray], bytearray):
+    decoder = TlvDecoder(input_key)
     decoder.readNestedTlvsStart(Tlv.Data)
     encoder=NdnTlvEncoder()
     name = encoder.decode_name(decoder)
     encoder.decode_meta_info(decoder)
     payload = decoder.readBlobTlv(Tlv.Content).tobytes()
-    return (name, payload)
+    return name, payload
 
 
 def encode_key(name: Name, pubkey, ca_key, ca_signature):
@@ -75,9 +93,12 @@ def encode_key(name: Name, pubkey, ca_key, ca_signature):
     encoder.writeBlobTlv(Tlv.SignatureValue, bytearray(32))
     encoder.writeBlobTlv(Tlv.SignatureInfo, bytearray([Tlv.SignatureType, 1, 0]))
 
-    encoder.writeBlobTlv(Tlv.Content, bytes(ca_signature,'utf-8'))
-    encoder.writeBlobTlv(Tlv.Content, ca_key)
-    encoder.writeBlobTlv(Tlv.Content, pubkey)
+    #encoder.writeBlobTlv(Tlv.Content, bytes(ca_signature,'utf-8'))
+    encoder2 = TlvEncoder()
+    encoder2.writeBlobTlv(Tlv.ContentType_Key, bytes(str(ca_signature), 'utf-8'))
+    encoder2.writeBlobTlv(Tlv.ContentType_Key, ca_key)
+    encoder2.writeBlobTlv(Tlv.ContentType_Key, pubkey)
+    encoder.writeBlobTlv(Tlv.Content, encoder2.getOutput())
     """
     for k in pubkey:
         encoder.writeBlobTlv(Tlv.Content, k)
@@ -124,8 +145,8 @@ def correct_fileinput(filepath):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='PiCN Key Generator Tool')
-    parser.add_argument('-f', '--key_content_obj_location', type=str, help="Location of the contet object files (default: /PiCN/keys/)")
-    parser.add_argument('-c', '--ca_priv_key_location', type=str,help="Location of the ca private key (default: /PiCN/CAkeys/)")
+    parser.add_argument('-f', '--key_content_obj_location', type=str, help="Location of the contet object files (default: ~PiCN/identity/)",default="~/PiCN/identity/")
+    parser.add_argument('-c', '--ca_priv_key_location', type=str,help="Location of the ca private key (default: ~PiCN/CA/)",default="~/PiCN/CA/")
 
     args = parser.parse_args()
     main(args)

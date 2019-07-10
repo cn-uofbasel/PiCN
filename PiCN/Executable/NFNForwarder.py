@@ -12,17 +12,11 @@ import os
 
 def main(argv):
 
-    # correct missing / in filelocation input
-    if type(args.filelocation) is not type(None):
-        if args.filelocation[-1:] is not '/':
-            args.filelocation += '/'
-    if args.filelocation is None:
-        fileDir = os.path.dirname(os.path.abspath(__file__))
-        parentDir = os.path.dirname(fileDir)
-        newPath = os.path.join(parentDir, 'keys')  # Get the directory for StringFunctions
-        newPath += '/'
-    else:
-        newPath = args.filelocation
+    # correct missing / in keylocation input
+    if type(args.keylocation) is not type(None):
+        if args.keylocation[-1:] is not '/':
+            args.keylocation += '/'
+
 
     # Log Level
     if args.logging == 'error':
@@ -44,7 +38,7 @@ def main(argv):
     logger.info("Packet Format:  " + args.format)
 
     # Packet encoder
-    encoder = NdnTlvEncoder(log_level,newPath) if args.format == 'ndntlv' else SimpleStringEncoder(log_level)
+    encoder = NdnTlvEncoder(log_level,args.keylocation) if args.format == 'ndntlv' else SimpleStringEncoder(log_level)
 
 
     if args.optimizer == "Edge":
@@ -77,7 +71,8 @@ if __name__ == "__main__":
     parser.add_argument('-f', '--format', choices=['ndntlv','simple'], type=str, default='ndntlv', help='Packet Format (default: ndntlv)')
     parser.add_argument('-l', '--logging', choices=['debug','info', 'warning', 'error', 'none'], type=str, default='info', help='Logging Level (default: info)')
     parser.add_argument('-e', '--optimizer', choices=['ToDataFirst', 'Edge', 'MapReduce', 'Thunks'], type=str, default="ToDataFirst", help="Choose the NFN Optimizer")
-    parser.add_argument('-k', '--filelocation', type=str, help="Location of the key files (default: /PiCN/keys/)")
-    #                               key locaion
+    parser.add_argument('-k', '--keylocation', type=str, help="Location of the key files (default: ~PiCN/identity/)",
+                        default="~/PiCN/identity/")
+
     args = parser.parse_args()
     main(args)

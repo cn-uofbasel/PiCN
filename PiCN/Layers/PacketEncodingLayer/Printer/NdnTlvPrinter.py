@@ -31,10 +31,11 @@ class NdnTlvPrinter(object):
         0027 |        70 61 79 6C 6F 61 64                                         payload
 
     """
-    #removed 23 signature value and 22 SignatureInfo
-    __has_blob_value = {8, 1, 10, 13, 14, 17, 12, 21, 24, 25, 27, 29, 35, 36 ,38, 39, 801}
+    #removed 23 signature value and 22 SignatureInfo, 21 Content (for picn-key-gen)
+    __has_blob_value = {21, 2, 8, 1, 10, 13, 14, 17, 12, 24, 25, 27, 29, 35, 36 ,38, 39, 801}
 
     __known_type_names = {
+                           2: "ContentType_Key",
                            5: "Interest Packet",
                            6: "Content Object Packet",
                            7: "Name",

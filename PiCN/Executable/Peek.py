@@ -12,20 +12,14 @@ import os
 
 
 def main(args):
-    # correct missing / in filelocation input
-    if type(args.filelocation) is not type(None):
-        if args.filelocation[-1:] is not '/':
-            args.filelocation += '/'
-    if args.filelocation is None:
-        fileDir = os.path.dirname(os.path.abspath(__file__))
-        parentDir = os.path.dirname(fileDir)
-        newPath = os.path.join(parentDir, 'keys')  # Get the directory for StringFunctions
-        newPath+='/'
-    else:
-        newPath=args.filelocation
+    # correct missing / in keylocation input
+    if type(args.keylocation) is not type(None):
+        if args.keylocation[-1:] is not '/':
+            args.keylocation += '/'
+
 
     print("\n\n peek path")
-    print(newPath)
+    print(args.keylocation)
 
     # Packet encoder
     encoder = NdnTlvEncoder() if args.format == 'ndntlv' else SimpleStringEncoder
@@ -59,7 +53,7 @@ def main(args):
         printer = NdnTlvPrinter(wire_packet)
         printer.formatted_print()
     else:
-        encoder = NdnTlvEncoder(file_location=newPath)
+        encoder = NdnTlvEncoder(file_location=args.keylocation)
         if encoder.is_content(wire_packet):
             print("<<<<<<<<<<<<<<<<<<<<<< peek decode data")
 
@@ -82,7 +76,8 @@ if __name__ == "__main__":
     parser.add_argument('-f', '--format', choices=['ndntlv','simple'], type=str, default='ndntlv', help='Packet Format (default: ndntlv)')
     parser.add_argument('--plain', help="plain output (writes payload to stdout or returns -2 for NACK)", action="store_true")
     parser.add_argument('name', type=str, help="CCN name of the content object to fetch")
-    parser.add_argument('-k', '--filelocation', type=str, help="Location of the key files (default: /PiCN/keys/)")
+    parser.add_argument('-k', '--keylocation', type=str, help="Location of the key files (default: ~PiCN/identity/)",
+                        default="~/PiCN/identity/")
 
     args = parser.parse_args()
     main(args)
