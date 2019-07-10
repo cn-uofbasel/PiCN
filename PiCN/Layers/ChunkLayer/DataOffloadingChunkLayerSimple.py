@@ -353,9 +353,6 @@ class DataOffloadingChunklayerSimple(LayerProcess):
                 for md in request_entry.requested_md:
                     to_lower.put([faceid, Interest(md)])
             else:  # if empty, request orginal interest from source
-                self._request_table.remove(request_entry)
-                request_entry.requested_md.append(cl_entry.interest[1].name)
-                self._request_table.append(request_entry)
                 to_lower.put(cl_entry.interest)
             cl_entry.interest_requested = True
 

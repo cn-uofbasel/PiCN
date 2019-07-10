@@ -29,6 +29,7 @@ class RequestTableEntry(object):
         self.chunks =[]
         self.requested_md = []
         self.chunked = False
+        self.md_complete = False
 
     def __eq__(self, other):
         return self.name == other.name
@@ -242,7 +243,7 @@ class DataOffloadingChunklayer(LayerProcess):
                                 ca_entry.received_all = True
                                 request_entry = self.get_request_entry(unpacked)
                                 if request_entry and not request_entry.requested_md and not self.pass_through:
-                                    self.creat_chunk_interests(faceid, request_entry, ca_entry, to_lower)
+                                    self.create_chunk_interests(faceid, request_entry, ca_entry, to_lower)
 
                         self._ca_table[unpacked] = ca_entry
                     else:  # This is not the requesting node --> pass on to neighbour
@@ -285,29 +286,29 @@ class DataOffloadingChunklayer(LayerProcess):
     def handle_received_meta_data(self, faceid: int, packet: Content, request_entry: RequestTableEntry,
                                   to_lower: multiprocessing.Queue, ca_content: bool, cl_content: bool):
         """Handle meta data"""
-        if packet.name in request_entry.requested_md:
-            request_entry.requested_md.remove(packet.name)
-        md, chunks, size = self.chunkifyer.parse_meta_data(packet.content)
-        for chunk in chunks:  # Request all chunks from the meta data file if not already received or requested
-            if chunk not in request_entry.requested_chunks and chunk not in [i.name for i in request_entry.chunks]:
-                request_entry.requested_chunks.append(chunk)
-        if md is not None:  # There is another md file
-            if md not in request_entry.requested_md:
-                request_entry.requested_md.append(md)
-                if cl_content:
-                    md = self.pack_cl(md)
-                to_lower.put([faceid, Interest(md)])
-        else:
-            # Only create interests if it is the requesting node handling this metadata and
-            # either the packet is CA content or there is no CA content available
-            if not self.pass_through:
-                if ca_content:
-                    self.creat_chunk_interests(faceid, request_entry, CaEntry(), to_lower)
-                elif self._ca_table.get(request_entry.name).received_all:  # We have an answer from both neighbours
-                    self.creat_chunk_interests(faceid, request_entry, self._ca_table.get(request_entry.name), to_lower)
-
-                # if ca_content or self._ca_table.get(request_entry.name).received_all:
-                #     self.creat_chunk_interests(faceid, request_entry, to_lower)
+        if not request_entry.md_complete:
+            if packet.name in request_entry.requested_md:
+                request_entry.requested_md.remove(packet.name)
+            md, chunks, size = self.chunkifyer.parse_meta_data(packet.content)
+            for chunk in chunks:  # Request all chunks from the meta data file if not already received or requested
+                if chunk not in request_entry.requested_chunks and chunk not in [i.name for i in request_entry.chunks]:
+                    request_entry.requested_chunks.append(chunk)
+            if md is not None:  # There is another md file
+                if md not in request_entry.requested_md:
+                    request_entry.requested_md.append(md)
+                    if cl_content:
+                        md = self.pack_cl(md)
+                    to_lower.put([faceid, Interest(md)])
+            else:
+                # Only create interests if it is the requesting node handling this metadata and
+                # either the packet is CA content or there is no CA content available
+                request_entry.md_complete = True
+                if not self.pass_through:
+                    if ca_content:
+                        self.create_chunk_interests(faceid, request_entry, CaEntry(), to_lower)
+                    elif self._ca_table.get(request_entry.name).received_all:  # We have an answer from both neighbours
+                        self.create_chunk_interests(faceid, request_entry, self._ca_table.get(request_entry.name),
+                                                    to_lower)
 
         self._chunk_table[packet.name] = (packet, time.time())
         self._request_table.append(request_entry)
@@ -320,8 +321,7 @@ class DataOffloadingChunklayer(LayerProcess):
             request_entry.chunks.append(packet)
         self._chunk_table[packet.name] = (packet, time.time())
         if not request_entry.requested_chunks:
-            if (request_entry.name in self._ca_table.keys() and self._ca_table.get(request_entry.name).completely_available) \
-                    or not request_entry.requested_md:  # All chunks are available
+            if not request_entry.requested_md:  # All chunks are available
                 data = request_entry.chunks
                 data = sorted(data, key=lambda content: int(''.join(filter(str.isdigit, content.name.string_components[-1]))))
                 cont = self.chunkifyer.reassamble_data(request_entry.name, data)
@@ -341,29 +341,30 @@ class DataOffloadingChunklayer(LayerProcess):
         ca_entry.received_all = True
 
         chunks_str = content.content.split(";")
-        ca_entry.chunks = [Name(chunk) for chunk in chunks_str]
 
         request_entry = self.get_request_entry(content.name)
         if request_entry and not self.pass_through:
             if chunks_str[0] == "complete":  # Neighbour has complete data
-                ca_entry.chunks.pop(0)
-                ca_entry.completely_available = True  # Ignore requested_md, because neighbour has all chunks
+                ca_entry.completely_available = True
+                if request_entry.md_complete:
+                    self.create_chunk_interests(faceid, request_entry, ca_entry, to_lower)
+            else:
+                ca_entry.chunks = [Name(chunk) for chunk in chunks_str]
+                # Create interests for all chunks that are available from neighbour
+                for chunk in ca_entry.chunks:
+                    print("TO NEIGHBOUR:", self.pack_ca(chunk, ca_entry))
+                    if chunk not in request_entry.requested_chunks and chunk not in [i.name for i in request_entry.chunks]:
+                        request_entry.requested_chunks.append(chunk)
+                    to_lower.put([faceid, Interest(self.pack_ca(chunk, ca_entry))])
+                self._request_table.append(request_entry)
+                # If there is no name in requested_md try to request the remaining chunks.
+                # This is only necessary to get a NACK, so the simulation continues.
+                if not request_entry.requested_md:
+                    for chunk in [i for i in request_entry.requested_chunks if i not in ca_entry.chunks]:
+                        print("TO ORIGINAL SOURCE:", chunk)
+                        to_lower.put([faceid, Interest(chunk)])
+                self._request_table.remove(request_entry)
             self._ca_table[content.name] = ca_entry
-            self._request_table.remove(request_entry)
-            # Create interests for all chunks that are available from neighbour
-            for chunk in ca_entry.chunks:
-                print("TO NEIGHBOUR:", self.pack_ca(chunk, ca_entry))
-                if chunk not in request_entry.requested_chunks and chunk not in [i.name for i in request_entry.chunks]:
-                    request_entry.requested_chunks.append(chunk)
-                to_lower.put([faceid, Interest(self.pack_ca(chunk, ca_entry))])
-            self._request_table.append(request_entry)
-
-            # If there is no name in requested_md try to request the remaining chunks.
-            # This is only necessary to get a NACK, so the simulation continues.
-            if not request_entry.requested_md:
-                for chunk in [i for i in request_entry.requested_chunks if i not in ca_entry.chunks]:
-                    print("TO ORIGINAL SOURCE:", chunk)
-                    to_lower.put([faceid, Interest(chunk)])
 
     def get_request_entry(self, name: Name):
         """
@@ -389,11 +390,7 @@ class DataOffloadingChunklayer(LayerProcess):
             chunks_available = [str(chunk.name) for chunk in request_entry.chunks]
 
         elif cs_entry:
-            chunks_available.append("complete")
-            meta_data = cs_entry.content
-            _, _, content_size = self.chunkifyer.parse_meta_data(meta_data.content)
-            number_of_chunks = math.ceil(int(content_size) / self.chunk_size)
-            chunks_available += [f"{name}/c{i}" for i in range(number_of_chunks)]
+            chunks_available.append("complete;")
 
         if chunks_available:
             chunks_available = Content(packet.name, ";".join(chunks_available))
@@ -419,11 +416,19 @@ class DataOffloadingChunklayer(LayerProcess):
         else:
             return Nack(packet.name, NackReason.NO_CONTENT, packet)
 
-    def creat_chunk_interests(self, faceid: int, request_entry: RequestTableEntry, ca_entry: CaEntry, to_lower: multiprocessing.Queue):
+    def create_chunk_interests(self, faceid: int, request_entry: RequestTableEntry, ca_entry: CaEntry, to_lower: multiprocessing.Queue):
         """Create interests for all the chunks in requested_md of the specified request table entry."""
-        for chunk in [i for i in request_entry.requested_chunks if i not in ca_entry.chunks]:
-            print("TO ORIGINAL SOURCE:", chunk)
-            to_lower.put([faceid, Interest(chunk)])
+
+        if ca_entry.completely_available:
+            for chunk in [i for i in request_entry.requested_chunks]:
+                print("TO NEIGHBOUR:", self.pack_ca(chunk, ca_entry))
+                if chunk not in request_entry.requested_chunks and chunk not in [i.name for i in request_entry.chunks]:
+                    request_entry.requested_chunks.append(chunk)
+                to_lower.put([faceid, Interest(self.pack_ca(chunk, ca_entry))])
+        else:
+            for chunk in [i for i in request_entry.requested_chunks if i not in ca_entry.chunks]:
+                 print("TO ORIGINAL SOURCE:", chunk)
+                 to_lower.put([faceid, Interest(chunk)])
 
     def save_if_longest(self, packet: Content, ca_entry: CaEntry):
         """
@@ -479,3 +484,6 @@ class DataOffloadingChunklayer(LayerProcess):
         elif "CL" in last:
             return Name(components[:-1]) + f"CL{i-1}"
         return name
+
+    def set_number_of_forwards(self, number_of_forwards: int):
+        self.num_of_forwards = number_of_forwards
