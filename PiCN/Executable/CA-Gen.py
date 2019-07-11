@@ -9,6 +9,11 @@ from PiCN.Executable import KeyGenerator
 from PiCN.Packets import Name
 from PiCN.Layers.PacketEncodingLayer.Printer.NdnTlvPrinter import NdnTlvPrinter
 
+from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
+from PiCNExternal.pyndn.encoding.tlv.tlv.tlv_encoder import TlvEncoder
+from PiCNExternal.pyndn.encoding.tlv.tlv.tlv import Tlv
+
+
 def main(args):
 
     #correct missing / in keylocation input
@@ -77,13 +82,44 @@ def main(args):
     print("Root certificate saved to " + args.keylocation + 'root.certificate')
     print("Done.")
 
-    key_tlv = KeyGenerator.encode_key(args.keylocation ,Name(args.name), public_key)
+    key_tlv = encode_key(args.keylocation ,Name(args.name), public_key)
 
     printer = NdnTlvPrinter(key_tlv)
     printer.formatted_print()
 
 
+def encode_key(keylocation, name: Name, pubkey, ca_signature=bytearray(128),ca_key=bytearray(128)):
+    encoder = TlvEncoder()
+    # signature value to set later
+    encoder.writeBlobTlv(Tlv.SignatureValue, bytearray(32))
+    encoder.writeBlobTlv(Tlv.SignatureInfo, bytearray([Tlv.SignatureType, 1, 0]))
 
+    encoder2 = TlvEncoder()
+
+    encoder2.writeBlobTlv(Tlv.ContentType_Key, ca_signature)
+    encoder2.writeBlobTlv(Tlv.ContentType_Key, ca_key)
+    encoder2.writeBlobTlv(Tlv.ContentType_Key, bytes(pubkey,'utf-8'))
+    encoder.writeBlobTlv(Tlv.Content, encoder2.getOutput())
+
+    """
+    for k in pubkey:
+        encoder.writeBlobTlv(Tlv.Content, k)
+    """
+
+    encoder.writeTypeAndLength(Tlv.MetaInfo, 0)
+
+    # Add name
+    ndntlvencoder=NdnTlvEncoder(file_location=None, path_and_file= keylocation+'CA_key.pub')
+    encoder.writeBuffer(ndntlvencoder.encode_name(name=name))
+    # Add data type and len
+    encoder.writeTypeAndLength(Tlv.Data, len(encoder))
+    # Add signature value
+    packet_without_sig = encoder.getOutput().tobytes()
+    m = hashlib.sha256()
+    m.update(packet_without_sig[:-32])
+    sig = m.digest()
+    packet_with_sig = packet_without_sig[:-32] + sig
+    return packet_with_sig
 
 
 

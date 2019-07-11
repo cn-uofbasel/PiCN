@@ -67,15 +67,15 @@ class NdnTlvEncoder(BasicEncoder):
     }
     """Mapping of wire format nack reasons to NackReason Enum"""
 
-    def __init__(self, log_level=255,file_location="~/PiCN/identity/"):
+    def __init__(self, log_level=255,file_location="~/PiCN/identity/",path_and_file=None):
         super().__init__(logger_name="NdnTlvEnc", log_level=log_level)
         self.key_file_location = file_location
-
-        print("<<<<<<<<<<")
-        print(file_location)
-
-        self.private_key = self.read_priv_key(file_location)
-        self.public_key=self.read_pub_key(file_location)
+        if path_and_file is not None:
+            self.private_key=self.read_priv_key(None, path_and_file)
+            self.public_key=None
+        else:
+            self.private_key = self.read_priv_key(file_location)
+            self.public_key=self.read_pub_key(file_location)
 
     #todo expression
     def encode(self, packet: Packet) -> bytearray:
@@ -145,7 +145,7 @@ class NdnTlvEncoder(BasicEncoder):
 
 
     ### Helpers ###
-    def read_priv_key(self,path):
+    def read_priv_key(self,path, path_and_file=None):
         """
         read private key from filesystem
         :param path: File system path to privat key (string)
@@ -153,21 +153,18 @@ class NdnTlvEncoder(BasicEncoder):
         :raise an error if the file is not found
         """
         # read private key from file system and return (converted to appropriate format)
+        if path_and_file is not None:
+            if not os.path.isfile(path_and_file):
+                raise ValueError('no file found: ' + path_and_file + " doesn't exist")
+            f = open(path_and_file , 'br')
+            return f.read()
+
+
         if type(path) is not type(None):
             if path[-1:] is not '/':
                 path += '/'
-        """
-        if path is None:
-            # relative path
-            fileDir = os.path.dirname(os.path.abspath(__file__))
-            parentDir=fileDir
-            for i in range(3):
-                parentDir = os.path.dirname(parentDir)
 
-            path = os.path.join(parentDir, 'keys')  # Get the directory for StringFunctions
-            path += '/'
-        """
-        if not os.path.isfile(path + 'key.pub'):
+        if not os.path.isfile(path + 'key.priv'):
             raise ValueError('no file found: ' + path + "key.pub doesn't exist")
 
         f = open(path + 'key.priv', 'br')
@@ -632,7 +629,7 @@ class NdnTlvEncoder(BasicEncoder):
 
         # for testing proviniance
         # TODO remove
-        number_provenances=1
+        number_provenances=2
         (input_provenance,argumentIdentifier) = self.get_provenance_for_testing(payload, name, key_location,number_provenances)
 
         input_provenance=[input_provenance,input_provenance]
@@ -646,17 +643,16 @@ class NdnTlvEncoder(BasicEncoder):
         signature.signatureType = SignatureType.PROVENANCE_SIGNATURE
         #signature.signatureType = SignatureType.DEFAULT_SIGNATURE
 
+        #calculate length of signature, the signature value is set later
         if(signature.signatureType!=SignatureType.PROVENANCE_SIGNATURE):
-             # signature value to set later
              signatureLength=32
         else:
-            #get signatur (.provenience) as input?
-            #TODO calc and add length provenience and keylocator?
+
+            #TODO calc and add length  keylocator?
             #min length+ typ,length for sub tlv
 
             #length of a signatur path depends on key size
-            priv_key=self.private_key
-            sign=self.sign(b'test',priv_key)[0]
+            sign=self.sign(b'test',self.private_key)[0]
             b_sign = sign.to_bytes((sign.bit_length() + 7) // 8, byteorder='big')
             sig_len = len(b_sign) # old 32
 
@@ -672,14 +668,15 @@ class NdnTlvEncoder(BasicEncoder):
                 signatureLength+=2
             else:
                 argument_identifier_len = sig_len + 2
-                signatureLength +=self.input_proveniance_lenth(signature.inputProvenance, sig_len)+argument_identifier_len
-
+                if type(signature.inputProvenance) is type([]):
+                    for p in signature.inputProvenance:
+                        signatureLength +=self.input_proveniance_lenth(p, sig_len)+argument_identifier_len
+                else:
+                    signatureLength += self.input_proveniance_lenth(signature.inputProvenance, sig_len) + argument_identifier_len
             if signature.identityLocator is None:
                 signatureLength += iden_loc_len
             else:
                 pass
-
-            # signature value to set later
 
         # empty field for signature, fill in later
         encoder.writeBlobTlv(Tlv.SignatureValue, bytearray(signatureLength))
