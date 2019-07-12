@@ -4,8 +4,7 @@ import multiprocessing
 import time
 import unittest
 
-from PiCN.Layers.ChunkLayer import RequestTableEntry
-from PiCN.Layers.ChunkLayer.DataOffloadingChunkLayer import DataOffloadingChunklayer, CaEntry
+from PiCN.Layers.ChunkLayer.DataOffloadingChunkLayer import DataOffloadingChunklayer, CaEntry, RequestTableEntry
 from PiCN.Layers.ICNLayer.ContentStore import ContentStoreMemoryExact
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import ForwardingInformationBaseMemoryPrefix
 from PiCN.Layers.ICNLayer.PendingInterestTable import PendingInterstTableMemoryExact
