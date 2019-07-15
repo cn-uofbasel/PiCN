@@ -1,3 +1,9 @@
+"""
+In order to create a map, the demo requires a Google API key.
+However, with the "build_map" flag in detection_map() the map creation can be disabled,
+while the rest of the demo still works as expected.
+"""
+
 import os
 import matplotlib.pyplot as plt
 
