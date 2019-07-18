@@ -37,31 +37,14 @@ def main(args):
 
     user_public_key=decoder.readBlobTlv(Tlv.ContentType_Key).tobytes()
 
-    """
-    print("\n name")
-    print(name)
-    
-    print("\n test user_public_key")
-    encoder = TlvEncoder()
-    encoder.writeBlobTlv(Tlv.Data, user_public_key)
-    a = encoder.getOutput().tobytes()
-    printer = NdnTlvPrinter(a)
-    printer.formatted_print()
-    """
-
     key = RSA.importKey(ca_priv_key)
 
     to_sign = bytearray(name.to_string() + str(user_public_key)+str(ca_pub_key),'utf-8')
-
-
 
     m = hashlib.sha256()
     m.update(to_sign)
     sig_h = m.digest()
     sig = key.sign(sig_h, 2)[0]
-
-
-
 
     content_obj_sig=encode_key(name,user_public_key,ca_pub_key,sig)
 

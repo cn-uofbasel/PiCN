@@ -26,7 +26,8 @@ class Signature:
 
 
     def to_string(self)-> str:
-        cut="%"
+        #todo /
+        cut="\n"
         s= str(self.signatureType) + cut + str(self.identityLocator) + cut + str(self.identityProof) + cut + str(self.outputSignature) + cut + str(self.inputProvenance) + cut + str(self.signatureSignature) + cut + str(self.argumentIdentifier)
         return s
 
