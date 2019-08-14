@@ -745,13 +745,14 @@ class NdnTlvEncoder(BasicEncoder):
             #get signature value
             sign = self.decode_signature_component(decoder)
             decoder_sig = TlvDecoder(sign)
-
+            """
             print("<sign")
             encoder = TlvEncoder()
             encoder.writeBlobTlv(Tlv.InputProviniance, sign)
             a = encoder.getOutput().tobytes()
             printer = NdnTlvPrinter(a)
             printer.formatted_print()
+            """
 
             identity_locator=self.decode_signature_component(decoder_sig)
             identity_proof = self.decode_signature_component(decoder_sig)
@@ -759,11 +760,13 @@ class NdnTlvEncoder(BasicEncoder):
 
             input_proveniance = self.decode_signature_component(decoder_sig)
 
+            """
             encoder = TlvEncoder()
             encoder.writeBlobTlv(Tlv.InputProviniance,input_proveniance )
             a = encoder.getOutput().tobytes()
             printer = NdnTlvPrinter(a)
             printer.formatted_print()
+            """
 
             sig_sig = self.decode_signature_component(decoder_sig)
 
@@ -843,8 +846,8 @@ class NdnTlvEncoder(BasicEncoder):
         payload = decoder.readBlobTlv(Tlv.Content).tobytes()
         #before payload
         signature=self.decode_signature(decoder)
-        signature_is_correct=self.verify_signature(name,meta_info,payload,signature)
-        return (name, payload)
+        #signature_is_correct=self.verify_signature(name,meta_info,payload,signature)
+        return (name, payload, signature)
 
     def decode_nack(self, input: bytearray) -> (Name, NackReason):
         """

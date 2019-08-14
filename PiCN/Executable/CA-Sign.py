@@ -127,7 +127,7 @@ def correct_fileinput(filepath):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='PiCN Key Generator Tool')
+    parser = argparse.ArgumentParser(description='PiCN tool to sign a public key')
     parser.add_argument('-f', '--key_content_obj_location', type=str, help="Location of the contet object files (default: ~PiCN/identity/)",default="~/PiCN/identity/")
     parser.add_argument('-c', '--ca_priv_key_location', type=str,help="Location of the ca private key (default: ~PiCN/CA/)",default="~/PiCN/CA/")
 

@@ -67,14 +67,13 @@ def main(args):
     try:
         os.makedirs(args.keylocation)
     except FileExistsError:
-        # directory already exists
+        # directory already exists, do nothing
         pass
 
     f = open(args.keylocation + 'pubkey.ca', 'w+b')
     f.write(key_tlv)
     print("content object saved to " + args.keylocation + 'pubkey.ca')
     f.close()
-
 
     f = open(args.keylocation+'key.pub', 'w+')
     f.write(public_key)

@@ -12,14 +12,9 @@ import os
 
 
 def main(args):
-    # correct missing / in keylocation input
-    if type(args.keylocation) is not type(None):
-        if args.keylocation[-1:] is not '/':
-            args.keylocation += '/'
 
-
-    print("\n\n peek path")
-    print(args.keylocation)
+    key_location=correct_path_input(args.keylocation)
+    output_location=correct_path_input(args.output_location)
 
     # Packet encoder
     encoder = NdnTlvEncoder() if args.format == 'ndntlv' else SimpleStringEncoder
@@ -53,19 +48,32 @@ def main(args):
         printer = NdnTlvPrinter(wire_packet)
         printer.formatted_print()
     else:
-        encoder = NdnTlvEncoder(file_location=args.keylocation)
+        encoder = NdnTlvEncoder(file_location=key_location)
         if encoder.is_content(wire_packet):
-            print("<<<<<<<<<<<<<<<<<<<<<< peek decode data")
+            print("<<<<<<<<<<<<<<<<<<<<<< peek decodes data")
 
-            printer = NdnTlvPrinter(wire_packet)
-            printer.formatted_print()
+            #print(os.listdir(output_location))
+            """
+            if not os.path.exists(output_location):
+                with open(output_location, 'w+'): pass
+            """
+            f = open(output_location + 'content_object', 'wb+')
+            f.write(wire_packet)
+            f.close()
+            print("Contetn Object saved to " + output_location + 'content_object')
 
-            print("end")
 
 
             sys.stdout.buffer.write(encoder.decode_data(wire_packet)[1])
         else:
             sys.exit(-2)
+
+def correct_path_input(filepath):
+    # correct missing / in key_content_obj_location input
+    if type(filepath) is not type(None):
+        if filepath[-1:] is not '/':
+            filepath += '/'
+    return filepath
 
 
 if __name__ == "__main__":
@@ -77,6 +85,8 @@ if __name__ == "__main__":
     parser.add_argument('--plain', help="plain output (writes payload to stdout or returns -2 for NACK)", action="store_true")
     parser.add_argument('name', type=str, help="CCN name of the content object to fetch")
     parser.add_argument('-k', '--keylocation', type=str, help="Location of the key files (default: ~PiCN/identity/)",
+                        default="~/PiCN/identity/")
+    parser.add_argument('-o', '--output_location', type=str, help="Location of the file where the content object is stored (default: ~PiCN/identity/)",
                         default="~/PiCN/identity/")
 
     args = parser.parse_args()
