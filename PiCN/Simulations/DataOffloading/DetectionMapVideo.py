@@ -22,6 +22,7 @@ from PiCN.Demos.DetectionMap.Helper import Helper
 
 
 #Dependencies for this test: numpy, matplotlib, cv2, requests, zipfile, tensorflow, pygeodesy
+#Requires enabeling import in PiCN/Layers/NFNLayer/NFNExecutor/NFNPythonExecutor (See comments there, 3 lines)
 class DetectionMapVideoSimulation():
     """Run a simple data-offloading simulation"""
 

@@ -18,6 +18,7 @@ from PiCN.ProgramLibs.NFNForwarder.NFNForwarderData import NFNForwarderData
 from PiCN.Demos.DetectionMap.DetectionMapObject import DetectionMapObject
 
 #Dependencies for this test: numpy, matplotlib, cv2, requests, zipfile, tensorflow, pygeodesy
+#Requires enabeling import in PiCN/Layers/NFNLayer/NFNExecutor/NFNPythonExecutor (See comments there, 3 lines)
 class DetectionMapSimulation():
     """Run a simple Data Offloading Scenario Simulation"""
 
