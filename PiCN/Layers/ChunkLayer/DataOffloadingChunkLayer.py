@@ -352,7 +352,7 @@ class DataOffloadingChunklayer(LayerProcess):
                 ca_entry.chunks = [Name(chunk) for chunk in chunks_str]
                 # Create interests for all chunks that are available from neighbour
                 for chunk in ca_entry.chunks:
-                    print("TO NEIGHBOUR:", self.pack_ca(chunk, ca_entry))
+                    self.logger.info("TO NEIGHBOUR:", self.pack_ca(chunk, ca_entry))
                     if chunk not in request_entry.requested_chunks and chunk not in [i.name for i in request_entry.chunks]:
                         request_entry.requested_chunks.append(chunk)
                     to_lower.put([faceid, Interest(self.pack_ca(chunk, ca_entry))])
@@ -361,7 +361,7 @@ class DataOffloadingChunklayer(LayerProcess):
                 # This is only necessary to get a NACK, so the simulation continues.
                 if not request_entry.requested_md:
                     for chunk in [i for i in request_entry.requested_chunks if i not in ca_entry.chunks]:
-                        print("TO ORIGINAL SOURCE:", chunk)
+                        self.logger.info("TO ORIGINAL SOURCE:", chunk)
                         to_lower.put([faceid, Interest(chunk)])
                 self._request_table.remove(request_entry)
             self._ca_table[content.name] = ca_entry
@@ -421,13 +421,13 @@ class DataOffloadingChunklayer(LayerProcess):
 
         if ca_entry.completely_available:
             for chunk in [i for i in request_entry.requested_chunks]:
-                print("TO NEIGHBOUR:", self.pack_ca(chunk, ca_entry))
+                self.logger.info("TO NEIGHBOUR:", self.pack_ca(chunk, ca_entry))
                 if chunk not in request_entry.requested_chunks and chunk not in [i.name for i in request_entry.chunks]:
                     request_entry.requested_chunks.append(chunk)
                 to_lower.put([faceid, Interest(self.pack_ca(chunk, ca_entry))])
         else:
             for chunk in [i for i in request_entry.requested_chunks if i not in ca_entry.chunks]:
-                 print("TO ORIGINAL SOURCE:", chunk)
+                 self.logger.info("TO ORIGINAL SOURCE:", chunk)
                  to_lower.put([faceid, Interest(chunk)])
 
     def save_if_longest(self, packet: Content, ca_entry: CaEntry):
