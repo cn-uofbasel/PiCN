@@ -21,7 +21,7 @@ from PiCN.Demos.DetectionMap.DetectionMapObject import DetectionMapObject
 from PiCN.Demos.DetectionMap.Helper import Helper
 
 
-
+#Dependencies for this test: numpy, matplotlib, cv2, requests, zipfile, tensorflow, pygeodesy
 class DetectionMapVideoSimulation():
     """Run a simple data-offloading simulation"""
 
