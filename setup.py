@@ -31,7 +31,7 @@ config_PiCN = {
                  'PiCN.ProgramLibs.NFNForwarder', 'PiCN.Simulations'],
     'scripts': [],
     'test_suite': 'nose2.collector.collector',
-    'tests_require': ['nose2', 'rednose', 'nose-progressive', 'matplotlib'],
+    'tests_require': ['nose2', 'rednose', 'nose-progressive'],
     'name': 'PiCN'
 }
 classifiers_PiCN=[

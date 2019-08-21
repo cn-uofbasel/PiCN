@@ -21,7 +21,8 @@ from PiCN.Demos.DetectionMap.DetectionMapObject import DetectionMapObject
 from PiCN.Demos.DetectionMap.Helper import Helper
 
 
-class DetectionMapVideoSimulation(unittest.TestCase):
+
+class DetectionMapVideoSimulation():
     """Run a simple data-offloading simulation"""
 
     def setUp(self):

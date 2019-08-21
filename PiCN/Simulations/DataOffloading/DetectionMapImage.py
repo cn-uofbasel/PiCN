@@ -18,7 +18,7 @@ from PiCN.ProgramLibs.NFNForwarder.NFNForwarderData import NFNForwarderData
 from PiCN.Demos.DetectionMap.DetectionMapObject import DetectionMapObject
 
 
-class DetectionMapSimulation(unittest.TestCase):
+class DetectionMapSimulation():
     """Run a simple Data Offloading Scenario Simulation"""
 
     def setUp(self):
