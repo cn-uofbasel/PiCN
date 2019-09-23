@@ -14,6 +14,7 @@ function print_usage {
     echo "Usage: picn-setup CONFIG"
     echo "CONFIG:"
     echo "  fwd_to_testbed  --   Two hops to the NDN testbed"
+    echo "  nfd_standalone  --   Start NDN forwarding deamon (nfd)"
     echo "  more            --   Comming soon..."
 }
 
@@ -48,6 +49,14 @@ function main {
     if [[ $1 == "fwd_to_testbed" ]]
     then
         config_fwd_to_testbed
+    elif [[ $1 == "nfd_standalone" ]]
+    then
+        if [ -z "$(command -v nfd)" ]
+        then
+            echo "nfd not found... please install."
+            exit
+	fi
+	config_nfd_standalone
     elif [[ $1 == "dima_pinned_nfn" ]]
     then
 	config_dima_pinned_nfn
@@ -101,6 +110,19 @@ function config_fwd_to_testbed {
     sleep .2
     
 }
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+
+# Setup 'nfd_standalone'
+#  - NFD listening on 6363
+
+function config_nfd_standalone {
+    # start ndn forwarding deamon (default)
+    tmux send-keys -t $SESSION:0 'sudo pkill nfd; sudo nfd' C-m
+    
+}
+
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
