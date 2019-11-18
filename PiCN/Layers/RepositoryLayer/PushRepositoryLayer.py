@@ -3,7 +3,7 @@
 import multiprocessing
 
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
-from PiCN.Packets import Packet, Name, Interest, Nack, NackReason
+from PiCN.Packets import Packet, Name, Interest, Nack, NackReason, Content
 from PiCN.Processes import LayerProcess
 
 from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
@@ -38,21 +38,38 @@ class PushRepositoryLayer(LayerProcess):
 
     def handle_interest_from_lower(self, face_id: int, interest: Interest, to_lower: multiprocessing.Queue):
         self.logger.info("Incomming interest: " + interest.name.to_string())
-
         # incoming interest is nfn expression
         if(interest.name.string_components[-1] == "NFN"):
-            parser = DefaultNFNParser()
-            nfn_str, prepended_name = parser.network_name_to_nfn_str(interest.name)
-            ast = parser.parse(nfn_str)
-            if ast.type == AST_FuncCall and ast._element == "/remote/publish":
-                self.logger.info("TODO")    ### TODO
-            else:
+            try:
+                parser = DefaultNFNParser()
+                nfn_str, prepended_name = parser.network_name_to_nfn_str(interest.name)
+                ast = parser.parse(nfn_str)
+                # assert that valid publish expression
+                if ast.type == AST_FuncCall and ast._element == "/remote/publish":
+                    if len(ast.params) != 2 or not isinstance(ast.params[0], AST_Name) or not isinstance(ast.params[1], AST_String):
+                        nack = Nack(interest.name, reason=NackReason.COMP_NOT_PARSED, interest=interest)
+                        self.queue_to_lower.put([face_id, nack])
+                        self.logger.info("Invalid publish expression")
+                        return
+                else:
+                    self.logger.info("Invalid publish expression")
+                    nack = Nack(interest.name, NackReason.COMP_NOT_PARSED, interest)
+                    to_lower.put([face_id, nack])
+                # store to database
+                data_name = ast.params[0]._element
+                payload = ast.params[1]._element
+                self.cs.add_content_object(Content(data_name, payload))
+                self.logger.info("Add to database: " + data_name)
+                # reply confirmation
+                confirmation = Content(interest.name, "ok")
+                to_lower.put([face_id,confirmation])
+                return
+            except Exception as E:
                 self.logger.info("Invalid publish expression")
-                nack = Nack(interest.name, NackReason.COMP_NOT_PARSED, interest)
-                to_lower.put([face_id, nack])
-
-            return
-        # incomming interest requests data
+                nack = Nack(interest.name, reason=NackReason.COMP_NOT_PARSED, interest=interest)
+                self.queue_to_lower.put([face_id, nack])
+                return
+        # incoming interest is data request
         else:
             db_entry = self.cs.find_content_object(interest.name)
             if db_entry is not None:
