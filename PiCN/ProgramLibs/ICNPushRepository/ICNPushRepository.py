@@ -10,7 +10,7 @@ from PiCN.Processes import PiCNSyncDataStructFactory
 
 from PiCN.Layers.ICNLayer.ContentStore import ContentStorePersistentExact
 from PiCN.Layers.LinkLayer import BasicLinkLayer
-from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface, BaseInterface
+from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface
 from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
 
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder, SimpleStringEncoder
@@ -21,7 +21,7 @@ from PiCN.Mgmt import Mgmt
 class ICNPushRepository(object):
     """A Push Repository using PiCN"""
 
-    def __init__(self, database_path, port=9000, log_level=255, encoder: BasicEncoder = None, flush_database = False):
+    def __init__(self, database_path, port=9000, log_level=255, encoder: BasicEncoder = None, flush_database=False):
         # debug level
         logger = Logger("PushRepo", log_level)
 
@@ -42,7 +42,6 @@ class ICNPushRepository(object):
         if flush_database:
             cs.delete_all()
         faceidtable = synced_data_struct_factory.manager.faceidtable()
-
 
         # default interface
         interfaces = [UDP4Interface(port)]

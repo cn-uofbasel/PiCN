@@ -14,8 +14,9 @@ default_port = 9100
 default_format = "ndntlv"
 default_logging = "info"
 
+
 def main(args):
-    logger = Logger("ICNPushRepo", logging.DEBUG) # note: set later according to cli/config arguments
+    logger = Logger("ICNPushRepo", logging.DEBUG)  # note: set later according to cli/config arguments
     logger.info("Starting a Push Repository...")
 
     # Parse Configuration file
@@ -37,7 +38,7 @@ def main(args):
         if conf and conf.udp_port:
             args.port = conf.udp_port
         else:
-            args.port= default_port
+            args.port = default_port
 
     if not args.format:
         if conf and conf.format:
@@ -49,7 +50,7 @@ def main(args):
         if conf and conf.logging:
             args.logging = conf.logging
         else:
-            args.logging= default_logging
+            args.logging = default_logging
 
     # Log Level
     if args.logging == 'error':
@@ -83,10 +84,13 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='PiCN Push Repository')
     parser.add_argument('-p', '--port', type=int, default=None, help=f'UDP port (default: {default_port})')
-    parser.add_argument('-f', '--format', choices=['ndntlv', 'simple'], type=str, default=None, help=f'Packet Format (default: {default_format})')
+    parser.add_argument('-f', '--format', choices=['ndntlv', 'simple'], type=str, default=None,
+                        help=f'Packet Format (default: {default_format})')
     parser.add_argument('-c', '--config', type=str, default="none", help="Path to configuration file")
-    parser.add_argument('-l', '--logging', choices=['debug', 'info', 'warning', 'error', 'none'], type=str, default=None, help=f'Logging Level (default: {default_logging})')
-    parser.add_argument('-d', '--database-path', default="/tmp", help="Filesystem path of persistent database (default: /tmp)")
+    parser.add_argument('-l', '--logging', choices=['debug', 'info', 'warning', 'error', 'none'], type=str,
+                        default=None, help=f'Logging Level (default: {default_logging})')
+    parser.add_argument('-d', '--database-path', default="/tmp",
+                        help="Filesystem path of persistent database (default: /tmp)")
     parser.add_argument('--flush-database', action="store_true", help="Delete all entries from database")
 
     args = parser.parse_args()
