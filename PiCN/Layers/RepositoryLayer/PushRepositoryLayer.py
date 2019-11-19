@@ -36,7 +36,7 @@ class PushRepositoryLayer(LayerProcess):
         self.handle_interest_from_lower(face_id, interest, to_lower)
 
     def handle_interest_from_lower(self, face_id: int, interest: Interest, to_lower: multiprocessing.Queue):
-        self.logger.info("Incomming interest: " + interest.name.to_string())
+        self.logger.info("Incoming interest: " + interest.name.to_string())
         # incoming interest is nfn expression
         if (interest.name.string_components[-1] == "NFN"):
             try:
@@ -58,7 +58,6 @@ class PushRepositoryLayer(LayerProcess):
                 data_name = ast.params[0]._element
                 payload = ast.params[1]._element
                 if (payload.startswith("BASE64:")) is True:
-                    self.logger.info(">>> base64")
                     try:
                         payload = base64.b64decode(payload[7:])
                         self.logger.info("Payload is base64 encoded. Decoded.")
