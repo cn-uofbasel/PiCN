@@ -15,7 +15,7 @@ class DefaultNFNParser(object):
 
     def __init__(self):
         """Default Parser for NFN"""
-        self.stringToken = Token(TokenType.STRING, r'"', r'[A-Za-z0-9 ]', r'"')
+        self.stringToken = Token(TokenType.STRING, r'"', r'[A-Za-z0-9 :=]', r'"')
         self.intToken = Token(TokenType.INT, r'[0-9\+\-]', r'[0-9]', r'[0-9]')
         self.floatToken = Token(TokenType.FLOAT, r'[0-9\+\-]', r'[0-9.Ee]', r'[0-9]')
         self.nameToken = Token(TokenType.NAME, r'/', r'[A-Za-z0-9/.]', r'[A-Za-z0-9]')
