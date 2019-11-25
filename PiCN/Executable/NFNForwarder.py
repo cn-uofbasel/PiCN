@@ -46,7 +46,6 @@ def main(argv):
         logger.info("Using Eager Optimizer")
         forwarder.nfnlayer.optimizer = EagerOptimizer(forwarder.icnlayer.cs, forwarder.icnlayer.fib,
                                                               forwarder.icnlayer.pit, forwarder.linklayer.faceidtable)
-
     elif args.optimizer == "MapReduce":
         forwarder = PiCN.ProgramLibs.NFNForwarder.NFNForwarder(args.port, log_level, encoder)
         logger.info("Using MapReduce Optimizer")

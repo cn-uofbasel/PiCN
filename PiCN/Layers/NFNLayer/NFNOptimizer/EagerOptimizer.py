@@ -14,6 +14,9 @@ class EagerOptimizer(BaseNFNOptimizer):
                  faceidTable: BaseFaceIDTable) -> None:
         super().__init__(cs, fib, pit, faceidTable)
 
+    def required_data(self, prepended_prefix: Name, ast: AST):
+        return []
+
     def compute_local(self, prepended_prefix: Name, ast: AST, interest: Interest) -> bool:
         return True
 
