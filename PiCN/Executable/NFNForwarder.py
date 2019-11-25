@@ -6,7 +6,7 @@ import argparse
 
 import PiCN.ProgramLibs.NFNForwarder
 from PiCN.Logger import Logger
-from PiCN.Layers.NFNLayer.NFNOptimizer import EdgeComputingOptimizer, MapReduceOptimizer
+from PiCN.Layers.NFNLayer.NFNOptimizer import EdgeComputingOptimizer, MapReduceOptimizer, EagerOptimizer
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
 
 def main(argv):
@@ -41,6 +41,12 @@ def main(argv):
         forwarder.icnlayer.cs.set_cs_timeout(30)
         forwarder.nfnlayer.optimizer = EdgeComputingOptimizer(forwarder.icnlayer.cs, forwarder.icnlayer.fib,
                                                               forwarder.icnlayer.pit, forwarder.linklayer.faceidtable)
+    elif args.optimizer == "Eager":
+        forwarder = PiCN.ProgramLibs.NFNForwarder.NFNForwarder(args.port, log_level, encoder)
+        logger.info("Using Eager Optimizer")
+        forwarder.nfnlayer.optimizer = EagerOptimizer(forwarder.icnlayer.cs, forwarder.icnlayer.fib,
+                                                              forwarder.icnlayer.pit, forwarder.linklayer.faceidtable)
+
     elif args.optimizer == "MapReduce":
         forwarder = PiCN.ProgramLibs.NFNForwarder.NFNForwarder(args.port, log_level, encoder)
         logger.info("Using MapReduce Optimizer")
@@ -63,6 +69,6 @@ if __name__ == "__main__":
     parser.add_argument('-p', '--port', type=int, default=9000, help="UDP port (default: 9000)")
     parser.add_argument('-f', '--format', choices=['ndntlv','simple'], type=str, default='ndntlv', help='Packet Format (default: ndntlv)')
     parser.add_argument('-l', '--logging', choices=['debug','info', 'warning', 'error', 'none'], type=str, default='info', help='Logging Level (default: info)')
-    parser.add_argument('-e', '--optimizer', choices=['ToDataFirst', 'Edge', 'MapReduce', 'Thunks'], type=str, default="ToDataFirst", help="Choose the NFN Optimizer")
+    parser.add_argument('-e', '--optimizer', choices=['ToDataFirst', 'Edge', 'Eager', 'MapReduce', 'Thunks'], type=str, default="ToDataFirst", help="Choose the NFN Optimizer")
     args = parser.parse_args()
     main(args)
