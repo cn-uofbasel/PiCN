@@ -132,7 +132,7 @@ class MobileEdgeComputingSimulation():
             self.car_forwarders.append(ICNForwarder(0, encoder=self.encoder_type, routing=True,
                                 interfaces=[self.simulation_bus.add_interface(f"car{i}")]))
             self.car_fetch.append(Fetch(f"car{i}", None, 255, self.encoder_type,
-                                    interfaces=[self.simulation_bus.add_interface(f"ftcar{i}")]))
+                                    interfaces=[self.simulation_bus.add_interface(f"car{i}")]))
             mgmt_client_car = MgmtClient(self.car_forwarders[i].mgmt.mgmt_sock.getsockname()[1])
             self.car_mgmt.append(mgmt_client_car)
 
