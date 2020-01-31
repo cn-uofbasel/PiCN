@@ -34,6 +34,22 @@ class PendingInterstTableMemoryExact(BasePendingInterestTable):
         for r in to_remove:
             self.container.remove(r)
 
+    def remove_pit_entry_by_fid(self, faceid: int):
+        for pit_entry in self.container:
+            if faceid in pit_entry.faceids:
+                self.container.remove(pit_entry)
+
+                new_faceids = pit_entry.faceids.remove(faceid)
+
+                new_entry = PendingInterestTableEntry(pit_entry.name, new_faceids, interest=pit_entry.interest,
+                                                      local_app=pit_entry.local_app,
+                                                      fib_entries_already_used=pit_entry.fib_entries_already_used,
+                                                      faces_already_nacked=pit_entry.faces_already_nacked,
+                                                      number_of_forwards=pit_entry.number_of_forwards)
+                new_entry.faces_already_nacked = pit_entry.faces_already_nacked
+                self.container.append(new_entry)
+
+
     def find_pit_entry(self, name: Name) -> PendingInterestTableEntry:
         for pit_entry in self.container:
             if (pit_entry.name == name):

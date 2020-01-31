@@ -127,6 +127,10 @@ class BasePendingInterestTable(BaseICNDataStruct):
         """Remove an entry in the PIT"""
 
     @abc.abstractmethod
+    def remove_pit_entry_by_fid(self, faceid: int):
+        """Removes all PIT entries refering to a given faceid"""
+
+    @abc.abstractmethod
     def update_timestamp(self, pit_entry: PendingInterestTableEntry):
         """Update Timestamp of a PIT Entry"""
 
