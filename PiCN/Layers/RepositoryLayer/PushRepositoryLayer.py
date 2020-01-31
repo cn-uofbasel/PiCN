@@ -11,6 +11,13 @@ from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
 from PiCN.Layers.NFNLayer.Parser.AST import *
 
 
+def is_publish_expression(ast) -> bool:
+    if ast.type == AST_FuncCall:
+        return ast._element == "/remote/publish" and len(ast.params) == 2 and isinstance(ast.params[0], AST_Name) \
+               and isinstance(ast.params[1], AST_String)
+    return False
+
+
 class PushRepositoryLayer(LayerProcess):
     """Push Repository Layer"""
 
@@ -38,42 +45,40 @@ class PushRepositoryLayer(LayerProcess):
     def handle_interest_from_lower(self, face_id: int, interest: Interest, to_lower: multiprocessing.Queue):
         self.logger.info("Incoming interest: " + interest.name.to_string())
         # incoming interest is nfn expression
-        if (interest.name.string_components[-1] == "NFN"):
+        if interest.name.string_components[-1] == "NFN":
             try:
                 parser = DefaultNFNParser()
                 nfn_str, prepended_name = parser.network_name_to_nfn_str(interest.name)
                 ast = parser.parse(nfn_str)
                 # assert that valid publish expression
-                if ast.type == AST_FuncCall and ast._element == "/remote/publish":
-                    if len(ast.params) != 2 or not isinstance(ast.params[0], AST_Name) or not isinstance(ast.params[1], AST_String):
-                        nack = Nack(interest.name, reason=NackReason.COMP_NOT_PARSED, interest=interest)
-                        self.queue_to_lower.put([face_id, nack])
-                        self.logger.info("Invalid publish expression")
-                        return
-                else:
-                    self.logger.info("Invalid publish expression")
-                    nack = Nack(interest.name, NackReason.COMP_NOT_PARSED, interest)
-                    to_lower.put([face_id, nack])
-                # store to database
-                data_name = ast.params[0]._element
-                payload = ast.params[1]._element
-                if (payload.startswith("BASE64:")) is True:
+                if is_publish_expression(ast):
+                    # store to database
+                    data_name = ast.params[0]._element
+                    payload = ast.params[1]._element
                     try:
                         payload = base64.b64decode(payload[7:])
                         self.logger.info("Payload is base64 encoded. Decoded.")
                     except:
-                        pass
-                self.cs.add_content_object(Content(data_name, payload))
-                self.logger.info("Add to database: " + data_name)
-                # reply confirmation
-                confirmation = Content(interest.name, "ok")
-                to_lower.put([face_id, confirmation])
-                return
+                        self.logger.info("Invalid publish expression. The payload could not be decoded.")
+                        nack = Nack(interest.name, reason=NackReason.COMP_NOT_PARSED, interest=interest)
+                        self.queue_to_lower.put([face_id, nack])
+
+                    self.cs.add_content_object(Content(data_name, payload))
+                    self.logger.info("Add to database: " + data_name)
+                    # reply confirmation
+                    confirmation = Content(interest.name, "ok")
+                    to_lower.put([face_id, confirmation])
+
+                else:
+                    self.logger.info("Invalid publish expression. Wrong format.")
+                    nack = Nack(interest.name, reason=NackReason.COMP_NOT_PARSED, interest=interest)
+                    self.queue_to_lower.put([face_id, nack])
+
             except:
-                self.logger.info("Invalid publish expression")
+                self.logger.info("Invalid publish expression.")
                 nack = Nack(interest.name, reason=NackReason.COMP_NOT_PARSED, interest=interest)
                 self.queue_to_lower.put([face_id, nack])
-                return
+
         # incoming interest is data request
         else:
             db_entry = self.cs.find_content_object(interest.name)
