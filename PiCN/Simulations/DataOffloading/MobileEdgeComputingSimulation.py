@@ -7,6 +7,7 @@ import unittest
 from time import sleep
 import os
 import time
+import random
 
 from PiCN.Demos.DetectionMap.Helper import Helper
 from PiCN.definitions import ROOT_DIR
@@ -40,7 +41,7 @@ class MobileEdgeComputingSimulation():
 
         self.rsu_distance = 0.5 #in km, range is identical here
 
-        self.computations = [] #Store computations in here, car will randomly choose one
+        self.computations = self.get_computations() #Store computations in here, car will randomly choose one
         self.named_functions ={"/rsu/func/f1": "PYTHON\nf\ndef f(a, b, c):\n return a+b+c",
                              "/rsu/func/f2": "PYTHON\nf\ndef f(a, b, c):\n return a*b*c"} #named functions stored on the
         self.chunk_size = 8192
@@ -51,8 +52,22 @@ class MobileEdgeComputingSimulation():
 
         self.rsu_name = Name("/rsu")
 
+        self.car_to_computation = [0,0,0,0,0] #index which car issues which computation
+
         self._compute_rsu_connection_time()
         self.setup_network()
+
+
+    def get_computations(self):
+        comps = []
+        c1 = Name("/rsu/func/f1")
+        c1 += "_(1,2,3)"
+        c1 += "NFN"
+        comps.append(c1)
+
+        return comps
+
+
 
 
     def _compute_rsu_connection_time(self):
@@ -147,12 +162,16 @@ class MobileEdgeComputingSimulation():
         connected_rsu = self.connected_rsu[car_number]
         self.car_forwarders[car_number].icnlayer.fib.remove_fib_entry(self.rsu_name)
         self.car_forwarders[car_number].icnlayer.fib.add_fib_entry(self.rsu_name, [self.to_rsu_faces[new_rsu_number][car_number]])
-        self.rsus[connected_rsu].icnlayer.fib.remove_fib_entry(f"/car/car{car_number}")
-        self.rsus[new_rsu_number].icnlayer.fib.add_fib_entry(f"/car/car{car_number}", [self.to_car_faces[new_rsu_number][car_number]])
+        self.rsus[connected_rsu].icnlayer.fib.remove_fib_entry(Name(f"/car/car{car_number}"))
+        self.rsus[new_rsu_number].icnlayer.fib.add_fib_entry(Name(f"/car/car{car_number}"), [self.to_car_faces[new_rsu_number][car_number]])
 
         self.connected_rsu[car_number] = self.connected_rsu[connected_rsu] + self.car_direction[connected_rsu]
 
-        self.car_send_interest(car_number, Name(f"/test/data/car{car_number}"))
+
+
+        #self.car_send_interest(car_number, Name(f"/test/data/car{car_number}"))
+        print(type(self.computations[self.car_to_computation[car_number]]))
+        self.car_send_interest(car_number, self.computations[self.car_to_computation[car_number]])
 
 
     def car_send_interest(self, number, name):
@@ -168,7 +187,7 @@ class MobileEdgeComputingSimulation():
         for i in range(0, self.number_of_cars):
             self.connected_rsu.append(self.starting_rsu[i])
             self.car_forwarders[i].icnlayer.fib.add_fib_entry(self.rsu_name, [self.to_rsu_faces[self.connected_rsu[i]][i]])
-            self.rsus[self.connected_rsu[i]].icnlayer.fib.add_fib_entry(f"car{i}",
+            self.rsus[self.connected_rsu[i]].icnlayer.fib.add_fib_entry(Name(f"car{i}"),
                                                                  [self.to_car_faces[self.connected_rsu[i]][i]])
 
         self.connection_time = [time.time_ns()] * self.number_of_cars
