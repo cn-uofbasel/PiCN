@@ -132,7 +132,7 @@ class MobileEdgeComputingSimulation():
             self.car_forwarders.append(ICNForwarder(0, encoder=self.encoder_type, routing=True,
                                 interfaces=[self.simulation_bus.add_interface(f"car{i}")]))
             self.car_fetch.append(Fetch(f"car{i}", None, 255, self.encoder_type,
-                                    interfaces=[self.simulation_bus.add_interface(f"car{i}")]))
+                                    interfaces=[self.simulation_bus.add_interface(f"ftcar{i}")]))
             mgmt_client_car = MgmtClient(self.car_forwarders[i].mgmt.mgmt_sock.getsockname()[1])
             self.car_mgmt.append(mgmt_client_car)
 
@@ -169,8 +169,6 @@ class MobileEdgeComputingSimulation():
         self.rsus[new_rsu_number].icnlayer.fib.add_fib_entry(Name(f"/car/car{car_number}"), [self.to_car_faces[new_rsu_number][car_number]])
         self.connected_rsu[car_number] = self.connected_rsu[connected_rsu] + self.car_direction[connected_rsu]
 
-
-        print(type(self.computations[self.car_to_computation[car_number]]))
         self.car_send_interest(car_number, self.computations[self.car_to_computation[car_number]])
 
 
@@ -190,14 +188,18 @@ class MobileEdgeComputingSimulation():
             self.rsus[self.connected_rsu[i]].icnlayer.fib.add_fib_entry(Name(f"car{i}"),
                                                                  [self.to_car_faces[self.connected_rsu[i]][i]])
 
+            self.car_send_interest(i, self.computations[self.car_to_computation[i]])
+
         self.connection_time = [time.time_ns()] * self.number_of_cars
+
+
         steps = 3 * self.number_of_cars
         while(isRunning):
             time_ns = time.time_ns()
             for i in range(0, self.number_of_cars):
 
                 if time_ns - self.connection_time[i] > self.contact_time[i]:
-                    print(f"{time.time():.5f} ---" + " Car", i, "reconnects from", self.connected_rsu[i], "to", self.connected_rsu[i] + self.car_direction[i])
+                    print(f"{time.time():.5f} -- " + "Car", i, "reconnects from", self.connected_rsu[i], "to", self.connected_rsu[i] + self.car_direction[i])
                     new_rsu_number = self.connected_rsu[i] + self.car_direction[i]
                     self.reconnect_car(i, new_rsu_number)
                     self.connection_time[i] = time.time_ns()
@@ -208,7 +210,7 @@ class MobileEdgeComputingSimulation():
 
 def main():
     sim = MobileEdgeComputingSimulation()
-    print(f"{time.time():.5f} ---" + "Setup Finished, Running Simulation")
+    print(f"{time.time():.5f} -- " + "Setup Finished, Running Simulation")
     sim.mainloop()
 
 
