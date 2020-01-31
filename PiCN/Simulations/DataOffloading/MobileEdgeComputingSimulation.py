@@ -164,7 +164,7 @@ class MobileEdgeComputingSimulation():
         self.car_forwarders[car_number].icnlayer.fib.add_fib_entry(self.rsu_name, [self.to_rsu_faces[new_rsu_number][car_number]])
         self.rsus[connected_rsu].icnlayer.fib.remove_fib_entry(Name(f"/car/car{car_number}"))
 
-        self.rsus[connected_rsu].icnlayer.pit.remove_fib_entry_by_fid(self.to_car_faces[connected_rsu][car_number])
+        self.rsus[connected_rsu].icnlayer.pit.remove_pit_entry_by_fid(self.to_car_faces[connected_rsu][car_number])
 
         self.rsus[new_rsu_number].icnlayer.fib.add_fib_entry(Name(f"/car/car{car_number}"), [self.to_car_faces[new_rsu_number][car_number]])
         self.connected_rsu[car_number] = self.connected_rsu[connected_rsu] + self.car_direction[connected_rsu]
