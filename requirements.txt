@@ -1,0 +1,1 @@
+opencv-python==4.2.0.32     # required to run some data offloading examples using opencv
