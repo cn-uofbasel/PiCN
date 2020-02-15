@@ -8,7 +8,7 @@ class SimulationNode(object):
     # CONSTRUCTOR
     ################################
 
-    def __init__(self, node_id: str):
+    def __init__(self, node_id: int):
         """
         Constructor of the node
         """
@@ -19,7 +19,7 @@ class SimulationNode(object):
     ################################
 
     @property
-    def node_id(self) -> str:
+    def node_id(self) -> int:
         """
         Getter of the node id as string
         """

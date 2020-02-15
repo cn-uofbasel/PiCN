@@ -24,14 +24,14 @@ class TestStationaryNode(unittest.TestCase):
 
     def test_init_stationary_node(self):
         """tests if a stationary node is initialized correctly"""
-        self.assertIsNotNone(StationaryNode(node_id="rsu1", com_range=0.5))
+        self.assertIsNotNone(StationaryNode(node_id=1, com_range=0.5))
 
     def test_init_stationary_node_wrong_parameter_com_range(self):
         """tests if the communication range is in the expected range 0-2 km """
         # lower boundary error
         with self.assertRaises(AssertionError):
-            StationaryNode(node_id="car1", com_range=-1)
+            StationaryNode(node_id=1, com_range=-1)
         # upper boundary error
         with self.assertRaises(AssertionError):
-            StationaryNode(node_id="car1", com_range=2.1)
+            StationaryNode(node_id=1, com_range=2.1)
 
