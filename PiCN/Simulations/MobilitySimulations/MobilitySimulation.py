@@ -3,6 +3,7 @@
 import time
 
 from typing import List
+from typing import Type
 
 from PiCN.ProgramLibs.Fetch import Fetch
 from PiCN.ProgramLibs.ICNForwarder import ICNForwarder
@@ -25,7 +26,7 @@ class MobilitySimulation(object):
 
     def __init__(self, run_id: int, mobile_nodes: List[MobileNode], stationary_nodes: List[StationaryNode],
                  stationary_node_distance: float, named_functions: dict, function_names: list,
-                 forwarder: NFNForwarder = NFNForwarder, optimizer: BaseNFNOptimizer = ToDataFirstOptimizer):
+                 forwarder: Type[NFNForwarder] = NFNForwarder, optimizer: Type[BaseNFNOptimizer] = ToDataFirstOptimizer):
         """
         Configuration of the mobility simulation
 
@@ -88,11 +89,11 @@ class MobilitySimulation(object):
 
         for node in self._stationary_nodes:
             # install the NFN forwarder and the mgmt client tool at the stationary node
-            if isinstance(self._forwarder, NFNForwarder):
+            if type(self._forwarder) is NFNForwarder:
                 node.nfn_forwarder = NFNForwarder(0, encoder=SimpleStringEncoder(),
                                                   interfaces=[self._simulation_bus.add_interface(f"rsu{node.node_id}")],
                                                   ageing_interval=10)
-            elif isinstance(self._forwarder, NFNForwarderData):
+            elif type(self._forwarder) is NFNForwarderData:
                 node.nfn_forwarder = NFNForwarderData(0, encoder=SimpleStringEncoder(),
                                                       interfaces=[self._simulation_bus.add_interface(f"rsu{node.node_id}")],
                                                       chunk_size=self._chunk_size, num_of_forwards=1, ageing_interval=10)
@@ -100,12 +101,12 @@ class MobilitySimulation(object):
                 print("Forwarder: " + str(self._forwarder) + " is not supported! Use 'NFNForwarder' or 'NFNForwarderData'!")
 
             # install the optimizer
-            if isinstance(self._optimizer, ToDataFirstOptimizer):
+            if type(self._optimizer) is ToDataFirstOptimizer:
                 node.nfn_forwarder.nfnlayer.optimizer = ToDataFirstOptimizer(node.nfn_forwarder.icnlayer.cs,
                                                                              node.nfn_forwarder.icnlayer.fib,
                                                                              node.nfn_forwarder.icnlayer.pit,
                                                                              node.nfn_forwarder.linklayer.faceidtable)
-            elif isinstance(self._optimizer, EdgeComputingOptimizer):
+            elif type(self._optimizer) is EdgeComputingOptimizer:
                 node.nfn_forwarder.nfnlayer.optimizer = EdgeComputingOptimizer(node.nfn_forwarder.icnlayer.cs,
                                                                                node.nfn_forwarder.icnlayer.fib,
                                                                                node.nfn_forwarder.icnlayer.pit,
