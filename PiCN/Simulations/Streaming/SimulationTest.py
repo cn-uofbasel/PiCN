@@ -18,7 +18,7 @@ nfn_fwd1 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
                         ageing_interval=1)
 
 # TODO: Create the repository
-repo1 = ICNDataRepository("/tmp/repo1", Name("/repo/r1"), 0, 255, NdnTlvEncoder(), False, False,
+repo1 = ICNDataRepository("/InputFiles/exampleInputFile.txt", Name("/repo/r1"), 0, 255, NdnTlvEncoder(), False, False,
                                        [simulation_bus.add_interface("repo1")])
 
 mgmt_client0 = MgmtClient(nfn_fwd0.mgmt.mgmt_sock.getsockname()[1])
@@ -37,7 +37,7 @@ mgmt_client1.add_face("repo1", None, 0)
 
 mgmt_client0.add_forwarding_rule(Name("/data"), [0])
 # TODO: Create forwarding rule from nfn_fwd1 to the repo1
-mgmt_client1.add_forwarding_rule(Name("/data"), [0])
+mgmt_client1.add_forwarding_rule(Name("/repo/r1"), [0])
 
 
 # Can't be used for this example...
