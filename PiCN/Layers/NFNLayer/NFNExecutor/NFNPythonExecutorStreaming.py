@@ -3,10 +3,11 @@
 from PiCN.Layers.NFNLayer.NFNExecutor import NFNPythonExecutor
 
 class NFNPythonExecutorStreaming(NFNPythonExecutor):
+    pass
 
     def __init__(self):
-        # self._sandbox = self._init_sandbox()
-        print("Just so it doesn't get marked as an error.")
+        self._sandbox = super._init_sandbox()
+        self._sandbox["checkStreaming"] = self.checkStreaming
 
     def checkStreaming(self, arg: str):
         if not arg:
