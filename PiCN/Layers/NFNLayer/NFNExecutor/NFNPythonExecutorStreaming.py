@@ -3,7 +3,6 @@
 from PiCN.Layers.NFNLayer.NFNExecutor import NFNPythonExecutor
 
 class NFNPythonExecutorStreaming(NFNPythonExecutor):
-    pass
 
     def __init__(self):
         self._sandbox = super._init_sandbox()
