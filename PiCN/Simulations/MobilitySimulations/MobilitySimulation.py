@@ -1,16 +1,16 @@
 """Parametrized mobility simulation"""
 
 import time
+import logging
 
 from typing import List
-from typing import Type
 
 from PiCN.ProgramLibs.Fetch import Fetch
 from PiCN.ProgramLibs.ICNForwarder import ICNForwarder
 from PiCN.Mgmt import MgmtClient
+from PiCN.Logger import Logger
 from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
-from PiCN.Packets import Name, Content, Interest
-from PiCN.Layers.NFNLayer.NFNOptimizer import BaseNFNOptimizer
+from PiCN.Packets import Name, Content
 from PiCN.Layers.NFNLayer.NFNOptimizer.ToDataFirstOptimizer import ToDataFirstOptimizer
 from PiCN.Layers.NFNLayer.NFNOptimizer.EdgeComputingOptimizer import EdgeComputingOptimizer
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
@@ -26,7 +26,8 @@ class MobilitySimulation(object):
 
     def __init__(self, run_id: int, mobile_nodes: List[MobileNode], stationary_nodes: List[StationaryNode],
                  stationary_node_distance: float, named_functions: dict, function_names: list,
-                 forwarder: Type[NFNForwarder] = NFNForwarder, optimizer: Type[BaseNFNOptimizer] = ToDataFirstOptimizer):
+                 forwarder: str = "NFNForwarder", optimizer: str = "ToDataFirstOptimizer",
+                 log_level=logging.DEBUG):
         """
         Configuration of the mobility simulation
 
@@ -38,6 +39,7 @@ class MobilitySimulation(object):
         :param function_names a list of function names to be assigned to the mobile nodes
         :param forwarder the NFN forwarder to be used
         :param optimizer the NFN resolution strategy optimizer to be used in the simulation
+        :param log_level the log level of the logger to be used; default: logging.DEBUG
         """
         self._run_id = run_id
         self._forwarder = forwarder
@@ -45,6 +47,7 @@ class MobilitySimulation(object):
         self._mobile_nodes = mobile_nodes
         self._stationary_nodes = stationary_nodes
         self._stationary_node_distance = stationary_node_distance
+        self.logger = Logger("MobilitySimulation", log_level)
         self.to_car_faces = [[0] * len(self._mobile_nodes) for i in range(len(self._stationary_nodes))]  # rsu, car -> faceid
         self.to_rsu_faces = [[0] * len(self._mobile_nodes) for i in range(len(self._stationary_nodes))]  # rsu, car -> faceid
         self._velocities = []
@@ -60,7 +63,6 @@ class MobilitySimulation(object):
         self._named_functions = named_functions     # a dict of function definitions to be invoked
         self._chunk_size = 8192
 
-        self._optimizer = optimizer                 # the resolution strategy optimizer to be used
         self._simulation_bus = SimulationBus(packetencoder=SimpleStringEncoder())
 
         self._stationary_node_name_prefix = Name("/rsu")
@@ -89,30 +91,30 @@ class MobilitySimulation(object):
 
         for node in self._stationary_nodes:
             # install the NFN forwarder and the mgmt client tool at the stationary node
-            if type(self._forwarder) is NFNForwarder:
+            if self._forwarder == "NFNForwarder":
                 node.nfn_forwarder = NFNForwarder(0, encoder=SimpleStringEncoder(),
                                                   interfaces=[self._simulation_bus.add_interface(f"rsu{node.node_id}")],
                                                   ageing_interval=10)
-            elif type(self._forwarder) is NFNForwarderData:
+            elif self._forwarder == "NFNForwarderData":
                 node.nfn_forwarder = NFNForwarderData(0, encoder=SimpleStringEncoder(),
                                                       interfaces=[self._simulation_bus.add_interface(f"rsu{node.node_id}")],
                                                       chunk_size=self._chunk_size, num_of_forwards=1, ageing_interval=10)
             else:
-                print("Forwarder: " + str(self._forwarder) + " is not supported! Use 'NFNForwarder' or 'NFNForwarderData'!")
+                print("Forwarder: " + self._forwarder + " is not supported! Use 'NFNForwarder' or 'NFNForwarderData'!")
 
             # install the optimizer
-            if type(self._optimizer) is ToDataFirstOptimizer:
+            if self._optimizer == "ToDataFirstOptimizer":
                 node.nfn_forwarder.nfnlayer.optimizer = ToDataFirstOptimizer(node.nfn_forwarder.icnlayer.cs,
                                                                              node.nfn_forwarder.icnlayer.fib,
                                                                              node.nfn_forwarder.icnlayer.pit,
                                                                              node.nfn_forwarder.linklayer.faceidtable)
-            elif type(self._optimizer) is EdgeComputingOptimizer:
+            elif self._optimizer == "EdgeComputingOptimizer":
                 node.nfn_forwarder.nfnlayer.optimizer = EdgeComputingOptimizer(node.nfn_forwarder.icnlayer.cs,
                                                                                node.nfn_forwarder.icnlayer.fib,
                                                                                node.nfn_forwarder.icnlayer.pit,
                                                                                node.nfn_forwarder.linklayer.faceidtable)
             # install the mgmt client tool at the node
-            node.mgmt_tool = MgmtClient(node.nfn_forwarder.mgmt.mgmt_sock.getgetsockname()[1])
+            node.mgmt_tool = MgmtClient(node.nfn_forwarder.mgmt.mgmt_sock.getsockname()[1])
             node.nfn_forwarder.icnlayer.cs.set_cs_timeout(60)
 
     def _setup_connections_for_stationary_nodes(self):
@@ -168,20 +170,26 @@ class MobilitySimulation(object):
     def _setup_simulation_network(self):
         """configure a network according to the configuration"""
 
+        self.logger.debug("Setup simulation network ...")
         # setup stationary nodes
         self._setup_stationary_nodes()
+        self.logger.debug("\t setup stationary nodes done")
 
         # setup connections
         self._setup_connections_for_stationary_nodes()
+        self.logger.debug("\t setup connections between stationary nodes done")
 
         # assign functions to stationary nodes
         self._assign_named_functions_to_stationary_execution_nodes()
+        self.logger.debug("\t assign named functions to stationary nodes done")
 
         # setup mobile nodes
         self._setup_mobile_nodes()
+        self.logger.debug("\t setup mobile nodes done")
 
         # start node
         self.start_nodes()
+        self.logger.debug("\t setup complete -> start nodes")
 
     def reconnect_car(self, mobile_node_number, new_rsu_number):
 
@@ -238,6 +246,8 @@ class MobilitySimulation(object):
         self._is_running = True
         self.connected_rsu = []
 
+        self.logger.debug("Start Simulation")
+
         for i in range(0, len(self._mobile_nodes)):
             self.connected_rsu.append(self._starting_points[i])
             self._mobile_nodes[i].forwarder.icnlayer.fib.add_fib_entry(self._stationary_node_name_prefix,
@@ -249,6 +259,7 @@ class MobilitySimulation(object):
         self.connection_time = [time.time()] * len(self._mobile_nodes)
 
         steps = 5 * len(self._mobile_nodes)
+        print(steps)
         while(self._is_running):
             time_ns = time.time_ns()
             for i in range(0, len(self._mobile_nodes)):
@@ -260,8 +271,8 @@ class MobilitySimulation(object):
                     self.connection_time[i] = time.time_ns()
                 steps -=1
 
-            if steps < 0:
+            if steps <= 0:
                 self._is_running = False
 
-        print("Simluation ended!")
+        self.logger.debug("Simulation Terminated!")
         self.stop_nodes()
