@@ -56,7 +56,12 @@ def main(argv):
     # create instances of mobile nodes
     mobile_nodes_list = []
     for i in range(0, args.mobiles):
-        mobile_nodes_list.append(MobileNode(node_id=i, spawn_point=0, speed=60, direction=1))
+        # let vehicles spawn from both sites of the simulation
+        if (i % 2) == 0:
+            mobile_nodes_list.append(MobileNode(node_id=i, spawn_point=0, speed=60, direction=1))
+        else:
+            mobile_nodes_list.append(MobileNode(node_id=i, spawn_point=(len(stationary_nodes_list) - 1),
+                                                speed=60, direction=-1))
 
     simulation = None
     if args.optimizer == "Edge":
