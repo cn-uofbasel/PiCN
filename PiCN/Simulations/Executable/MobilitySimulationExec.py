@@ -24,7 +24,7 @@ def main(argv):
         log_level = logging.DEBUG
     else:
         log_level = 255
-    logger = Logger("MobilitySimulation", log_level)
+    logger = Logger("MobilitySimulationExec", log_level)
 
     # Info
     logger.info("Mobility Simulation config params...")
