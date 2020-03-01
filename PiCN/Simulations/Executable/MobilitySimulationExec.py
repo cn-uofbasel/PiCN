@@ -2,6 +2,7 @@
 
 import logging
 import argparse
+import random
 
 from PiCN.Logger import Logger
 from PiCN.Packets import Name
@@ -33,6 +34,7 @@ def main(argv):
     logger.info("#stations:      " + str(args.stations))
     logger.info("Log Level:      " + args.logging)
     logger.info("Optimizer:      " + str(args.optimizer))
+    random.seed(args.run)
 
     # create a list of mobile nodes
     named_functions = {"/rsu/func/f1": "PYTHON\nf\ndef f(a, b, c):\n return a+b+c",
@@ -56,12 +58,14 @@ def main(argv):
     # create instances of mobile nodes
     mobile_nodes_list = []
     for i in range(0, args.mobiles):
+        # random vehicle speed between 30km/h and 100 km/h
+        speed = random.randrange(50, 121, 2)
         # let vehicles spawn from both sites of the simulation
         if (i % 2) == 0:
-            mobile_nodes_list.append(MobileNode(node_id=i, spawn_point=0, speed=60, direction=1))
+            mobile_nodes_list.append(MobileNode(node_id=i, spawn_point=0, speed=speed, direction=1))
         else:
             mobile_nodes_list.append(MobileNode(node_id=i, spawn_point=(len(stationary_nodes_list) - 1),
-                                                speed=60, direction=-1))
+                                                speed=speed, direction=-1))
 
     simulation = None
     if args.optimizer == "Edge":

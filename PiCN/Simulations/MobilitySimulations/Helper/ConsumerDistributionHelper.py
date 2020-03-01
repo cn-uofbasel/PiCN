@@ -32,17 +32,21 @@ class ZipfMandelbrotDistribution(object):
         return dist_array
 
     @staticmethod
-    def get_next_zipfmandelbrot_random_number(dist_array: np.ndarray, basis: int):
+    def get_next_zipfmandelbrot_random_number(dist_array: np.ndarray, basis: int, seed: int = None):
         """
         Returns a value from the given distribution array.
         :param dist_array - the initialized array (see create_zipf_mandelbrot_distribution) containing the values
         :param basis - the number of function names to create to determine the next value to pass
+        :param seed the seed if provided it is used by the random number generator to reproduce the distribution result
         :return
         """
         next_index = 1
         p_sum = 0
 
         rand = random.random()
+        if seed is not None:
+            rand = random.random(seed)
+
         while rand == 0:
             rand = random.random()
 
