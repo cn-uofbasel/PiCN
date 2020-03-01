@@ -41,7 +41,7 @@ class MobilitySimulation(object):
         :param forwarder the NFN forwarder to be used
         :param optimizer the NFN resolution strategy optimizer to be used in the simulation
         :param use_distribution_helper A flag indicating if the default distribution helper (ZipfMandelbrotDistribution)
-        shall be used or not; default = False,
+        shall be used or not; default = False
         :param log_level the log level of the logger to be used; default: logging.DEBUG
         """
         self._run_id = run_id
@@ -110,7 +110,7 @@ class MobilitySimulation(object):
                                                       interfaces=[self._simulation_bus.add_interface(f"rsu{node.node_id}")],
                                                       chunk_size=self._chunk_size, num_of_forwards=1, ageing_interval=10)
             else:
-                print("Forwarder: " + self._forwarder + " is not supported! Use 'NFNForwarder' or 'NFNForwarderData'!")
+                self.logger.error("Forwarder: " + self._forwarder + " is not supported! Use 'NFNForwarder' or 'NFNForwarderData'!")
 
             # install the optimizer
             if self._optimizer == "ToDataFirstOptimizer":
@@ -204,7 +204,7 @@ class MobilitySimulation(object):
     def reconnect_car(self, mobile_node_number, new_rsu_number):
 
         if len(self._stationary_nodes) <= new_rsu_number or new_rsu_number < 0:
-            print(f"{time.time():.5f} --- Cannot reconnect mobile node with id {mobile_node_number} "
+            self.logger.error(f"{time.time():.5f} --- Cannot reconnect mobile node with id {mobile_node_number} "
                   f"to stationary node with id {new_rsu_number}, not part of this simulation")
             return
 
@@ -249,7 +249,7 @@ class MobilitySimulation(object):
                 mobile_node.forwarder.stop_forwarder()
             self._simulation_bus.stop_process()
         else:
-            print("Simulation not started yet -- cleaning resources is unnecessary!")
+            self.logger.error("Simulation not started yet -- cleaning resources is necessary!")
 
     def run(self):
         """run the experiment, hand over the cars"""
@@ -269,7 +269,6 @@ class MobilitySimulation(object):
         self.connection_time = [time.time()] * len(self._mobile_nodes)
 
         steps = 5 * len(self._mobile_nodes)
-        print(steps)
         while(self._is_running):
             time_ns = time.time_ns()
             for i in range(0, len(self._mobile_nodes)):
