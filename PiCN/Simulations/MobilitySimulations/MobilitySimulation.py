@@ -19,6 +19,7 @@ from PiCN.ProgramLibs.NFNForwarder.NFNForwarder import NFNForwarder
 from PiCN.ProgramLibs.NFNForwarder.NFNForwarderData import NFNForwarderData
 from PiCN.Simulations.MobilitySimulations.Model.MobileNode import MobileNode
 from PiCN.Simulations.MobilitySimulations.Model.StationaryNode import StationaryNode
+from PiCN.Simulations.MobilitySimulations.Helper.ConsumerDistributionHelper import ZipfMandelbrotDistribution
 
 
 class MobilitySimulation(object):
@@ -27,7 +28,7 @@ class MobilitySimulation(object):
     def __init__(self, run_id: int, mobile_nodes: List[MobileNode], stationary_nodes: List[StationaryNode],
                  stationary_node_distance: float, named_functions: dict, function_names: list,
                  forwarder: str = "NFNForwarder", optimizer: str = "ToDataFirstOptimizer",
-                 log_level=logging.DEBUG):
+                 use_distribution_helper: bool = False, log_level=logging.DEBUG):
         """
         Configuration of the mobility simulation
 
@@ -39,6 +40,8 @@ class MobilitySimulation(object):
         :param function_names a list of function names to be assigned to the mobile nodes
         :param forwarder the NFN forwarder to be used
         :param optimizer the NFN resolution strategy optimizer to be used in the simulation
+        :param use_distribution_helper A flag indicating if the default distribution helper (ZipfMandelbrotDistribution)
+        shall be used or not; default = False,
         :param log_level the log level of the logger to be used; default: logging.DEBUG
         """
         self._run_id = run_id
@@ -67,6 +70,13 @@ class MobilitySimulation(object):
 
         self._stationary_node_name_prefix = Name("/rsu")
         self._mobile_node_to_computation = [0, 0, 0, 0, 0]  # index which mobile node issues which computation
+        if use_distribution_helper:
+            # TODO in the future support more distribution types, e.g., uniform, gaussian, etc.
+            dist_array = ZipfMandelbrotDistribution.create_zipf_mandelbrot_distribution(
+                len(self._function_names), 0.7, 0.7)
+            for i in range(0, len(mobile_nodes)):
+                self._mobile_node_to_computation[i] = ZipfMandelbrotDistribution.\
+                    get_next_zipfmandelbrot_random_number(dist_array, len(self._function_names)) - 1
 
         self._compute_rsu_connection_time()
         self._setup_simulation_network()
