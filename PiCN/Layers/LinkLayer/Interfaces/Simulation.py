@@ -7,10 +7,12 @@ import multiprocessing
 import select
 import threading
 import time
+import logging
 
 from sys import getsizeof
 from typing import Dict
 
+from PiCN.Logger import Logger
 from PiCN.Processes import PiCNProcess
 from PiCN.Layers.LinkLayer.Interfaces import BaseInterface
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder, SimpleStringEncoder
@@ -73,11 +75,12 @@ class SimulationInterface(BaseInterface):
 class SimulationBus(PiCNProcess):
     """Simulation Bus that dispatches the communication between nodes in a Simulation"""
 
-    def __init__(self, packetencoder: BasicEncoder=SimpleStringEncoder(), print_keep_alive=True):
+    def __init__(self, packetencoder: BasicEncoder=SimpleStringEncoder(), print_keep_alive=True,
+                 log_level = logging.DEBUG):
+        super().__init__("SimulationBus", log_level)
         self.interfacetable: Dict[str, SimulationInterface] = {}
         self.packetencoder = packetencoder
         self.print_keep_alive = print_keep_alive
-
 
     def start_process(self):
         self.process = multiprocessing.Process(target=self._run)
@@ -118,15 +121,18 @@ class SimulationBus(PiCNProcess):
 
             dec_packet = self.packetencoder.decode(packet)
             if self.print_keep_alive or (dec_packet.name.components[-1] == b'NFN' and dec_packet.name.components[-2] != b"KEEPALIVE"):
-                print(f"{time.time():.5f}" + "\tSending packet from\t'" + src_addr + "'\tto\t'" + dst_addr + "':\t'" +
+                self.logger.debug(f"{time.time():.5f}" + "\tSending packet from\t'" + src_addr + "'\tto\t'" + dst_addr + "':\t'" +
                       str(type(dec_packet)).replace("class ","").replace("PiCN.Packets.", "") + "\t"+
-                      str(dec_packet.name).replace("\n", " ") + "'" , end="") #TODO improve logging
+                      str(dec_packet.name).replace("\n", " ") + "'" )
+                # print(f"{time.time():.5f}" + "\tSending packet from\t'" + src_addr + "'\tto\t'" + dst_addr + "':\t'" +
+                #       str(type(dec_packet)).replace("class ","").replace("PiCN.Packets.", "") + "\t"+
+                #       str(dec_packet.name).replace("\n", " ") + "'" , file=open("output.txt", "a")) #TODO improve logging
 
             dst_interface: SimulationInterface = self.interfacetable.get(dst_addr)
 
             if dst_interface.packet_loss(packet):
                 if self.print_keep_alive or (dec_packet.name.components[-1] == b'NFN' and dec_packet.name.components[-2] != b"KEEPALIVE"):
-                    print("\t... LOST")
+                    self.logger.debug("\t... LOST")
                 return
 
             if dst_interface.max_bandwidth > 0: #TODO check and improve that
@@ -141,7 +147,7 @@ class SimulationBus(PiCNProcess):
 
             delay = dst_interface.delay(packet)
             if self.print_keep_alive or (dec_packet.name.components[-1] == b'NFN' and dec_packet.name.components[-2] != b"KEEPALIVE"):
-                print("\t(delay: " + str(delay) + ")")
+                self.logger.debug("\t(delay: " + str(delay) + ")")
             #t = threading.Timer(delay, dst_interface.send, args=[packet, src_addr, "bus"])
             #t.setDaemon(True)
             #t.start()
