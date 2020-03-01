@@ -43,9 +43,9 @@ class ZipfMandelbrotDistribution(object):
         next_index = 1
         p_sum = 0
 
-        rand = random.random()
         if seed is not None:
-            rand = random.random(seed)
+            random.seed(seed)
+        rand = random.random()
 
         while rand == 0:
             rand = random.random()
