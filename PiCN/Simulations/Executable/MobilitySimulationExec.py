@@ -36,12 +36,17 @@ def main(argv):
 
     # create a list of mobile nodes
     named_functions = {"/rsu/func/f1": "PYTHON\nf\ndef f(a, b, c):\n return a+b+c",
-                       "/rsu/func/f2": "PYTHON\nf\ndef f(a, b, c):\n return a*b*c"}
-    function_names = []
-    c1 = Name("/rsu/func/f1")
-    c1 += "_(1,2,3)"
-    c1 += "NFN"
-    function_names.append(c1)
+                       "/rsu/func/f2": "PYTHON\nf\ndef f(a, b, c):\n return a*b*c",
+                       "/rsu/func/f3": "PYTHON\nf\ndef f(a, b, c):\n return a-b-c",
+                       "/rsu/func/f4": "PYTHON\nf\ndef f(a, b, c):\n return a**b**c",
+                       "/rsu/func/f5": "PYTHON\nf\ndef f(a, b, c):\n return a/b/c"}
+    function_names = [
+        Name("/rsu/func/f1_(1,2,3)NFN"),
+        Name("/rsu/func/f2_(1,2,3)NFN"),
+        Name("/rsu/func/f3_(1,2,3)NFN"),
+        Name("/rsu/func/f4_(1,2,3)NFN"),
+        Name("/rsu/func/f5_(1,2,3)NFN")
+    ]
 
     # create instances of stationary nodes
     stationary_nodes_list = []
@@ -58,13 +63,15 @@ def main(argv):
         simulation = MobilitySimulation(run_id=args.run, mobile_nodes=mobile_nodes_list,
                                         stationary_nodes=stationary_nodes_list, stationary_node_distance=0.5,
                                         named_functions=named_functions, function_names=function_names,
-                                        forwarder="NFNForwarder", optimizer="EdgeComputingOptimizer")
+                                        forwarder="NFNForwarder", optimizer="EdgeComputingOptimizer",
+                                        use_distribution_helper=True)
 
     else:
         simulation = MobilitySimulation(run_id=args.run, mobile_nodes=mobile_nodes_list,
                                         stationary_nodes=stationary_nodes_list, stationary_node_distance=0.5,
                                         named_functions=named_functions, function_names=function_names,
-                                        forwarder="NFNForwarder", optimizer="ToDataFirstOptimizer")
+                                        forwarder="NFNForwarder", optimizer="ToDataFirstOptimizer",
+                                        use_distribution_helper=True)
 
     simulation.run()
 
