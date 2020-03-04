@@ -1,3 +1,4 @@
+from PiCN.Layers.NFNLayer.NFNExecutor.NFNPythonExecutorStreaming import NFNPythonExecutorStreaming
 from PiCN.ProgramLibs.Fetch import Fetch
 from PiCN.ProgramLibs.ICNDataRepository import ICNDataRepository
 from PiCN.ProgramLibs.NFNForwarder import NFNForwarder
@@ -9,12 +10,11 @@ from PiCN.Packets import Name
 
 simulation_bus = SimulationBus(packetencoder=NdnTlvEncoder())
 nfn_fwd0 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
-                        interfaces=[simulation_bus.add_interface("nfn0")], log_level=255,
+                        interfaces=[simulation_bus.add_interface("nfn0")], log_level=255, executors=NFNPythonExecutorStreaming(),
                         ageing_interval=1)
 
-
 nfn_fwd1 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
-                        interfaces=[simulation_bus.add_interface("nfn1")], log_level=255,
+                        interfaces=[simulation_bus.add_interface("nfn1")], log_level=255, executors=NFNPythonExecutorStreaming(),
                         ageing_interval=1)
 
 repo = ICNDataRepository("./InputFiles", Name("/repo/r1"), 0, 255, NdnTlvEncoder(), False, False, interfaces=[simulation_bus.add_interface("repo")])
@@ -36,7 +36,9 @@ mgmt_client1.add_face("repo", None, 0)
 mgmt_client1.add_forwarding_rule(Name("/repo/r1"), [0])
 
 res = fetch_tool.fetch_data(Name("/repo/r1/exampleInputFile"))
-print(res)
+print("Interest result: ", res)
+
+NFNPythonExecutorStreaming.checkStreaming(NFNPythonExecutorStreaming, res)
 
 nfn_fwd0.stop_forwarder()
 nfn_fwd1.stop_forwarder()
