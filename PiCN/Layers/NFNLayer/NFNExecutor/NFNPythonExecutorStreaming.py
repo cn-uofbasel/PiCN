@@ -12,19 +12,21 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         if not arg:
             print("String is empty")
         elif arg.startswith("sdo:"):
-            print("File for streaming")
+            print("File is for streaming")
             tmpList = arg.splitlines()
             tmpList.pop(0)
             for x in tmpList:
-                if (self.checkForName(x)):
-                    print(x + " : is a name")
-                else:
-                    print("This entry is not a name")
+                if self.checkForName(x) is False:
+                    print(x + " : is not a name")
+                # if (self.checkForName(x)):
+                #     print(x + " : is a name")
+                # else:
+                #     print("This entry is not a name")
         else:
             print("File not for streaming")
 
     def checkForName(name: str):
-        if name[0] != "/":
-            return False
-        else:
+        if name[0] == "/" and name[1:].startswith("name"):
             return True
+        else:
+            return False
