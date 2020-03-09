@@ -1,5 +1,3 @@
 [
-  "PiCN/Simulations/MapReduceSimulation.py::MapReduceSimulation::test_simple_map_reduce",
-  "PiCN/Simulations/MapReduceSimulation.py::MapReduceSimulation::test_simple_map_reduce_data_from_repo",
   "PiCN/Simulations/MapReduceSimulation.py::MapReduceSimulation::test_simple_map_reduce_data_from_repo_to_data"
 ]
