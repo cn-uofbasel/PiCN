@@ -89,8 +89,8 @@ def main(argv):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='MobilitySimulation')
     parser.add_argument('-r', '--run', type=int, default=1, help="The run number of the simulation")
-    parser.add_argument('-m', '--mobiles', type=int, default=11, help="The number of mobile nodes to consider")
-    parser.add_argument('-s', '--stations', type=int, default=5, help="The number of stationary nodes to consider")
+    parser.add_argument('-m', '--mobiles', type=int, default=5, help="The number of mobile nodes to consider")
+    parser.add_argument('-s', '--stations', type=int, default=2, help="The number of stationary nodes to consider")
     parser.add_argument('-l', '--logging', choices=['debug', 'info', 'warning', 'error', 'none'], type=str,
                         default='info', help='Logging Level (default: info)')
     parser.add_argument('-e', '--optimizer', choices=['ToDataFirst', 'Edge'], type=str, default="ToDataFirst",
