@@ -69,7 +69,7 @@ class MobilitySimulation(object):
         self._simulation_bus = SimulationBus(packetencoder=SimpleStringEncoder())
 
         self._stationary_node_name_prefix = Name("/rsu")
-        self._mobile_node_to_computation = [0, 0, 0, 0, 0]  # index which mobile node issues which computation
+        self._mobile_node_to_computation = [0] * len(mobile_nodes)  # index which mobile node issues which computation
         if use_distribution_helper:
             # TODO in the future support more distribution types, e.g., uniform, gaussian, etc.
             dist_array = ZipfMandelbrotDistribution.create_zipf_mandelbrot_distribution(
