@@ -210,6 +210,7 @@ class MobilitySimulation(object):
             return
 
         connected_rsu = self.connected_rsu[mobile_node_number]
+
         self._mobile_nodes[mobile_node_number].forwarder.icnlayer.fib.remove_fib_entry(self._stationary_node_name_prefix)
         self._mobile_nodes[mobile_node_number].forwarder.icnlayer.fib.add_fib_entry(self._stationary_node_name_prefix,
                                                                    [self.to_rsu_faces[new_rsu_number][mobile_node_number]])
@@ -221,8 +222,8 @@ class MobilitySimulation(object):
 
         self._stationary_nodes[new_rsu_number].nfn_forwarder.icnlayer.fib.add_fib_entry(
             Name(f"/car/car{mobile_node_number}"), [self.to_car_faces[new_rsu_number][mobile_node_number]])
-        self.connected_rsu[mobile_node_number] = self.connected_rsu[connected_rsu] + \
-                                                 self._heading_directions[connected_rsu]
+        self.connected_rsu[mobile_node_number] = connected_rsu + \
+                                                 self._heading_directions[mobile_node_number]
 
         self._car_send_interest(self._mobile_nodes[mobile_node_number],
                                 self._function_names[self._mobile_node_to_computation[mobile_node_number]])
