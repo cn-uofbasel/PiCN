@@ -10,6 +10,9 @@ class PiCNSyncDataStructFactory(object):
         self.names = []
         pass
 
+    def __del__(self):
+        del self.manager
+
     def register(self, name: str, data_struct):
         """register a new data_struct to the manager
         :param name: name of the datastruct under which it should be callable
@@ -32,4 +35,3 @@ class PiCNSyncDataStructFactory(object):
         if self.manager is None:
             self.create_manager()
         return self.manager
-
