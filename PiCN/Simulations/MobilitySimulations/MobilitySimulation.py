@@ -76,7 +76,8 @@ class MobilitySimulation(object):
                 len(self._function_names), 0.7, 0.7)
             for i in range(0, len(mobile_nodes)):
                 self._mobile_node_to_computation[i] = ZipfMandelbrotDistribution.\
-                    get_next_zipfmandelbrot_random_number(dist_array, len(self._function_names), run_id) - 1
+                    get_next_zipfmandelbrot_random_number(dist_array, len(self._function_names)) - 1
+                    # get_next_zipfmandelbrot_random_number(dist_array, len(self._function_names), run_id) - 1
 
         self._compute_rsu_connection_time()
         self._setup_simulation_network()

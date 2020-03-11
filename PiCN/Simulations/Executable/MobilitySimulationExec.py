@@ -13,7 +13,6 @@ from PiCN.Simulations.MobilitySimulations.MobilitySimulation import MobilitySimu
 
 
 def main(argv):
-
     # Log Level
     if args.logging == 'error':
         log_level = logging.ERROR
@@ -41,13 +40,15 @@ def main(argv):
                        "/rsu/func/f2": "PYTHON\nf\ndef f(a, b, c):\n return a*b*c",
                        "/rsu/func/f3": "PYTHON\nf\ndef f(a, b, c):\n return a-b-c",
                        "/rsu/func/f4": "PYTHON\nf\ndef f(a, b, c):\n return a**b**c",
-                       "/rsu/func/f5": "PYTHON\nf\ndef f(a, b, c):\n return a/b/c"}
+                       "/rsu/func/f5": "PYTHON\nf\ndef f(a, b, c):\n return a/b/c"
+                       }
+
     function_names = [
-        Name("/rsu/func/f1_(1,2,3)NFN"),
-        Name("/rsu/func/f2_(1,2,3)NFN"),
-        Name("/rsu/func/f3_(1,2,3)NFN"),
-        Name("/rsu/func/f4_(1,2,3)NFN"),
-        Name("/rsu/func/f5_(1,2,3)NFN")
+        Name("/rsu/func/f1/_(1,2,3)/NFN"),
+        Name("/rsu/func/f2/_(1,2,3)/NFN"),
+        Name("/rsu/func/f3/_(1,2,3)/NFN"),
+        Name("/rsu/func/f4/_(1,2,3)/NFN"),
+        Name("/rsu/func/f5/_(1,2,3)/NFN")
     ]
 
     # create instances of stationary nodes
@@ -90,7 +91,9 @@ if __name__ == "__main__":
     parser.add_argument('-r', '--run', type=int, default=1, help="The run number of the simulation")
     parser.add_argument('-m', '--mobiles', type=int, default=5, help="The number of mobile nodes to consider")
     parser.add_argument('-s', '--stations', type=int, default=2, help="The number of stationary nodes to consider")
-    parser.add_argument('-l', '--logging', choices=['debug', 'info', 'warning', 'error', 'none'], type=str, default='info', help='Logging Level (default: info)')
-    parser.add_argument('-e', '--optimizer', choices=['ToDataFirst', 'Edge'], type=str, default="ToDataFirst", help="Choose the NFN Optimizer")
+    parser.add_argument('-l', '--logging', choices=['debug', 'info', 'warning', 'error', 'none'], type=str,
+                        default='info', help='Logging Level (default: info)')
+    parser.add_argument('-e', '--optimizer', choices=['ToDataFirst', 'Edge'], type=str, default="ToDataFirst",
+                        help="Choose the NFN Optimizer")
     args = parser.parse_args()
     main(args)
