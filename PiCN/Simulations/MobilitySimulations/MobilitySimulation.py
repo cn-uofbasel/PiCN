@@ -276,7 +276,8 @@ class MobilitySimulation(object):
             for i in range(0, len(self._mobile_nodes)):
 
                 if time_ns - self.connection_time[i] > self._contact_time[i]:
-                    print(f"{time.time():.5f} -- " + "Car", i, "reconnects from", self.connected_rsu[i], "to", self.connected_rsu[i] + self._heading_directions[i])
+                    #print(f"{time.time():.5f} -- " + "Car", i, "reconnects from", self.connected_rsu[i], "to", self.connected_rsu[i] + self._heading_directions[i])
+                    self.logger.info("Car " +  str(i) + " reconnects from " +  str(self.connected_rsu[i]) +  " to " + str(self.connected_rsu[i] + self._heading_directions[i]))
                     new_rsu_number = self.connected_rsu[i] + self._heading_directions[i]
                     self.reconnect_car(i, new_rsu_number)
                     self.connection_time[i] = time.time_ns()
