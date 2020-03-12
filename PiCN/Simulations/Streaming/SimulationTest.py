@@ -7,17 +7,27 @@ from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from PiCN.Mgmt import MgmtClient
 from PiCN.Packets import Name
 
+def addNamesToFile(fileName: str, numberOfLines: int):
+    with open(fileName, "w") as f:
+        f.write('sdo:\n')
+        for i in range(1, numberOfLines + 1):
+            f.write('/name' + str(i) + '\n')
+    # with open("./Inputfiles/exampleInputFile", "r") as f:
+    #     lines = f.readlines()
+    # print(lines)
+
+addNamesToFile("./Inputfiles/exampleInputFile", 10)
 
 simulation_bus = SimulationBus(packetencoder=NdnTlvEncoder())
 nfn_fwd0 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
-                        interfaces=[simulation_bus.add_interface("nfn0")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming(nfn_fwd0.nfnlayer.queue_to_lower, nfn_fwd0.nfnlayer.queue_from_lower)},
+                        interfaces=[simulation_bus.add_interface("nfn0")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
                         ageing_interval=1)
-
-#Input for NFNPythonExecutorStreaming: nfn_fwd0.nfnlayer.queue_from_lower
+nfn_fwd0.executors["PYTHONSTREAM"].setQueues(nfn_fwd0.nfnlayer.queue_to_lower, nfn_fwd0.nfnlayer.queue_from_lower)
 
 nfn_fwd1 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
                         interfaces=[simulation_bus.add_interface("nfn1")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
                         ageing_interval=1)
+nfn_fwd0.executors["PYTHONSTREAM"].setQueues(nfn_fwd1.nfnlayer.queue_to_lower, nfn_fwd1.nfnlayer.queue_from_lower)
 
 repo = ICNDataRepository("./InputFiles", Name("/repo/r1"), 0, 255, NdnTlvEncoder(), False, False, interfaces=[simulation_bus.add_interface("repo")])
 repo.start_repo()
@@ -38,15 +48,22 @@ mgmt_client1.add_face("repo", None, 0)
 mgmt_client1.add_forwarding_rule(Name("/repo/r1"), [0])
 
 mgmt_client1.add_new_content(Name("/lib/checkStreamFunc"),"PYTHONSTREAM\ncheckStreamFunc\ndef checkStreamFunc(content):\n    res = checkStreaming(content)\n    return res")
+mgmt_client1.add_new_content(Name("/lib/getNext"),"PYTHONSTREAM\ngetNext\ndef getNext(arg, amount):\n    return getNext(arg, amount)")
 
-name = Name("/lib/checkStreamFunc")
-name += '_(/repo/r1/exampleInputFile)'
-name += "NFN"
+checkStreamFuncTest = Name("/lib/checkStreamFunc")
+checkStreamFuncTest += '_(/repo/r1/exampleInputFile)'
+checkStreamFuncTest += "NFN"
 
-# res = fetch_tool.fetch_data(Name("/repo/r1/exampleInputFile"))
-res = fetch_tool.fetch_data(name)
-print("Interest result: ", res)
+getNextTest = Name("/lib/getNext")
+getNextTest += '_(/repo/r1/exampleInputFile,3)'
+getNextTest += "NFN"
 
+# = fetch_tool.fetch_data(Name("/repo/r1/exampleInputFile"))
+# print("The actual file:\n", file)
+res1 = fetch_tool.fetch_data(checkStreamFuncTest)
+print("Interest result: ", res1)
+res2 = fetch_tool.fetch_data(getNextTest)
+print("Interest result: ", res2)
 # NFNPythonExecutorStreaming.checkStreaming(NFNPythonExecutorStreaming, res)
 
 nfn_fwd0.stop_forwarder()
