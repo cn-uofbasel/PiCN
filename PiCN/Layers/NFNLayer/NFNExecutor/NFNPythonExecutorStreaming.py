@@ -13,11 +13,11 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         self._sandbox["checkStreaming"] = self.checkStreaming
         self._sandbox["getNext"] = self.getNext
         self._sandbox["print"] = print
-        self.nameList = []
-        self.posNameList = None
-        self.queue_to_lower = None
-        self.queue_from_lower = None
-        self.computation_table = None
+        self.nameList : list = None
+        self.posNameList : int = None
+        self.queue_to_lower : multiprocessing.Queue = None
+        self.queue_from_lower : multiprocessing.Queue = None
+        self.computation_table : NFNComputationList = None
         #self.computation_table = NFNComputationList
         #print (self._sandbox)
 
