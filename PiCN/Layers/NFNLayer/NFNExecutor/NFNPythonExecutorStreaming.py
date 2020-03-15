@@ -34,11 +34,13 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         print(self.nameList)
         self.posNameList = amount
         for i in range (0, self.posNameList):
-            print("test: ", self.computation_table.get_container())
+            interest = toCompute.pop(i)
+            print("Computation table: ", self.computation_table.get_container())
             for computation_table_entry in self.computation_table.get_container():
-                print("Entry: ", computation_table_entry)
-            #self.queue_to_lower.put((self.computation_table, toCompute.pop(i)))
-            #self.queue_to_lower.put(toCompute.pop(i))
+                print("Entry(id, interest): ", computation_table_entry.id, " ", computation_table_entry.interest)
+                if computation_table_entry.interest == interest:
+                    packetID = computation_table_entry.id
+            # self.queue_to_lower.put((packetID, interest))
         return 0
 
     # Checks if file is for streaming and lines start with a '/'
