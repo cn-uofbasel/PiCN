@@ -2,6 +2,7 @@
 
 import multiprocessing
 
+from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationList
 from PiCN.Layers.NFNLayer.NFNExecutor import NFNPythonExecutor
 
 class NFNPythonExecutorStreaming(NFNPythonExecutor):
@@ -13,26 +14,31 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         self._sandbox["getNext"] = self.getNext
         self._sandbox["print"] = print
         self.nameList = []
-        self.posNameList = 0
-        self.queue_to_lower = multiprocessing.Queue
-        self.queue_from_lower = multiprocessing.Queue
+        self.posNameList = None
+        self.queue_to_lower = None
+        self.queue_from_lower = None
+        self.computation_table = None
+        #self.computation_table = NFNComputationList
         #print (self._sandbox)
 
     # Setter function to set both queues after the forwarders being initialized
-    def setQueues(self, queue_to_lower: multiprocessing.Queue, queue_from_lower: multiprocessing.Queue):
+    def initializeExecutor(self, queue_to_lower: multiprocessing.Queue, queue_from_lower: multiprocessing.Queue, comp_table: NFNComputationList):
         self.queue_to_lower = queue_to_lower
         self.queue_from_lower = queue_from_lower
-        #print(self.queue_to_lower)
+        self.computation_table = comp_table
 
     def getNext(self, arg: str, amount: int):
         self.nameList = arg.splitlines()
         self.nameList.pop(0)
-        toDo = self.nameList.copy()
+        toCompute = self.nameList.copy()
         print(self.nameList)
         self.posNameList = amount
         for i in range (0, self.posNameList):
-            self.queue_to_lower.put(toDo.pop(i))
-            print(self.queue_from_lower.get())
+            print("test: ", self.computation_table.get_container())
+            for computation_table_entry in self.computation_table.get_container():
+                print("Entry: ", computation_table_entry)
+            #self.queue_to_lower.put((self.computation_table, toCompute.pop(i)))
+            #self.queue_to_lower.put(toCompute.pop(i))
         return 0
 
     # Checks if file is for streaming and lines start with a '/'
