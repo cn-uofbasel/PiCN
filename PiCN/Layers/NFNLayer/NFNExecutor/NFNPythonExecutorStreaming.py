@@ -5,41 +5,40 @@ import multiprocessing
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationList
 from PiCN.Layers.NFNLayer.NFNExecutor import NFNPythonExecutor
 
+
 class NFNPythonExecutorStreaming(NFNPythonExecutor):
 
-    def __init__(self):#, queue_to_lower, queue_from_lower):
+    def __init__(self):  # , queue_to_lower, queue_from_lower):
         self._language = "PYTHONSTREAM"
         self._sandbox = NFNPythonExecutor()._init_sandbox()
         self._sandbox["checkStreaming"] = self.checkStreaming
         self._sandbox["getNext"] = self.getNext
         self._sandbox["print"] = print
-        self.nameList : list = None
-        self.posNameList : int = None
-        self.queue_to_lower : multiprocessing.Queue = None
-        self.queue_from_lower : multiprocessing.Queue = None
-        self.computation_table : NFNComputationList = None
-        #self.computation_table = NFNComputationList
-        #print (self._sandbox)
+        self.nameList: list = None
+        self.posNameList: int = None
+        self.queue_to_lower: multiprocessing.Queue = None
+        self.queue_from_lower: multiprocessing.Queue = None
+        self.computation_table: NFNComputationList = None
+        self.packetID : int = None
+        # self.computation_table = NFNComputationList
+        # print (self._sandbox)
 
     # Setter function to set both queues after the forwarders being initialized
-    def initializeExecutor(self, queue_to_lower: multiprocessing.Queue, queue_from_lower: multiprocessing.Queue, comp_table: NFNComputationList):
+    def initializeExecutor(self, queue_to_lower: multiprocessing.Queue, queue_from_lower: multiprocessing.Queue,
+                           comp_table: NFNComputationList):
         self.queue_to_lower = queue_to_lower
         self.queue_from_lower = queue_from_lower
         self.computation_table = comp_table
 
     def getNext(self, arg: str, amount: int):
+        print("Check packetID: ", self.packetID)
         self.nameList = arg.splitlines()
         self.nameList.pop(0)
         toCompute = self.nameList.copy()
-        print(self.nameList)
+        # print(toCompute)
         self.posNameList = amount
-        for i in range (0, self.posNameList):
+        for i in range(0, self.posNameList):
             interest = toCompute.pop(i)
-            print("Computation table: ", self.computation_table.get_container())
-            for computation_table_entry in self.computation_table.get_container():
-                print("Entry(id, interest): ", computation_table_entry.id, " ", computation_table_entry.interest)
-                if computation_table_entry.interest == interest:
-                    packetID = computation_table_entry.id
             # self.queue_to_lower.put((packetID, interest))
         return 0
 
