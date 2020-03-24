@@ -7,16 +7,31 @@ from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from PiCN.Mgmt import MgmtClient
 from PiCN.Packets import Name
 
-def addNamesToFile(fileName: str, numberOfLines: int):
-    with open(fileName, "w") as f:
-        f.write('sdo:\n')
-        for i in range(1, numberOfLines + 1):
-            f.write('/name' + str(i) + '\n')
-    # with open("./Inputfiles/exampleInputFile", "r") as f:
-    #     lines = f.readlines()
-    # print(lines)
+def pathDetection(fileName:str):
+    pathList = fileName.split("/")
+    path = ""
+    for j in range(0, len(pathList) - 1):
+        if j is 0:
+            path = path + pathList[j]
+        else:
+            path = path + "/" + pathList[j]
+    return path + "/"
 
-addNamesToFile("./Inputfiles/exampleInputFile", 10)
+def generateNameFiles(path: str, number:int):
+    with open(path + "name" + str(number), "w") as f:
+        f.write("Inhalt von name" + str(number) + ".")
+    f.close()
+
+def generateExampleFiles(fileName: str, numberOfLines: int):
+    path = pathDetection(fileName)
+    with open(fileName, "w") as f:
+        f.write("sdo:\n")
+        for i in range(1, numberOfLines + 1):
+            f.write("/name" + str(i) + "\n")
+            generateNameFiles(path, i)
+    f.close()
+
+generateExampleFiles("./Inputfiles/exampleInputFile", 10)
 
 simulation_bus = SimulationBus(packetencoder=NdnTlvEncoder())
 nfn_fwd0 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
@@ -57,7 +72,7 @@ checkStreamFuncTest += '_(/repo/r1/exampleInputFile)'
 checkStreamFuncTest += "NFN"
 
 getNextTest = Name("/lib/getNext")
-getNextTest += '_(/repo/r1/exampleInputFile,1)'
+getNextTest += '_(/repo/r1/exampleInputFile,2)'
 getNextTest += "NFN"
 
 # = fetch_tool.fetch_data(Name("/repo/r1/exampleInputFile"))
