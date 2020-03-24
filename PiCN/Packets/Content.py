@@ -19,9 +19,17 @@ class Content(Packet):
         if content == None:
             self.content = b""
 
+    # This shoudn't be necessary: content() should work
+    def get_content(self):
+        try:
+            return self._content.decode()
+        except:
+            return "".join(" 0x%02x" % x for x in self._content)[1:]
+
     @property
     def content(self) -> str:
         if self._content == None:
+            print("Check.")
             return None
         try:
             return self._content.decode()
@@ -37,6 +45,7 @@ class Content(Packet):
             content = content.encode()
         assert (type(content) in [bytes, bytearray]), "MUST be raw bytes"
         self._content = content
+
 
     def __eq__(self, other):
         if type(other) is not Content:

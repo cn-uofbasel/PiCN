@@ -2,8 +2,10 @@
 
 import multiprocessing
 
+
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationList
 from PiCN.Layers.NFNLayer.NFNExecutor import NFNPythonExecutor
+from PiCN.Packets import Interest, Content
 
 
 class NFNPythonExecutorStreaming(NFNPythonExecutor):
@@ -36,11 +38,12 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         self.nameList.pop(0)
         self.posNameList = amount
         for i in range(0, self.posNameList):
-            interest = self.nameList[i]
+            interest = Interest("/repo/r1" + self.nameList[i])
             self.queue_to_lower.put((self.packetID, interest))
-            print("Put interest: ", interest, " with packetID: ", self.packetID, " successfully in the queue_to_lower.")
-            # print("Last interest put into the queue: ", self.queue_to_lower.get(True))
-        return 0
+            #print("Put interest: ", interest, " with packetID: ", self.packetID, " successfully in the queue_to_lower.")
+        result = self.queue_from_lower.get()[1].get_content()
+        print("Result arrived: ", result)
+        return result
 
     # Checks if file is for streaming and lines start with a '/'
     def checkStreaming(self, arg: str):

@@ -44,8 +44,10 @@ simulation_bus.start_process()
 
 mgmt_client0.add_face("nfn1", None, 0)
 mgmt_client0.add_forwarding_rule(Name("/repo/r1"), [0])
+#mgmt_client0.add_forwarding_rule(Name("/name1"), [0])
 mgmt_client1.add_face("repo", None, 0)
 mgmt_client1.add_forwarding_rule(Name("/repo/r1"), [0])
+#mgmt_client1.add_forwarding_rule(Name("/name1"), [0])
 
 mgmt_client1.add_new_content(Name("/lib/checkStreamFunc"),"PYTHONSTREAM\ncheckStreamFunc\ndef checkStreamFunc(content):\n    res = checkStreaming(content)\n    return res")
 mgmt_client1.add_new_content(Name("/lib/getNext"),"PYTHONSTREAM\ngetNext\ndef getNext(arg, amount):\n    return getNext(arg, amount)")
@@ -55,13 +57,13 @@ checkStreamFuncTest += '_(/repo/r1/exampleInputFile)'
 checkStreamFuncTest += "NFN"
 
 getNextTest = Name("/lib/getNext")
-getNextTest += '_(/repo/r1/exampleInputFile,3)'
+getNextTest += '_(/repo/r1/exampleInputFile,1)'
 getNextTest += "NFN"
 
 # = fetch_tool.fetch_data(Name("/repo/r1/exampleInputFile"))
 # print("The actual file:\n", file)
-res1 = fetch_tool.fetch_data(checkStreamFuncTest)
-print("Interest result: ", res1)
+# res1 = fetch_tool.fetch_data(checkStreamFuncTest)
+# print("Interest result: ", res1)
 res2 = fetch_tool.fetch_data(getNextTest)
 print("Interest result: ", res2)
 # NFNPythonExecutorStreaming.checkStreaming(NFNPythonExecutorStreaming, res)
