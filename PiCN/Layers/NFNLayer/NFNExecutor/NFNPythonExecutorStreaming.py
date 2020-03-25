@@ -33,16 +33,17 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         self.computation_table = comp_table
 
     def getNext(self, arg: str, amount: int):
-        #print("Check packetID: ", self.packetID)
+        self.checkStreaming(arg)
         self.nameList = arg.splitlines()
         self.nameList.pop(0)
-        self.posNameList = amount
-        for i in range(0, self.posNameList):
+        self.posNameList = 0
+        for i in range(0, amount):
             interest = Interest("/repo/r1" + self.nameList[i])
             self.queue_to_lower.put((self.packetID, interest))
+            self.posNameList += 1
             #print("Put interest: ", interest, " with packetID: ", self.packetID, " successfully in the queue_to_lower.")
-        result = self.queue_from_lower.get()[1].get_content()
-        print("Result arrived: ", result)
+        result = self.queue_from_lower.get()[1].content
+        print("Result arrived: ", self.posNameList, result)
         return result
 
     # Checks if file is for streaming and lines start with a '/'

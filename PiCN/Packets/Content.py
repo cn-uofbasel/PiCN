@@ -19,13 +19,6 @@ class Content(Packet):
         if content == None:
             self.content = b""
 
-    # This shoudn't be necessary: content() should work
-    def get_content(self):
-        try:
-            return self._content.decode()
-        except:
-            return "".join(" 0x%02x" % x for x in self._content)[1:]
-
     @property
     def content(self) -> str:
         if self._content == None:
