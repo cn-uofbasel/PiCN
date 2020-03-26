@@ -19,7 +19,7 @@ def pathDetection(fileName:str):
 
 def generateNameFiles(path: str, number:int):
     with open(path + "name" + str(number), "w") as f:
-        f.write("Inhalt von name" + str(number) + ".")
+        f.write("Inhalt von name" + str(number) + ". ")
     f.close()
 
 def generateExampleFiles(fileName: str, numberOfLines: int):
@@ -27,7 +27,7 @@ def generateExampleFiles(fileName: str, numberOfLines: int):
     with open(fileName, "w") as f:
         f.write("sdo:\n")
         for i in range(1, numberOfLines + 1):
-            f.write("/name" + str(i) + "\n")
+            f.write("/repo/r1/name" + str(i) + "\n")
             generateNameFiles(path, i)
     f.close()
 
@@ -66,14 +66,14 @@ mgmt_client1.add_face("repo", None, 0)
 mgmt_client1.add_forwarding_rule(Name("/repo/r1"), [0])
 
 mgmt_client1.add_new_content(Name("/lib/checkStreamFunc"),"PYTHONSTREAM\ncheckStreamFunc\ndef checkStreamFunc(content):\n    res = checkStreaming(content)\n    return res")
-mgmt_client1.add_new_content(Name("/lib/getNext"),"PYTHONSTREAM\ngetNext\ndef getNext(arg, amount):\n    return getNext(arg, amount)")
+mgmt_client1.add_new_content(Name("/lib/getNext"),"PYTHONSTREAM\ngetNext\ndef getNext(arg, amount):\n    a = getNext(arg, amount)\n    b = getNext(arg, amount)\n    c = getNext(arg, amount)\n    d = getNext(arg, amount)\n    return a + b + c + d")
 
 checkStreamFuncTest = Name("/lib/checkStreamFunc")
 checkStreamFuncTest += '_(/repo/r1/exampleInputFile)'
 checkStreamFuncTest += "NFN"
 
 getNextTest = Name("/lib/getNext")
-getNextTest += '_(/repo/r1/exampleInputFile,2)'
+getNextTest += '_(/repo/r1/exampleInputFile,4)'
 getNextTest += "NFN"
 
 # file = fetch_tool.fetch_data(Name("/repo/r1/exampleInputFile"))
