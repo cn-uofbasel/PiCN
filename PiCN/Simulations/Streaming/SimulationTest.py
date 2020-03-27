@@ -38,12 +38,12 @@ simulation_bus = SimulationBus(packetencoder=NdnTlvEncoder())
 nfn_fwd0 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
                         interfaces=[simulation_bus.add_interface("nfn0")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
                         ageing_interval=1)
-nfn_fwd0.executors["PYTHONSTREAM"].initializeExecutor(nfn_fwd0.nfnlayer.queue_to_lower, nfn_fwd0.nfnlayer.queue_from_lower, nfn_fwd0.nfnlayer.computation_table)
+nfn_fwd0.executors["PYTHONSTREAM"].initializeExecutor(nfn_fwd0.nfnlayer.queue_to_lower, nfn_fwd0.nfnlayer.queue_from_lower, nfn_fwd0.nfnlayer.computation_table, nfn_fwd0.nfnlayer.cs)
 
 nfn_fwd1 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
                         interfaces=[simulation_bus.add_interface("nfn1")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
                         ageing_interval=1)
-nfn_fwd1.executors["PYTHONSTREAM"].initializeExecutor(nfn_fwd1.nfnlayer.queue_to_lower, nfn_fwd1.nfnlayer.queue_from_lower, nfn_fwd1.nfnlayer.computation_table)
+nfn_fwd1.executors["PYTHONSTREAM"].initializeExecutor(nfn_fwd1.nfnlayer.queue_to_lower, nfn_fwd1.nfnlayer.queue_from_lower, nfn_fwd1.nfnlayer.computation_table, nfn_fwd1.nfnlayer.cs)
 
 
 repo = ICNDataRepository("./InputFiles", Name("/repo/r1"), 0, 255, NdnTlvEncoder(), False, False, interfaces=[simulation_bus.add_interface("repo")])
