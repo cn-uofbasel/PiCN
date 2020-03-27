@@ -13,7 +13,8 @@ class NFNPythonExecutor(BaseNFNExecutor):
         self._language = "PYTHON"
         self._sandbox = self._init_sandbox()
 
-    def execute(self, function_code: str, params: List):
+    def execute(self, function_code: str, params: List, packetid: int):
+        self.packetID = packetid
         try:
             entry_function_name, program_code = self._get_entry_function_name(function_code)
             if entry_function_name is None or program_code is None:
