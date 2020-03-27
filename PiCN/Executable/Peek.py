@@ -43,14 +43,26 @@ def main(args):
 
     # Print
     if args.plain is False:
-        print("<<<<<<<<<<<<<<<<<<<<<< peek not decode data")
+
 
         printer = NdnTlvPrinter(wire_packet)
         printer.formatted_print()
+        """
+        for demo
+        try:
+            os.makedirs("~PiCN/demo/")
+        except FileExistsError:
+            # directory already exists, do nothing
+            pass
+        f = open("~PiCN/demo/" + 'contetntobject.corrupted', 'w+b')
+        f.write(wire_packet)
+        print("content object saved to " + "~PiCN/demo/" + 'contetntobject.corrupted')
+        f.close()
+        """
     else:
         encoder = NdnTlvEncoder(file_location=key_location)
         if encoder.is_content(wire_packet):
-            print("<<<<<<<<<<<<<<<<<<<<<< peek decodes data")
+
 
             #print(os.listdir(output_location))
             """

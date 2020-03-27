@@ -83,10 +83,10 @@ def main(args):
     print("Done.")
 
     key_tlv = encode_key(args.keylocation ,Name(args.name), public_key)
-
+    """
     printer = NdnTlvPrinter(key_tlv)
     printer.formatted_print()
-
+    """
 
 def encode_key(keylocation, name: Name, pubkey, ca_signature=bytearray(128),ca_key=bytearray(128)):
     encoder = TlvEncoder()

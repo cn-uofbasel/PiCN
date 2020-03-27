@@ -9,26 +9,56 @@ from PiCNExternal.pyndn.encoding.tlv.tlv.tlv_decoder import TlvDecoder
 from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from PiCN.Packets import Packet, Content, Interest, Nack, NackReason, Name, UnknownPacket, Signature, SignatureType
 from Crypto.PublicKey import RSA
+import time
 
 def main(args):
-    content_obj_location = correct_path_input(args.content_obj_location)
+    #content_obj_location = correct_path_input(args.content_obj_location)
 
-    f = open(content_obj_location+"content_object", 'rb')
+    #f = open(content_obj_location+"content_object", 'rb')
+
+    f = open(args.content_obj_location, 'rb')
     wire_data = f.read()
 
-    encoder = NdnTlvEncoder()
-    (name, payload, signature)=encoder.decode_data(wire_data)
 
-    verify_signature(name,payload,signature,wire_data,args)
 
-    """
+
     encoder = TlvEncoder()
-    encoder.writeBlobTlv(Tlv.InputProviniance, wire_data)
+    #encoder.writeBlobTlv(Tlv.InputProviniance, wire_data)
+    encoder.writeBuffer(wire_data)
     a = encoder.getOutput().tobytes()
     printer = NdnTlvPrinter(a)
     printer.formatted_print()
-    """
+    time.sleep(0.7)
 
+
+
+    #encoder = NdnTlvEncoder()
+    (name, payload, signature) = decode_data(wire_data)
+
+    #print(payload)
+    #print(type(payload))
+
+    verify_signature(name, payload, signature, wire_data, args)
+
+def decode_data(input: bytearray) -> ([bytearray], bytearray):
+        """
+        Decodes a data packet
+        :param input: Data packet in NDN-TLV wire format
+        :return: Name and payload
+        """
+        ndntlvencoder = NdnTlvEncoder()
+        decoder = TlvDecoder(input)
+        decoder.readNestedTlvsStart(Tlv.Data)
+
+        name = ndntlvencoder.decode_name(decoder)
+        meta_info=ndntlvencoder.decode_meta_info(decoder)
+
+        payload = decoder.readBlobTlv(Tlv.Content).tobytes()
+        #before payload
+        signature=ndntlvencoder.decode_signature(decoder)
+        #signature_is_correct=self.verify_signature(name,meta_info,payload,signature)
+        #return (name, payload, signature)
+        return (name, payload,signature )
 
 def verify_signature(name: Name,  payload, signature_in: Signature,wire_data,args):
     """
@@ -49,9 +79,14 @@ def verify_signature(name: Name,  payload, signature_in: Signature,wire_data,arg
         pass
     else:
         print("key not ok")
-
+    if payload is b'3':
+        print("Provenance Record is correct")
+        return True
+    elif payload is b'7':
+        print("ERROR: Input Provenace is not correct")
+        return False
     #if (signature_calculated.identityProof != signature_in.identityProof):
-    if(not verify(signature_calculated.identityProof,signature_in.identityProof,public_key)):
+    elif(not verify(signature_calculated.identityProof,signature_in.identityProof,public_key)):
         print("IDENTITY PROOF IS NOT CORRECT!")
         return False
     if (signature_calculated.outputSignature != signature_in.outputSignature):
@@ -70,8 +105,6 @@ def verify(test_content, sig, pub_key):
     :param pub_key: public key from Crypto
     :return: (bool)
     """
-    print(test_content)
-    print(sig)
 
     key = RSA.importKey(pub_key)
     if type(sig) is "<class 'bytes'>":

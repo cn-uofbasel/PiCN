@@ -7,11 +7,16 @@ from PiCN.Layers.NFNLayer.NFNExecutor import BaseNFNExecutor
 
 class NFNPythonExecutor(BaseNFNExecutor):
 
-    def __init__(self):
+    def __init__(self, corrupted=False):
         self._language = "PYTHON"
         self._sandbox = self._init_sandbox()
+        self._corrupted=corrupted
 
     def execute(self, function_code: str, params: List):
+        if self._corrupted:
+            #print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n\nis corrupted\n\n")
+            return 7
+
         try:
             entry_function_name, program_code = self._get_entry_function_name(function_code)
             if entry_function_name is None or program_code is None:
@@ -33,6 +38,9 @@ class NFNPythonExecutor(BaseNFNExecutor):
                 if lf[1] is None:
                     continue
                 self._sandbox[lf[0]] = lf[1]
+            #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
             return entry_point(*params)
         except:
             #raise

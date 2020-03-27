@@ -57,7 +57,7 @@ def main(argv):
         forwarder = PiCN.ProgramLibs.NFNForwarder.NFNForwarder(args.port, log_level, encoder, use_thunks=True)
         logger.info("Using Thunks for Planning and Optimizing")
     else:
-        forwarder = PiCN.ProgramLibs.NFNForwarder.NFNForwarder(args.port, log_level, encoder)
+        forwarder = PiCN.ProgramLibs.NFNForwarder.NFNForwarder(args.port, log_level, encoder, corrupted=args.corrupted)
 
     forwarder.start_forwarder()
 
@@ -73,6 +73,8 @@ if __name__ == "__main__":
     parser.add_argument('-e', '--optimizer', choices=['ToDataFirst', 'Edge', 'MapReduce', 'Thunks'], type=str, default="ToDataFirst", help="Choose the NFN Optimizer")
     parser.add_argument('-k', '--keylocation', type=str, help="Location of the key files (default: ~PiCN/identity/)",
                         default="~/PiCN/identity/")
+    parser.add_argument('-c','--corrupted', choices=[False, True], type=bool,
+                        default=False, help='default is: "False"')
 
     args = parser.parse_args()
     main(args)

@@ -36,7 +36,7 @@ class NFNForwarder(object):
     """NFN Forwarder for PICN"""
     # TODO add chunking layer
     def __init__(self, port=9000, log_level=255, encoder: BasicEncoder=None, interfaces: List[BaseInterface]=None,
-                 executors: BaseNFNExecutor = None, ageing_interval: int = 3, use_thunks=False):
+                 executors: BaseNFNExecutor = None, ageing_interval: int = 3, use_thunks=False, corrupted=False):
         # debug level
         logger = Logger("NFNForwarder", log_level)
         logger.info("Start PiCN NFN Forwarder on port " + str(port))
@@ -92,8 +92,9 @@ class NFNForwarder(object):
 
         # setup nfn
         self.icnlayer._interest_to_app = True
+        #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         if executors is None:
-            self.executors = {"PYTHON": NFNPythonExecutor()}
+            self.executors = {"PYTHON": NFNPythonExecutor(corrupted)}
         else:
             self.executors = executors
         self.r2cclient = TimeoutR2CHandler()

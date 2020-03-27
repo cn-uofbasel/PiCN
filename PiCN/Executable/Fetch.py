@@ -29,9 +29,18 @@ def main(args):
     fetchTool = Fetch(args.ip, args.port, encoder=encoder, autoconfig=args.autoconfig)
 
     content = fetchTool.fetch_data(name, timeout=10)
+
+
     print(content)
 
     fetchTool.stop_fetch()
+
+    #print(type(content))
+    if content is '7':
+        print("content object saved to " + "~PiCN/demo/" + 'contetntobject.corrupted')
+    if content is '3':
+        print("content object saved to " + "~PiCN/demo/" + 'contetntobject')
+
 
 def unescape_name(name: Name):
     r = []
@@ -93,6 +102,8 @@ if __name__ == "__main__":
                         help="UDP port of forwarder")
     parser.add_argument('name', type=str,
                         help="ICN name of content to fetch")
+    parser.add_argument('-s', '--filelocation' , type=str, default='~PICN/save')
     args = parser.parse_args()
+
 
     main(args)

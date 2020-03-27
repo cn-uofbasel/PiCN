@@ -15,6 +15,9 @@ from Crypto.PublicKey import RSA
 from Crypto import Random
 import ast
 
+import string
+import random
+
 from PiCN.Layers.PacketEncodingLayer.Printer.NdnTlvPrinter import NdnTlvPrinter
 
 
@@ -120,6 +123,7 @@ class NdnTlvEncoder(BasicEncoder):
             self.logger.info("Decode content object")
             try:
                 (name, payload) = self.decode_data(wire_data)
+                #print("<<<<<<<<<<<<<<<<<<<<<<<<<<<decod data")
                 return Content(name, payload, wire_data)
             except:
                 self.logger.info("Decoding failed (malformed packet)")
@@ -429,6 +433,8 @@ class NdnTlvEncoder(BasicEncoder):
             length += self.length_of_signature_parts(provenance,sig_len)
         return length
 
+
+
     def get_provenance_for_testing(self, payload, name,key_location, rec_depth=1):
         """
         only for testing the provenance signature.
@@ -522,7 +528,12 @@ class NdnTlvEncoder(BasicEncoder):
         # TODO remove
         number_provenances=1
         (input_provenance,argumentIdentifier) = self.get_provenance_for_testing(payload, name, key_location,number_provenances)
+
+
+
         input_provenance=[input_provenance,input_provenance]
+
+
 
         #create signature, fill in given values, the rest is calculated when the tlv packet is filled
         signature = Signature(signature_type, identity_locator, None, None, input_provenance, None, argumentIdentifier)
@@ -819,14 +830,15 @@ class NdnTlvEncoder(BasicEncoder):
         m.update(signature_calculated.to_bytearray())
         signature_calculated.signatureSignature = m.digest()
 
+
         if(signature_calculated.identityProof!=signature_in.identityProof):
-            print("IDENTITY PROOF IS NOT CORRECT!")
+            print("ERROR: IDENTITY PROOF IS NOT CORRECT!")
             return False
         if (signature_calculated.outputSignature != signature_in.outputSignature):
-            print("OUTPUT SIGNATURE IS NOT CORRECT!")
+            print("ERROR: OUTPUT SIGNATURE IS NOT CORRECT!")
             return False
         if (signature_calculated.signatureSignature != signature_in.signatureSignature):
-            print("SIGNATURE SIGNATURE IS NOT CORRECT!")
+            print("ERROR: SIGNATURE SIGNATURE IS NOT CORRECT!")
             return False
 
         return True
@@ -847,7 +859,8 @@ class NdnTlvEncoder(BasicEncoder):
         #before payload
         signature=self.decode_signature(decoder)
         #signature_is_correct=self.verify_signature(name,meta_info,payload,signature)
-        return (name, payload, signature)
+        #return (name, payload, signature)
+        return (name, payload)
 
     def decode_nack(self, input: bytearray) -> (Name, NackReason):
         """

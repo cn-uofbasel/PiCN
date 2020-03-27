@@ -10,9 +10,12 @@ from PiCN.Layers.LinkLayer.FaceIDTable import FaceIDDict
 from PiCN.Layers.LinkLayer.Interfaces import UDP4Interface, AddressInfo
 from PiCN.Processes.PiCNSyncDataStructFactory import PiCNSyncDataStructFactory
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
-from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
+from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder, NdnTlvEncoder
+from PiCNExternal.pyndn.encoding.tlv.tlv.tlv_encoder import TlvEncoder
 from PiCN.Packets import Content, Name, Interest, Nack
+from PiCNExternal.pyndn.encoding.tlv.tlv.tlv import Tlv
 from PiCN.Layers.TimeoutPreventionLayer import BasicTimeoutPreventionLayer, TimeoutPreventionMessageDict
+from PiCN.Layers.PacketEncodingLayer.Printer.NdnTlvPrinter import NdnTlvPrinter
 
 class Fetch(object):
     """Fetch Tool for PiCN"""
@@ -81,9 +84,12 @@ class Fetch(object):
 
         if timeout == 0:
             packet = self.lstack.queue_to_higher.get()[1]
+
         else:
             packet = self.lstack.queue_to_higher.get(timeout=timeout)[1]
+
         if isinstance(packet, Content):
+
             return packet.content
         if isinstance(packet, Nack):
             return "Received Nack: " + str(packet.reason.value)
