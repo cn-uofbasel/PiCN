@@ -10,11 +10,12 @@ from PiCN.Packets import Interest, Content
 
 class NFNPythonExecutorStreaming(NFNPythonExecutor):
 
-    def __init__(self):  # , queue_to_lower, queue_from_lower):
+    def __init__(self):
         self._language = "PYTHONSTREAM"
         self._sandbox = NFNPythonExecutor()._init_sandbox()
         self._sandbox["checkStreaming"] = self.checkStreaming
         self._sandbox["getNext"] = self.getNext
+        self._sandbox["checkEndStreaming"] = self.checkEndStreaming()
         self._sandbox["writeOut"] = self.writeOut
         self._sandbox["print"] = print
         self.getNextBuffer: dict = {}
@@ -100,6 +101,10 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         return result
 
     def writeOut(self):
+        name = "test"
+        content = "Content von test"
+        contentObject = Content(name, content)
+        self.cs.add_content_object(contentObject)
         return "In progress..."
 
     # Helper function to check if the string starts with '/'
@@ -126,3 +131,6 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         # Wrong prefix, file is not for streaming
         else:
             return False
+
+    def checkEndStreaming(self, arg: str):
+        return arg.endswith("sdo:end")
