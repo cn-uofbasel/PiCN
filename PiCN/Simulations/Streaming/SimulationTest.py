@@ -26,9 +26,11 @@ def generateExampleFiles(fileName: str, numberOfLines: int):
     path = pathDetection(fileName)
     with open(fileName, "w") as f:
         f.write("sdo:\n")
-        for i in range(1, numberOfLines + 1):
+        for i in range(1, numberOfLines):
             f.write("/repo/r1/name" + str(i) + "\n")
             generateNameFiles(path, i)
+        f.write("/repo/r1/name" + str(numberOfLines))
+        generateNameFiles(path, numberOfLines)
     f.close()
 
 generateExampleFiles("./Inputfiles/exampleInputFile", 10)
@@ -67,6 +69,8 @@ mgmt_client1.add_forwarding_rule(Name("/repo/r1"), [0])
 
 mgmt_client1.add_new_content(Name("/lib/checkStreamFunc"),"PYTHONSTREAM\ncheckStreamFunc\ndef checkStreamFunc(content):\n    res = checkStreaming(content)\n    return res")
 mgmt_client1.add_new_content(Name("/lib/getNext"),"PYTHONSTREAM\ngetNext\ndef getNext(arg, amount):\n    a = getNext(arg, amount)\n    b = getNext(arg, amount)\n    c = getNext(arg, amount)\n    d = getNext(arg, amount)\n    return a + b + c + d")
+mgmt_client1.add_new_content(Name("/lib/writeOutTest"),"PYTHONSTREAM\nwriteOutTest\ndef writeOutTest(arg):\n    a = getNext(arg, 2)\n    return writeOut(a)")
+mgmt_client1.add_new_content(Name("/lib/checkGetNextCase"),"PYTHONSTREAM\ncheckGetNextCase\ndef checkGetNextCase(arg):\n    return checkGetNextCase(arg)")
 
 checkStreamFuncTest = Name("/lib/checkStreamFunc")
 checkStreamFuncTest += '_(/repo/r1/exampleInputFile)'
@@ -76,12 +80,21 @@ getNextTest = Name("/lib/getNext")
 getNextTest += '_(/repo/r1/exampleInputFile,4)'
 getNextTest += "NFN"
 
+writeOutTest = Name("/lib/writeOutTest")
+writeOutTest += '_(/repo/r1/exampleInputFile)'
+writeOutTest += "NFN"
+
+checkGetNextCaseTest = Name("/lib/checkGetNextCase")
+checkGetNextCaseTest += '_(/repo/r1/exampleInputFile)'
+checkGetNextCaseTest += "NFN"
+
 # file = fetch_tool.fetch_data(Name("/repo/r1/exampleInputFile"))
 # print("The actual file:\n", file)
 # res1 = fetch_tool.fetch_data(checkStreamFuncTest)
 # print("Interest result: ", res1)
-res = fetch_tool.fetch_data(getNextTest)
+res = fetch_tool.fetch_data(writeOutTest)
 print("Interest result: ", res)
+
 
 nfn_fwd0.stop_forwarder()
 nfn_fwd1.stop_forwarder()
