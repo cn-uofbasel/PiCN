@@ -40,12 +40,12 @@ simulation_bus = SimulationBus(packetencoder=NdnTlvEncoder())
 nfn_fwd0 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
                         interfaces=[simulation_bus.add_interface("nfn0")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
                         ageing_interval=1)
-nfn_fwd0.executors["PYTHONSTREAM"].initializeExecutor(nfn_fwd0.nfnlayer.queue_to_lower, nfn_fwd0.nfnlayer.queue_from_lower, nfn_fwd0.nfnlayer.computation_table, nfn_fwd0.nfnlayer.cs)
+nfn_fwd0.executors["PYTHONSTREAM"].initialize_executor(nfn_fwd0.nfnlayer.queue_to_lower, nfn_fwd0.nfnlayer.queue_from_lower, nfn_fwd0.nfnlayer.computation_table, nfn_fwd0.nfnlayer.cs)
 
 nfn_fwd1 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
                         interfaces=[simulation_bus.add_interface("nfn1")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
                         ageing_interval=1)
-nfn_fwd1.executors["PYTHONSTREAM"].initializeExecutor(nfn_fwd1.nfnlayer.queue_to_lower, nfn_fwd1.nfnlayer.queue_from_lower, nfn_fwd1.nfnlayer.computation_table, nfn_fwd1.nfnlayer.cs)
+nfn_fwd1.executors["PYTHONSTREAM"].initialize_executor(nfn_fwd1.nfnlayer.queue_to_lower, nfn_fwd1.nfnlayer.queue_from_lower, nfn_fwd1.nfnlayer.computation_table, nfn_fwd1.nfnlayer.cs)
 
 
 repo = ICNDataRepository("./InputFiles", Name("/repo/r1"), 0, 255, NdnTlvEncoder(), False, False, interfaces=[simulation_bus.add_interface("repo")])
@@ -68,16 +68,18 @@ mgmt_client1.add_face("repo", None, 0)
 mgmt_client1.add_forwarding_rule(Name("/repo/r1"), [0])
 
 mgmt_client1.add_new_content(Name("/lib/checkStreamFunc"),"PYTHONSTREAM\ncheckStreamFunc\ndef checkStreamFunc(content):\n    res = checkStreaming(content)\n    return res")
-mgmt_client1.add_new_content(Name("/lib/getNext"),"PYTHONSTREAM\ngetNext\ndef getNext(arg, amount):\n    a = getNext(arg, amount)\n    b = getNext(arg, amount)\n    c = getNext(arg, amount)\n    d = getNext(arg, amount)\n    return a + b + c + d")
-mgmt_client1.add_new_content(Name("/lib/writeOutTest"),"PYTHONSTREAM\nwriteOutTest\ndef writeOutTest(arg):\n    a = getNext(arg, 2)\n    return writeOut(a)")
+mgmt_client1.add_new_content(Name("/lib/getNext"),"PYTHONSTREAM\ngetNext\ndef getNext(arg):\n    a = getNext(arg)\n    b = getNext(arg)\n    c = getNext(arg)\n    d = getNext(arg)\n    return a + b + c + d")
+mgmt_client1.add_new_content(Name("/lib/writeOutTest"),"PYTHONSTREAM\nwriteOutTest\ndef writeOutTest(arg):\n    a = getNext(arg)\n    return writeOut(a)")
 mgmt_client1.add_new_content(Name("/lib/checkGetNextCase"),"PYTHONSTREAM\ncheckGetNextCase\ndef checkGetNextCase(arg):\n    return checkGetNextCase(arg)")
+mgmt_client1.add_new_content(Name("/repo/r1/test/streaming/p0"), "Hello world!")
+mgmt_client1.add_new_content(Name("/repo/r1/test/streaming/p1"), "sdo:endstreaming")
 
 checkStreamFuncTest = Name("/lib/checkStreamFunc")
 checkStreamFuncTest += '_(/repo/r1/exampleInputFile)'
 checkStreamFuncTest += "NFN"
 
 getNextTest = Name("/lib/getNext")
-getNextTest += '_(/repo/r1/exampleInputFile,4)'
+getNextTest += '_(/repo/r1/exampleInputFile)'
 getNextTest += "NFN"
 
 writeOutTest = Name("/lib/writeOutTest")

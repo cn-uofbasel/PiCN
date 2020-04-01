@@ -262,7 +262,7 @@ class BasicNFNLayer(LayerProcess):
                 params.append(entry.available_data[search_name])
             elif not isinstance(e.type, AST):
                 params.append(e.type(e._element))
-        res = executor.execute(function_code=function_code, params=params, packetid=entry.id)
+        res = executor.execute(function_code=function_code, params=params, packetid=entry.id, comp_name=interest.name)
         if res is None:
             self.queue_to_lower.put([entry.id,
                                      Nack(entry.original_name, NackReason.COMP_EXCEPTION, interest=entry.interest)])
