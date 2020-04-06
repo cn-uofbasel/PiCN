@@ -95,6 +95,10 @@ class Mgmt(PiCNProcess):
             if port != 'None':
                 port = int(port)
             if_num = int(if_num)
+
+            if if_num >= len(self._linklayer.interfaces):
+                replysock.send(f"Interface Number {if_num} does not exit on node".encode())
+                return
             if port != 'None':
                 fid = self._linklayer.faceidtable.get_or_create_faceid(AddressInfo((ip, port), if_num))
             else:

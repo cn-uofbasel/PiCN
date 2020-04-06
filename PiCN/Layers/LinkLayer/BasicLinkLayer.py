@@ -53,7 +53,11 @@ class BasicLinkLayer(LayerProcess):
         if not addr_info:
             self.logger.error("No addr_info found for faceid: " + str(faceid))
             return
-        self.interfaces[addr_info.interface_id].send(packet, addr_info.address)
+        try:
+            self.interfaces[addr_info.interface_id].send(packet, addr_info.address)
+        except:
+            self.logger.error("Could not sned packet to" + str(addr_info.address) + " Interface with ID" +
+                              addr_info.interface_id + " not available")
         self.logger.info("Send packet to: " + str(addr_info.address))
 
     def _run_poll(self, from_lower: multiprocessing.Queue, from_higher: multiprocessing.Queue,
