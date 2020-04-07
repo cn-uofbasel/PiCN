@@ -68,11 +68,16 @@ mgmt_client1.add_face("repo", None, 0)
 mgmt_client1.add_forwarding_rule(Name("/repo/r1"), [0])
 
 mgmt_client1.add_new_content(Name("/lib/checkStreamFunc"),"PYTHONSTREAM\ncheckStreamFunc\ndef checkStreamFunc(content):\n    res = checkStreaming(content)\n    return res")
-mgmt_client1.add_new_content(Name("/lib/getNext"),"PYTHONSTREAM\ngetNext\ndef getNext(arg):\n    a = getNext(arg)\n    b = getNext(arg)\n    c = getNext(arg)\n    d = getNext(arg)\n    return a + b + c + d")
-mgmt_client1.add_new_content(Name("/lib/writeOutTest"),"PYTHONSTREAM\nwriteOutTest\ndef writeOutTest(arg):\n    a = getNext(arg)\n    return writeOut(a)")
-mgmt_client1.add_new_content(Name("/lib/checkGetNextCase"),"PYTHONSTREAM\ncheckGetNextCase\ndef checkGetNextCase(arg):\n    return checkGetNextCase(arg)")
-mgmt_client1.add_new_content(Name("/repo/r1/test/streaming/p0"), "Hello world!")
-mgmt_client1.add_new_content(Name("/repo/r1/test/streaming/p1"), "sdo:endstreaming")
+mgmt_client1.add_new_content(Name("/lib/getNext"),"PYTHONSTREAM\ngetNext\ndef getNext(arg):\n    a = get_next(arg)\n    b = get_next(arg)\n    c = get_next(arg)\n    d = get_next(arg)\n    return a + b + c + d")
+mgmt_client1.add_new_content(Name("/lib/writeOutTest"),"PYTHONSTREAM\nwriteOutTest\ndef writeOutTest(arg):\n    a = get_next(arg)\n    return a, write_out(a)")
+mgmt_client1.add_new_content(Name("/lib/writeOutTest2"),"PYTHONSTREAM\nwriteOutTest2\ndef writeOutTest2(arg):\n    a = write_out(arg)\n    return a, get_next(a)")
+
+mgmt_client1.add_new_content(Name("/repo/r1/writeOutInputFile/streaming/p0"), "Hello ")
+mgmt_client1.add_new_content(Name("/repo/r1/writeOutInputFile/streaming/p1"), "world!")
+mgmt_client1.add_new_content(Name("/repo/r1/writeOutInputFile/streaming/p2"), "This is ")
+mgmt_client1.add_new_content(Name("/repo/r1/writeOutInputFile/streaming/p3"), "just a test.")
+mgmt_client1.add_new_content(Name("/repo/r1/writeOutInputFile/streaming/p4"), "sdo:endstreaming")
+
 
 checkStreamFuncTest = Name("/lib/checkStreamFunc")
 checkStreamFuncTest += '_(/repo/r1/exampleInputFile)'
@@ -86,15 +91,18 @@ writeOutTest = Name("/lib/writeOutTest")
 writeOutTest += '_(/repo/r1/exampleInputFile)'
 writeOutTest += "NFN"
 
-checkGetNextCaseTest = Name("/lib/checkGetNextCase")
-checkGetNextCaseTest += '_(/repo/r1/exampleInputFile)'
-checkGetNextCaseTest += "NFN"
+writeOutTest2 = Name("/lib/writeOutTest2")
+writeOutTest2 += '_(/repo/r1/writeOutInputFile)'
+writeOutTest2 += "NFN"
 
-# file = fetch_tool.fetch_data(Name("/repo/r1/exampleInputFile"))
-# print("The actual file:\n", file)
-# res1 = fetch_tool.fetch_data(checkStreamFuncTest)
-# print("Interest result: ", res1)
+file = fetch_tool.fetch_data(Name("/repo/r1/exampleInputFile"))
+print("The actual file:\n", file)
+res1 = fetch_tool.fetch_data(checkStreamFuncTest)
+print("Interest result: ", res1)
 res = fetch_tool.fetch_data(writeOutTest)
+print("Interest result: ", res)
+print("\n")
+res = fetch_tool.fetch_data(writeOutTest2)
 print("Interest result: ", res)
 
 

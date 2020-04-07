@@ -14,15 +14,17 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         self._language = "PYTHONSTREAM"
         self._sandbox = NFNPythonExecutor()._init_sandbox()
         self._sandbox["check_streaming"] = self.check_streaming
-        self._sandbox["getNext"] = self.getNext
+        self._sandbox["get_next"] = self.get_next
         self._sandbox["check_end_streaming"] = self.check_end_streaming
-        self._sandbox["writeOut"] = self.writeOut
-        self._sandbox["checkGetNextCase"] = self.checkGetNextCase
+        self._sandbox["write_out"] = self.write_out
+        self._sandbox["check_get_next_case"] = self.check_get_next_case
         self._sandbox["print"] = print
         self.get_next_buffer: dict = {}
         self.sent_interests: dict = {}
-        self.name_list: list = None
-        self.pos_name_list: int = 0
+        self.name_list_single: list = None
+        self.name_list_multiple: list = None
+        self.pos_name_list_single: int = 0
+        self.pos_name_list_multiple: int = 0
         self.queue_to_lower: multiprocessing.Queue = None
         self.queue_from_lower: multiprocessing.Queue = None
         self.comp_table: NFNComputationList = None
@@ -38,24 +40,35 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         :param queue_to_lower: queue to lower layer
         :param queue_from_lower: queue from lower layer
         :param comp_table: the NFNComputationList
-        :param cs: the BaseContentStore to store the Content in writeOut
+        :param cs: the BaseContentStore to store the Content in write_out
         """
         self.queue_to_lower = queue_to_lower
         self.queue_from_lower = queue_from_lower
         self.comp_table = comp_table
         self.cs = cs
 
-    def initialize_get_next(self, arg: str):
+    def initialize_get_next_single(self, arg: str):
         """
-        check if file is for streaming and if it is fills self.name_list with necessary names
+        check if file is for streaming and if it is fill self.name_list_single with necessary names for single name case
         :param arg: the input with the desired computation names
         """
-        if self.name_list is None:
+        # TODO If arg is not for streaming stop here
+        if self.check_streaming(arg) is False:
+            return "Not for streaming."
+        self.name_list_single = arg.splitlines()
+        self.name_list_single.pop(0)
+
+    def initialize_get_next_multiple(self, arg: str):
+        """
+        check if file is for streaming and if it is fill self.name_list_multiple with necessary names for multiple name case
+        :param arg: the input with the desired computation names
+        """
+        if self.name_list_multiple is None:
             # TODO If arg is not for streaming stop here
             if self.check_streaming(arg) is False:
                 return "Not for streaming."
-            self.name_list = arg.splitlines()
-            self.name_list.pop(0)
+            self.name_list_multiple = arg.splitlines()
+            self.name_list_multiple.pop(0)
 
     def check_buffer(self, interest_name: str):
         """
@@ -90,9 +103,9 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
                 self.queue_from_lower.put(content_object)
             return False
 
-    def checkGetNextCase(self, interest_name: str):
+    def check_get_next_case(self, interest_name: str):
         """
-        check which of the getNext cases is needed - if it ends with '/streaming/p*' the single name case is needed
+        check which of the get_next cases is needed - if it ends with '/streaming/p*' the single name case is needed
         :param interest_name: the interest name
         """
         if interest_name.endswith("/streaming/p*"):
@@ -104,7 +117,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         """
         get the amount of digits on the part of the single name case
         :param name: the name from which the amount of digit has to be returned
-        :return minus the amount of digits
+        :return the negative amount of digits
         """
         x = -1
         while name[x - 1].isdigit():
@@ -125,79 +138,99 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         following_name += str(number)
         return following_name
 
-    def getNextContent(self, arg: str, multiple: bool = False):
+    def get_next_content(self, arg: str):
+        """
+        get content from given name for the get next function
+        :param arg: the name from which the content is returned
+        :return: the content for the name
+        """
         next_name = arg
-        bufferOutput = self.check_buffer(next_name)
-        if bufferOutput:
-            result = bufferOutput.content
+        buffer_output = self.check_buffer(next_name)
+        if buffer_output:
+            result = buffer_output.content
         else:
             # Interest() gets added to queue_to_lower
             self.queue_to_lower.put((self.packetid, Interest(next_name)))
             self.sent_interests[next_name] = False
-            resultingContentObject = self.queue_from_lower.get()[1]
-            print("[getNextContent] Resulting content object:", resultingContentObject.name, resultingContentObject.content)
+            resulting_content_object = self.queue_from_lower.get()[1]
+            print("[get_next_content] Resulting content object:", resulting_content_object.name, resulting_content_object.content)
             # Gets stored in buffer if interest doesn't correspond to needed result
-            isContentCorrect = self.check_for_correct_content(resultingContentObject, next_name)
-            while isContentCorrect is False:
-                bufferOutput = self.check_buffer(next_name)
+            is_content_correct = self.check_for_correct_content(resulting_content_object, next_name)
+            while is_content_correct is False:
+                buffer_output = self.check_buffer(next_name)
                 # If desired interest is in buffer return it and break out of while loop
-                if bufferOutput:
-                    resultingContentObject = bufferOutput
+                if buffer_output:
+                    resulting_content_object = buffer_output
                     break
                 else:
                     # Get content out of queue_from_lower and check if it is correct -> until correct one is returned
-                    resultingContentObject = self.queue_from_lower.get()[1]
-                    isContentCorrect = self.check_for_correct_content(resultingContentObject, next_name)
+                    resulting_content_object = self.queue_from_lower.get()[1]
+                    is_content_correct = self.check_for_correct_content(resulting_content_object, next_name)
             # if correct = result
-            result = resultingContentObject.content
-            self.sent_interests[resultingContentObject.name.components_to_string()] = True
-            if multiple:
-                self.pos_name_list += 1
+            result = resulting_content_object.content
+            self.sent_interests[resulting_content_object.name.components_to_string()] = True
         return result
 
-    def getNextSingleName(self, arg: str):
-        self.initialize_get_next(arg)
-        name = self.name_list[0]
-        name = name[:len(name)-1] + str(0)
-        nextResult = self.getNextContent(name)
-        result = ""
-        while self.check_end_streaming(nextResult) is False:
-            result += nextResult
-            name = self.get_following_name(name)
-            nextResult = self.getNextContent(name)
-        return result
+    def get_next_single_name(self, arg: str):
+        """
+        get next for the single name case continues until one /streaming/p.. contains "sdo:endstreaming"
+        :param arg: the output from the write_out
+        """
+        name = arg.split("//")[0]
+        if self.check_streaming(name):
+            name = name[5:] + "/streaming/p0"
+            result = ""
+            next_result = self.get_next_content(name)
+            while self.check_end_streaming(next_result) is False:
+                result += next_result
+                name = self.get_following_name(name)
+                next_result = self.get_next_content(name)
+            return result
 
-    def getNextMultipleNames(self, arg: str):
-        self.initialize_get_next(arg)
-        next_name = self.name_list[self.pos_name_list]
-        return self.getNextContent(next_name, True)
+    def get_next_multiple_names(self, arg: str):
+        """
+        get next for the multiple name case
+        initalizes name_list_multiple if it isn't already initalized
+        :param arg: listing of names "sdo:\n\name1\name2\n...\nameN
+        """
+        self.initialize_get_next_multiple(arg)
+        next_name = self.name_list_multiple[self.pos_name_list_multiple]
+        self.pos_name_list_multiple += 1
+        return self.get_next_content(next_name)
 
-    def getNext(self, arg: str):
-        arg = "sdo:\n/repo/r1/test/streaming/p*"
-        if self.checkGetNextCase(arg):
-            return self.getNextSingleName(arg)
+    def get_next(self, arg: str):
+        """
+        get next content
+        distinguished between both cases and continues for the necessary case
+        :param arg: name
+        """
+        if self.check_get_next_case(arg):
+            return self.get_next_single_name(arg)
         else:
-            return self.getNextMultipleNames(arg)
+            return self.get_next_multiple_names(arg)
 
-    def writeOut(self, contentContent: str):
-        # ASK writeOut doesn't check endOfStreaming?
+    def write_out(self, content_content: str):
+        """
+        stores content object as parts into the content store
+        :param contentContent: the content to be written out
+        :return: string: computation name + "/streaming/p*"
+        """
         print("Computation name: ", self.comp_name)
-        contentName = self.comp_name
+        content_name = self.comp_name
 
-        contentName += "/streaming/p" + str(self.part_counter)
-        content_object = Content(contentName, contentContent)
+        content_name += "/streaming/p" + str(self.part_counter)
+        content_object = Content(content_name, content_content)
         self.cs.add_content_object(content_object)
-        print("[writeOut] Last entry in content store:", self.cs.get_container()[-1].content.name,
+        print("[write_out] Last entry in content store:", self.cs.get_container()[-1].content.name,
               self.cs.get_container()[-1].content.content)
 
         self.part_counter += 1
-        writeOutFile = "sdo:\n"
-        writeOutFile += str(self.comp_name)
-        writeOutFile += "/streaming/p*"
-        # ASK if this output is correct with the comp_name
-        return writeOutFile
+        write_out_file = "sdo:\n"
+        write_out_file += str(self.comp_name)
+        write_out_file += "/streaming/p*"
+        return write_out_file
 
-    def checkForName(self, name: str):
+    def check_name(self, name: str):
         """
         check if name starts with '/'
         :param name: name to check
@@ -217,10 +250,10 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         # Check if streaming prefix is available
         elif arg.startswith("sdo:"):
             print("[check_streaming] File is for streaming")
-            tmpList = arg.splitlines()
-            tmpList.pop(0)
-            for x in tmpList:
-                if self.checkForName(x) is False:
+            tmp_list = arg.splitlines()
+            tmp_list.pop(0)
+            for x in tmp_list:
+                if self.check_name(x) is False:
                     return False
             return True
         # Wrong prefix, file is not for streaming
