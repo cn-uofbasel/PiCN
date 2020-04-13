@@ -73,7 +73,7 @@ mgmt_client1.add_new_content(Name("/lib/writeOutTest"),"PYTHONSTREAM\nwriteOutTe
 mgmt_client1.add_new_content(Name("/lib/writeOutTest2"),"PYTHONSTREAM\nwriteOutTest2\ndef writeOutTest2(arg):\n    a = write_out(arg)\n    return a, get_next(a)")
 
 mgmt_client1.add_new_content(Name("/repo/r1/writeOutInputFile/streaming/p0"), "Hello ")
-mgmt_client1.add_new_content(Name("/repo/r1/writeOutInputFile/streaming/p1"), "world!")
+mgmt_client1.add_new_content(Name("/repo/r1/writeOutInputFile/streaming/p1"), "world! ")
 mgmt_client1.add_new_content(Name("/repo/r1/writeOutInputFile/streaming/p2"), "This is ")
 mgmt_client1.add_new_content(Name("/repo/r1/writeOutInputFile/streaming/p3"), "just a test.")
 mgmt_client1.add_new_content(Name("/repo/r1/writeOutInputFile/streaming/p4"), "sdo:endstreaming")
@@ -95,10 +95,6 @@ writeOutTest2 = Name("/lib/writeOutTest2")
 writeOutTest2 += '_(/repo/r1/writeOutInputFile)'
 writeOutTest2 += "NFN"
 
-file = fetch_tool.fetch_data(Name("/repo/r1/exampleInputFile"))
-print("The actual file:\n", file)
-res1 = fetch_tool.fetch_data(checkStreamFuncTest)
-print("Interest result: ", res1)
 res = fetch_tool.fetch_data(writeOutTest)
 print("Interest result: ", res)
 print("\n")

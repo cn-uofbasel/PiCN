@@ -5,7 +5,7 @@ import multiprocessing
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationList
 from PiCN.Layers.NFNLayer.NFNExecutor import NFNPythonExecutor
-from PiCN.Packets import Interest, Content
+from PiCN.Packets import Interest, Content, Name
 
 
 class NFNPythonExecutorStreaming(NFNPythonExecutor):
@@ -64,9 +64,6 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         :param arg: the input with the desired computation names
         """
         if self.name_list_multiple is None:
-            # TODO If arg is not for streaming stop here
-            if self.check_streaming(arg) is False:
-                return "Not for streaming."
             self.name_list_multiple = arg.splitlines()
             self.name_list_multiple.pop(0)
 
@@ -178,6 +175,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         """
         name = arg.split("//")[0]
         if self.check_streaming(name):
+            # ASK name built correctly?
             name = name[5:] + "/streaming/p0"
             result = ""
             next_result = self.get_next_content(name)
@@ -207,7 +205,44 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         if self.check_get_next_case(arg):
             return self.get_next_single_name(arg)
         else:
-            return self.get_next_multiple_names(arg)
+            if self.check_streaming(arg):
+                return self.get_next_multiple_names(arg)
+            # doesn't start with sdo: -> it is a computation
+            print("get_next input:", arg)
+            first = arg.find("=")
+            last = len(arg) - arg[::-1].find("=") - 1
+            hash = arg.find("#")
+            arg = list(arg)
+            arg[first] = '"'
+            arg[last] = '"'
+            arg[hash] = "_"
+            arg = "".join(arg)
+            print("get_next after transform:", arg)
+            name = Name(arg)
+            component_lists = name.components
+            first_quot = False
+            new_component = ""
+            for component in name.components:
+                if '"' in str(component):
+                    if first_quot is True:
+                        new_component += str(component)
+                        first_quot = False
+                    else:
+                        first_quot = True
+                if first_quot:
+                    new_component += str(component)
+            new_component = new_component.replace("b", "/").replace("'", "").replace('"',"")[1:]
+            start_of_component = 0
+            for i in range (0,len(name.components)):
+                if "_(" in str(name.components[i]):
+                    start_of_component = i
+            comp_list_len = len(name.components)
+            for i in range (start_of_component, comp_list_len-2):
+                name.components.pop(len(name.components)-2)
+            name.components[-2] = new_component.encode("ascii")
+            #print("Component list", name.components)
+            return self.get_next_content(name)
+
 
     def write_out(self, content_content: str):
         """
