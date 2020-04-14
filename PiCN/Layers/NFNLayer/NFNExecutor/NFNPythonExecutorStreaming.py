@@ -153,6 +153,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             print("[get_next_content] Resulting content object:", resulting_content_object.name, resulting_content_object.content)
             # Gets stored in buffer if interest doesn't correspond to needed result
             is_content_correct = self.check_for_correct_content(resulting_content_object, next_name)
+            print(next_name, is_content_correct)
             while is_content_correct is False:
                 buffer_output = self.check_buffer(next_name)
                 # If desired interest is in buffer return it and break out of while loop
@@ -165,6 +166,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
                     is_content_correct = self.check_for_correct_content(resulting_content_object, next_name)
             # if correct = result
             result = resulting_content_object.content
+            print("TEST", result)
             self.sent_interests[resulting_content_object.name.components_to_string()] = True
         return result
 
@@ -241,7 +243,9 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
                 name.components.pop(len(name.components)-2)
             name.components[-2] = new_component.encode("ascii")
             #print("Component list", name.components)
-            return self.get_next_content(name)
+            result = self.get_next_content(name)
+            print("Hier", result)
+            return result
 
 
     def write_out(self, content_content: str):

@@ -10,7 +10,7 @@ from PiCN.Packets import Name
 simulation_bus = SimulationBus(packetencoder=NdnTlvEncoder())
 
 nfn_fwd0 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
-                        interfaces=[simulation_bus.add_interface("nfn0")], log_level=0, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
+                        interfaces=[simulation_bus.add_interface("nfn0")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
                         ageing_interval=1)
 nfn_fwd0.executors["PYTHONSTREAM"].initialize_executor(nfn_fwd0.nfnlayer.queue_to_lower, nfn_fwd0.nfnlayer.queue_from_lower, nfn_fwd0.nfnlayer.computation_table, nfn_fwd0.nfnlayer.cs)
 
