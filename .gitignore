@@ -10,4 +10,5 @@ dist/*
 nosetests.xml
 .DS_Store
 PiCN/Simulations/Streaming/InputFiles/
+PiCN/Layers/LinkLayer/Interfaces/Simulation.py
 *~

@@ -87,6 +87,12 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         :param next_name: the corresponding name
         :return:
         """
+        if isinstance(content_name,Name):
+            content_name = content_name.to_string() # inner comp is a name instead of a string
+            # outter comp starts with sdo:\n
+        elif content_name.startswith("sdo:\n"):
+            content_name = content_name[5:]
+
         content_object_name_as_string = content_object.name.components_to_string()
         if content_name == content_object_name_as_string:
             return True
@@ -153,7 +159,6 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             print("[get_next_content] Resulting content object:", resulting_content_object.name, resulting_content_object.content)
             # Gets stored in buffer if interest doesn't correspond to needed result
             is_content_correct = self.check_for_correct_content(resulting_content_object, next_name)
-            print(next_name, is_content_correct)
             while is_content_correct is False:
                 buffer_output = self.check_buffer(next_name)
                 # If desired interest is in buffer return it and break out of while loop
@@ -166,7 +171,6 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
                     is_content_correct = self.check_for_correct_content(resulting_content_object, next_name)
             # if correct = result
             result = resulting_content_object.content
-            print("TEST", result)
             self.sent_interests[resulting_content_object.name.components_to_string()] = True
         return result
 
@@ -209,7 +213,8 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         else:
             if self.check_streaming(arg):
                 return self.get_next_multiple_names(arg)
-            # doesn't start with sdo: -> it is a computation
+            # doesn't start with sdo: -> it is a inner omputation
+            print("[get_next - inner computation] starts here:")
             print("get_next input:", arg)
             first = arg.find("=")
             last = len(arg) - arg[::-1].find("=") - 1
@@ -221,7 +226,6 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             arg = "".join(arg)
             print("get_next after transform:", arg)
             name = Name(arg)
-            component_lists = name.components
             first_quot = False
             new_component = ""
             for component in name.components:
@@ -242,10 +246,10 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             for i in range (start_of_component, comp_list_len-2):
                 name.components.pop(len(name.components)-2)
             name.components[-2] = new_component.encode("ascii")
-            #print("Component list", name.components)
-            result = self.get_next_content(name)
-            print("Hier", result)
-            return result
+            innner_result = self.get_next_content(name)
+            print("[get_next - inner computation] ends here with result:", innner_result)
+            outter_result = self.get_next_content(innner_result)
+            return outter_result
 
 
     def write_out(self, content_content: str):
@@ -254,7 +258,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         :param contentContent: the content to be written out
         :return: string: computation name + "/streaming/p*"
         """
-        print("Computation name: ", self.comp_name)
+        print("[write_out] Computation name: ", self.comp_name)
         content_name = self.comp_name
 
         content_name += "/streaming/p" + str(self.part_counter)

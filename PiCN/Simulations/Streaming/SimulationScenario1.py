@@ -53,6 +53,8 @@ mgmt_client0.add_new_content(Name("/lib/node0"),"PYTHONSTREAM\ngetnext_on_writeo
 
 mgmt_client1.add_new_content(Name("/lib/node1"),"PYTHONSTREAM\nwriteout_on_getnext\ndef writeout_on_getnext(arg):\n    a = get_next(arg)\n    return write_out(a)")
 
+mgmt_client1.add_new_content(Name("/lib/node1/_(/repo/r1/exampleInputFile)/NFN/streaming/p*"), "Das Resultat des SimulationScenario1.")
+
 
 scenario_node_1 = Name("/lib/node1")
 scenario_node_1 += "#(=/repo/r1/exampleInputFile=)"
