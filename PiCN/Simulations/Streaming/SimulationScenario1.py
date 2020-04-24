@@ -21,10 +21,10 @@ nfn_fwd1 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
                         ageing_interval=1)
 nfn_fwd1.executors["PYTHONSTREAM"].initialize_executor(nfn_fwd1.nfnlayer.queue_to_lower, nfn_fwd1.nfnlayer.queue_from_lower, nfn_fwd1.nfnlayer.computation_table, nfn_fwd1.nfnlayer.cs)
 
-#transform_fwd1 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
+# transform_fwd1 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
 #                        interfaces=[simulation_bus.add_interface("transform1")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
 #                       ageing_interval=1)
-#transform_fwd1.executors["PYTHONSTREAM"].initialize_executor(transform_fwd1.nfnlayer.queue_to_lower, transform_fwd1.nfnlayer.queue_from_lower, transform_fwd1.nfnlayer.computation_table, transform_fwd1.nfnlayer.cs)
+# transform_fwd1.executors["PYTHONSTREAM"].initialize_executor(transform_fwd1.nfnlayer.queue_to_lower, transform_fwd1.nfnlayer.queue_from_lower, transform_fwd1.nfnlayer.computation_table, transform_fwd1.nfnlayer.cs)
 
 repo = ICNDataRepository("./InputFiles", Name("/repo/r1"), 0, 255, NdnTlvEncoder(), False, False, interfaces=[simulation_bus.add_interface("repo")])
 repo.start_repo()
@@ -47,9 +47,9 @@ mgmt_client0.add_forwarding_rule(Name("/repo/r1"), [0])
 mgmt_client0.add_forwarding_rule(Name("/lib/node1"), [0])
 mgmt_client1.add_face("repo", None, 0)
 mgmt_client1.add_forwarding_rule(Name("/repo/r1"), [0])
-#mgmt_client1.add_forwarding_rule(Name("/lib"), [0])
-#mgmt_client2.add_face("repo", None, 0)
-#mgmt_client2.add_forwarding_rule(Name("/repo/r1"), [0])
+# mgmt_client1.add_forwarding_rule(Name("/lib"), [0])
+# mgmt_client2.add_face("repo", None, 0)
+# mgmt_client2.add_forwarding_rule(Name("/repo/r1"), [0])
 
 mgmt_client0.add_new_content(Name("/lib/node0"),"PYTHONSTREAM\ngetnext_on_writeout\ndef getnext_on_writeout(arg):\n    return get_next(arg)")
 
@@ -82,5 +82,4 @@ fetch_tool.stop_fetch()
 simulation_bus.stop_process()
 mgmt_client0.shutdown()
 mgmt_client1.shutdown()
-
 #mgmt_client2.shutdown()
