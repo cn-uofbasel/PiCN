@@ -176,7 +176,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
                     # Get content out of queue_from_lower and check if it is correct -> until correct one is returned
                     print("[get_next_content] Content wasn't correct and not avaiable in the buffer.")
                     queue_from_lower_entries = self.queue_from_lower.get() # If this doesn't happen it never gets the new entry
-                    print("queue_from_lower", queue_from_lower_entries)
+                    #print("queue_from_lower", queue_from_lower_entries)
                     resulting_content_object = self.queue_from_lower.get()[1]
                     print("[get_next_content] Resulting content object:", resulting_content_object.name,
                           resulting_content_object.content)
@@ -188,7 +188,8 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             # the result is a meta
             # streaming procedure can start (see notes: 17.4.2020 nested comps)
             if result.endswith("/streaming/p*") and result.startswith("sdo:\n"):
-                print("Streaming procedure starts")
+                print("HERE")
+                print("Streaming procedure starts", self.cs.get_container(), self.cs.get_container()[0].name, self.cs.get_container()[1].name)
                 streaming_part_counter = 0
                 next_part_name = resulting_content_object.name
                 next_part_name += "/streaming/p" + str(streaming_part_counter)
@@ -246,7 +247,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             return self.get_next_multiple_names(arg)
         else:
             # doesn't start with sdo: -> it is a inner computation
-            print("[get_next - inner computation] starts here:")
+            print("[get_next - inner computation] starts here.")
             print("get_next input:", arg)
             # Start of transformation and component encoding
             first = arg.find("=")
@@ -270,7 +271,9 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
                         first_quot = True
                 if first_quot:
                     new_component += str(component)
-            new_component = new_component.replace("b", "/").replace("'", "").replace('"',"")[1:]
+            new_component = new_component.replace("'b'", "/").replace("b'", "")[:-1]
+            if "=" not in new_component and '"' in new_component:
+                new_component = new_component.replace('"', "")
             start_of_component = 0
             for i in range (0,len(name.components)):
                 if "_(" in str(name.components[i]):
