@@ -21,7 +21,7 @@ nfn_fwd1 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
                         ageing_interval=1)
 nfn_fwd1.executors["PYTHONSTREAM"].initialize_executor(nfn_fwd1.nfnlayer.queue_to_lower, nfn_fwd1.nfnlayer.queue_from_lower, nfn_fwd1.nfnlayer.computation_table, nfn_fwd1.nfnlayer.cs)
 
-nfn_fwd2 = NFNForwarder(port=0, encoder=NdnTlvEncoder(), interfaces=[simulation_bus.add_interface("nfn2")], log_level=0, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()}, ageing_interval=1)
+nfn_fwd2 = NFNForwarder(port=0, encoder=NdnTlvEncoder(), interfaces=[simulation_bus.add_interface("nfn2")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()}, ageing_interval=1)
 nfn_fwd2.executors["PYTHONSTREAM"].initialize_executor(nfn_fwd2.nfnlayer.queue_to_lower, nfn_fwd2.nfnlayer.queue_from_lower, nfn_fwd2.nfnlayer.computation_table, nfn_fwd2.nfnlayer.cs)
 
 nfn_fwd0.icnlayer.pit.set_pit_timeout(250)

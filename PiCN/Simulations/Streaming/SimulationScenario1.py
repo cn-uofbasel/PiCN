@@ -17,7 +17,7 @@ nfn_fwd0 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
 nfn_fwd0.executors["PYTHONSTREAM"].initialize_executor(nfn_fwd0.nfnlayer.queue_to_lower, nfn_fwd0.nfnlayer.queue_from_lower, nfn_fwd0.nfnlayer.computation_table, nfn_fwd0.nfnlayer.cs)
 
 nfn_fwd1 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
-                        interfaces=[simulation_bus.add_interface("nfn1")], log_level=0, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
+                        interfaces=[simulation_bus.add_interface("nfn1")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
                         ageing_interval=1)
 nfn_fwd1.executors["PYTHONSTREAM"].initialize_executor(nfn_fwd1.nfnlayer.queue_to_lower, nfn_fwd1.nfnlayer.queue_from_lower, nfn_fwd1.nfnlayer.computation_table, nfn_fwd1.nfnlayer.cs)
 
@@ -55,7 +55,7 @@ mgmt_client0.add_new_content(Name("/lib/node0"),"PYTHONSTREAM\ngetnext_on_writeo
 
 #mgmt_client1.add_new_content(Name("/lib/node1"),"PYTHONSTREAM\nwriteout_on_getnext\ndef writeout_on_getnext(arg):\n    a = get_next(arg)\n    b = get_next(arg)\n    c = get_next(arg)\n    d = get_next(arg)\n    e = get_next(arg)\n    f = get_next(arg)\n    g = get_next(arg)\n    h = get_next(arg)\n    i = get_next(arg)\n    j = get_next(arg)\n    write_out(a)\n    write_out(b)\n    write_out(c)\n    write_out(d)\n    write_out(e)\n    write_out(f)\n    write_out(g)\n    write_out(h)\n    write_out(i)\n    write_out(j)\n    last_write_out()")
 
-mgmt_client1.add_new_content(Name("/lib/node1"),"PYTHONSTREAM\nwriteout_on_getnext\ndef writeout_on_getnext(arg):\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    last_write_out()\n    return 'ende innere'")
+mgmt_client1.add_new_content(Name("/lib/node1"),"PYTHONSTREAM\nwriteout_on_getnext\ndef writeout_on_getnext(arg):\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    last_write_out()\n")
 
 scenario_node_1 = Name("/lib/node1")
 scenario_node_1 += "#(=/repo/r1/exampleInputFile=)"
