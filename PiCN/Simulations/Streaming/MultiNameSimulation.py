@@ -1,3 +1,5 @@
+import os
+import time
 from PiCN.Layers.NFNLayer.NFNExecutor.NFNPythonExecutorStreaming import NFNPythonExecutorStreaming
 from PiCN.ProgramLibs.Fetch import Fetch
 from PiCN.ProgramLibs.ICNDataRepository import ICNDataRepository
@@ -26,11 +28,10 @@ def generateExampleFiles(fileName: str, numberOfLines: int):
     path = pathDetection(fileName)
     with open(fileName, "w") as f:
         f.write("sdo:\n")
-        for i in range(1, numberOfLines):
+        for i in range(1, numberOfLines + 1):
             f.write("/repo/r1/name" + str(i) + "\n")
             generateNameFiles(path, i)
-        f.write("/repo/r1/name" + str(numberOfLines))
-        generateNameFiles(path, numberOfLines)
+        f.write("sdo:endstreaming\n")
     f.close()
 
 generateExampleFiles("InputFiles/exampleInputFile", 10)
@@ -42,15 +43,14 @@ nfn_fwd0 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
                         ageing_interval=1)
 nfn_fwd0.executors["PYTHONSTREAM"].initialize_executor(nfn_fwd0.nfnlayer.queue_to_lower, nfn_fwd0.nfnlayer.queue_from_lower, nfn_fwd0.nfnlayer.computation_table, nfn_fwd0.nfnlayer.cs, nfn_fwd0.icnlayer.pit)
 
+
 nfn_fwd1 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
                         interfaces=[simulation_bus.add_interface("nfn1")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
                         ageing_interval=1)
 nfn_fwd1.executors["PYTHONSTREAM"].initialize_executor(nfn_fwd1.nfnlayer.queue_to_lower, nfn_fwd1.nfnlayer.queue_from_lower, nfn_fwd1.nfnlayer.computation_table, nfn_fwd1.nfnlayer.cs, nfn_fwd1.icnlayer.pit)
 
-
 repo = ICNDataRepository("./InputFiles", Name("/repo/r1"), 0, 255, NdnTlvEncoder(), False, False, interfaces=[simulation_bus.add_interface("repo")])
 repo.start_repo()
-
 
 mgmt_client0 = MgmtClient(nfn_fwd0.mgmt.mgmt_sock.getsockname()[1])
 mgmt_client1 = MgmtClient(nfn_fwd1.mgmt.mgmt_sock.getsockname()[1])
@@ -64,33 +64,17 @@ simulation_bus.start_process()
 
 mgmt_client0.add_face("nfn1", None, 0)
 mgmt_client0.add_forwarding_rule(Name("/repo/r1"), [0])
+mgmt_client0.add_forwarding_rule(Name("/lib"), [0])
 mgmt_client1.add_face("repo", None, 0)
 mgmt_client1.add_forwarding_rule(Name("/repo/r1"), [0])
 
-mgmt_client1.add_new_content(Name("/lib/checkStreamFunc"),"PYTHONSTREAM\ncheckStreamFunc\ndef checkStreamFunc(content):\n    res = checkStreaming(content)\n    return res")
-mgmt_client1.add_new_content(Name("/lib/getNext"),"PYTHONSTREAM\ngetNext\ndef getNext(arg):\n    a = get_next(arg)\n    b = get_next(arg)\n    c = get_next(arg)\n    d = get_next(arg)\n    return a + b + c + d")
-mgmt_client1.add_new_content(Name("/lib/writeOutTest"),"PYTHONSTREAM\nwriteOutTest\ndef writeOutTest(arg):\n    a = get_next(arg)\n    return a, write_out(a)")
-
-mgmt_client1.add_new_content(Name("/repo/r1/writeOutInputFile/streaming/p0"), "Hello ")
-mgmt_client1.add_new_content(Name("/repo/r1/writeOutInputFile/streaming/p1"), "world! ")
-mgmt_client1.add_new_content(Name("/repo/r1/writeOutInputFile/streaming/p2"), "This is ")
-mgmt_client1.add_new_content(Name("/repo/r1/writeOutInputFile/streaming/p3"), "just a test.")
-mgmt_client1.add_new_content(Name("/repo/r1/writeOutInputFile/streaming/p4"), "sdo:endstreaming")
-
-
-checkStreamFuncTest = Name("/lib/checkStreamFunc")
-checkStreamFuncTest += '_(/repo/r1/exampleInputFile)'
-checkStreamFuncTest += "NFN"
+mgmt_client1.add_new_content(Name("/lib/getNext"),"PYTHONSTREAM\ngetNext\ndef getNext(arg):\n    a = get_next(arg)\n    b = get_next(arg)\n    c = get_next(arg)\n    d = get_next(arg)\n    e = get_next(arg)\n    f = get_next(arg)\n    g = get_next(arg)\n    h = get_next(arg)\n    i = get_next(arg)\n    j = get_next(arg)\n    k = get_next(arg)\n    print('K is not on list, k =:', k)\n    return a + b + c + d + e + f + g + h + i + j")
 
 getNextTest = Name("/lib/getNext")
 getNextTest += '_(/repo/r1/exampleInputFile)'
 getNextTest += "NFN"
 
-writeOutTest = Name("/lib/writeOutTest")
-writeOutTest += '_(/repo/r1/exampleInputFile)'
-writeOutTest += "NFN"
-
-res = fetch_tool.fetch_data(writeOutTest)
+res = fetch_tool.fetch_data(getNextTest)
 print("Interest result: ", res)
 
 
