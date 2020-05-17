@@ -74,8 +74,11 @@ getNextTest = Name("/lib/getNext")
 getNextTest += '_(/repo/r1/exampleInputFile)'
 getNextTest += "NFN"
 
+start_time = time.perf_counter()
 res = fetch_tool.fetch_data(getNextTest)
-print("Interest result: ", res)
+end_time = time.perf_counter()
+print("Interest result:", res)
+print("Time needed in seconds:", end_time-start_time)
 
 
 nfn_fwd0.stop_forwarder()

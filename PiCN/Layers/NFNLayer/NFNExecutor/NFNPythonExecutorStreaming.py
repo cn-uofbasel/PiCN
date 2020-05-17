@@ -230,6 +230,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             self.queue_to_lower.put((self.packetid, Interest(current_name)))
         result = self.get_content_from_queue_from_lower(current_name)
         next_name = self.get_following_name(current_name)
+        #if self.get_next_part_counter < 10:
         self.queue_to_lower.put((self.packetid, Interest(next_name)))
         return result
 
@@ -254,6 +255,30 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         else:
             return None
 
+    def get_next_single_name_classic(self, arg: str):
+        """
+        get next for the single name case continues until one /streaming/p.. contains "sdo:endstreaming"
+        :param arg: the output from the write_out
+        """
+        current_name = arg
+        self.queue_to_lower.put((self.packetid, Interest(current_name)))
+        result = self.get_content_from_queue_from_lower(current_name)
+        return result
+
+    def get_next_multiple_names_classic(self, arg: str):
+        """
+        get next for the multiple name case
+        initializes name_list_multiple if it isn't already initialized
+        :param arg: listing of names "sdo:\n\name1\name2\n...\nameN
+        """
+        self.initialize_get_next_multiple(arg)
+        if self.pos_name_list_multiple < len(self.name_list_multiple)-1:
+            current_name = self.name_list_multiple[self.pos_name_list_multiple]
+            self.queue_to_lower.put((self.packetid, Interest(current_name)))
+            self.pos_name_list_multiple += 1
+            result = self.get_content_from_queue_from_lower(current_name)
+            return result
+
     def get_next(self, arg: str):
         """
         get next content
@@ -276,7 +301,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             arg[last] = '"'
             arg[hash] = "_"
             arg = "".join(arg)
-            print("get_next after transform:", arg)
+            #print("get_next after transform:", arg)
             name = Name(arg)
             first_quot = False
             new_component = ""
@@ -301,7 +326,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
                 name.components.pop(len(name.components)-2)
             name.components[-2] = new_component.encode("ascii")
             # End of transformation and component encoding
-            print("get_next after encoding:", name)
+            print("[get_next - inner computation] after encoding:", name)
             self.queue_to_lower.put((self.packetid, Interest(name)))
             inner_result = self.get_content_from_queue_from_lower(name)
             print("[get_next - inner computation] ends here with result:", inner_result)
