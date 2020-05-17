@@ -201,8 +201,8 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             if result.endswith("/streaming/p*") and result.startswith("sdo:\n"):
                 print("Streaming part:", self.get_next_part_counter)
                 next_name = str(resulting_content_object.name) + "//streaming/p" + str(self.get_next_part_counter)
-                self.get_next_part_counter += 1
                 result = self.get_next_single_name(next_name)
+                self.get_next_part_counter += 1
                 # streaming_part_counter = 0
                 # next_part_name = resulting_content_object.name
                 # next_part_name += "/streaming/p" + str(streaming_part_counter)
@@ -226,8 +226,11 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         :param arg: the output from the write_out
         """
         current_name = arg
-        self.queue_to_lower.put((self.packetid, Interest(current_name)))
+        if self.get_next_part_counter == 0:
+            self.queue_to_lower.put((self.packetid, Interest(current_name)))
         result = self.get_content_from_queue_from_lower(current_name)
+        next_name = self.get_following_name(current_name)
+        self.queue_to_lower.put((self.packetid, Interest(next_name)))
         return result
 
     def get_next_multiple_names(self, arg: str):
