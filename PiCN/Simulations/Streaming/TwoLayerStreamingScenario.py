@@ -42,7 +42,7 @@ mgmt_client0.add_forwarding_rule(Name("/lib"), [0])
 mgmt_client1.add_face("repo", None, 0)
 mgmt_client1.add_forwarding_rule(Name("/repo/r1"), [0])
 
-mgmt_client0.add_new_content(Name("/lib/node0"),"PYTHONSTREAM\ngetnext_on_writeout\ndef getnext_on_writeout(arg):\n    print('Start äussere')\n    a = get_next(arg)\n    b = get_next(arg)\n    c = get_next(arg)\n    d = get_next(arg)\n    e = get_next(arg)\n    f = get_next(arg)\n    g = get_next(arg)\n    h = get_next(arg)\n    i = get_next(arg)\n    j = get_next(arg)\n    k = get_next(arg)\n    print('Ende äussere')\n    return a + b + c + d + e + f + g + h + i + j")
+mgmt_client0.add_new_content(Name("/lib/node0"),"PYTHONSTREAM\ngetnext_on_writeout\ndef getnext_on_writeout(arg):\n    print('Start äussere')\n    a = get_next(arg)\n    sleep(1)\n    b = get_next(arg)\n    sleep(1)\n    c = get_next(arg)\n    d = get_next(arg)\n    e = get_next(arg)\n    f = get_next(arg)\n    g = get_next(arg)\n    h = get_next(arg)\n    i = get_next(arg)\n    j = get_next(arg)\n    k = get_next(arg)\n    print('Ende äussere')\n    return a + b + c + d + e + f + g + h + i + j")
 
 mgmt_client1.add_new_content(Name("/lib/node1"),"PYTHONSTREAM\nwriteout_on_getnext\ndef writeout_on_getnext(arg):\n    print('Start innere')\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    last_write_out()\n    return print('Ende innere')")
 
@@ -58,7 +58,7 @@ scenario_node_0 += "NFN"
 
 
 start_time = time.perf_counter()
-res = fetch_tool.fetch_data(scenario_node_0)
+res = fetch_tool.fetch_data(scenario_node_0, timeout=60)
 end_time = time.perf_counter()
 print("Interest result:", res)
 print("Time needed in seconds:", end_time-start_time)

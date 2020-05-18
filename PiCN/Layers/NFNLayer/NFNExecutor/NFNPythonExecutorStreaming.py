@@ -84,8 +84,8 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         check if interest is in the buffer and returns the content object if it is present
         :param interest: the interest name
         """
-        if interest_name in self.get_next_buffer:
-            return self.get_next_buffer[interest_name]
+        if str(interest_name) in self.get_next_buffer:
+            return self.get_next_buffer[str(interest_name)]
         else:
             return False
 
@@ -110,7 +110,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             return True
         else:
             # Content is not from requested interest
-            # if content is from this computation store in buffer put in self.queue_from_lower
+            # if content is from this computation, store in buffer else put in self.queue_from_lower
             if content_object_name_as_string in self.sent_interests:
                 self.get_next_buffer[content_object_name_as_string] = content_object
             else:
@@ -160,15 +160,17 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         :param arg: the name from which the content is returned
         :return: the content for the name
         """
+        print("OK", arg)
         next_name = arg
         buffer_output = self.check_buffer(next_name)
         if buffer_output:
             # TODO: why does this never happen -> KEEPALIVE instead?
             print("[get_next_content] Resulting content object out of the buffer:", buffer_output.name, buffer_output.content)
+            resulting_content_object = buffer_output
             result = buffer_output.content
         else:
-            self.sent_interests[next_name] = False
             resulting_content_object = self.queue_from_lower.get()[1]
+            print("OK", resulting_content_object)
             if isinstance(resulting_content_object, Interest):
                 print("[get_next_content] Resulting object is interest:", resulting_content_object.name, ", instead of content object with name:", next_name)
             else:
@@ -176,7 +178,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             # Gets stored in buffer if interest doesn't correspond to needed result
             is_content_correct = self.check_for_correct_content(resulting_content_object, next_name)
             while is_content_correct is False:
-                print("[get_next_content] Content wasn't correct")
+                print("[get_next_content] Content wasn't correct", resulting_content_object.name)
                 buffer_output = self.check_buffer(next_name)
                 # If desired interest is in buffer return it and break out of while loop
                 if buffer_output:
@@ -193,31 +195,17 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
                     is_content_correct = self.check_for_correct_content(resulting_content_object, next_name)
             # if correct = result
             result = resulting_content_object.content
-            self.sent_interests[resulting_content_object.name.components_to_string()] = True
-
             # the result is a meta
             # streaming procedure can start (see notes: 17.4.2020 nested comps)
 
-            if result.endswith("/streaming/p*") and result.startswith("sdo:\n"):
-                print("Streaming part:", self.get_next_part_counter)
-                next_name = str(resulting_content_object.name) + "//streaming/p" + str(self.get_next_part_counter)
-                result = self.get_next_single_name(next_name)
-                self.get_next_part_counter += 1
-                # streaming_part_counter = 0
-                # next_part_name = resulting_content_object.name
-                # next_part_name += "/streaming/p" + str(streaming_part_counter)
-                # part_result = self.get_next_content(next_part_name)
-                # result = part_result
-                # print("[get_next - streaming] Part result " + str(streaming_part_counter), part_result)
-                # while self.check_end_streaming(part_result) is False:
-                #     streaming_part_counter += 1
-                #     next_part_name = resulting_content_object.name
-                #     next_part_name += "/streaming/p" + str(streaming_part_counter)
-                #     print("[get_next - streaming] Next name:", next_part_name)
-                #     part_result = self.get_next_content(next_part_name)
-                #     print("[get_next - streaming] Result of part " + str(streaming_part_counter) + ":", part_result)
-                #     if self.check_end_streaming(part_result) is False:
-                #         result += part_result
+        if result.endswith("/streaming/p*") and result.startswith("sdo:\n"):
+            if str(resulting_content_object.name) not in self.get_next_buffer:
+                self.get_next_buffer[str(resulting_content_object.name)] = resulting_content_object
+            print("Streaming part:", self.get_next_part_counter)
+            next_name = str(resulting_content_object.name) + "//streaming/p" + str(self.get_next_part_counter)
+            result = self.get_next_single_name(next_name)
+            self.get_next_part_counter += 1
+
         return result
 
     def get_next_single_name(self, arg: str):
@@ -227,10 +215,12 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         """
         current_name = arg
         if self.get_next_part_counter == 0:
+            self.sent_interests[str(current_name)] = True
             self.queue_to_lower.put((self.packetid, Interest(current_name)))
         result = self.get_content_from_queue_from_lower(current_name)
         next_name = self.get_following_name(current_name)
         #if self.get_next_part_counter < 10:
+        self.sent_interests[str(next_name)] = True
         self.queue_to_lower.put((self.packetid, Interest(next_name)))
         return result
 
@@ -245,11 +235,13 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             current_name = self.name_list_multiple[self.pos_name_list_multiple]
             # Only first call puts two names (current_name and next_name) in the queue_to_lower. Next call only puts next_name
             if self.pos_name_list_multiple == 0:
+                self.sent_interests[str(current_name)] = True
                 self.queue_to_lower.put((self.packetid, Interest(current_name)))
             self.pos_name_list_multiple += 1
             result = self.get_content_from_queue_from_lower(current_name)
             next_name = self.name_list_multiple[self.pos_name_list_multiple]
             if self.check_end_streaming(next_name) is False:
+                self.sent_interests[str(next_name)] = True
                 self.queue_to_lower.put((self.packetid, Interest(next_name)))
             return result
         else:
@@ -261,6 +253,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         :param arg: the output from the write_out
         """
         current_name = arg
+        self.sent_interests[str(current_name)] = True
         self.queue_to_lower.put((self.packetid, Interest(current_name)))
         result = self.get_content_from_queue_from_lower(current_name)
         return result
@@ -274,6 +267,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         self.initialize_get_next_multiple(arg)
         if self.pos_name_list_multiple < len(self.name_list_multiple)-1:
             current_name = self.name_list_multiple[self.pos_name_list_multiple]
+            self.sent_interests[str(current_name)] = True
             self.queue_to_lower.put((self.packetid, Interest(current_name)))
             self.pos_name_list_multiple += 1
             result = self.get_content_from_queue_from_lower(current_name)
