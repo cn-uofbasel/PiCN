@@ -170,7 +170,6 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             result = buffer_output.content
         else:
             resulting_content_object = self.queue_from_lower.get()[1]
-            print("OK", resulting_content_object)
             if isinstance(resulting_content_object, Interest):
                 print("[get_next_content] Resulting object is interest:", resulting_content_object.name, ", instead of content object with name:", next_name)
             else:
