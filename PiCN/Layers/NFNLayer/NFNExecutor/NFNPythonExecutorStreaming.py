@@ -160,7 +160,6 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         :param arg: the name from which the content is returned
         :return: the content for the name
         """
-        print("OK", arg)
         next_name = arg
         buffer_output = self.check_buffer(next_name)
         if buffer_output:
@@ -169,11 +168,15 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             resulting_content_object = buffer_output
             result = buffer_output.content
         else:
-            resulting_content_object = self.queue_from_lower.get()[1]
+            queue_from_lower_entry = self.queue_from_lower.get()  # ASK: why is it only a Content object in some cases
+            while isinstance(queue_from_lower_entry, list) is False:
+                print(queue_from_lower_entry.name)
+                queue_from_lower_entry = self.queue_from_lower.get()
+            resulting_content_object = queue_from_lower_entry[1]
             if isinstance(resulting_content_object, Interest):
                 print("[get_next_content] Resulting object is interest:", resulting_content_object.name, ", instead of content object with name:", next_name)
             else:
-                print("[get_next_content] Resulting content object:", next_name, resulting_content_object.name, resulting_content_object.content)
+                print("[get_next_content] Resulting content object:", next_name, resulting_content_object.name)
             # Gets stored in buffer if interest doesn't correspond to needed result
             is_content_correct = self.check_for_correct_content(resulting_content_object, next_name)
             while is_content_correct is False:
@@ -186,11 +189,12 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
                 else:
                     # Get content out of queue_from_lower and check if it is correct -> until correct one is returned
                     print("[get_next_content] Content wasn't correct and not avaiable in the buffer.")
-                    queue_from_lower_entries = self.queue_from_lower.get() # ASK: If this doesn't happen it never gets the new entry
-                    #print("queue_from_lower", queue_from_lower_entries)
-                    resulting_content_object = self.queue_from_lower.get()[1]
-                    print("[get_next_content] Resulting content object:", resulting_content_object.name,
-                          resulting_content_object.content)
+                    queue_from_lower_entry = self.queue_from_lower.get() # ASK: why is it only a Content object in some cases
+                    while isinstance(queue_from_lower_entry, list) is False:
+                        print(queue_from_lower_entry.name)
+                        queue_from_lower_entry = self.queue_from_lower.get()
+                    resulting_content_object = queue_from_lower_entry[1]
+                    print("[get_next_content] Resulting content object:", resulting_content_object.name)
                     is_content_correct = self.check_for_correct_content(resulting_content_object, next_name)
             # if correct = result
             result = resulting_content_object.content
