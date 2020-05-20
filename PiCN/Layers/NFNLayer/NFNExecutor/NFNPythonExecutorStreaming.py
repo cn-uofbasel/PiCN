@@ -337,52 +337,60 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         arg = "".join(arg)
         return arg
 
+    def encode_name_components(self, name: Name):
+        first_quot = False
+        new_component = ""
+        for component in name.components:
+            if '"' in str(component):
+                if first_quot is True:
+                    new_component += str(component)
+                    first_quot = False
+                else:
+                    first_quot = True
+            if first_quot:
+                new_component += str(component)
+        new_component = new_component.replace("'b'", "/").replace("b'", "")[:-1]
+        if "=" not in new_component and '"' in new_component:
+            new_component = new_component.replace('"', "")
+        start_of_component = 0
+        for i in range(0, len(name.components)):
+            if "_(" in str(name.components[i]):
+                start_of_component = i
+        comp_list_len = len(name.components)
+        for i in range(start_of_component, comp_list_len - 2):
+            name.components.pop(len(name.components) - 2)
+        name.components[-2] = new_component.encode("ascii")
+        return name
+
+
+    def get_next_inner_computation(self, arg:str):
+        # doesn't start with sdo: -> it is a inner computation
+        print("[get_next - inner computation] starts here.")
+        # Start of transformation and component encoding
+        name_str = self.transform_inner(arg)
+        # print("[get_next - inner computation] after transform:", arg)
+        name_after_transform = Name(name_str)
+        name = self.encode_name_components(name_after_transform)
+        # End of transformation and component encoding
+        print("[get_next - inner computation] after encoding:", name)
+        self.queue_to_lower.put((self.packetid, Interest(name)))
+        inner_result = self.get_content(name)
+        print("[get_next - inner computation] ends here with result:", inner_result)
+        return inner_result
+
 
     def get_next(self, arg: str):
         """
         get next which is used for the named functions
-        distinguishes between both cases and continues for the necessary case
+        distinguishes between the three cases
         :param arg: name
         """
         if self.check_get_next_case(arg):
             return self.get_next_single_name(arg)
         elif self.check_get_next_case(arg) is False and self.check_streaming(arg):
-            return self.get_next_multiple_names_classic(arg)
+            return self.get_next_multiple_names(arg)
         else:
-            # doesn't start with sdo: -> it is a inner computation
-            print("[get_next - inner computation] starts here.")
-            # Start of transformation and component encoding
-            name_str = self.transform_inner(arg)
-            #print("get_next after transform:", arg)
-            name = Name(name_str)
-            first_quot = False
-            new_component = ""
-            for component in name.components:
-                if '"' in str(component):
-                    if first_quot is True:
-                        new_component += str(component)
-                        first_quot = False
-                    else:
-                        first_quot = True
-                if first_quot:
-                    new_component += str(component)
-            new_component = new_component.replace("'b'", "/").replace("b'", "")[:-1]
-            if "=" not in new_component and '"' in new_component:
-                new_component = new_component.replace('"', "")
-            start_of_component = 0
-            for i in range (0,len(name.components)):
-                if "_(" in str(name.components[i]):
-                    start_of_component = i
-            comp_list_len = len(name.components)
-            for i in range (start_of_component, comp_list_len-2):
-                name.components.pop(len(name.components)-2)
-            name.components[-2] = new_component.encode("ascii")
-            # End of transformation and component encoding
-            print("[get_next - inner computation] after encoding:", name)
-            self.queue_to_lower.put((self.packetid, Interest(name)))
-            inner_result = self.get_content(name)
-            print("[get_next - inner computation] ends here with result:", inner_result)
-            return inner_result
+            return self.get_next_inner_computation(arg)
 
 
     def write_out(self, content_content: str):
