@@ -4,7 +4,7 @@ import multiprocessing
 import time
 
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
-from PiCN.Layers.ICNLayer.PendingInterestTable import PendingInterestTableMemoryExact, BasePendingInterestTable
+from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationList
 from PiCN.Layers.NFNLayer.NFNExecutor import NFNPythonExecutor
 from PiCN.Packets import Interest, Content, Name
@@ -15,12 +15,9 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
     def __init__(self):
         self._language = "PYTHONSTREAM"
         self._sandbox = NFNPythonExecutor()._init_sandbox()
-        self._sandbox["check_streaming"] = self.check_streaming
         self._sandbox["get_next"] = self.get_next
-        self._sandbox["check_end_streaming"] = self.check_end_streaming
         self._sandbox["write_out"] = self.write_out
         self._sandbox["last_write_out"] = self.last_write_out
-        self._sandbox["check_get_next_case"] = self.check_get_next_case
         self._sandbox["print"] = print
         self._sandbox["upper"] = self.upper
         self._sandbox["sleep"] = time.sleep
@@ -154,25 +151,26 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         following_name += str(number)
         return following_name
 
-    def get_content_from_queue_from_lower(self, arg: str):
+    def get_content_from_queue_from_lower(self):
+        queue_from_lower_entry = self.queue_from_lower.get()
+        while isinstance(queue_from_lower_entry, list) is False:
+            print(queue_from_lower_entry.name)
+            queue_from_lower_entry = self.queue_from_lower.get()
+        return queue_from_lower_entry[1]
+
+    def get_content(self, next_name: str):
         """
         get content from given name for the get next function
         :param arg: the name from which the content is returned
         :return: the content for the name
         """
-        next_name = arg
         buffer_output = self.check_buffer(next_name)
         if buffer_output:
-            # TODO: why does this never happen -> KEEPALIVE instead?
             print("[get_next_content] Resulting content object out of the buffer:", buffer_output.name, buffer_output.content)
             resulting_content_object = buffer_output
             result = buffer_output.content
         else:
-            queue_from_lower_entry = self.queue_from_lower.get()  # ASK: why is it only a Content object in some cases
-            while isinstance(queue_from_lower_entry, list) is False:
-                print(queue_from_lower_entry.name)
-                queue_from_lower_entry = self.queue_from_lower.get()
-            resulting_content_object = queue_from_lower_entry[1]
+            resulting_content_object = self.get_content_from_queue_from_lower()
             if isinstance(resulting_content_object, Interest):
                 print("[get_next_content] Resulting object is interest:", resulting_content_object.name, ", instead of content object with name:", next_name)
             else:
@@ -189,11 +187,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
                 else:
                     # Get content out of queue_from_lower and check if it is correct -> until correct one is returned
                     print("[get_next_content] Content wasn't correct and not avaiable in the buffer.")
-                    queue_from_lower_entry = self.queue_from_lower.get() # ASK: why is it only a Content object in some cases
-                    while isinstance(queue_from_lower_entry, list) is False:
-                        print(queue_from_lower_entry.name)
-                        queue_from_lower_entry = self.queue_from_lower.get()
-                    resulting_content_object = queue_from_lower_entry[1]
+                    resulting_content_object = self.get_content_from_queue_from_lower()
                     print("[get_next_content] Resulting content object:", resulting_content_object.name)
                     is_content_correct = self.check_for_correct_content(resulting_content_object, next_name)
             # if correct = result
@@ -220,9 +214,8 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         if self.get_next_part_counter == 0:
             self.sent_interests[str(current_name)] = True
             self.queue_to_lower.put((self.packetid, Interest(current_name)))
-        result = self.get_content_from_queue_from_lower(current_name)
+        result = self.get_content(current_name)
         next_name = self.get_following_name(current_name)
-        #if self.get_next_part_counter < 10:
         self.sent_interests[str(next_name)] = True
         self.queue_to_lower.put((self.packetid, Interest(next_name)))
         return result
@@ -241,7 +234,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
                 self.sent_interests[str(current_name)] = True
                 self.queue_to_lower.put((self.packetid, Interest(current_name)))
             self.pos_name_list_multiple += 1
-            result = self.get_content_from_queue_from_lower(current_name)
+            result = self.get_content(current_name)
             next_name = self.name_list_multiple[self.pos_name_list_multiple]
             if self.check_end_streaming(next_name) is False:
                 self.sent_interests[str(next_name)] = True
@@ -258,7 +251,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         current_name = arg
         self.sent_interests[str(current_name)] = True
         self.queue_to_lower.put((self.packetid, Interest(current_name)))
-        result = self.get_content_from_queue_from_lower(current_name)
+        result = self.get_content(current_name)
         return result
 
     def get_next_multiple_names_classic(self, arg: str):
@@ -273,19 +266,19 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             self.sent_interests[str(current_name)] = True
             self.queue_to_lower.put((self.packetid, Interest(current_name)))
             self.pos_name_list_multiple += 1
-            result = self.get_content_from_queue_from_lower(current_name)
+            result = self.get_content(current_name)
             return result
 
     def get_next(self, arg: str):
         """
-        get next content
-        distinguished between both cases and continues for the necessary case
+        get next which is used for the named functions
+        distinguishes between both cases and continues for the necessary case
         :param arg: name
         """
         if self.check_get_next_case(arg):
             return self.get_next_single_name(arg)
         elif self.check_get_next_case(arg) is False and self.check_streaming(arg):
-            return self.get_next_multiple_names(arg)
+            return self.get_next_multiple_names_classic(arg)
         else:
             # doesn't start with sdo: -> it is a inner computation
             print("[get_next - inner computation] starts here.")
@@ -325,7 +318,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             # End of transformation and component encoding
             print("[get_next - inner computation] after encoding:", name)
             self.queue_to_lower.put((self.packetid, Interest(name)))
-            inner_result = self.get_content_from_queue_from_lower(name)
+            inner_result = self.get_content(name)
             print("[get_next - inner computation] ends here with result:", inner_result)
             return inner_result
 
@@ -342,8 +335,6 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             metatitle_content = Content(self.comp_name, "sdo:\n" + str(self.comp_name) + "/streaming/p*")
             self.queue_to_lower.put((self.packetid, metatitle_content))
             self.cs.add_content_object(metatitle_content)
-            # if len(self.pit.get_container()) > 0:
-            #     self.pit_entry = self.pit.get_container()[0]
 
         # actual content_object for streaming
         self.write_out_part_counter += 1
@@ -379,10 +370,8 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         """check if file is form streaming and lines start with a '/'
         :param arg: file to check
         """
-        # Check if String is empty
         if not arg:
             return False
-        # Check if streaming prefix is available
         elif arg.startswith("sdo:"):
             print("[check_streaming] File is for streaming")
             tmp_list = arg.splitlines()
@@ -391,13 +380,12 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
                 if self.check_name(x) is False:
                     return False
             return True
-        # Wrong prefix, file is not for streaming
         else:
             return False
 
     def check_end_streaming(self, arg: str):
         """
-        check if its the end of the stream¨
+        check if it is the end of a stream
         :param arg: content to check
         """
         return arg.endswith("sdo:endstreaming")
