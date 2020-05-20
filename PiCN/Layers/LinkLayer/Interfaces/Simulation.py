@@ -119,7 +119,7 @@ class SimulationBus(PiCNProcess):
             dec_packet = self.packetencoder.decode(packet)
             if self.print_keep_alive or (dec_packet.name.components[-1] == b'NFN' and dec_packet.name.components[-2] != b"KEEPALIVE"):
                 print(f"{time.time():.5f}" + "\tSending packet from\t'" + src_addr + "'\tto\t'" + dst_addr + "':\t'" +
-                      str(type(dec_packet)).replace("class ","").replace("PiCN.Packets.", "") + "\t"+
+                      str(type(dec_packet)).replace("class ","").replace("PiCN.Packets.", "") +
                       str(dec_packet.name).replace("\n", " ") + "'" , end="") #TODO improve logging
 
             dst_interface: SimulationInterface = self.interfacetable.get(dst_addr)
@@ -141,7 +141,7 @@ class SimulationBus(PiCNProcess):
 
             delay = dst_interface.delay(packet)
             if self.print_keep_alive or (dec_packet.name.components[-1] == b'NFN' and dec_packet.name.components[-2] != b"KEEPALIVE"):
-                print("\t(delay: " + str(delay) + ")")
+                print("(delay: " + str(delay) + ")")
             #t = threading.Timer(delay, dst_interface.send, args=[packet, src_addr, "bus"])
             #t.setDaemon(True)
             #t.start()

@@ -80,6 +80,8 @@ class PendingInterstTableMemoryExact(BasePendingInterestTable):
         self.container.append(entry)
 
     def ageing(self) -> List[PendingInterestTableEntry]:
+        # FIXME temporary solution
+        return
         cur_time = time.time()
         remove = []
         updated = []
