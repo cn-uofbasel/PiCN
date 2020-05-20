@@ -326,6 +326,18 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             return result
 
 
+    def transform_inner(self, arg: str):
+        first = arg.find("=")
+        last = len(arg) - arg[::-1].find("=") - 1
+        hash = arg.find("#")
+        arg = list(arg)
+        arg[first] = '"'
+        arg[last] = '"'
+        arg[hash] = "_"
+        arg = "".join(arg)
+        return arg
+
+
     def get_next(self, arg: str):
         """
         get next which is used for the named functions
@@ -340,16 +352,9 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             # doesn't start with sdo: -> it is a inner computation
             print("[get_next - inner computation] starts here.")
             # Start of transformation and component encoding
-            first = arg.find("=")
-            last = len(arg) - arg[::-1].find("=") - 1
-            hash = arg.find("#")
-            arg = list(arg)
-            arg[first] = '"'
-            arg[last] = '"'
-            arg[hash] = "_"
-            arg = "".join(arg)
+            name_str = self.transform_inner(arg)
             #print("get_next after transform:", arg)
-            name = Name(arg)
+            name = Name(name_str)
             first_quot = False
             new_component = ""
             for component in name.components:
