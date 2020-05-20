@@ -363,8 +363,13 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         return name
 
 
-    def get_next_inner_computation(self, arg:str):
-        # doesn't start with sdo: -> it is a inner computation
+    def get_next_inner_computation(self, arg: str):
+        """
+        handles the inner computation part from get_next. transforms and encodes the name, puts it into the
+        queue_to_lower and calls get_content() to retrieve the result
+        :param arg: the name as a string
+        :return: the content from the content object
+        """
         print("[get_next - inner computation] starts here.")
         # Start of transformation and component encoding
         name_str = self.transform_inner(arg)
@@ -383,7 +388,8 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         """
         get next which is used for the named functions
         distinguishes between the three cases
-        :param arg: name
+        :param arg: the name as a string
+        :return: the content from the content object
         """
         if self.check_get_next_case(arg):
             return self.get_next_single_name(arg)
@@ -397,7 +403,6 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         """
         stores content object as parts into the content store
         :param contentContent: the content to be written out
-        :return: string: computation name + "/streaming/p*"
         """
         print("[write_out] Computation name: ", self.comp_name)
         # meta_title_content object creation to return as a first part
@@ -416,8 +421,13 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
               self.cs.get_container()[-1].content.content)
 
     def last_write_out(self):
+        """
+        stores last content object with "sdo:endstreaming" in content object and adds pit_entry to the pit
+        is used to detect end of streaming the parts
+        """
         end_name = self.comp_name
-        end_name += "/streaming/p" + str(self.write_out_part_counter + 1)
+        self.write_out_part_counter += 1
+        end_name += "/streaming/p" + str(self.write_out_part_counter)
         end_streaming_content_object = Content(end_name, "sdo:endstreaming")
         self.cs.add_content_object(end_streaming_content_object)
         print("[last_write_out] Last entry in content store:", self.cs.get_container()[-1].content.name,
