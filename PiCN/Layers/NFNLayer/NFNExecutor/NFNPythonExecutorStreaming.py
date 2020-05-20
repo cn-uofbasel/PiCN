@@ -159,7 +159,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             return False
 
 
-    def check_get_next_case(self, interest_name: str):
+    def check_for_metatitle(self, interest_name: str):
         """
         check which of the get_next cases is needed - if it ends with '/streaming/p*' the single name case is needed
         :param interest_name: the interest name
@@ -386,14 +386,18 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
 
     def get_next(self, arg: str):
         """
-        get next which is used for the named functions
-        distinguishes between the three cases
+        The get_next function which is used for the named functions.
+        This function handles getting the desired content according to its case. Three cases are possible.
+        The single name case for getting only a part if the length of the stream is not known.
+        The multi name case for getting the next part if the length of the stream is given.
+        The handling of an inner computation where the name has to be changed to correct format before getting the
+        content.
         :param arg: the name as a string
         :return: the content from the content object
         """
-        if self.check_get_next_case(arg):
+        if self.check_for_metatitle(arg):
             return self.get_next_single_name(arg)
-        elif self.check_get_next_case(arg) is False and self.check_streaming(arg):
+        elif self.check_for_metatitle(arg) is False and self.check_streaming(arg):
             return self.get_next_multiple_names(arg)
         else:
             return self.get_next_inner_computation(arg)
@@ -401,8 +405,10 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
 
     def write_out(self, content_content: str):
         """
-        stores content object as parts into the content store
-        :param contentContent: the content to be written out
+        The write_out function which is used for the named functions.
+        Stores content object as parts into the content store. Before the first element is stored a meta title is stored
+        into the content store so the node who gets this content object can detect and start the stream.
+        :param contentContent: the content object to be stored out
         """
         print("[write_out] Computation name: ", self.comp_name)
         # meta_title_content object creation to return as a first part
@@ -422,8 +428,9 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
 
     def last_write_out(self):
         """
-        stores last content object with "sdo:endstreaming" in content object and adds pit_entry to the pit
-        is used to detect end of streaming the parts
+        The last_write_out function which is used for the named functions.
+        Stores the last content object with content = "sdo:endstreaming" into the content store and adds the pit_entry
+        to the pit. This is used after the last part is added into the content store to detect the end of the stream.
         """
         end_name = self.comp_name
         self.write_out_part_counter += 1
