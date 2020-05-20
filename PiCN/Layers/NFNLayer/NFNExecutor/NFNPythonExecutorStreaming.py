@@ -38,8 +38,10 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         self.get_next_part_counter: int = 0
         self.write_out_part_counter: int = -1
 
+
     def upper(self, string: str):
         return string.upper()
+
 
     def initialize_executor(self, queue_to_lower: multiprocessing.Queue, queue_from_lower: multiprocessing.Queue,
                            comp_table: NFNComputationList, cs: BaseContentStore, pit: BasePendingInterestTable):
@@ -56,6 +58,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         self.cs = cs
         self.pit = pit
 
+
     def initialize_get_next_single(self, arg: str):
         """
         check if file is for streaming and if it is fill self.name_list_single with necessary names for single name case
@@ -67,6 +70,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         self.name_list_single = arg.splitlines()
         self.name_list_single.pop(0)
 
+
     def initialize_get_next_multiple(self, arg: str):
         """
         check if file is for streaming and if it is fill self.name_list_multiple with necessary names for multiple name case
@@ -75,6 +79,44 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         if self.name_list_multiple is None:
             self.name_list_multiple = arg.splitlines()
             self.name_list_multiple.pop(0)
+
+
+    def check_name(self, name: str):
+        """
+        check if name starts with '/' or it is the last component
+        :param name: name to check
+        """
+        if name[0] == "/" or self.check_end_streaming(name):
+            return True
+        else:
+            return False
+
+
+    def check_streaming(self, arg: str):
+        """check if file is form streaming and lines start with a '/'
+        :param arg: file to check
+        """
+        if not arg:
+            return False
+        elif arg.startswith("sdo:"):
+            print("[check_streaming] File is for streaming")
+            tmp_list = arg.splitlines()
+            tmp_list.pop(0)
+            for x in tmp_list:
+                if self.check_name(x) is False:
+                    return False
+            return True
+        else:
+            return False
+
+
+    def check_end_streaming(self, arg: str):
+        """
+        check if it is the end of a stream
+        :param arg: content to check
+        """
+        return arg.endswith("sdo:endstreaming")
+
 
     def check_buffer(self, interest_name: str):
         """
@@ -85,6 +127,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             return self.get_next_buffer[str(interest_name)]
         else:
             return False
+
 
     def check_for_correct_content(self, content_object: Content, content_name: str):
         """
@@ -115,6 +158,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
                 self.queue_from_lower.put(content_object)
             return False
 
+
     def check_get_next_case(self, interest_name: str):
         """
         check which of the get_next cases is needed - if it ends with '/streaming/p*' the single name case is needed
@@ -124,6 +168,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             return True
         else:
             return False
+
 
     def get_amount_of_digits(self, name: str):
         """
@@ -136,6 +181,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             x -= 1
         if name[:x].endswith("/streaming/p"):
             return x
+
 
     def get_following_name(self, name: Name):
         """
@@ -151,12 +197,27 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         following_name += str(number)
         return following_name
 
+
     def get_content_from_queue_from_lower(self):
         queue_from_lower_entry = self.queue_from_lower.get()
         while isinstance(queue_from_lower_entry, list) is False:
             print(queue_from_lower_entry.name)
             queue_from_lower_entry = self.queue_from_lower.get()
         return queue_from_lower_entry[1]
+
+
+    def stream_part(self, result: str, resulting_content_object: Content):
+        # the result is a meta
+        # streaming procedure can start (see notes: 17.4.2020 nested comps)
+        if result.endswith("/streaming/p*") and result.startswith("sdo:\n"):
+            if str(resulting_content_object.name) not in self.get_next_buffer:
+                self.get_next_buffer[str(resulting_content_object.name)] = resulting_content_object
+            print("[Streaming] Part:", self.get_next_part_counter)
+            next_name = str(resulting_content_object.name) + "//streaming/p" + str(self.get_next_part_counter)
+            result = self.get_next_single_name(next_name)
+            self.get_next_part_counter += 1
+        return result
+
 
     def get_content(self, next_name: str):
         """
@@ -192,18 +253,10 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
                     is_content_correct = self.check_for_correct_content(resulting_content_object, next_name)
             # if correct = result
             result = resulting_content_object.content
-            # the result is a meta
-            # streaming procedure can start (see notes: 17.4.2020 nested comps)
 
-        if result.endswith("/streaming/p*") and result.startswith("sdo:\n"):
-            if str(resulting_content_object.name) not in self.get_next_buffer:
-                self.get_next_buffer[str(resulting_content_object.name)] = resulting_content_object
-            print("Streaming part:", self.get_next_part_counter)
-            next_name = str(resulting_content_object.name) + "//streaming/p" + str(self.get_next_part_counter)
-            result = self.get_next_single_name(next_name)
-            self.get_next_part_counter += 1
-
+        result = self.stream_part(result, resulting_content_object)
         return result
+
 
     def get_next_single_name(self, arg: str):
         """
@@ -219,6 +272,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         self.sent_interests[str(next_name)] = True
         self.queue_to_lower.put((self.packetid, Interest(next_name)))
         return result
+
 
     def get_next_multiple_names(self, arg: str):
         """
@@ -243,6 +297,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         else:
             return None
 
+
     def get_next_single_name_classic(self, arg: str):
         """
         get next for the single name case continues until one /streaming/p.. contains "sdo:endstreaming"
@@ -253,6 +308,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         self.queue_to_lower.put((self.packetid, Interest(current_name)))
         result = self.get_content(current_name)
         return result
+
 
     def get_next_multiple_names_classic(self, arg: str):
         """
@@ -268,6 +324,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             self.pos_name_list_multiple += 1
             result = self.get_content(current_name)
             return result
+
 
     def get_next(self, arg: str):
         """
@@ -354,38 +411,3 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
               self.cs.get_container()[-1].content.content)
         if self.pit_entry:
             self.pit.append(self.pit_entry)
-
-
-    def check_name(self, name: str):
-        """
-        check if name starts with '/' or it is the last component
-        :param name: name to check
-        """
-        if name[0] == "/" or self.check_end_streaming(name):
-            return True
-        else:
-            return False
-
-    def check_streaming(self, arg: str):
-        """check if file is form streaming and lines start with a '/'
-        :param arg: file to check
-        """
-        if not arg:
-            return False
-        elif arg.startswith("sdo:"):
-            print("[check_streaming] File is for streaming")
-            tmp_list = arg.splitlines()
-            tmp_list.pop(0)
-            for x in tmp_list:
-                if self.check_name(x) is False:
-                    return False
-            return True
-        else:
-            return False
-
-    def check_end_streaming(self, arg: str):
-        """
-        check if it is the end of a stream
-        :param arg: content to check
-        """
-        return arg.endswith("sdo:endstreaming")
