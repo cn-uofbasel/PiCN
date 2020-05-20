@@ -260,7 +260,8 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
 
     def get_next_single_name(self, arg: str):
         """
-        get next for the single name case continues until one /streaming/p.. contains "sdo:endstreaming"
+        get next for the single name case. Before returning the result the next name get already put into the
+        queue_to_lower. The first name is the only one which is put into the queue immediately before requesting.
         :param arg: the output from the write_out
         """
         current_name = arg
@@ -276,9 +277,9 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
 
     def get_next_multiple_names(self, arg: str):
         """
-        get next for the multiple name case
-        initializes name_list_multiple if it isn't already initialized
-        :param arg: listing of names "sdo:\n\name1\name2\n...\nameN
+        get next for the multiple name case. Before returning the result the next name get already put into the
+        queue_to_lower. The first name is the only one which is put into the queue immediately before requesting.
+        :param arg: list of the names "sdo:\n\name1\name2\n...\nameN
         """
         self.initialize_get_next_multiple(arg)
         if self.pos_name_list_multiple < len(self.name_list_multiple)-1:
@@ -300,7 +301,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
 
     def get_next_single_name_classic(self, arg: str):
         """
-        get next for the single name case continues until one /streaming/p.. contains "sdo:endstreaming"
+        get_next for the classic single name case. The name only gets put in the queue_to_lower before requesting it.
         :param arg: the output from the write_out
         """
         current_name = arg
@@ -312,9 +313,8 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
 
     def get_next_multiple_names_classic(self, arg: str):
         """
-        get next for the multiple name case
-        initializes name_list_multiple if it isn't already initialized
-        :param arg: listing of names "sdo:\n\name1\name2\n...\nameN
+        get_next for the classic multiple name case. The name only gets put in the queue_to_lower before requesting it.
+        :param arg: list of the names "sdo:\n\name1\name2\n...\nameN
         """
         self.initialize_get_next_multiple(arg)
         if self.pos_name_list_multiple < len(self.name_list_multiple)-1:
@@ -327,6 +327,12 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
 
 
     def transform_inner(self, arg: str):
+        """
+        Transform the inner name to correct syntax so it can be parsed. Replaces first and last '=' with an '"' and the
+        '#' with an '_'.
+        :param arg: The name as a string to be transformed
+        :return: the transformed string
+        """
         first = arg.find("=")
         last = len(arg) - arg[::-1].find("=") - 1
         hash = arg.find("#")
@@ -337,7 +343,13 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         arg = "".join(arg)
         return arg
 
+
     def encode_name_components(self, name: Name):
+        """
+        Encodes the name components so it can be handled from the lower layers.
+        :param name: the name to be encoded
+        :return: the encoded name
+        """
         first_quot = False
         new_component = ""
         for component in name.components:
@@ -365,8 +377,8 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
 
     def get_next_inner_computation(self, arg: str):
         """
-        handles the inner computation part from get_next. transforms and encodes the name, puts it into the
-        queue_to_lower and calls get_content() to retrieve the result
+        Handles the inner computation part from get_next. Transforms and encodes the name and puts it into the
+        queue_to_lower and calls get_content() to retrieve the result.
         :param arg: the name as a string
         :return: the content from the content object
         """
