@@ -46,11 +46,13 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
     def initialize_executor(self, queue_to_lower: multiprocessing.Queue, queue_from_lower: multiprocessing.Queue,
                            comp_table: NFNComputationList, cs: BaseContentStore, pit: BasePendingInterestTable):
         """
-        setter function to set both queues, the computation table and the content store after the forwarders being initialized
+        Setter function to set both queues, the computation table, the content store and the pending interest table
+        after the forwarders have been initialized.
         :param queue_to_lower: queue to lower layer
         :param queue_from_lower: queue from lower layer
-        :param comp_table: the NFNComputationList
-        :param cs: the BaseContentStore to store the Content in write_out
+        :param comp_table: the NFNComputationList #TODO comp table is not necessary
+        :param cs: the BaseContentStore to store the content during the write_out
+        :param pit: the BasePendingInterestTable
         """
         self.queue_to_lower = queue_to_lower
         self.queue_from_lower = queue_from_lower
@@ -61,7 +63,8 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
 
     def initialize_get_next_single(self, arg: str):
         """
-        check if file is for streaming and if it is fill self.name_list_single with necessary names for single name case
+        Checks if the file is for streaming and if it is, self.name_list_single gets filled with the necessary names
+        for the single name case.
         :param arg: the input with the desired computation names
         """
         # TODO If arg is not for streaming stop here
@@ -73,7 +76,8 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
 
     def initialize_get_next_multiple(self, arg: str):
         """
-        check if file is for streaming and if it is fill self.name_list_multiple with necessary names for multiple name case
+        Check if the file is for streaming and if it is, self.name_list_multiple gets filled with the necessary names
+        for the multiple name case.
         :param arg: the input with the desired computation names
         """
         if self.name_list_multiple is None:
@@ -83,8 +87,9 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
 
     def check_name(self, name: str):
         """
-        check if name starts with '/' or it is the last component
+        Checks if name either starts with '/' or it is the last component of a stream.
         :param name: name to check
+        :return: True if it is. False if not.
         """
         if name[0] == "/" or self.check_end_streaming(name):
             return True
@@ -93,8 +98,11 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
 
 
     def check_streaming(self, arg: str):
-        """check if file is form streaming and lines start with a '/'
+        """
+        Checks if the file is in the streaming format.
+        The file starts with 'sdo:' and every line starts with a '/'
         :param arg: file to check
+        :return: True if it is in the correct format. False if not.
         """
         if not arg:
             return False
@@ -112,16 +120,18 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
 
     def check_end_streaming(self, arg: str):
         """
-        check if it is the end of a stream
+        Check if it the content ends with "sdo:endstreaming".
         :param arg: content to check
+        :return: True if it is the end. False if not.
         """
         return arg.endswith("sdo:endstreaming")
 
 
     def check_buffer(self, interest_name: str):
         """
-        check if interest is in the buffer and returns the content object if it is present
+        Checks if interest is in the buffer and returns the content object if it is.
         :param interest: the interest name
+        :return: The content object if it is in the buffer. False if it is not in the buffer.
         """
         if str(interest_name) in self.get_next_buffer:
             return self.get_next_buffer[str(interest_name)]
@@ -131,13 +141,12 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
 
     def check_for_correct_content(self, content_object: Content, content_name: str):
         """
-        check if the content from content_object corresponds to the interest requested with content_name
-        if true returns true
-        else returns false and stores content_object in get_next_buffer if it is for this computation
-        if not relevant for this computation it is put to self.queue_from_lower again
+        Checks if the content from content_object corresponds to the interest requested with content_name.
+        If the content is not relevant for this computation it is put to self.queue_from_lower again.
         :param content_object: the content_object to compare
         :param next_name: the corresponding name
-        :return:
+        :return: True if it is the correct content. If the content doesn't correspond to the name the content object
+        is stored in the buffer and False is returned.
         """
         if isinstance(content_name, Name):
             content_name = content_name.to_string() # inner comp is a name instead of a string
@@ -161,8 +170,9 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
 
     def check_for_metatitle(self, interest_name: str):
         """
-        check which of the get_next cases is needed - if it ends with '/streaming/p*' the single name case is needed
+        Checks if a metatitle is present (ends with '/streaming/p*').
         :param interest_name: the interest name
+        :return: True if it is a metatitle. False if not.
         """
         if interest_name.endswith("/streaming/p*"):
             return True
@@ -172,7 +182,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
 
     def get_amount_of_digits(self, name: str):
         """
-        get the amount of digits on the part of the single name case
+        Gets the negative amount of digits after the '/streaming/p' on the single name.
         :param name: the name from which the amount of digit has to be returned
         :return the negative amount of digits
         """
@@ -185,7 +195,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
 
     def get_following_name(self, name: Name):
         """
-        get the following name with help of the negative amount of digits (get_amount_of_digits)
+        Gets the name for the next part with help of the negative amount of digits (get_amount_of_digits).
         :param name: the name from which the following has to be found
         :return: the following name
         """
@@ -199,15 +209,26 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
 
 
     def get_content_from_queue_from_lower(self):
+        """
+        Gets content from the queue from lower and checks if the result is a list with the packetid on the first entry
+        and the content object on the second entry
+        :return: the next content object from the queue_from_lower
+        """
         queue_from_lower_entry = self.queue_from_lower.get()
         while isinstance(queue_from_lower_entry, list) is False:
-            print(queue_from_lower_entry.name)
+            print("[get_content_from_queue_from_lower] Not a list", queue_from_lower_entry.name)
             queue_from_lower_entry = self.queue_from_lower.get()
         return queue_from_lower_entry[1]
 
 
     def stream_part(self, result: str, resulting_content_object: Content):
-        # the result is a meta
+        """
+        Checks if the result is meta and retrieves the following part if it is.
+        :param result: The result as content
+        :param resulting_content_object: the result as a content object
+        :return: the content object which was given as a parameter or the result of the following part if the result was
+        a metatitle
+        """
         # streaming procedure can start (see notes: 17.4.2020 nested comps)
         if result.endswith("/streaming/p*") and result.startswith("sdo:\n"):
             if str(resulting_content_object.name) not in self.get_next_buffer:
@@ -221,7 +242,8 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
 
     def get_content(self, next_name: str):
         """
-        get content from given name for the get next function
+        Handles getting the content. Checks if the name is present in the buffer otherwise gets it from the
+        queue_from_lower. If result is a metatitle, the next part is retrieved.
         :param arg: the name from which the content is returned
         :return: the content for the name
         """
@@ -251,7 +273,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
                     resulting_content_object = self.get_content_from_queue_from_lower()
                     print("[get_next_content] Resulting content object:", resulting_content_object.name)
                     is_content_correct = self.check_for_correct_content(resulting_content_object, next_name)
-            # if correct = result
+
             result = resulting_content_object.content
 
         result = self.stream_part(result, resulting_content_object)
