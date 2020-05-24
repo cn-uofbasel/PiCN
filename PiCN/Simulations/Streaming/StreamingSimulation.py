@@ -10,7 +10,7 @@ Client  <--------> NFN0 <------------> NFN1 <-----------> Repo1
 import os
 import shutil
 import unittest
-from datetime import time
+import time
 
 from PiCN.Layers.LinkLayer.Interfaces import SimulationBus
 from PiCN.Layers.NFNLayer.NFNExecutor.NFNPythonExecutorStreaming import NFNPythonExecutorStreaming
@@ -66,13 +66,13 @@ class StreamingSimulation(unittest.TestCase):
 
         self.simulation_bus.start_process()
 
-        time.sleep(3) # TODO: is this necessary?
+        time.sleep(3)
 
         #setup forwarding rules
         self.mgmt_client0.add_face("nfn1", None, 0)
         self.mgmt_client0.add_forwarding_rule(Name("/lib"), [0])
 
-        self.mgmt_client1.add_face("repo", None, 0)
+        self.mgmt_client1.add_face("repo1", None, 0)
         self.mgmt_client1.add_forwarding_rule(Name("/repo/r1"), [0])
 
         #TODO: back connection?
@@ -81,11 +81,16 @@ class StreamingSimulation(unittest.TestCase):
 
         #setup function code
         self.mgmt_client1.add_new_content(Name("/lib/multiname"),
-                                     "PYTHONSTREAM\nmultiname\ndef multiname(arg):\n    a = get_next(arg)\n    a = a.upper()\n    b = get_next(arg)\n    b = b.upper()\n    c = get_next(arg)\n    c = c.upper()\n    d = get_next(arg)\n    d = d.upper()\n    e = get_next(arg)\n    e = e.upper()\n    f = get_next(arg)\n    f = f.upper()\n    g = get_next(arg)\n    g = g.upper()\n    h = get_next(arg)\n    h = h.upper()\n    i = get_next(arg)\n    i = i.upper()\n    j = get_next(arg)\n    j = j.upper()    return a + b + c + d + e + f + g + h + i + j")
+                                     "PYTHONSTREAM\nmultiname\ndef multiname(arg):\n    a = get_next(arg)\n    a = a.upper()\n    b = get_next(arg)\n    b = b.upper()\n    c = get_next(arg)\n    c = c.upper()\n    d = get_next(arg)\n    d = d.upper()\n    e = get_next(arg)\n    e = e.upper()\n    f = get_next(arg)\n    f = f.upper()\n    g = get_next(arg)\n    g = g.upper()\n    h = get_next(arg)\n    h = h.upper()\n    i = get_next(arg)\n    i = i.upper()\n    j = get_next(arg)\n    j = j.upper()\n    return a + b + c + d + e + f + g + h + i + j")
+
+    def generate_name_files(self, path: str, number: int):
+        with open(path + "/name" + str(number), "w") as f:
+            f.write("Content of name" + str(number) + ". ")
+        f.close()
 
 
     def setup_repo(self):
-        self.path = "tmp/repo1"
+        self.path = "/tmp/repo1"
         try:
             os.stat(self.path)
         except:
@@ -96,12 +101,6 @@ class StreamingSimulation(unittest.TestCase):
                 content_file.write("/repo/r1/name" + str(i) + "\n")
                 self.generate_name_files(self.path, i)
             content_file.write("sdo:endstreaming\n")
-
-
-    def generate_name_files(path: str, number: int):
-        with open(path + "name" + str(number), "w") as f:
-            f.write("Content of name" + str(number) + ". ")
-        f.close()
 
 
     def tearDown_repo(self):
@@ -121,6 +120,6 @@ class StreamingSimulation(unittest.TestCase):
         name += '_(/repo/r1/data1)'
         name += "NFN"
 
-        res = self.fetch_tool1.fetch_data(name, time=60)
+        res = self.fetch_tool1.fetch_data(name, timeout=40)
         print(res)
-        self.assertEqual("INHALT VON NAME1. INHALT VON NAME2. INHALT VON NAME3. INHALT VON NAME4. INHALT VON NAME5. INHALT VON NAME6")
+        self.assertEqual("CONTENT OF NAME1. CONTENT OF NAME2. CONTENT OF NAME3. CONTENT OF NAME4. CONTENT OF NAME5. CONTENT OF NAME6. CONTENT OF NAME7. CONTENT OF NAME8. CONTENT OF NAME9. CONTENT OF NAME10. ", res)
