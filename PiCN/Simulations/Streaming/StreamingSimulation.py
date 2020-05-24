@@ -2,9 +2,12 @@
 In this simulation the NFNPythonExecutorStreaming is used. With the use of this Executor we can take advantage of fetch
 while compute. So while fetching the next part of the stream the previous part can already be used for the computation.
 
-Scenario consists of two NFN Nodes and a Client.
+There are two scenarios. The first one consists of two NFN nodes and a client. The second scenario has a NFN node in
+between the two nodes of the first scenario. The first scenario is used for the multiname and the twolayer test, whereas
+the second scenario is used for the threelayer test.
 
-Client  <--------> NFN0 <------------> NFN1 <-----------> Repo1
+Client  <--------> NFN0 <-*-----------> NFN1 <-----------> Repo1
+                          \-----------> NFN12 <-----------> NFN1 <-----------> Repo1
 """
 
 import os
@@ -83,7 +86,7 @@ class StreamingSimulation(unittest.TestCase):
         self.mgmt_client0.add_forwarding_rule(Name("/lib0"), [0])
 
         self.mgmt_client0.add_face("nfn12", None, 0)
-        self.mgmt_client0.add_forwarding_rule(Name("/lib1"), [0])
+        self.mgmt_client0.add_forwarding_rule(Name("/lib1"), [1])
 
         self.mgmt_client01.add_face("nfn1", None, 0)
         self.mgmt_client01.add_forwarding_rule(Name("/lib1"), [0])
@@ -108,8 +111,15 @@ class StreamingSimulation(unittest.TestCase):
         self.mgmt_client1.add_new_content(Name("/lib0/node1"),
                                      "PYTHONSTREAM\nwriteout_on_getnext\ndef writeout_on_getnext(arg):\n    print('Start innere')\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    last_write_out()\n    return print('Ende innere')")
 
+        #single name - three layer
+        self.mgmt_client0.add_new_content(Name("/lib1/node0"),
+                                     "PYTHONSTREAM\ngetnext_on_writeout\ndef getnext_on_writeout(arg):\n    print('Start äussere')\n    a = get_next(arg)\n    a = a.upper()\n    b = get_next(arg)\n    b = b.upper()\n    c = get_next(arg)\n    c = c.upper()\n    d = get_next(arg)\n    d = d.upper()\n    e = get_next(arg)\n    e = e.upper()\n    f = get_next(arg)\n    f = f.upper()\n    g = get_next(arg)\n    g = g.upper()\n    h = get_next(arg)\n    h = h.upper()\n    i = get_next(arg)\n    i = i.upper()\n    j = get_next(arg)\n    j = j.upper()\n    print('Ende äussere')\n    return a + b + c + d + e + f + g + h + i + j")
+
         self.mgmt_client01.add_new_content(Name("/lib1/node1"),
                                      "PYTHONSTREAM\nwriteout_on_getnext\ndef writeout_on_getnext(arg):\n    print('Start mittlere')\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    last_write_out()\n    return print('Ende mittlere')")
+
+        self.mgmt_client1.add_new_content(Name("/lib1/node2"),
+                                     "PYTHONSTREAM\nwriteout_on_getnext\ndef writeout_on_getnext(arg):\n    print('Start innere')\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    last_write_out()\n    return print('Ende innere')")
 
 
     def generate_name_files(self, path: str, number: int):
@@ -179,15 +189,15 @@ class StreamingSimulation(unittest.TestCase):
         self.setup_repo()
         self.setup_faces_and_connections()
 
-        scenario_node_2 = Name("/lib0/node1")
-        scenario_node_2 += "#(=/repo/r1/exampleInputFile=)"
+        scenario_node_2 = Name("/lib1/node2")
+        scenario_node_2 += "#(=/repo/r1/data1=)"
         scenario_node_2 += "NFN"
 
         scenario_node_1 = Name("/lib1/node1")
         scenario_node_1 += "#(=" + str(scenario_node_2) + "=)"
         scenario_node_1 += "NFN"
 
-        scenario_node_0 = Name("/lib0/node0")
+        scenario_node_0 = Name("/lib1/node0")
         scenario_node_0 += '_("' + str(scenario_node_1) + '")'
         scenario_node_0 += "NFN"
 
