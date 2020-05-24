@@ -43,16 +43,25 @@ class StreamingSimulation(unittest.TestCase):
 
         self.nfn1.executors["PYTHONSTREAM"].initialize_executor(self.nfn1.nfnlayer.queue_to_lower, self.nfn1.nfnlayer.queue_from_lower, self.nfn1.nfnlayer.computation_table, self.nfn1.nfnlayer.cs, self.nfn1.icnlayer.pit)
 
+        self.nfn12 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
+                                interfaces=[self.simulation_bus.add_interface("nfn12")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
+                                ageing_interval=1)
+
+        self.nfn12.executors["PYTHONSTREAM"].initialize_executor(self.nfn12.nfnlayer.queue_to_lower, self.nfn12.nfnlayer.queue_from_lower, self.nfn12.nfnlayer.computation_table, self.nfn12.nfnlayer.cs, self.nfn12.icnlayer.pit)
+
+
         self.repo1 = ICNDataRepository("/tmp/repo1", Name("/repo/r1"), 0, 255, NdnTlvEncoder(), False, False,
                                  interfaces=[self.simulation_bus.add_interface("repo1")])
 
         self.mgmt_client0 = MgmtClient(self.nfn0.mgmt.mgmt_sock.getsockname()[1])
         self.mgmt_client1 = MgmtClient(self.nfn1.mgmt.mgmt_sock.getsockname()[1])
+        self.mgmt_client01 = MgmtClient(self.nfn12.mgmt.mgmt_sock.getsockname()[1])
 
 
     def tearDown(self):
         self.nfn0.stop_forwarder()
         self.nfn1.stop_forwarder()
+        self.nfn12.stop_forwarder()
         self.repo1.stop_repo()
         self.fetch_tool1.stop_fetch()
         self.simulation_bus.stop_process()
@@ -61,6 +70,7 @@ class StreamingSimulation(unittest.TestCase):
     def setup_faces_and_connections(self):
         self.nfn0.start_forwarder()
         self.nfn1.start_forwarder()
+        self.nfn12.start_forwarder()
 
         self.repo1.start_repo()
 
@@ -70,27 +80,36 @@ class StreamingSimulation(unittest.TestCase):
 
         #setup forwarding rules
         self.mgmt_client0.add_face("nfn1", None, 0)
-        self.mgmt_client0.add_forwarding_rule(Name("/lib"), [0])
+        self.mgmt_client0.add_forwarding_rule(Name("/lib0"), [0])
+
+        self.mgmt_client0.add_face("nfn12", None, 0)
+        self.mgmt_client0.add_forwarding_rule(Name("/lib1"), [0])
+
+        self.mgmt_client01.add_face("nfn1", None, 0)
+        self.mgmt_client01.add_forwarding_rule(Name("/lib1"), [0])
 
         self.mgmt_client1.add_face("repo1", None, 0)
         self.mgmt_client1.add_forwarding_rule(Name("/repo/r1"), [0])
 
         #TODO: back connection?
         self.mgmt_client1.add_face("nfn0", None, 0)
-        self.mgmt_client1.add_forwarding_rule(Name("/lib"), [1])
+        self.mgmt_client1.add_forwarding_rule(Name("/lib0"), [1])
 
         #setup function code
 
         #multi name
-        self.mgmt_client1.add_new_content(Name("/lib/multiname"),
+        self.mgmt_client1.add_new_content(Name("/lib0/multiname"),
                                      "PYTHONSTREAM\nmultiname\ndef multiname(arg):\n    a = get_next(arg)\n    a = a.upper()\n    b = get_next(arg)\n    b = b.upper()\n    c = get_next(arg)\n    c = c.upper()\n    d = get_next(arg)\n    d = d.upper()\n    e = get_next(arg)\n    e = e.upper()\n    f = get_next(arg)\n    f = f.upper()\n    g = get_next(arg)\n    g = g.upper()\n    h = get_next(arg)\n    h = h.upper()\n    i = get_next(arg)\n    i = i.upper()\n    j = get_next(arg)\n    j = j.upper()\n    return a + b + c + d + e + f + g + h + i + j")
 
         #single name - two layer
-        self.mgmt_client0.add_new_content(Name("/lib/node0"),
+        self.mgmt_client0.add_new_content(Name("/lib0/node0"),
                                      "PYTHONSTREAM\ngetnext_on_writeout\ndef getnext_on_writeout(arg):\n    print('Start äussere')\n    a = get_next(arg)\n    a = a.upper()\n    b = get_next(arg)\n    b = b.upper()\n    c = get_next(arg)\n    c = c.upper()\n    d = get_next(arg)\n    d = d.upper()\n    e = get_next(arg)\n    e = e.upper()\n    f = get_next(arg)\n    f = f.upper()\n    g = get_next(arg)\n    g = g.upper()\n    h = get_next(arg)\n    h = h.upper()\n    i = get_next(arg)\n    i = i.upper()\n    j = get_next(arg)\n    j = j.upper()\n    print('Ende äussere')\n    return a + b + c + d + e + f + g + h + i + j")
 
-        self.mgmt_client1.add_new_content(Name("/lib/node1"),
+        self.mgmt_client1.add_new_content(Name("/lib0/node1"),
                                      "PYTHONSTREAM\nwriteout_on_getnext\ndef writeout_on_getnext(arg):\n    print('Start innere')\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    last_write_out()\n    return print('Ende innere')")
+
+        self.mgmt_client01.add_new_content(Name("/lib1/node1"),
+                                     "PYTHONSTREAM\nwriteout_on_getnext\ndef writeout_on_getnext(arg):\n    print('Start mittlere')\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    last_write_out()\n    return print('Ende mittlere')")
 
 
     def generate_name_files(self, path: str, number: int):
@@ -126,7 +145,7 @@ class StreamingSimulation(unittest.TestCase):
         self.setup_repo()
         self.setup_faces_and_connections()
 
-        name = Name("/lib/multiname")
+        name = Name("/lib0/multiname")
         name += '_(/repo/r1/data1)'
         name += "NFN"
 
@@ -135,16 +154,40 @@ class StreamingSimulation(unittest.TestCase):
         self.assertEqual("CONTENT OF NAME1. CONTENT OF NAME2. CONTENT OF NAME3. CONTENT OF NAME4. CONTENT OF NAME5. CONTENT OF NAME6. CONTENT OF NAME7. CONTENT OF NAME8. CONTENT OF NAME9. CONTENT OF NAME10. ", res)
 
 
-    def test_singlename(self):
+    def test_twolayer(self):
         """Singlename test over two layers with input data from repo"""
         self.setup_repo()
         self.setup_faces_and_connections()
 
-        scenario_node_1 = Name("/lib/node1")
+        scenario_node_1 = Name("/lib0/node1")
         scenario_node_1 += "#(=/repo/r1/data1=)"
         scenario_node_1 += "NFN"
 
-        scenario_node_0 = Name("/lib/node0")
+        scenario_node_0 = Name("/lib0/node0")
+        scenario_node_0 += '_("' + str(scenario_node_1) + '")'
+        scenario_node_0 += "NFN"
+
+        res = self.fetch_tool1.fetch_data(scenario_node_0, timeout=40)
+        print(res)
+        self.assertEqual(
+            "CONTENT OF NAME1. CONTENT OF NAME2. CONTENT OF NAME3. CONTENT OF NAME4. CONTENT OF NAME5. CONTENT OF NAME6. CONTENT OF NAME7. CONTENT OF NAME8. CONTENT OF NAME9. CONTENT OF NAME10. ",
+            res)
+
+
+    def test_threelayer(self):
+        """Singlename test over three layers with input data from repo"""
+        self.setup_repo()
+        self.setup_faces_and_connections()
+
+        scenario_node_2 = Name("/lib0/node1")
+        scenario_node_2 += "#(=/repo/r1/exampleInputFile=)"
+        scenario_node_2 += "NFN"
+
+        scenario_node_1 = Name("/lib1/node1")
+        scenario_node_1 += "#(=" + str(scenario_node_2) + "=)"
+        scenario_node_1 += "NFN"
+
+        scenario_node_0 = Name("/lib0/node0")
         scenario_node_0 += '_("' + str(scenario_node_1) + '")'
         scenario_node_0 += "NFN"
 
