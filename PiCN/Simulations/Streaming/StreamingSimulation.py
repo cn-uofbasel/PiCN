@@ -80,8 +80,18 @@ class StreamingSimulation(unittest.TestCase):
         self.mgmt_client1.add_forwarding_rule(Name("/lib"), [1])
 
         #setup function code
+
+        #multi name
         self.mgmt_client1.add_new_content(Name("/lib/multiname"),
                                      "PYTHONSTREAM\nmultiname\ndef multiname(arg):\n    a = get_next(arg)\n    a = a.upper()\n    b = get_next(arg)\n    b = b.upper()\n    c = get_next(arg)\n    c = c.upper()\n    d = get_next(arg)\n    d = d.upper()\n    e = get_next(arg)\n    e = e.upper()\n    f = get_next(arg)\n    f = f.upper()\n    g = get_next(arg)\n    g = g.upper()\n    h = get_next(arg)\n    h = h.upper()\n    i = get_next(arg)\n    i = i.upper()\n    j = get_next(arg)\n    j = j.upper()\n    return a + b + c + d + e + f + g + h + i + j")
+
+        #single name - two layer
+        self.mgmt_client0.add_new_content(Name("/lib/node0"),
+                                     "PYTHONSTREAM\ngetnext_on_writeout\ndef getnext_on_writeout(arg):\n    print('Start äussere')\n    a = get_next(arg)\n    a = a.upper()\n    b = get_next(arg)\n    b = b.upper()\n    c = get_next(arg)\n    c = c.upper()\n    d = get_next(arg)\n    d = d.upper()\n    e = get_next(arg)\n    e = e.upper()\n    f = get_next(arg)\n    f = f.upper()\n    g = get_next(arg)\n    g = g.upper()\n    h = get_next(arg)\n    h = h.upper()\n    i = get_next(arg)\n    i = i.upper()\n    j = get_next(arg)\n    j = j.upper()\n    print('Ende äussere')\n    return a + b + c + d + e + f + g + h + i + j")
+
+        self.mgmt_client1.add_new_content(Name("/lib/node1"),
+                                     "PYTHONSTREAM\nwriteout_on_getnext\ndef writeout_on_getnext(arg):\n    print('Start innere')\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    a = get_next(arg)\n    write_out(a)\n    last_write_out()\n    return print('Ende innere')")
+
 
     def generate_name_files(self, path: str, number: int):
         with open(path + "/name" + str(number), "w") as f:
@@ -123,3 +133,23 @@ class StreamingSimulation(unittest.TestCase):
         res = self.fetch_tool1.fetch_data(name, timeout=40)
         print(res)
         self.assertEqual("CONTENT OF NAME1. CONTENT OF NAME2. CONTENT OF NAME3. CONTENT OF NAME4. CONTENT OF NAME5. CONTENT OF NAME6. CONTENT OF NAME7. CONTENT OF NAME8. CONTENT OF NAME9. CONTENT OF NAME10. ", res)
+
+
+    def test_singlename(self):
+        """Singlename test over two layers with input data from repo"""
+        self.setup_repo()
+        self.setup_faces_and_connections()
+
+        scenario_node_1 = Name("/lib/node1")
+        scenario_node_1 += "#(=/repo/r1/data1=)"
+        scenario_node_1 += "NFN"
+
+        scenario_node_0 = Name("/lib/node0")
+        scenario_node_0 += '_("' + str(scenario_node_1) + '")'
+        scenario_node_0 += "NFN"
+
+        res = self.fetch_tool1.fetch_data(scenario_node_0, timeout=40)
+        print(res)
+        self.assertEqual(
+            "CONTENT OF NAME1. CONTENT OF NAME2. CONTENT OF NAME3. CONTENT OF NAME4. CONTENT OF NAME5. CONTENT OF NAME6. CONTENT OF NAME7. CONTENT OF NAME8. CONTENT OF NAME9. CONTENT OF NAME10. ",
+            res)
