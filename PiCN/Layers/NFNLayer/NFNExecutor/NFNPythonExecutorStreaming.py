@@ -18,6 +18,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         self._sandbox["get_next"] = self.get_next
         self._sandbox["write_out"] = self.write_out
         self._sandbox["last_write_out"] = self.last_write_out
+        self._sandbox["write_out_on_get_next"] = self.write_out_on_get_next
         self._sandbox["print"] = print
         self._sandbox["upper"] = self.upper
         self._sandbox["sleep"] = time.sleep
@@ -233,9 +234,10 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         if result.endswith("/streaming/p*") and result.startswith("sdo:\n"):
             if str(resulting_content_object.name) not in self.get_next_buffer:
                 self.get_next_buffer[str(resulting_content_object.name)] = resulting_content_object
-            print("[Streaming] Part:", self.get_next_part_counter)
+            print("[Streaming] Part", self.get_next_part_counter, "starts here.")
             next_name = str(resulting_content_object.name) + "//streaming/p" + str(self.get_next_part_counter)
             result = self.get_next_single_name(next_name)
+            print("[Streaming] Part", self.get_next_part_counter, "ends here with result:", result)
             self.get_next_part_counter += 1
         return result
 
@@ -257,7 +259,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             if isinstance(resulting_content_object, Interest):
                 print("[get_next_content] Resulting object is interest:", resulting_content_object.name, ", instead of content object with name:", next_name)
             else:
-                print("[get_next_content] Resulting content object:", next_name, resulting_content_object.name)
+                print("[get_next_content] Resulting content object(desired name, resulting name):", next_name, resulting_content_object.name)
             # Gets stored in buffer if interest doesn't correspond to needed result
             is_content_correct = self.check_for_correct_content(resulting_content_object, next_name)
             while is_content_correct is False:
@@ -432,7 +434,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         if self.check_for_metatitle(arg):
             return self.get_next_single_name(arg)
         elif self.check_for_metatitle(arg) is False and self.check_streaming(arg):
-            return self.get_next_multiple_names(arg)
+            return self.get_next_multiple_names_classic(arg)
         else:
             return self.get_next_inner_computation(arg)
 
@@ -475,3 +477,12 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
               self.cs.get_container()[-1].content.content)
         if self.pit_entry:
             self.pit.append(self.pit_entry)
+
+    def write_out_on_get_next(self, arg: Name):
+        """
+        """
+        res = self.get_next(arg)
+        while res:
+            self.write_out(res)
+            res = self.get_next(arg)
+        self.last_write_out()
