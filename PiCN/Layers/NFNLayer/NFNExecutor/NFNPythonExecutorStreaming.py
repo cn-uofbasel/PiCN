@@ -51,7 +51,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         after the forwarders have been initialized.
         :param queue_to_lower: queue to lower layer
         :param queue_from_lower: queue from lower layer
-        :param comp_table: the NFNComputationList #TODO comp table is not necessary
+        :param comp_table: the NFNComputationList #TODO comp table is not needed?
         :param cs: the BaseContentStore to store the content during the write_out
         :param pit: the BasePendingInterestTable
         """
@@ -68,7 +68,6 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         for the single name case.
         :param arg: the input with the desired computation names
         """
-        # TODO If arg is not for streaming stop here
         if self.check_streaming(arg) is False:
             return "Not for streaming."
         self.name_list_single = arg.splitlines()
@@ -164,7 +163,6 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             if content_object_name_as_string in self.sent_interests:
                 self.get_next_buffer[content_object_name_as_string] = content_object
             else:
-                # TODO test this case - content_object not from this computation - i think it works...
                 self.queue_from_lower.put(content_object)
             return False
 
