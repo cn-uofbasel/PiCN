@@ -480,7 +480,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         """
         """
         res = self.get_next(arg)
-        while res:
+        while res and self.check_end_streaming(res) is False:
             self.write_out(res)
             res = self.get_next(arg)
         self.last_write_out()
