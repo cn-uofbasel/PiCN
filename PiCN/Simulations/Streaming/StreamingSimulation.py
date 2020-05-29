@@ -121,6 +121,7 @@ class StreamingSimulation(unittest.TestCase):
         self.mgmt_client1.add_new_content(Name("/lib1/node2"),
                                      "PYTHONSTREAM\nwriteout_on_getnext\ndef writeout_on_getnext(arg):\n    print('Start innere')\n    write_out_on_get_next(arg)\n    return print('Ende innere')\n")
 
+
     def generate_name_files(self, path: str, number: int):
         with open(path + "/name" + str(number), "w") as f:
             f.write("Content of name" + str(number) + ". ")
