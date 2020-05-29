@@ -38,6 +38,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         self.comp_name: str = None
         self.get_next_part_counter: int = 0
         self.write_out_part_counter: int = -1
+        self.classic: bool = False
 
 
     def upper(self, string: str):
@@ -45,7 +46,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
 
 
     def initialize_executor(self, queue_to_lower: multiprocessing.Queue, queue_from_lower: multiprocessing.Queue,
-                           comp_table: NFNComputationList, cs: BaseContentStore, pit: BasePendingInterestTable):
+                           comp_table: NFNComputationList, cs: BaseContentStore, pit: BasePendingInterestTable, classic: bool = False):
         """
         Setter function to set both queues, the computation table, the content store and the pending interest table
         after the forwarders have been initialized.
@@ -54,12 +55,15 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         :param comp_table: the NFNComputationList #TODO comp table is not needed?
         :param cs: the BaseContentStore to store the content during the write_out
         :param pit: the BasePendingInterestTable
+        :param classic: a flag which changes streaming to the classical way - doesn't request new object before
+                        returning the result
         """
         self.queue_to_lower = queue_to_lower
         self.queue_from_lower = queue_from_lower
         self.comp_table = comp_table
         self.cs = cs
         self.pit = pit
+        self.classic = classic
 
 
     def initialize_get_next_single(self, arg: str):
@@ -225,16 +229,19 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         Checks if the result is meta and retrieves the following part if it is.
         :param result: The result as content
         :param resulting_content_object: the result as a content object
-        :return: the content object which was given as a parameter or the result of the following part if the result was
-        a metatitle
+        :return: the content object which was given as a parameter or the result of the following part if result is
+                 a metatitle
         """
         # streaming procedure can start (see notes: 17.4.2020 nested comps)
-        if result.endswith("/streaming/p*") and result.startswith("sdo:\n"):
+        if self.check_for_metatitle(result):
             if str(resulting_content_object.name) not in self.get_next_buffer:
                 self.get_next_buffer[str(resulting_content_object.name)] = resulting_content_object
             print("[Streaming] Part", self.get_next_part_counter, "starts here.")
             next_name = str(resulting_content_object.name) + "//streaming/p" + str(self.get_next_part_counter)
-            result = self.get_next_single_name(next_name)
+            if self.classic is False:
+                result = self.get_next_single_name(next_name)
+            else:
+                result = self.get_next_single_name_classic(next_name)
             print("[Streaming] Part", self.get_next_part_counter, "ends here with result:", result)
             self.get_next_part_counter += 1
         return result
@@ -243,7 +250,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
     def get_content(self, next_name: str):
         """
         Handles getting the content. Checks if the name is present in the buffer otherwise gets it from the
-        queue_from_lower. If result is a metatitle, the next part is retrieved.
+        queue_from_lower. If result is a metatitle, the follwoing part is retrieved.
         :param arg: the name from which the content is returned
         :return: the content for the name
         """
@@ -421,18 +428,23 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
     def get_next(self, arg: str):
         """
         The get_next function which is used for the named functions.
-        This function handles getting the desired content according to its case. Three cases are possible.
-        The single name case for getting only a part if the length of the stream is not known.
+        This function handles getting the desired content according to its case. Two cases are possible.
         The multi name case for getting the next part if the length of the stream is given.
-        The handling of an inner computation where the name has to be changed to correct format before getting the
+        The handling of an inner computation where the name has to be changed to thr correct format before getting the
         content.
         :param arg: the name as a string
         :return: the content from the content object
         """
-        if self.check_for_metatitle(arg):
-            return self.get_next_single_name(arg)
-        elif self.check_for_metatitle(arg) is False and self.check_streaming(arg):
-            return self.get_next_multiple_names_classic(arg)
+        # if self.check_for_metatitle(arg):
+        #     if self.classic is False:
+        #         return self.get_next_single_name(arg)
+        #     else:
+        #         return self.get_next_single_name_classic(arg)
+        if self.check_streaming(arg):
+            if self.classic is False:
+                return self.get_next_multiple_names(arg)
+            else:
+                return self.get_next_multiple_names_classic(arg)
         else:
             return self.get_next_inner_computation(arg)
 
