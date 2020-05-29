@@ -460,6 +460,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         print("[write_out] Last entry in content store:", self.cs.get_container()[-1].content.name,
               self.cs.get_container()[-1].content.content)
 
+
     def last_write_out(self):
         """
         The last_write_out function which is used for the named functions.
@@ -476,8 +477,11 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         if self.pit_entry:
             self.pit.append(self.pit_entry)
 
+
     def write_out_on_get_next(self, arg: Name):
         """
+        Streaming function for inner nodes. Runs get_next and writes out the result until end of stream is reached.
+        :param arg: The name of the computation to stream the parts.
         """
         res = self.get_next(arg)
         while res and self.check_end_streaming(res) is False:
