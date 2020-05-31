@@ -52,11 +52,11 @@ mgmt_client2.add_face("repo", None, 0)
 mgmt_client2.add_forwarding_rule(Name("/repo/r1"), [0])
 
 
-mgmt_client0.add_new_content(Name("/lib/node0"),"PYTHONSTREAM\ngetnext_on_writeout\ndef getnext_on_writeout(arg):\n    print('Start äussere')\n    a = get_next(arg)\n    sleep(2)\n    b = get_next(arg)\n    sleep(2)\n    c = get_next(arg)\n    sleep(2)\n    d = get_next(arg)\n    sleep(2)\n    e = get_next(arg)\n    sleep(2)\n    f = get_next(arg)\n    sleep(2)\n    g = get_next(arg)\n    sleep(2)\n    h = get_next(arg)\n    sleep(2)\n    i = get_next(arg)\n    sleep(2)\n    j = get_next(arg)\n    sleep(2)\n    print('Ende äussere')\n    return a + b + c + d + e + f + g + h + i + j")
+mgmt_client0.add_new_content(Name("/lib/node0"),"PYTHONSTREAM\ngetnext_on_writeout\ndef getnext_on_writeout(arg):\n    print('Start dritte')\n    a = get_next(arg)\n    sleep(2)\n    b = get_next(arg)\n    sleep(2)\n    c = get_next(arg)\n    sleep(2)\n    d = get_next(arg)\n    sleep(2)\n    e = get_next(arg)\n    sleep(2)\n    f = get_next(arg)\n    sleep(2)\n    g = get_next(arg)\n    sleep(2)\n    h = get_next(arg)\n    sleep(2)\n    i = get_next(arg)\n    sleep(2)\n    j = get_next(arg)\n    sleep(2)\n    print('Ende dritte')\n    return a + b + c + d + e + f + g + h + i + j")
 
-mgmt_client1.add_new_content(Name("/lib/node1"),"PYTHONSTREAM\nwriteout_on_getnext\ndef writeout_on_getnext(arg):\n    print('Start mittlere')\n    write_out_on_get_next(arg)\n    return print('Ende mittlere')\n")
+mgmt_client1.add_new_content(Name("/lib/node1"),"PYTHONSTREAM\nwriteout_on_getnext\ndef writeout_on_getnext(arg):\n    print('Start zweite')\n    write_out_on_get_next(arg)\n    return print('Ende zweite')\n")
 
-mgmt_client2.add_new_content(Name("/lib/node2"),"PYTHONSTREAM\nwriteout_on_getnext\ndef writeout_on_getnext(arg):\n    print('Start innere')\n    write_out_on_get_next(arg)\n    return print('Ende innere')\n")
+mgmt_client2.add_new_content(Name("/lib/node2"),"PYTHONSTREAM\nwriteout_on_getnext\ndef writeout_on_getnext(arg):\n    print('Start erste')\n    write_out_on_get_next(arg)\n    return print('Ende erste')\n")
 
 scenario_node_2 = Name("/lib/node2")
 scenario_node_2 += "#(=/repo/r1/exampleInputFile=)"
