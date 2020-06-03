@@ -39,6 +39,7 @@ def generateExampleFiles(fileName: str, numberOfLines: int):
     f.close()
 
 classic = False
+plot = True
 
 generateExampleFiles("InputFiles/exampleInputFile", 10)
 
@@ -163,14 +164,16 @@ for i in range (0, 10):
         print("Something went wrong")
         print("Something went wrong")
 
-plt.plot([1, 2, 3, 4, 5, 6, 7, 8, 9 , 10], time_list, 'ro')
-plt.axis([0, 11, -2, 23])
-plt.xticks(np.arange(0, 11, 1))
-plt.xlabel("run number")
-plt.ylabel("time in s")
-plt.title("Six hop scenario " + datetime.now().strftime("%H:%M:%S"))
-plt.savefig('six_hop_scenario.png')
-plt.show()
+
+if plot:
+    plt.plot([1, 2, 3, 4, 5, 6, 7, 8, 9 , 10], time_list, 'ro')
+    plt.axis([0, 11, -2, 23])
+    plt.xticks(np.arange(0, 11, 1))
+    plt.xlabel("run number")
+    plt.ylabel("time in s")
+    plt.title("Six hop scenario " + datetime.now().strftime("%H:%M:%S"))
+    plt.savefig('six_hop_scenario.png')
+    plt.show()
 
 print("Time needed in seconds:", time_list)
 

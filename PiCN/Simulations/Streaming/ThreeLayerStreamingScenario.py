@@ -41,6 +41,7 @@ def generateExampleFiles(fileName: str, numberOfLines: int):
 generateExampleFiles("InputFiles/exampleInputFile", 10)
 
 classic = False
+plot = True
 
 simulation_bus = SimulationBus(packetencoder=NdnTlvEncoder())
 
@@ -114,14 +115,15 @@ for i in range (0, 10):
     else:
         print("Something went wrong")
 
-plt.plot([1, 2, 3, 4, 5, 6, 7, 8, 9 , 10], time_list, 'ro')
-plt.axis([0, 11, -2, 23])
-plt.xticks(np.arange(0, 11, 1))
-plt.xlabel("run number")
-plt.ylabel("time in s")
-plt.title("Three hop scenario " + datetime.now().strftime("%H:%M:%S"))
-plt.savefig('three_hop_scenario.png')
-plt.show()
+if plot:
+    plt.plot([1, 2, 3, 4, 5, 6, 7, 8, 9 , 10], time_list, 'ro')
+    plt.axis([0, 11, -2, 23])
+    plt.xticks(np.arange(0, 11, 1))
+    plt.xlabel("run number")
+    plt.ylabel("time in s")
+    plt.title("Three hop scenario " + datetime.now().strftime("%H:%M:%S"))
+    plt.savefig('three_hop_scenario.png')
+    plt.show()
 
 print("Time needed in seconds:", time_list)
 
