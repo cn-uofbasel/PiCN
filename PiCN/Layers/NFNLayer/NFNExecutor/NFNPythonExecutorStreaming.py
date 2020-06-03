@@ -250,7 +250,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
     def get_content(self, next_name: str):
         """
         Handles getting the content. Checks if the name is present in the buffer otherwise gets it from the
-        queue_from_lower. If result is a metatitle, the follwoing part is retrieved.
+        queue_from_lower. If result is a metatitle, the following part is retrieved.
         :param arg: the name from which the content is returned
         :return: the content for the name
         """
