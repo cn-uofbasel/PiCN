@@ -1,4 +1,8 @@
-import os
+import matplotlib.pyplot as plt
+import numpy as np
+
+from datetime import datetime
+
 import time
 from PiCN.Layers.NFNLayer.NFNExecutor.NFNPythonExecutorStreaming import NFNPythonExecutorStreaming
 from PiCN.ProgramLibs.Fetch import Fetch
@@ -9,24 +13,53 @@ from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from PiCN.Mgmt import MgmtClient
 from PiCN.Packets import Name
 
+def pathDetection(fileName:str):
+    pathList = fileName.split("/")
+    path = ""
+    for j in range(0, len(pathList) - 1):
+        if j is 0:
+            path = path + pathList[j]
+        else:
+            path = path + "/" + pathList[j]
+    return path + "/"
+
+def generateNameFiles(path: str, number:int):
+    with open(path + "name" + str(number), "w") as f:
+        f.write("Inhalt von name" + str(number) + ". ")
+    f.close()
+
+def generateExampleFiles(fileName: str, numberOfLines: int):
+    path = pathDetection(fileName)
+    with open(fileName, "w") as f:
+        f.write("sdo:\n")
+        for i in range(1, numberOfLines + 1):
+            f.write("/repo/r1/name" + str(i) + "\n")
+            generateNameFiles(path, i)
+        f.write("sdo:endstreaming\n")
+    f.close()
+
+generateExampleFiles("InputFiles/exampleInputFile", 10)
+
+classic = False
+
 simulation_bus = SimulationBus(packetencoder=NdnTlvEncoder())
 
 nfn_fwd0 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
                         interfaces=[simulation_bus.add_interface("nfn0")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
                         ageing_interval=1)
-nfn_fwd0.executors["PYTHONSTREAM"].initialize_executor(nfn_fwd0.nfnlayer.queue_to_lower, nfn_fwd0.nfnlayer.queue_from_lower, nfn_fwd0.nfnlayer.computation_table, nfn_fwd0.nfnlayer.cs, nfn_fwd0.icnlayer.pit)
+nfn_fwd0.executors["PYTHONSTREAM"].initialize_executor(nfn_fwd0.nfnlayer.queue_to_lower, nfn_fwd0.nfnlayer.queue_from_lower, nfn_fwd0.nfnlayer.computation_table, nfn_fwd0.nfnlayer.cs, nfn_fwd0.icnlayer.pit, classic)
 
 
 
 nfn_fwd1 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
                         interfaces=[simulation_bus.add_interface("nfn1")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
                         ageing_interval=1)
-nfn_fwd1.executors["PYTHONSTREAM"].initialize_executor(nfn_fwd1.nfnlayer.queue_to_lower, nfn_fwd1.nfnlayer.queue_from_lower, nfn_fwd1.nfnlayer.computation_table, nfn_fwd1.nfnlayer.cs, nfn_fwd1.icnlayer.pit)
+nfn_fwd1.executors["PYTHONSTREAM"].initialize_executor(nfn_fwd1.nfnlayer.queue_to_lower, nfn_fwd1.nfnlayer.queue_from_lower, nfn_fwd1.nfnlayer.computation_table, nfn_fwd1.nfnlayer.cs, nfn_fwd1.icnlayer.pit, classic)
 
 nfn_fwd2 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
                         interfaces=[simulation_bus.add_interface("nfn2")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
                         ageing_interval=1)
-nfn_fwd2.executors["PYTHONSTREAM"].initialize_executor(nfn_fwd2.nfnlayer.queue_to_lower, nfn_fwd2.nfnlayer.queue_from_lower, nfn_fwd2.nfnlayer.computation_table, nfn_fwd2.nfnlayer.cs, nfn_fwd2.icnlayer.pit)
+nfn_fwd2.executors["PYTHONSTREAM"].initialize_executor(nfn_fwd2.nfnlayer.queue_to_lower, nfn_fwd2.nfnlayer.queue_from_lower, nfn_fwd2.nfnlayer.computation_table, nfn_fwd2.nfnlayer.cs, nfn_fwd2.icnlayer.pit, classic)
 
 
 repo = ICNDataRepository("./InputFiles", Name("/repo/r1"), 0, 255, NdnTlvEncoder(), False, False, interfaces=[simulation_bus.add_interface("repo")])
@@ -70,13 +103,28 @@ scenario_node_0 = Name("/lib/node0")
 scenario_node_0 += '_("' + str(scenario_node_1) + '")'
 scenario_node_0 += "NFN"
 
+time_list = []
+for i in range (0, 10):
+    start_time = time.perf_counter()
+    res = fetch_tool.fetch_data(scenario_node_0, timeout=60)
+    end_time = time.perf_counter()
+    time_needed = end_time - start_time
+    if res.startswith("Inhalt von name1. Inhalt von name2. Inhalt von name3. "):
+        time_list.append(time_needed)
+    else:
+        print("Something went wrong")
 
+plt.plot([1, 2, 3, 4, 5, 6, 7, 8, 9 , 10], time_list, 'ro')
+plt.axis([0, 11, -2, 23])
+plt.xticks(np.arange(0, 11, 1))
+plt.xlabel("run number")
+plt.ylabel("time in s")
+plt.title("Three hop scenario " + datetime.now().strftime("%H:%M:%S"))
+plt.savefig('three_hop_scenario.png')
+plt.show()
 
-start_time = time.perf_counter()
-res = fetch_tool.fetch_data(scenario_node_0, timeout=60)
-end_time = time.perf_counter()
-print("Interest result:", res)
-print("Time needed in seconds:", end_time-start_time)
+print("Time needed in seconds:", time_list)
+
 
 
 nfn_fwd0.stop_forwarder()
