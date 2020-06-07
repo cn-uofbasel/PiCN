@@ -244,6 +244,8 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
                 result = self.get_next_single_name_classic(next_name)
             print("[Streaming] Part", self.get_next_part_counter, "ends here with result:", result)
             self.get_next_part_counter += 1
+            if self.check_end_streaming(result):
+                return None
         return result
 
 
