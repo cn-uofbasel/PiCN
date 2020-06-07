@@ -28,7 +28,7 @@ print(time_list)
 if plot:
     plt.plot(list(range(1,21)), time_list, 'ro')
     #plt.plot([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], time_list_classic, 'bo')
-    plt.axis([0, 11, 20.2, 20.8])
+    plt.axis([0, 21, 0, 0.8])
     plt.xticks(np.arange(0, 21, 1))
     plt.xlabel("run number")
     plt.ylabel("time in s")
