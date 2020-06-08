@@ -25,7 +25,7 @@ def pathDetection(fileName:str):
 
 def generateNameFiles(path: str, number:int):
     with open(path + "name" + str(number), "w") as f:
-        f.write("Inhalt von name" + str(number) + ". ")
+        f.write("Content of name" + str(number) + ". ")
     f.close()
 
 def generateExampleFiles(fileName: str, numberOfLines: int):
@@ -41,7 +41,7 @@ def generateExampleFiles(fileName: str, numberOfLines: int):
 classic = False
 plot = True
 
-generateExampleFiles("InputFiles/exampleInputFile", 10)
+generateExampleFiles("InputFiles/exampleInputFile", 60)
 
 simulation_bus = SimulationBus(packetencoder=NdnTlvEncoder())
 
@@ -112,8 +112,8 @@ mgmt_client4.add_forwarding_rule(Name("/lib"), [0])
 mgmt_client5.add_face("repo", None, 0)
 mgmt_client5.add_forwarding_rule(Name("/repo/r1"), [0])
 
-
-mgmt_client0.add_new_content(Name("/lib/node0"),"PYTHONSTREAM\ngetnext_on_writeout\ndef getnext_on_writeout(arg):\n    print('Start sechste')\n    a = get_next(arg)\n    sleep(2)\n    b = get_next(arg)\n    sleep(2)\n    c = get_next(arg)\n    sleep(2)\n    d = get_next(arg)\n    sleep(2)\n    e = get_next(arg)\n    sleep(2)\n    f = get_next(arg)\n    sleep(2)\n    g = get_next(arg)\n    sleep(2)\n    h = get_next(arg)\n    sleep(2)\n    i = get_next(arg)\n    sleep(2)\n    j = get_next(arg)\n    sleep(2)\n    print('Ende sechste')\n    return a + b + c + d + e + f + g + h + i + j")
+mgmt_client0.add_new_content(Name("/lib/node0"),
+                             "PYTHONSTREAM\ngetnext_on_writeout\ndef getnext_on_writeout(arg):\n    print('Start sechste')\n    res = ''\n    a = get_next(arg)\n    while a != None:\n        a = a.upper()\n        res = res + a\n        a = get_next(arg)\n        sleep(0)\n    print('Ende sechste')\n    return res")
 
 mgmt_client1.add_new_content(Name("/lib/node1"),"PYTHONSTREAM\nwriteout_on_getnext\ndef writeout_on_getnext(arg):\n    print('Start fünfte')\n    write_out_on_get_next(arg)\n    return print('Ende fünfte')\n")
 
@@ -150,32 +150,20 @@ scenario_node_0 = Name("/lib/node0")
 scenario_node_0 += '_("' + str(scenario_node_1) + '")'
 scenario_node_0 += "NFN"
 
-time_list = []
-for i in range (0, 10):
-    start_time = time.perf_counter()
-    res = fetch_tool.fetch_data(scenario_node_0, timeout=60)
-    end_time = time.perf_counter()
-    time_needed = end_time - start_time
-    if res.startswith("Inhalt von name1. Inhalt von name2. Inhalt von name3. "):
-        time_list.append(time_needed)
-    else:
-        print("Something went wrong")
-        print("Something went wrong")
-        print("Something went wrong")
-        print("Something went wrong")
 
+start_time = time.perf_counter()
+res = fetch_tool.fetch_data(scenario_node_0, timeout=60)
+end_time = time.perf_counter()
+time_needed = end_time - start_time
+if res.startswith("CONTENT OF NAME"):
+    print(time_needed, res)
+else:
+    print("Something went wrong")
+    print("Something went wrong")
+    print("Something went wrong")
+    print("Something went wrong")
+    raise KeyboardInterrupt
 
-if plot:
-    plt.plot([1, 2, 3, 4, 5, 6, 7, 8, 9 , 10], time_list, 'ro')
-    plt.axis([0, 11, -2, 23])
-    plt.xticks(np.arange(0, 11, 1))
-    plt.xlabel("run number")
-    plt.ylabel("time in s")
-    plt.title("Six hop scenario " + datetime.now().strftime("%H:%M:%S"))
-    plt.savefig('six_hop_scenario.png')
-    plt.show()
-
-print("Time needed in seconds:", time_list)
 
 
 nfn_fwd0.stop_forwarder()

@@ -211,16 +211,18 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         return following_name
 
 
-    def get_content_from_queue_from_lower(self):
+    def get_content_from_queue_from_lower(self, next_name: str):
         """
         Gets content from the queue from lower and checks if the result is a list with the packetid on the first entry
         and the content object on the second entry
         :return: the next content object from the queue_from_lower
         """
         queue_from_lower_entry = self.queue_from_lower.get()
-        while isinstance(queue_from_lower_entry, list) is False:
-            print("[get_content_from_queue_from_lower] Not a list", queue_from_lower_entry.name)
-            queue_from_lower_entry = self.queue_from_lower.get()
+        # while isinstance(queue_from_lower_entry, list) is False:
+        #     print("[get_content_from_queue_from_lower] Not a list", queue_from_lower_entry.name, next_name)
+        #     queue_from_lower_entry = self.queue_from_lower.get()
+        if isinstance(queue_from_lower_entry, list) is False:
+            return queue_from_lower_entry
         return queue_from_lower_entry[1]
 
 
@@ -262,7 +264,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             resulting_content_object = buffer_output
             result = buffer_output.content
         else:
-            resulting_content_object = self.get_content_from_queue_from_lower()
+            resulting_content_object = self.get_content_from_queue_from_lower(next_name)
             if isinstance(resulting_content_object, Interest):
                 print("[get_next_content] Resulting object is interest:", resulting_content_object.name, ", instead of content object with name:", next_name)
             else:
@@ -270,7 +272,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             # Gets stored in buffer if interest doesn't correspond to needed result
             is_content_correct = self.check_for_correct_content(resulting_content_object, next_name)
             while is_content_correct is False:
-                print("[get_next_content] Content wasn't correct", resulting_content_object.name)
+                #print("[get_next_content] Content wasn't correct", resulting_content_object.name)
                 buffer_output = self.check_buffer(next_name)
                 # If desired interest is in buffer return it and break out of while loop
                 if buffer_output:
@@ -278,9 +280,9 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
                     break
                 else:
                     # Get content out of queue_from_lower and check if it is correct -> until correct one is returned
-                    print("[get_next_content] Content wasn't correct and not avaiable in the buffer.")
-                    resulting_content_object = self.get_content_from_queue_from_lower()
-                    print("[get_next_content] Resulting content object:", resulting_content_object.name)
+                    #print("[get_next_content] Content wasn't correct and not avaiable in the buffer.")
+                    resulting_content_object = self.get_content_from_queue_from_lower(next_name)
+                    #print("[get_next_content] Resulting content object:", resulting_content_object.name)
                     is_content_correct = self.check_for_correct_content(resulting_content_object, next_name)
 
             result = resulting_content_object.content

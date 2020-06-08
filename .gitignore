@@ -9,6 +9,6 @@ dist/*
 .coverage
 nosetests.xml
 .DS_Store
-PiCN/Simulations/Streaming/InputFiles/
+PiCN/Simulations/Streaming/InputFiles/name*
 PiCN/Layers/LinkLayer/Interfaces/Simulation.py
 *~

@@ -38,8 +38,12 @@ class BasicNFNLayer(LayerProcess):
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         """handle incomming data from the lower layer """
-        packet_id = data[0]
-        packet = data[1]
+        if isinstance(data, list):
+            packet_id = data[0]
+            packet = data[1]
+        else:
+            packet_id = 1
+            packet = data
         if isinstance(packet, Interest):
             self.logger.info("Got Interest from lower: " + str(packet.name) + "; Face ID: " + str(packet_id))
             self.handleInterest(packet_id, packet)
