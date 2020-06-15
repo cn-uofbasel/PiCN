@@ -38,19 +38,19 @@ class StreamingSimulation(unittest.TestCase):
                         interfaces=[self.simulation_bus.add_interface("nfn0")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
                         ageing_interval=1)
 
-        self.nfn0.executors["PYTHONSTREAM"].initialize_executor(self.nfn0.nfnlayer.queue_to_lower, self.nfn0.nfnlayer.queue_from_lower, self.nfn0.nfnlayer.computation_table, self.nfn0.nfnlayer.cs, self.nfn0.icnlayer.pit)
+        self.nfn0.executors["PYTHONSTREAM"].initialize_executor(self.nfn0.nfnlayer.queue_to_lower, self.nfn0.nfnlayer.queue_from_lower, self.nfn0.nfnlayer.cs, False)
 
         self.nfn1 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
                                 interfaces=[self.simulation_bus.add_interface("nfn1")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
                                 ageing_interval=1)
 
-        self.nfn1.executors["PYTHONSTREAM"].initialize_executor(self.nfn1.nfnlayer.queue_to_lower, self.nfn1.nfnlayer.queue_from_lower, self.nfn1.nfnlayer.computation_table, self.nfn1.nfnlayer.cs, self.nfn1.icnlayer.pit)
+        self.nfn1.executors["PYTHONSTREAM"].initialize_executor(self.nfn1.nfnlayer.queue_to_lower, self.nfn1.nfnlayer.queue_from_lower, self.nfn1.nfnlayer.cs, False)
 
         self.nfn12 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
                                 interfaces=[self.simulation_bus.add_interface("nfn12")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
                                 ageing_interval=1)
 
-        self.nfn12.executors["PYTHONSTREAM"].initialize_executor(self.nfn12.nfnlayer.queue_to_lower, self.nfn12.nfnlayer.queue_from_lower, self.nfn12.nfnlayer.computation_table, self.nfn12.nfnlayer.cs, self.nfn12.icnlayer.pit)
+        self.nfn12.executors["PYTHONSTREAM"].initialize_executor(self.nfn12.nfnlayer.queue_to_lower, self.nfn12.nfnlayer.queue_from_lower, self.nfn12.nfnlayer.cs, self.nfn12.icnlayer.pit, False)
 
 
         self.repo1 = ICNDataRepository("/tmp/repo1", Name("/repo/r1"), 0, 255, NdnTlvEncoder(), False, False,
@@ -94,7 +94,6 @@ class StreamingSimulation(unittest.TestCase):
         self.mgmt_client1.add_face("repo1", None, 0)
         self.mgmt_client1.add_forwarding_rule(Name("/repo/r1"), [0])
 
-        #TODO: back connection?
         self.mgmt_client1.add_face("nfn0", None, 0)
         self.mgmt_client1.add_forwarding_rule(Name("/lib0"), [1])
 

@@ -1,12 +1,4 @@
-import sys
-
-import matplotlib.pyplot as plt
-import numpy as np
-
-from datetime import datetime
-
 import time
-
 from PiCN.Layers.NFNLayer.NFNExecutor.NFNPythonExecutorStreaming import NFNPythonExecutorStreaming
 from PiCN.ProgramLibs.Fetch import Fetch
 from PiCN.ProgramLibs.ICNDataRepository import ICNDataRepository
@@ -42,30 +34,29 @@ def generateExampleFiles(fileName: str, numberOfLines: int):
     f.close()
 
 
-def simulation(classic):
-    generateExampleFiles("InputFiles/exampleInputFile", 20)
+def simulation(classic, amount_of_parts):
+    generateExampleFiles("../InputFiles/exampleInputFile", amount_of_parts)
 
     simulation_bus = SimulationBus(packetencoder=NdnTlvEncoder())
 
     nfn_fwd0 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
                             interfaces=[simulation_bus.add_interface("nfn0")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
                             ageing_interval=1)
-    nfn_fwd0.executors["PYTHONSTREAM"].initialize_executor(nfn_fwd0.nfnlayer.queue_to_lower, nfn_fwd0.nfnlayer.queue_from_lower, nfn_fwd0.nfnlayer.computation_table, nfn_fwd0.nfnlayer.cs, nfn_fwd0.icnlayer.pit, classic)
-
+    nfn_fwd0.executors["PYTHONSTREAM"].initialize_executor(nfn_fwd0.nfnlayer.queue_to_lower, nfn_fwd0.nfnlayer.queue_from_lower, nfn_fwd0.nfnlayer.cs, classic)
 
 
     nfn_fwd1 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
                             interfaces=[simulation_bus.add_interface("nfn1")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
                             ageing_interval=1)
-    nfn_fwd1.executors["PYTHONSTREAM"].initialize_executor(nfn_fwd1.nfnlayer.queue_to_lower, nfn_fwd1.nfnlayer.queue_from_lower, nfn_fwd1.nfnlayer.computation_table, nfn_fwd1.nfnlayer.cs, nfn_fwd1.icnlayer.pit, classic)
+    nfn_fwd1.executors["PYTHONSTREAM"].initialize_executor(nfn_fwd1.nfnlayer.queue_to_lower, nfn_fwd1.nfnlayer.queue_from_lower, nfn_fwd1.nfnlayer.cs, classic)
 
     nfn_fwd2 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
                             interfaces=[simulation_bus.add_interface("nfn2")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
                             ageing_interval=1)
-    nfn_fwd2.executors["PYTHONSTREAM"].initialize_executor(nfn_fwd2.nfnlayer.queue_to_lower, nfn_fwd2.nfnlayer.queue_from_lower, nfn_fwd2.nfnlayer.computation_table, nfn_fwd2.nfnlayer.cs, nfn_fwd2.icnlayer.pit, classic)
+    nfn_fwd2.executors["PYTHONSTREAM"].initialize_executor(nfn_fwd2.nfnlayer.queue_to_lower, nfn_fwd2.nfnlayer.queue_from_lower, nfn_fwd2.nfnlayer.cs, classic)
 
 
-    repo = ICNDataRepository("./InputFiles", Name("/repo/r1"), 0, 255, NdnTlvEncoder(), False, False, interfaces=[simulation_bus.add_interface("repo")])
+    repo = ICNDataRepository("../InputFiles", Name("/repo/r1"), 0, 255, NdnTlvEncoder(), False, False, interfaces=[simulation_bus.add_interface("repo")])
     repo.start_repo()
 
     mgmt_client0 = MgmtClient(nfn_fwd0.mgmt.mgmt_sock.getsockname()[1])
@@ -88,9 +79,9 @@ def simulation(classic):
     mgmt_client2.add_forwarding_rule(Name("/repo/r1"), [0])
 
 
-    mgmt_client0.add_new_content(Name("/lib/node0"),"PYTHONSTREAM\ngetnext_on_writeout\ndef getnext_on_writeout(arg):\n    print('Start dritte')\n    res = ''\n    a = get_next(arg)\n    while a != None:\n        a = a.upper()\n        res = res + a\n        a = get_next(arg)\n        sleep(0)\n    print('Ende dritte')\n    return res")
+    mgmt_client0.add_new_content(Name("/lib/node0"),"PYTHONSTREAM\ngetnext_on_writeout\ndef getnext_on_writeout(arg):\n    print('Start dritte')\n    res = ''\n    a = get_next(arg)\n    while a != None:\n        res = res + a\n        a = get_next(arg)\n    print('Ende dritte')\n    return res")
 
-    mgmt_client1.add_new_content(Name("/lib/node1"),"PYTHONSTREAM\nwriteout_on_getnext\ndef writeout_on_getnext(arg):\n    print('Start zweite')\n    write_out_on_get_next(arg)\n    return print('Ende zweite')\n")
+    mgmt_client1.add_new_content(Name("/lib/node1"),"PYTHONSTREAM\nwriteout_on_getnext\ndef writeout_on_getnext(arg):\n    print('Start zweite')\n    a = get_next(arg)\n    while a and check_end_streaming(a) is False:\n        a = a.upper()\n        sleep(1)\n        write_out(a)\n        a = get_next(arg)\n    last_write_out()\n    return print('Ende zweite')\n")
 
     mgmt_client2.add_new_content(Name("/lib/node2"),"PYTHONSTREAM\nwriteout_on_getnext\ndef writeout_on_getnext(arg):\n    print('Start erste')\n    write_out_on_get_next(arg)\n    return print('Ende erste')\n")
 

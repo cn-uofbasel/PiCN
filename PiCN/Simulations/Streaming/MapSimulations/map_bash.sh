@@ -1,0 +1,6 @@
+#!/bin/bash
+python3 RunThreeLayerSimulationMapStream.py placeholder
+python3 RunThreeLayerSimulationMapClassic.py placeholder
+python3 RunSixLayerSimulationMapStream.py placeholder
+python3 RunSixLayerSimulationMapClassic.py placeholder
+python3 create_plot_map.py placeholder
