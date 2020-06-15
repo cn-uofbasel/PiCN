@@ -50,7 +50,7 @@ class StreamingSimulation(unittest.TestCase):
                                 interfaces=[self.simulation_bus.add_interface("nfn12")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
                                 ageing_interval=1)
 
-        self.nfn12.executors["PYTHONSTREAM"].initialize_executor(self.nfn12.nfnlayer.queue_to_lower, self.nfn12.nfnlayer.queue_from_lower, self.nfn12.nfnlayer.cs, self.nfn12.icnlayer.pit, False)
+        self.nfn12.executors["PYTHONSTREAM"].initialize_executor(self.nfn12.nfnlayer.queue_to_lower, self.nfn12.nfnlayer.queue_from_lower, self.nfn12.nfnlayer.cs, False)
 
 
         self.repo1 = ICNDataRepository("/tmp/repo1", Name("/repo/r1"), 0, 255, NdnTlvEncoder(), False, False,
