@@ -16,7 +16,6 @@ class NFNPythonExecutor(BaseNFNExecutor):
     def execute(self, function_code: str, params: List, packetid: int, comp_name: str):
         self.packetid = packetid
         self.comp_name = comp_name
-        # ASK does these to assignments cause problems - not a global variable of NFNPythonExecutor
         try:
             entry_function_name, program_code = self._get_entry_function_name(function_code)
             if entry_function_name is None or program_code is None:

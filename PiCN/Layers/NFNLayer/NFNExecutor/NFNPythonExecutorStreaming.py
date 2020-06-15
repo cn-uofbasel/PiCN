@@ -7,7 +7,7 @@ from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
 from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
 from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationList
 from PiCN.Layers.NFNLayer.NFNExecutor import NFNPythonExecutor
-from PiCN.Packets import Interest, Content, Name
+from PiCN.Packets import Interest, Content, Name, Nack
 
 
 class NFNPythonExecutorStreaming(NFNPythonExecutor):
@@ -15,12 +15,12 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
     def __init__(self):
         self._language = "PYTHONSTREAM"
         self._sandbox = NFNPythonExecutor()._init_sandbox()
+        self._sandbox["check_end_streaming"] = self.check_end_streaming
         self._sandbox["get_next"] = self.get_next
         self._sandbox["write_out"] = self.write_out
         self._sandbox["last_write_out"] = self.last_write_out
         self._sandbox["write_out_on_get_next"] = self.write_out_on_get_next
         self._sandbox["print"] = print
-        self._sandbox["upper"] = self.upper
         self._sandbox["sleep"] = time.sleep
         self.get_next_buffer: dict = {}
         self.sent_interests: dict = {}
@@ -30,10 +30,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         self.pos_name_list_multiple: int = 0
         self.queue_to_lower: multiprocessing.Queue = None
         self.queue_from_lower: multiprocessing.Queue = None
-        self.comp_table: NFNComputationList = None
         self.cs: BaseContentStore = None
-        self.pit: BasePendingInterestTable = None
-        self.pit_entry = None
         self.packetid: int = None
         self.comp_name: str = None
         self.get_next_part_counter: int = 0
@@ -41,28 +38,19 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         self.classic: bool = False
 
 
-    def upper(self, string: str):
-        return string.upper()
-
-
-    def initialize_executor(self, queue_to_lower: multiprocessing.Queue, queue_from_lower: multiprocessing.Queue,
-                           comp_table: NFNComputationList, cs: BaseContentStore, pit: BasePendingInterestTable, classic: bool = False):
+    def initialize_executor(self, queue_to_lower: multiprocessing.Queue, queue_from_lower: multiprocessing.Queue, cs: BaseContentStore, classic: bool = False):
         """
         Setter function to set both queues, the computation table, the content store and the pending interest table
         after the forwarders have been initialized.
         :param queue_to_lower: queue to lower layer
         :param queue_from_lower: queue from lower layer
-        :param comp_table: the NFNComputationList #TODO comp table is not needed?
         :param cs: the BaseContentStore to store the content during the write_out
-        :param pit: the BasePendingInterestTable
         :param classic: a flag which changes streaming to the classical way - doesn't request new object before
                         returning the result
         """
         self.queue_to_lower = queue_to_lower
         self.queue_from_lower = queue_from_lower
-        self.comp_table = comp_table
         self.cs = cs
-        self.pit = pit
         self.classic = classic
 
 
@@ -211,7 +199,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         return following_name
 
 
-    def get_content_from_queue_from_lower(self, next_name: str):
+    def get_content_from_queue_from_lower(self):
         """
         Gets content from the queue from lower and checks if the result is a list with the packetid on the first entry
         and the content object on the second entry
@@ -221,9 +209,17 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         # while isinstance(queue_from_lower_entry, list) is False:
         #     print("[get_content_from_queue_from_lower] Not a list", queue_from_lower_entry.name, next_name)
         #     queue_from_lower_entry = self.queue_from_lower.get()
-        if isinstance(queue_from_lower_entry, list) is False:
+        if isinstance(queue_from_lower_entry, list):
+            if isinstance(queue_from_lower_entry[1], Nack):
+                print("NACK:", queue_from_lower_entry[1].interest, queue_from_lower_entry[1].reason)
+            return queue_from_lower_entry[1]
+        else:
+            if isinstance(queue_from_lower_entry, Nack):
+                print("NACK:", queue_from_lower_entry.interest, queue_from_lower_entry.reason)
             return queue_from_lower_entry
-        return queue_from_lower_entry[1]
+        # if isinstance(queue_from_lower_entry, list) is False: #TODO check sims
+        #     return queue_from_lower_entry
+        # return queue_from_lower_entry[1]
 
 
     def stream_part(self, result: str, resulting_content_object: Content):
@@ -264,7 +260,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             resulting_content_object = buffer_output
             result = buffer_output.content
         else:
-            resulting_content_object = self.get_content_from_queue_from_lower(next_name)
+            resulting_content_object = self.get_content_from_queue_from_lower()
             if isinstance(resulting_content_object, Interest):
                 print("[get_next_content] Resulting object is interest:", resulting_content_object.name, ", instead of content object with name:", next_name)
             else:
@@ -281,12 +277,11 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
                 else:
                     # Get content out of queue_from_lower and check if it is correct -> until correct one is returned
                     #print("[get_next_content] Content wasn't correct and not avaiable in the buffer.")
-                    resulting_content_object = self.get_content_from_queue_from_lower(next_name)
-                    #print("[get_next_content] Resulting content object:", resulting_content_object.name)
+                    resulting_content_object = self.get_content_from_queue_from_lower()
+                    #print("[get_next_content] Resulting content object:", resulting_content_object.name, next_name)
                     is_content_correct = self.check_for_correct_content(resulting_content_object, next_name)
 
             result = resulting_content_object.content
-
         result = self.stream_part(result, resulting_content_object)
         return result
 
@@ -480,8 +475,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
     def last_write_out(self):
         """
         The last_write_out function which is used for the named functions.
-        Stores the last content object with content = "sdo:endstreaming" into the content store and adds the pit_entry
-        to the pit. This is used after the last part is added into the content store to detect the end of the stream.
+        Stores the last content object with content = "sdo:endstreaming" into the content store. This is used after the last part is added into the content store to detect the end of the stream.
         """
         end_name = self.comp_name
         self.write_out_part_counter += 1
@@ -490,9 +484,6 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         self.cs.add_content_object(end_streaming_content_object)
         print("[last_write_out] Last entry in content store:", self.cs.get_container()[-1].content.name,
               self.cs.get_container()[-1].content.content)
-        if self.pit_entry:
-            self.pit.append(self.pit_entry)
-
 
     def write_out_on_get_next(self, arg: Name):
         """
