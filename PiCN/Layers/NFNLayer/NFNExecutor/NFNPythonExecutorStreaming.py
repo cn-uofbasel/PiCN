@@ -24,7 +24,6 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         self.sent_interests: dict = {}
         self.name_list_single: list = None
         self.name_list_multiple: list = None
-        self.pos_name_list_single: int = 0
         self.pos_name_list_multiple: int = 0
         self.queue_to_lower: multiprocessing.Queue = None
         self.queue_from_lower: multiprocessing.Queue = None
@@ -73,6 +72,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         if self.name_list_multiple is None:
             self.name_list_multiple = arg.splitlines()
             self.name_list_multiple.pop(0)
+            self.pos_name_list_multiple = 0
 
 
     def check_name(self, name: str):
@@ -164,6 +164,15 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         :return: True if it is a metatitle. False if not.
         """
         if interest_name.endswith("/streaming/p*"):
+            return True
+        else:
+            return False
+
+
+    def check_for_singlename(self, interest_name: str):
+        while interest_name[-1].isdigit():
+            interest_name = interest_name[:-1]
+        if interest_name.endswith("/streaming/p"):
             return True
         else:
             return False
@@ -430,7 +439,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         :param arg: the name as a string
         :return: the content from the content object
         """
-        if self.check_for_metatitle(arg):
+        if self.check_for_singlename(arg):
             if self.classic is False:
                 return self.get_next_single_name(arg)
             else:
