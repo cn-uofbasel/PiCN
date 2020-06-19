@@ -4,8 +4,6 @@ import multiprocessing
 import time
 
 from PiCN.Layers.ICNLayer.ContentStore import BaseContentStore
-from PiCN.Layers.ICNLayer.PendingInterestTable import BasePendingInterestTable
-from PiCN.Layers.NFNLayer.NFNComputationTable import NFNComputationList
 from PiCN.Layers.NFNLayer.NFNExecutor import NFNPythonExecutor
 from PiCN.Packets import Interest, Content, Name, Nack
 
@@ -206,9 +204,6 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         :return: the next content object from the queue_from_lower
         """
         queue_from_lower_entry = self.queue_from_lower.get()
-        # while isinstance(queue_from_lower_entry, list) is False:
-        #     print("[get_content_from_queue_from_lower] Not a list", queue_from_lower_entry.name, next_name)
-        #     queue_from_lower_entry = self.queue_from_lower.get()
         if isinstance(queue_from_lower_entry, list):
             if isinstance(queue_from_lower_entry[1], Nack):
                 print("NACK:", queue_from_lower_entry[1].interest, queue_from_lower_entry[1].reason)
@@ -217,9 +212,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             if isinstance(queue_from_lower_entry, Nack):
                 print("NACK:", queue_from_lower_entry.interest, queue_from_lower_entry.reason)
             return queue_from_lower_entry
-        # if isinstance(queue_from_lower_entry, list) is False: #TODO check sims
-        #     return queue_from_lower_entry
-        # return queue_from_lower_entry[1]
+
 
 
     def stream_part(self, result: str, resulting_content_object: Content):
@@ -230,7 +223,6 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         :return: the content object which was given as a parameter or the result of the following part if result is
                  a metatitle
         """
-        # streaming procedure can start (see notes: 17.4.2020 nested comps)
         if self.check_for_metatitle(result):
             if str(resulting_content_object.name) not in self.get_next_buffer:
                 self.get_next_buffer[str(resulting_content_object.name)] = resulting_content_object
@@ -323,6 +315,8 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
                 self.sent_interests[str(next_name)] = True
                 self.queue_to_lower.put((self.packetid, Interest(next_name)))
             return result
+        elif self.pos_name_list_multiple == len(self.name_list_multiple)-1:
+            self.name_list_multiple = None
         else:
             return None
 
@@ -352,6 +346,8 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             self.pos_name_list_multiple += 1
             result = self.get_content(current_name)
             return result
+        elif self.pos_name_list_multiple == len(self.name_list_multiple)-1:
+            self.name_list_multiple = None
 
 
     def transform_inner(self, arg: str):
@@ -434,11 +430,11 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         :param arg: the name as a string
         :return: the content from the content object
         """
-        # if self.check_for_metatitle(arg):
-        #     if self.classic is False:
-        #         return self.get_next_single_name(arg)
-        #     else:
-        #         return self.get_next_single_name_classic(arg)
+        if self.check_for_metatitle(arg):
+            if self.classic is False:
+                return self.get_next_single_name(arg)
+            else:
+                return self.get_next_single_name_classic(arg)
         if self.check_streaming(arg):
             if self.classic is False:
                 return self.get_next_multiple_names(arg)
