@@ -298,9 +298,10 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
             self.sent_interests[str(current_name)] = True
             self.queue_to_lower.put((self.packetid, Interest(current_name)))
         result = self.get_content(current_name)
-        next_name = self.get_following_name(current_name)
-        self.sent_interests[str(next_name)] = True
-        self.queue_to_lower.put((self.packetid, Interest(next_name)))
+        if self.check_end_streaming(result) is False:
+            next_name = self.get_following_name(current_name)
+            self.sent_interests[str(next_name)] = True
+            self.queue_to_lower.put((self.packetid, Interest(next_name)))
         return result
 
 
@@ -318,11 +319,11 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
                 self.sent_interests[str(current_name)] = True
                 self.queue_to_lower.put((self.packetid, Interest(current_name)))
             self.pos_name_list_multiple += 1
-            result = self.get_content(current_name)
             next_name = self.name_list_multiple[self.pos_name_list_multiple]
             if self.check_end_streaming(next_name) is False:
                 self.sent_interests[str(next_name)] = True
                 self.queue_to_lower.put((self.packetid, Interest(next_name)))
+            result = self.get_content(current_name)
             return result
         elif self.pos_name_list_multiple == len(self.name_list_multiple)-1:
             self.name_list_multiple = None
@@ -465,7 +466,7 @@ class NFNPythonExecutorStreaming(NFNPythonExecutor):
         if self.write_out_part_counter < 0:
             metatitle_content = Content(self.comp_name, "sdo:\n" + str(self.comp_name) + "/streaming/p*")
             self.queue_to_lower.put((self.packetid, metatitle_content))
-            self.cs.add_content_object(metatitle_content)
+            # self.cs.add_content_object(metatitle_content) TODO not needed? 
 
         # actual content_object for streaming
         self.write_out_part_counter += 1
