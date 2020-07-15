@@ -23,6 +23,8 @@ class Packet(object):
     def __hash__(self):
         return self._name.__hash__() + self._name_payload.__hash__()
 
+    # TODO: Implement __getitem__.
+
     @property
     def name(self):
         """name of the packet"""
