@@ -13,7 +13,7 @@ class ForwardingInformationBaseMemoryPrefix(BaseForwardingInformationBase):
         super().__init__()
 
     def find_fib_entry(self, name: Name, already_used: List[ForwardingInformationBaseEntry] = None,
-                       incoming_faceids: List[int]=None) -> ForwardingInformationBaseEntry:
+                       incoming_faceids: List[int] = None) -> ForwardingInformationBaseEntry:
         components = name.components[:]
         for i in range(0, len(name.components)):
             complen = len(components)
@@ -32,7 +32,7 @@ class ForwardingInformationBaseMemoryPrefix(BaseForwardingInformationBase):
             components = components[:complen - 1]
         return None
 
-    def add_fib_entry(self, name: Name, faceid: List[int], static: bool=False):
+    def add_fib_entry(self, name: Name, faceid: List[int], static: bool = False):
         assert (isinstance(faceid, List))
         fib_entry = ForwardingInformationBaseEntry(name, faceid, static)
         if fib_entry not in self._container:
