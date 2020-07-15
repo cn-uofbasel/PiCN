@@ -10,14 +10,14 @@ from PiCN.Processes import LayerProcess
 class BasicRepositoryLayer(LayerProcess):
     """Basic implementation of the repository layer"""
 
-    def __init__(self, repository: BaseRepository, propagate_interest: bool=False, logger_name="RepoLayer", log_level=255):
+    def __init__(self, repository: BaseRepository, propagate_interest: bool = False, logger_name="RepoLayer", log_level=255):
         super().__init__(logger_name, log_level)
 
         self._repository: BaseRepository = repository
-        self._proagate_interest: bool = propagate_interest
+        self._propagate_interest: bool = propagate_interest
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data: Packet):
-        pass #do not expect this to happen, since repository is highest layer
+        pass  # do not expect this to happen, since repository is highest layer
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data: Packet):
         self.logger.info("Got Data from lower")
@@ -25,13 +25,13 @@ class BasicRepositoryLayer(LayerProcess):
             return
         faceid = data[0]
         packet = data[1]
-        if isinstance(packet, Interest):
+        if isinstance(packet, Interest):  # TODO: Can I check here for connector interest and return session key?
             if self._repository.is_content_available(packet.name):
                 c = self._repository.get_content(packet.name)
                 self.queue_to_lower.put([faceid, c])
                 self.logger.info("Found content object, sending down")
                 return
-            elif self._proagate_interest is True:
+            elif self._propagate_interest is True:  # TODO: What does this do? --> Used for NDN.
                 self.queue_to_lower.put([faceid, packet])
                 return
             else:
@@ -41,8 +41,3 @@ class BasicRepositoryLayer(LayerProcess):
                 return
         if isinstance(packet, Content):
             pass
-
-
-
-
-
