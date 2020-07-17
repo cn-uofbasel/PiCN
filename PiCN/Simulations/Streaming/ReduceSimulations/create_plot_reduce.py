@@ -55,6 +55,12 @@ three_classic_mean = np.mean(three_time_list_classic)
 six_stream_mean = np.mean(six_time_list_stream)
 six_classic_mean = np.mean(six_time_list_classic)
 
+
+three_stream_median = np.median(three_time_list_stream)
+three_classic_median = np.median(three_time_list_classic)
+six_stream_median = np.mean(six_time_list_stream)
+six_classic_median = np.mean(six_time_list_classic)
+
 three_stream_std = np.std(three_time_list_stream)
 three_classic_std = np.std(three_time_list_classic)
 six_stream_std = np.std(six_time_list_stream)
@@ -63,16 +69,21 @@ six_classic_std = np.std(six_time_list_classic)
 labels = ["three stream", "three classic", "six stream", "six classic"]
 x_pos = np.arange(len(labels))
 means = [three_stream_mean, three_classic_mean, six_stream_mean, six_classic_mean]
+print(three_stream_median, three_stream_mean)
+print(three_classic_median, three_classic_mean)
+print(six_stream_median, six_stream_mean)
+print(six_classic_median, six_classic_mean)
+medians = [three_stream_median, three_classic_median, six_stream_median, six_classic_median]
 error = [three_stream_std, three_classic_std, six_stream_std, six_classic_std]
 
 fig, temp = plt.subplots()
-temp.bar(x_pos, means, yerr=error, align="center", alpha=1, ecolor="black", capsize=30)
+temp.bar(x_pos, medians, yerr=error, align="center", alpha=1, ecolor="black", capsize=30)
 temp.set_ylabel("time in s")
 temp.set_xticks(x_pos)
 temp.set_xticklabels(labels)
-temp.set_title('Reduce scenario with three and six layer simulations')
+temp.set_title('Reduce scenario with three and six layer simulations (with median)')
 temp.yaxis.grid(True)
 
 plt.ylim(20,20.8)
-plt.savefig('reduce_errorbar_plot.png')
+plt.savefig('reduce_errorbar_plot_median.png')
 plt.show()
