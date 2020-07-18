@@ -39,19 +39,21 @@ class StreamingSimulation(unittest.TestCase):
                         ageing_interval=1)
 
         self.nfn0.executors["PYTHONSTREAM"].initialize_executor(self.nfn0.nfnlayer.queue_to_lower, self.nfn0.nfnlayer.queue_from_lower, self.nfn0.nfnlayer.cs, False)
+        self.nfn0.icnlayer.pit.ageing = lambda x: "return"
 
         self.nfn1 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
                                 interfaces=[self.simulation_bus.add_interface("nfn1")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
                                 ageing_interval=1)
 
         self.nfn1.executors["PYTHONSTREAM"].initialize_executor(self.nfn1.nfnlayer.queue_to_lower, self.nfn1.nfnlayer.queue_from_lower, self.nfn1.nfnlayer.cs, False)
+        self.nfn1.icnlayer.pit.ageing = lambda x: "return"
 
         self.nfn12 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
                                 interfaces=[self.simulation_bus.add_interface("nfn12")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
                                 ageing_interval=1)
 
         self.nfn12.executors["PYTHONSTREAM"].initialize_executor(self.nfn12.nfnlayer.queue_to_lower, self.nfn12.nfnlayer.queue_from_lower, self.nfn12.nfnlayer.cs, False)
-
+        self.nfn12.icnlayer.pit.ageing = lambda x: "return"
 
         self.repo1 = ICNDataRepository("/tmp/repo1", Name("/repo/r1"), 0, 255, NdnTlvEncoder(), False, False,
                                  interfaces=[self.simulation_bus.add_interface("repo1")])
