@@ -31,7 +31,7 @@ class x86Executor(BaseNFNExecutor):
         code = base64.urlsafe_b64decode(code)
         return (functionname, code)
 
-    def execute(self, function_code: str, params: List):
+    def execute(self, function_code: str, params: List, packetid: int = None, comp_name: str = None):
         try:
             entry_function_name, program_code = self._get_entry_function_name(function_code)
             libfile = tempfile.NamedTemporaryFile()

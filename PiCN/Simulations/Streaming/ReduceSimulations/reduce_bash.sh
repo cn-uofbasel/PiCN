@@ -1,0 +1,6 @@
+#!/bin/bash
+python3 RunThreeLayerSimulationReduceStream.py placeholder
+python3 RunThreeLayerSimulationReduceClassic.py placeholder
+python3 RunSixLayerSimulationReduceStream.py placeholder
+python3 RunSixLayerSimulationReduceClassic.py placeholder
+python3 create_plot_reduce.py placeholder

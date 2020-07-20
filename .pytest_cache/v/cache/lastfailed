@@ -1,0 +1,4 @@
+{
+  "PiCN/Simulations/MapReduceSimulation.py::MapReduceSimulation::test_simple_map_reduce_data_from_repo": true,
+  "PiCN/Simulations/MapReduceSimulation.py::MapReduceSimulation::test_simple_map_reduce_data_from_repo_to_data": true
+}
