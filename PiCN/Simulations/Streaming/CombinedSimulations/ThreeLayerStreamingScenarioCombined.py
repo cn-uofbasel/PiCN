@@ -34,6 +34,10 @@ def generateExampleFiles(fileName: str, numberOfLines: int):
     f.close()
 
 
+def ageing():
+    return
+
+
 def simulation(classic, amount_of_parts):
     generateExampleFiles("../InputFiles/exampleInputFile", amount_of_parts)
 
@@ -43,19 +47,22 @@ def simulation(classic, amount_of_parts):
                             interfaces=[simulation_bus.add_interface("nfn0")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
                             ageing_interval=1)
     nfn_fwd0.executors["PYTHONSTREAM"].initialize_executor(nfn_fwd0.nfnlayer.queue_to_lower, nfn_fwd0.nfnlayer.queue_from_lower, nfn_fwd0.nfnlayer.cs, classic)
-    nfn_fwd0.icnlayer.pit.ageing = lambda x: "return"
+    nfn_fwd0.icnlayer.pit.ageing = ageing
+    nfn_fwd0.timeoutpreventionlayer.ageing = ageing
 
     nfn_fwd1 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
                             interfaces=[simulation_bus.add_interface("nfn1")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
                             ageing_interval=1)
     nfn_fwd1.executors["PYTHONSTREAM"].initialize_executor(nfn_fwd1.nfnlayer.queue_to_lower, nfn_fwd1.nfnlayer.queue_from_lower, nfn_fwd1.nfnlayer.cs, classic)
-    nfn_fwd1.icnlayer.pit.ageing = lambda x: "return"
+    nfn_fwd1.icnlayer.pit.ageing = ageing
+    nfn_fwd1.timeoutpreventionlayer.ageing = ageing
 
     nfn_fwd2 = NFNForwarder(port=0, encoder=NdnTlvEncoder(),
                             interfaces=[simulation_bus.add_interface("nfn2")], log_level=255, executors={"PYTHONSTREAM": NFNPythonExecutorStreaming()},
                             ageing_interval=1)
     nfn_fwd2.executors["PYTHONSTREAM"].initialize_executor(nfn_fwd2.nfnlayer.queue_to_lower, nfn_fwd2.nfnlayer.queue_from_lower, nfn_fwd2.nfnlayer.cs, classic)
-    nfn_fwd2.icnlayer.pit.ageing = lambda x: "return"
+    nfn_fwd2.icnlayer.pit.ageing = ageing
+    nfn_fwd2.timeoutpreventionlayer.ageing = ageing
 
 
     repo = ICNDataRepository("../InputFiles", Name("/repo/r1"), 0, 255, NdnTlvEncoder(), False, False, interfaces=[simulation_bus.add_interface("repo")])
