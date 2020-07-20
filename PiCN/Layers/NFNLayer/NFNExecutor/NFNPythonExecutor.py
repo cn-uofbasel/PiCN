@@ -13,7 +13,7 @@ class NFNPythonExecutor(BaseNFNExecutor):
         self._language = "PYTHON"
         self._sandbox = self._init_sandbox()
 
-    def execute(self, function_code: str, params: List, packetid: int, comp_name: str):
+    def execute(self, function_code: str, params: List, packetid: int=0, comp_name: str=None):
         self.packetid = packetid
         self.comp_name = comp_name
         try:
