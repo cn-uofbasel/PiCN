@@ -142,7 +142,7 @@ class BasicTimeoutPreventionLayer(LayerProcess):
             self.running_computations.remove(packet.name)
             self.message_dict.remove_entry(packet.name)
         self.logger.info("Received Packet from higher")
-        if isinstance(packet, Interest) and packet.name.string_components[-1] == "NFN":
+        if isinstance(packet, Interest): #and packet.name.string_components[-1] == "NFN":
             self.logger.info("Packet is NFN interest, start timeout prevention")
             keepalive_name = self.add_keep_alive_from_name(packet.name)
             self.message_dict.create_entry(name=packet.name, packet_id=packet_id)
