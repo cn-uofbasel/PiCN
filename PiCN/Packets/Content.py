@@ -22,6 +22,7 @@ class Content(Packet):
     @property
     def content(self) -> str:
         if self._content == None:
+            print("Check.")
             return None
         try:
             return self._content.decode()
@@ -37,6 +38,7 @@ class Content(Packet):
             content = content.encode()
         assert (type(content) in [bytes, bytearray]), "MUST be raw bytes"
         self._content = content
+
 
     def __eq__(self, other):
         if type(other) is not Content:
