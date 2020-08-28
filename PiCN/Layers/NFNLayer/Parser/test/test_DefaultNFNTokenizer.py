@@ -48,8 +48,8 @@ class test_DefaultNFNTokenizer(unittest.TestCase):
 
     def test_string3(self):
         """Test single string"""
-        test_string = '"/test/func(=/test/func(/test/string)=)"'
-        expected_res = [(TokenType.STRING, '"/test/func(=/test/func(/test/string)=)"')]
+        test_string = '"/test/func(=/test/func(/test/string)/NFN=)/NFN"'
+        expected_res = [(TokenType.STRING, '"/test/func(=/test/func(/test/string)/NFN=)/NFN"')]
         tokens = self.tokenizer.tokenize(test_string)
         self.assertEqual(expected_res, tokens)
 
