@@ -10,11 +10,12 @@ from PiCN.Layers.NFNLayer.NFNOptimizer import EdgeComputingOptimizer, MapReduceO
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
 import os
 
+
 def main(argv):
 
     # correct missing / in keylocation input
-    if type(args.keylocation) is not type(None):
-        if args.keylocation[-1:] is not '/':
+    if type(args.keylocation) != type(None):
+        if args.keylocation[-1:] != '/':
             args.keylocation += '/'
 
 
@@ -38,7 +39,7 @@ def main(argv):
     logger.info("Packet Format:  " + args.format)
 
     # Packet encoder
-    encoder = NdnTlvEncoder(log_level,args.keylocation) if args.format == 'ndntlv' else SimpleStringEncoder(log_level)
+    encoder = NdnTlvEncoder(log_level,file_location=args.keylocation, myname=args.name) if args.format == 'ndntlv' else SimpleStringEncoder(log_level)
 
 
     if args.optimizer == "Edge":
@@ -75,6 +76,8 @@ if __name__ == "__main__":
                         default="~/PiCN/identity/")
     parser.add_argument('-c','--corrupted', choices=[False, True], type=bool,
                         default=False, help='default is: "False"')
+    parser.add_argument('-n', '--name', type=str, help="name of this node, used as prefix (default: None)",
+                        default=None)
 
     args = parser.parse_args()
     main(args)

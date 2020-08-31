@@ -3,7 +3,7 @@
 import multiprocessing
 from PiCN.Layers.PacketEncodingLayer.Encoder import BasicEncoder
 from PiCN.Processes import LayerProcess
-
+from PiCN.Layers.PacketEncodingLayer.Printer.NdnTlvPrinter import NdnTlvPrinter
 
 class BasicPacketEncodingLayer(LayerProcess):
     """ De- and Encoding Layer, using a predefined Encoder """
@@ -29,7 +29,9 @@ class BasicPacketEncodingLayer(LayerProcess):
         if encoded_packet is None:
             self.logger.info("Dropping Packet since None")
             return
+        self.testPrint(encoded_packet)
         to_lower.put([face_id, encoded_packet])
+
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         face_id, packet = self.check_data(data)
@@ -40,7 +42,14 @@ class BasicPacketEncodingLayer(LayerProcess):
             self.logger.info("Dropping Packet since None")
             return
         self.logger.info("Packet from lower, Faceid: " + str(face_id) + ", Name: " + str(decoded_packet.name))
+        #self.testPrint(decoded_packet)
         to_higher.put([face_id, decoded_packet])
+
+    def testPrint(self, packet):
+        print("......................................................")
+        printer = NdnTlvPrinter(packet)
+        printer.formatted_print()
+        print("......................................................")
 
     def encode(self, data):
         self.logger.info("Encode packet")

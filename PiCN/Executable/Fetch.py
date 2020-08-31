@@ -10,6 +10,7 @@ from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
 from PiCN.Layers.NFNLayer.NFNOptimizer import BaseNFNOptimizer
+from PiCN.Layers.PacketEncodingLayer.Printer.NdnTlvPrinter import NdnTlvPrinter
 
 def main(args):
     name_str = args.name
@@ -28,7 +29,9 @@ def main(args):
     encoder = NdnTlvEncoder() if args.format == 'ndntlv' else SimpleStringEncoder
     fetchTool = Fetch(args.ip, args.port, encoder=encoder, autoconfig=args.autoconfig)
 
+
     content = fetchTool.fetch_data(name, timeout=10)
+
 
 
     print(content)
@@ -36,9 +39,9 @@ def main(args):
     fetchTool.stop_fetch()
 
     #print(type(content))
-    if content is '7':
+    if content == '7':
         print("content object saved to " + "~PiCN/demo/" + 'contetntobject.corrupted')
-    if content is '3':
+    if content == '3':
         print("content object saved to " + "~PiCN/demo/" + 'contetntobject')
 
 
@@ -67,6 +70,7 @@ def unescape_str_to_Name(name: str) -> Name:
 
     return name
 
+
 def parse_nfn_str(name: str) -> Name:
     name = name.replace("""'""", "")
     parser = DefaultNFNParser()
@@ -93,7 +97,7 @@ def parse_nfn_str(name: str) -> Name:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='ICN Fetch Tool')
-    parser.add_argument('--format', choices=['ndntlv', ' simple'], type=str,
+    parser.add_argument('--format', choices=['ndntlv', 'simple'], type=str,
                         default='ndntlv', help='default is: "ndntlv"')
     parser.add_argument('-a', '--autoconfig', action='store_true')
     parser.add_argument('ip', type=str,

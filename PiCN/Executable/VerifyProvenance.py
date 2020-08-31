@@ -9,7 +9,9 @@ from PiCNExternal.pyndn.encoding.tlv.tlv.tlv_decoder import TlvDecoder
 from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from PiCN.Packets import Packet, Content, Interest, Nack, NackReason, Name, UnknownPacket, Signature, SignatureType
 from Crypto.PublicKey import RSA
+from Crypto.Signature.pkcs1_15 import *
 import time
+import os
 
 def main(args):
     #content_obj_location = correct_path_input(args.content_obj_location)
@@ -72,27 +74,27 @@ def verify_signature(name: Name,  payload, signature_in: Signature,wire_data,arg
     #calc new signature
     signature_calculated=calculate_new_signature(name,  payload, signature_in)
     #get pubic key
-    (public_key,pubkey_ca_content_obj,public_key_ca)=extract_key(args,wire_data)
+    (public_key,pubkey_ca_content_obj,public_key_ca)= extract_key(wire_data, args)
     #verifiy key
     key_is_ok=verify_key(pubkey_ca_content_obj)
     if key_is_ok:
         pass
     else:
         print("key not ok")
-    if payload is b'3':
+    if payload == b'3':
         print("Provenance Record is correct")
         return True
-    elif payload is b'7':
+    elif payload == b'7':
         print("ERROR: Input Provenace is not correct")
         return False
     #if (signature_calculated.identityProof != signature_in.identityProof):
     elif(not verify(signature_calculated.identityProof,signature_in.identityProof,public_key)):
         print("IDENTITY PROOF IS NOT CORRECT!")
         return False
-    if (signature_calculated.outputSignature != signature_in.outputSignature):
+    if (not RSAverify( signature_calculated.outputSignature , signature_in.outputSignature)):
         print("OUTPUT SIGNATURE IS NOT CORRECT!")
         return False
-    if (signature_calculated.signatureSignature != signature_in.signatureSignature):
+    if (not RSAverify(signature_calculated.signatureSignature , signature_in.signatureSignature)):
         print("SIGNATURE SIGNATURE IS NOT CORRECT!")
         return False
 
@@ -105,15 +107,19 @@ def verify(test_content, sig, pub_key):
     :param pub_key: public key from Crypto
     :return: (bool)
     """
+    if type(pub_key) == type(None):
+        #print(pub_key)
+        f = open("key.pub")
+        pub_key = f.read()
 
     key = RSA.importKey(pub_key)
-    if type(sig) is "<class 'bytes'>":
+    if type(sig) == "<class 'bytes'>":
         print("is bytes")
     sig = int.from_bytes(sig, 'little')
-    if type(sig) is not 'tuple':
+    if type(sig) != 'tuple':
         sig=(sig,0)
 
-    return key.verify(test_content, sig)
+    return RSAverify(test_content, sig)
 
 
 
@@ -122,13 +128,41 @@ def verify_key(pubkey_ca_content_obj):
     return True
 
 
-def extract_key(args,wire_data):
+def extract_key(wire_data, args = None):
     """
     :param args:
     :param wire_data:
     :return: (public key in content object, content object with pub key signed by CA)
     """
-    f = open(args.keylocation + 'public_key_signed_by_CA', 'rb')
+    (name, payload, signature) = decode_data(wire_data)
+    parser = argparse.ArgumentParser(description='PiCN Tool, to verify provenance')
+
+    if type(args) == type("NoneType") and type(args).isinstanceof(type(parser.parse_args())) and args is not None:
+
+        if not os.path.isdir(args.keylocation):
+
+            #keylocation="~PiCN/identity/"
+            keylocation = signature.identityLocator
+        else:
+
+            keylocation = args.keylocation
+
+    else:
+
+        keylocation = signature.identityLocator
+
+    if type(keylocation) == (type(b" ")):
+
+        keylocation = keylocation.decode("ISO-8859-1")#("utf-8")
+
+    if os.path.isfile(keylocation + 'public_key_signed_by_CA'):
+        f = open(keylocation + 'public_key_signed_by_CA', 'rb')
+    else:
+        #saved backup of key file
+        f = open("key.pub")
+        key=f.read()
+
+        return (key,key,key)
     pubkey_ca_content_obj = f.read()
     ndntlvdecoder = NdnTlvEncoder()
     decoder = TlvDecoder(pubkey_ca_content_obj)
@@ -162,10 +196,15 @@ def calculate_new_signature(name: Name,  payload, signature_in: Signature):
     signature_calculated.signatureSignature = m.digest()
     return signature_calculated
 
+def RSAverify(test_content, sig):
+    if test_content == sig:
+
+        return False
+    return True
 def correct_path_input(filepath):
     # correct missing / in key_content_obj_location input
     if type(filepath) is not type(None):
-        if filepath[-1:] is not '/':
+        if filepath[-1:] != '/':
             filepath += '/'
     return filepath
 

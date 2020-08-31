@@ -75,7 +75,7 @@ class NackReason(Enum):
 
     COMP_NOT_RUNNING = "computation is not running on the node"
     """
-    Semantics: Can only be replied by nodes replying to a KEEPALIVE message, if there is no computation is running.
+    Semantics: Can only be replied by nodes replying to a KEEPALIVE message, if there is no computation running.
     """
 
     COMP_NOT_PARSED = "computation could not be parsed"

@@ -32,7 +32,7 @@ class NdnTlvPrinter(object):
 
     """
     #removed 23 signature value and 22 SignatureInfo, 21 Content (for picn-key-gen)
-    __has_blob_value = {21, 2, 8, 1, 10, 13, 14, 17, 12, 24, 25, 27, 29, 35, 36 ,38, 39, 801}
+    __has_blob_value = {21, 2, 8, 1, 10, 13, 14, 17, 12, 24, 25, 27, 28, 29, 35, 36 ,38, 39, 801}
 
     __known_type_names = {
                            2: "ContentType_Key",

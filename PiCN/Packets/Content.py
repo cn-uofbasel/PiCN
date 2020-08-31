@@ -7,7 +7,7 @@ class Content(Packet):
     Internal representation of a content object
     """
 
-    def __init__(self, name = None, content = None, wire_format = None,input_proveniance=None):
+    def __init__(self, name = None, content = None, wire_format = None):
         Packet.__init__(self, name)
         if type(content) == str:
             self._content = content.encode()
@@ -45,7 +45,7 @@ class Content(Packet):
 
 
 
-    def verify_signature(self):
-        pass
+    #def verify_signature(self):
+    #    pass
         #todo implement
 

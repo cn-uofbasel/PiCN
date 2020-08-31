@@ -83,10 +83,9 @@ def main(args):
 def correct_path_input(filepath):
     # correct missing / in key_content_obj_location input
     if type(filepath) is not type(None):
-        if filepath[-1:] is not '/':
+        if filepath[-1:] != '/':
             filepath += '/'
     return filepath
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='PiCN Peek Tool')
@@ -101,5 +100,9 @@ if __name__ == "__main__":
     parser.add_argument('-o', '--output_location', type=str, help="Location of the file where the content object is stored (default: ~PiCN/identity/)",
                         default="~/PiCN/identity/")
 
-    args = parser.parse_args()
+    args = parser.parse_args(s)
     main(args)
+
+
+
+

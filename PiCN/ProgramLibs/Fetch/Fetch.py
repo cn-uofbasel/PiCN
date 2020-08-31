@@ -77,10 +77,17 @@ class Fetch(object):
         """
         # create interest
         interest: Interest = Interest(name)
+        """
+        print("interest:   !!!")
+        print(interest._wire_format)
+        printer=NdnTlvPrinter(interest._wire_format)
+        printer.formatted_print()
+        """
         if self.autoconfig:
             self.lstack.queue_from_higher.put([None, interest])
         else:
             self.lstack.queue_from_higher.put([self.fid, interest])
+
 
         if timeout == 0:
             packet = self.lstack.queue_to_higher.get()[1]
@@ -99,3 +106,5 @@ class Fetch(object):
         """Close everything"""
         self.lstack.stop_all()
         self.lstack.close_all()
+
+

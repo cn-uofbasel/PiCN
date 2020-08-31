@@ -17,7 +17,7 @@ def main(args):
 
     #correct missing / in keylocation input
     if type(args.keylocation) is not type(None):
-        if args.keylocation[-1:] is not '/':
+        if args.keylocation[-1:] != '/':
             args.keylocation+='/'
 
     if args.len < 1024:

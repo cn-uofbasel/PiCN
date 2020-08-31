@@ -10,7 +10,7 @@ from PiCNExternal.pyndn.encoding.tlv.tlv.tlv_decoder import TlvDecoder
 from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from Crypto.PublicKey import RSA
 from Crypto import Random
-
+import Crypto.Signature.pkcs1_15
 
 
 def main(args):
@@ -44,7 +44,7 @@ def main(args):
     m = hashlib.sha256()
     m.update(to_sign)
     sig_h = m.digest()
-    sig = key.sign(sig_h, 2)[0]
+    sig = Crypto.Signature.pkcs1_15(sig_h, 2)[0]
 
     content_obj_sig=encode_key(name,user_public_key,ca_pub_key,sig)
 
@@ -121,7 +121,7 @@ def find_default_path(path,name):
 def correct_fileinput(filepath):
     # correct missing / in key_content_obj_location input
     if type(filepath) is not type(None):
-        if filepath[-1:] is not '/':
+        if filepath[-1:] != '/':
             filepath += '/'
     return filepath
 
