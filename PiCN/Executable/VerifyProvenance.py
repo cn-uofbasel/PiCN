@@ -58,7 +58,7 @@ def decode_data(input: bytearray) -> ([bytearray], bytearray):
         signature=ndntlvencoder.decode_signature(decoder)
         #signature_is_correct=self.verify_signature(name,meta_info,payload,signature)
         #return (name, payload, signature)
-        return (name, payload,signature )
+        return (name, payload,signature)
 
 def verify_signature(name: Name,  payload, signature_in: Signature,wire_data,args):
     """
