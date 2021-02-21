@@ -34,7 +34,7 @@ config_PiCN = {
     'tests_require': ['nose2', 'rednose', 'nose-progressive', 'numpy'],
     'name': 'PiCN'
 }
-classifiers_PiCN=[
+classifiers_PiCN = [
     'Programming Language :: Python',
     'Environment :: Console',
     'Network Application :: ICN :: NFN'

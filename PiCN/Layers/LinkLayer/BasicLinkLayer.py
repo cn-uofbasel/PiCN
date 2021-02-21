@@ -55,8 +55,8 @@ class BasicLinkLayer(LayerProcess):
             return
         try:
             self.interfaces[addr_info.interface_id].send(packet, addr_info.address)
-        except:
-            self.logger.error("Could not sned packet to" + str(addr_info.address) + " Interface with ID" +
+        except Exception as e:  #TODO: Catch better exception.
+            self.logger.error("Could not send packet to" + str(addr_info.address) + " Interface with ID" +
                               addr_info.interface_id + " not available")
         self.logger.info("Send packet to: " + str(addr_info.address))
 
