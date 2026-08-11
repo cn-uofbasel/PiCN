@@ -196,6 +196,10 @@ class cases_FetchNFN(object):
         """Test fetch data from repo over forwarder using native code"""
         if platform.system() != 'Darwin':
             self.skipTest("Test only for OSX available")
+        # Fixture is CWD-relative (legacy nose chdir); skip when absent so CI /
+        # local Darwin runs without the binary do not FileNotFoundError.
+        if not os.path.isfile('NFN-x86-file-osx'):
+            self.skipTest("NFN-x86-file-osx fixture not available")
         execs = {"PYTHON": NFNPythonExecutor(), "x86": x86Executor()}
         self.forwarder1 = NFNForwarder(0, log_level=255, encoder=self.get_encoder(), executors=execs)
         self.fwd_port1 = self.forwarder1.linklayer.interfaces[0].get_port()

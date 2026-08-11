@@ -39,12 +39,28 @@ class BaseInterface(object):
         """
 
     @property
-    @abc.abstractmethod
     def file_descriptor(self):
-        """returns the file decribtor used for communication. This property is used by the LinkLayer to multiplex
-        different sockets
+        """Returns the file descriptor used for communication. Historically used by
+        BasicLinkLayer's SyncRunStrategy to multiplex sockets via select()/poll().
+
+        Not part of the newer register()/send_async() async contract (see
+        docs/design-adrs/ADR-008-baseinterface-contract.md and its 2026-08-04
+        addendum) -- interfaces driven only by AsyncRunStrategy have no reason to
+        support this and should not need to invent one. This default raises so a
+        brand-new interface that has not overridden it fails loudly and points here,
+        instead of mysteriously never receiving data. UDP4Interface and
+        SimulationInterface both still override this with a real implementation,
+        because they also support SyncRunStrategy today -- ADR-008's addendum.
+
         :return: File descriptor used for communication.
+        :raises NotImplementedError: unless overridden by a subclass that still
+            supports SyncRunStrategy.
         """
+        raise NotImplementedError(
+            "file_descriptor is not supported by this interface; it is only "
+            "needed by BasicLinkLayer's SyncRunStrategy. See "
+            "docs/design-adrs/ADR-008-baseinterface-contract.md."
+        )
 
     def enable_broadcast(self) -> bool:
         """

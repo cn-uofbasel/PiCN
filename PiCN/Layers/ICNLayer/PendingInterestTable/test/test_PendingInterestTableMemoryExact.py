@@ -101,3 +101,52 @@ class test_PendingInterstTableMemoryExact(unittest.TestCase):
         entry = self.pit.find_pit_entry(n1)
 
         self.assertEqual(entry.number_of_forwards, 3)
+
+    def test_timestamp_setter_writes_through(self):
+        """Regression: timestamp setter used to be a no-op (Phase 8.1)."""
+        name = Name("/test/data")
+        self.pit.add_pit_entry(name, 1)
+        entry = self.pit.find_pit_entry(name)
+        entry.timestamp = 123.0
+        self.assertEqual(entry.timestamp, 123.0)
+
+    def test_ageing_removes_entry_past_timeout_with_retransmits_exhausted(self):
+        """Past timeout and retransmits > limit → removed from PIT."""
+        self.pit.set_pit_timeout(1)
+        self.pit.set_pit_retransmits(3)
+        name = Name("/test/expire")
+        self.pit.add_pit_entry(name, 1)
+        entry = self.pit.find_pit_entry(name)
+        entry.timestamp = 0.0
+        entry.retransmits = 4  # already > pit_retransmits
+        updated, removed = self.pit.ageing()
+        self.assertEqual(len(removed), 1)
+        self.assertEqual(removed[0].name, name)
+        self.assertIsNone(self.pit.find_pit_entry(name))
+        self.assertEqual(updated, [])
+
+    def test_ageing_retransmits_before_removing(self):
+        """Past timeout but retransmits still available → stay and increment."""
+        self.pit.set_pit_timeout(1)
+        self.pit.set_pit_retransmits(3)
+        name = Name("/test/retransmit")
+        self.pit.add_pit_entry(name, 1)
+        entry = self.pit.find_pit_entry(name)
+        entry.timestamp = 0.0
+        entry.retransmits = 0
+        updated, removed = self.pit.ageing()
+        self.assertEqual(removed, [])
+        self.assertEqual(len(updated), 1)
+        found = self.pit.find_pit_entry(name)
+        self.assertIsNotNone(found)
+        self.assertEqual(found.retransmits, 1)
+
+    def test_ageing_fresh_entry_is_updated_not_removed(self):
+        """Within timeout → retransmit counter bumps; entry remains."""
+        self.pit.set_pit_timeout(60)
+        name = Name("/test/fresh")
+        self.pit.add_pit_entry(name, 1)
+        updated, removed = self.pit.ageing()
+        self.assertEqual(removed, [])
+        self.assertEqual(len(updated), 1)
+        self.assertEqual(self.pit.find_pit_entry(name).retransmits, 1)

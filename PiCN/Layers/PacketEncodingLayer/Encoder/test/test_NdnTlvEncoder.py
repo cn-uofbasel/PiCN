@@ -52,3 +52,23 @@ class test_NdnTlvEncoder(unittest.TestCase):
         self.assertTrue(self.encoder.is_nack(enc_n1))
         dec_n1 = self.encoder.decode(enc_n1)
         self.assertEqual(dec_n1, n1)
+
+    def test_decode_empty_bytes_is_unknown(self):
+        """Empty wire data → UnknownPacket."""
+        from PiCN.Packets import UnknownPacket
+        decoded = self.encoder.decode(b"")
+        self.assertIsInstance(decoded, UnknownPacket)
+
+    def test_decode_random_non_tlv_is_unknown(self):
+        """Non-TLV garbage → UnknownPacket."""
+        from PiCN.Packets import UnknownPacket
+        decoded = self.encoder.decode(b"\xff\xfe\xfdnot-tlv")
+        self.assertIsInstance(decoded, UnknownPacket)
+
+    def test_decode_truncated_interest_tlv_is_unknown(self):
+        """Interest type byte with truncated body → UnknownPacket."""
+        from PiCN.Packets import UnknownPacket
+        # 0x05 = Interest TLV type; length claims more bytes than provided
+        truncated = bytes([0x05, 0x10, 0x00])
+        decoded = self.encoder.decode(truncated)
+        self.assertIsInstance(decoded, UnknownPacket)

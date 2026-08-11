@@ -5,6 +5,8 @@ import socket
 import time
 import unittest
 
+import pytest
+
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
 from PiCN.Packets import Content, Interest, Name
 from PiCN.ProgramLibs.NFNForwarder import NFNForwarder
@@ -335,11 +337,26 @@ class cases_NFNForwarder(object):
         self.assertEqual('mdo:20006:/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/c0;/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/c1;/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/c2;/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/c3:/lib/func/f1/_(/lib/func/f2(/test/data/object))/NFN/m1', content.content)
         self.assertEqual(name, content.name)
 
+# Every test here creates two real NFNForwarder instances in setUp(), each
+# with its own UDP link-layer socket and a TCP Mgmt socket that reuses that
+# same port number (see NFNForwarder.__init__: mgmt_port =
+# interfaces[0].get_port()). If a previous test's forwarders haven't finished
+# releasing their sockets by the time this test's setUp() runs -- stop_process()
+# uses terminate() plus a fixed sleep(), not a wait for actual socket closure,
+# see AGENTS.md's "Things that will surprise you" and ADR-006 -- the OS can
+# hand out a "fresh" ephemeral port that collides with a still-listening Mgmt
+# socket from the prior test, raising OSError: [Errno 48] Address already in
+# use. This is pre-existing test-infrastructure flakiness, not something this
+# migration introduced; it disappears once ADR-006's cooperative-cancellation
+# shutdown lands. Rerunning on failure keeps CI signal meaningful without
+# masking a genuinely broken test (which would still fail after retries).
+@pytest.mark.flaky(reruns=2, reruns_delay=1)
 class test_NFNForwarder_SimplePacketEncoder(cases_NFNForwarder, unittest.TestCase):
     """Runs tests with the SimplePacketEncoder"""
     def get_encoder(self):
         return SimpleStringEncoder()
 
+@pytest.mark.flaky(reruns=2, reruns_delay=1)
 class test_NFNForwarder_NDNTLVPacketEncoder(cases_NFNForwarder, unittest.TestCase):
     """Runs tests with the NDNTLVPacketEncoder"""
     def get_encoder(self):

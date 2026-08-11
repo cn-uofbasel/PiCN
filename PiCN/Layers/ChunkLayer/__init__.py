@@ -13,4 +13,5 @@ The name must not be chunked, while the name payload can be chunked.
 """
 
 from .BasicChunkLayer import BasicChunkLayer
-from .BasicChunkLayer import RequestTableEntry
+from .AsyncBasicChunkLayer import AsyncBasicChunkLayer
+from .ChunkLayerCore import ChunkLayerCore, RequestTableEntry

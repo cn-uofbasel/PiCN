@@ -3,6 +3,8 @@ The Simulation Bus is the dispatcher for different Simulation Interfaces. Each S
 which can be used as identify for a Face in the LinkLayer.
 """
 
+import asyncio
+import concurrent.futures
 import multiprocessing
 import select
 import threading
@@ -10,7 +12,7 @@ import time
 import logging
 
 from sys import getsizeof
-from typing import Dict
+from typing import Dict, Optional
 
 from PiCN.Logger import Logger
 from PiCN.Processes import PiCNProcess
@@ -37,6 +39,10 @@ class SimulationInterface(BaseInterface):
         self.queue_from_bus = multiprocessing.Queue()
 
         self.queue_from_linklayer = multiprocessing.Queue()
+
+        # Set by register() (Task 3.5), used only by AsyncRunStrategy's path.
+        self._executor: Optional[concurrent.futures.Executor] = None
+        self._register_task: Optional[asyncio.Task] = None
 
     @property
     def file_descriptor(self):
@@ -65,6 +71,59 @@ class SimulationInterface(BaseInterface):
 
     def address(self):
         return self._address
+
+    async def register(self, queue: asyncio.Queue, interface_id: int, executor: concurrent.futures.Executor) -> None:
+        """Wire this interface's already-existing queue_from_bus (fed by
+        SimulationBus exactly as today -- SimulationBus itself is unchanged)
+        into the running asyncio event loop, so items arrive on queue as
+        (packet, addr, interface_id) instead of requiring a blocking
+        receive() call. Must be called from within a running event loop.
+
+        Unlike UDP4Interface.register() (Task 3.2), this starts a real task
+        rather than registering a transport, since the underlying transport
+        here is still a multiprocessing.Queue, not a socket -- the same
+        run_in_executor bridge pattern AsyncRunStrategy uses for
+        queue_from_higher (Task 3.3). executor is injected, never created
+        here (ADR-009 rule #3 and its 2026-08-04 addendum -- this interface
+        is not an owner).
+        """
+        self._executor = executor
+        loop = asyncio.get_running_loop()
+
+        async def _pump() -> None:
+            while True:
+                # receive("relay") already does exactly the unpacking this
+                # needs (queue_from_bus's [addr, data] shape -> (packet,
+                # addr)) -- reused rather than re-derived.
+                try:
+                    packet, addr = await loop.run_in_executor(
+                        executor, self.receive, "relay")
+                except (OSError, ValueError, TypeError, EOFError, BrokenPipeError):
+                    # queue closed during shutdown (Phase 5 async ProgramLibs).
+                    return
+                await queue.put((packet, addr, interface_id))
+
+        self._register_task = asyncio.create_task(_pump(), name=f"SimulationInterface-{interface_id}")
+
+    async def send_async(self, data, addr) -> None:
+        """The async counterpart to send(..., src="relay"), used by
+        AsyncRunStrategy. Named distinctly from send() rather than replacing
+        it, exactly like UDP4Interface.send_async() (Task 3.2) -- both
+        methods coexist on this class (ADR-008's 2026-08-04 addendum).
+
+        queue_from_linklayer.put(...) on this already-unbounded
+        multiprocessing.Queue does not block in practice, but this is
+        dispatched through the injected executor anyway rather than assumed
+        safe to call directly from the event loop (ADR-008/ADR-009). Needs
+        the same executor given to register() -- call register() first.
+        """
+        if self._executor is None:
+            raise RuntimeError(
+                "SimulationInterface.send_async() called before register(); "
+                "there is no executor to dispatch on."
+            )
+        loop = asyncio.get_running_loop()
+        await loop.run_in_executor(self._executor, self.send, data, addr, "relay")
 
     def close(self):
         self.queue_from_linklayer.close()

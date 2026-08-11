@@ -7,7 +7,7 @@ between the two nodes of the first scenario. The first scenario is used for the 
 the second scenario is used for the threelayer test.
 
 Client  <--------> NFN0 <-*-----------> NFN1 <-----------> Repo1
-                          \-----------> NFN12 <-----------> NFN1 <-----------> Repo1
+                          \\-----------> NFN12 <-----------> NFN1 <-----------> Repo1
 """
 
 import os

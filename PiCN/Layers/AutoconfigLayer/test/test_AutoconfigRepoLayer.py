@@ -4,7 +4,7 @@ import multiprocessing
 import socket
 import time
 import queue
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from PiCN.Layers.AutoconfigLayer import AutoconfigRepoLayer
 from PiCN.Layers.LinkLayer import BasicLinkLayer
@@ -165,8 +165,8 @@ class test_AutoconfigRepoLayer(unittest.TestCase):
         self.queue_from_lower.put([42, content])
         # Catch all data the autoconfig layer sends downwards for 5 seconds
         data = []
-        timeout = datetime.utcnow() + timedelta(seconds=waittime)
-        while datetime.utcnow() < timeout:
+        timeout = datetime.now(timezone.utc) + timedelta(seconds=waittime)
+        while datetime.now(timezone.utc) < timeout:
             try:
                 data.append(self.queue_to_lower.get(timeout=waittime/10))
             except queue.Empty:
@@ -187,8 +187,8 @@ class test_AutoconfigRepoLayer(unittest.TestCase):
         # Receive service registration
         # Catch all data the autoconfig layer sends downwards for 5 seconds
         data = []
-        timeout = datetime.utcnow() + timedelta(seconds=waittime)
-        while datetime.utcnow() < timeout:
+        timeout = datetime.now(timezone.utc) + timedelta(seconds=waittime)
+        while datetime.now(timezone.utc) < timeout:
             try:
                 data.append(self.queue_to_lower.get(timeout=waittime/10))
             except queue.Empty:
@@ -218,8 +218,8 @@ class test_AutoconfigRepoLayer(unittest.TestCase):
         # Receive service registration
         # Catch all data the autoconfig layer sends downwards for 5 seconds
         data = []
-        timeout = datetime.utcnow() + timedelta(seconds=waittime)
-        while datetime.utcnow() < timeout:
+        timeout = datetime.now(timezone.utc) + timedelta(seconds=waittime)
+        while datetime.now(timezone.utc) < timeout:
             try:
                 data.append(self.queue_to_lower.get(timeout=waittime/10))
             except queue.Empty:

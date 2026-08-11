@@ -2,11 +2,11 @@
 Repo that move along edge nodes given the following structure. Node: Test requires some computational power and takes
 some time! If it fails maybe more computational power is required!
                        c00
-             _________/ | \_________
+             _________/ |\\_________
             |           |           |
             |           |           |
            c10         c20         c30
-         /  |  \      / |  \      / | \
+         /  | \\      / | \\      / | \
        e11 e12 e13 e21 e22 e23 e31 e32 e33
 
        """
@@ -35,11 +35,11 @@ class AutoconfigRepoHoppingSimulation(object):
     def setUp(self):
         """
                         c00
-              _________/ | \_________
+              _________/ |\\_________
              |           |           |
              |           |           |
             c10         c20         c30
-          /  |  \      / |  \      / | \
+          /  | \\      / | \\      / | \
         e11 e12 e13 e21 e22 e23 e31 e32 e33
 
         """

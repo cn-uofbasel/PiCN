@@ -67,16 +67,20 @@ def private_func(a, b):
 
 ## Getting Started with PiCN and NFN
 
-We provide a simple example to show how to setup NFN nodes and how to issue a computation request. 
+We provide a simple example to show how to setup NFN nodes and how to issue a computation request.
 
-After installing PiCN, a NFN Forwarder can be started on port 9000: 
+Use the same setup as the top-level [README](../README.md) (`PATH` + `starter/`,
+Python ≥ 3.14). `picn-nfn` and `picn-fetch` accept `--runtime sync|async`
+(default **sync**).
+
+After installing PiCN, a NFN Forwarder can be started on port 9000:
 ```console
 picn-nfn --port 9000 --format ndntlv -l debug
-``` 
+```
 and a second one on port 9001:
 ```console
 picn-nfn --port 9001 --format ndntlv -l debug
-``` 
+```
 
 Next we will install a face from the first node to the second node:
 ```console

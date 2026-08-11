@@ -82,3 +82,31 @@ class test_ContentStoreMemoryExact(unittest.TestCase):
         self.assertEqual(len(self.cs.get_container()), 1)
         self.cs.remove_content_object(c.name)
         self.assertEqual(len(self.cs.get_container()), 0)
+
+    def test_ageing_removes_expired_non_static(self):
+        """Expired non-static CS entry is evicted by ageing()."""
+        self.cs.set_cs_timeout(1)
+        c = Content("/test/data", "Hello World")
+        self.cs.add_content_object(c, static=False)
+        entry = self.cs.find_content_object(c.name)
+        entry.timestamp = 0.0
+        self.cs.ageing()
+        self.assertIsNone(self.cs.find_content_object(c.name))
+
+    def test_ageing_keeps_static_despite_old_timestamp(self):
+        """Static entries are never aged out."""
+        self.cs.set_cs_timeout(1)
+        c = Content("/test/static", "Keep me")
+        self.cs.add_content_object(c, static=True)
+        entry = self.cs.find_content_object(c.name)
+        entry.timestamp = 0.0
+        self.cs.ageing()
+        self.assertIsNotNone(self.cs.find_content_object(c.name))
+
+    def test_ageing_keeps_fresh_non_static(self):
+        """Non-expired entries remain."""
+        self.cs.set_cs_timeout(60)
+        c = Content("/test/fresh", "Still good")
+        self.cs.add_content_object(c, static=False)
+        self.cs.ageing()
+        self.assertIsNotNone(self.cs.find_content_object(c.name))

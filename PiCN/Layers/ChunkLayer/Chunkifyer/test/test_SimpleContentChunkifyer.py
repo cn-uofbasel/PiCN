@@ -145,3 +145,31 @@ class test_SimpleContentChunkifyer(unittest.TestCase):
         names_comp = [Name("/test/data/c0"), Name("/test/data/c1"), Name("/test/data/c2"), Name("/test/data/c3")]
         self.assertEqual(names, names_comp)
         self.assertEqual(int(size), 300)
+
+    def test_chunk_exact_multiple_of_chunksize(self):
+        """Payload length exactly N * chunksize → N chunks; reassembly equals input."""
+        chunksize = 8
+        self.chunkifyer = SimpleContentChunkifyer(chunksize=chunksize)
+        payload = "x" * (chunksize * 3)
+        content = Content(Name("/test/exact"), payload)
+        md, chunks = self.chunkifyer.chunk_data(content)
+        self.assertEqual(len(chunks), 3)
+        for chunk in chunks:
+            self.assertEqual(len(chunk.content), chunksize)
+        reassembled = self.chunkifyer.reassamble_data(content.name, chunks)
+        self.assertEqual(reassembled.content, payload)
+        self.assertTrue(len(md) >= 1)
+
+    def test_chunk_single_byte_payload(self):
+        """One-byte payload → one chunk; reassembly equals input."""
+        chunksize = 8
+        self.chunkifyer = SimpleContentChunkifyer(chunksize=chunksize)
+        payload = "z"
+        content = Content(Name("/test/onebyte"), payload)
+        md, chunks = self.chunkifyer.chunk_data(content)
+        self.assertEqual(len(chunks), 1)
+        self.assertEqual(chunks[0].content, payload)
+        reassembled = self.chunkifyer.reassamble_data(content.name, chunks)
+        self.assertEqual(reassembled.content, payload)
+        self.assertEqual(len(md), 1)
+

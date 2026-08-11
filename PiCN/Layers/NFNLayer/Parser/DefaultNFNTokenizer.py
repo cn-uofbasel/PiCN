@@ -76,7 +76,7 @@ class DefaultNFNTokenizer(object):
         res = []
         cur_string = input
         max_iterations = len(input)
-        while cur_string is not "" and max_iterations > 0:
+        while cur_string != "" and max_iterations > 0:
             ts = []
             for token in self._tokens:
                 ts.append(token.getToken(cur_string))

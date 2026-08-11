@@ -12,3 +12,10 @@ nosetests.xml
 PiCN/Simulations/Streaming/InputFiles/name*
 PiCN/Layers/LinkLayer/Interfaces/Simulation.py
 *~
+
+# tooling artifacts
+.venv/
+.pytest_cache/
+__pycache__/
+*.pyc
+baseline/

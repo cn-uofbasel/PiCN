@@ -1,16 +1,13 @@
 import multiprocessing
 import threading
-from typing import List
+from typing import List, Optional
 
 from PiCN.Layers.LinkLayer import BasicLinkLayer
-from PiCN.Layers.LinkLayer.Interfaces import AddressInfo, UDP4Interface
-from PiCN.Packets import Name, Packet, Interest, Content, Nack, NackReason
+from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
+from PiCN.Packets import Name, Packet, Interest
 from PiCN.Processes import LayerProcess
-
-_AUTOCONFIG_PREFIX: Name = Name('/autoconfig')
-_AUTOCONFIG_FORWARDERS_PREFIX: Name = Name('/autoconfig/forwarders')
-_AUTOCONFIG_SERVICE_LIST_PREFIX: Name = Name('/autoconfig/services')
-_AUTOCONFIG_SERVICE_REGISTRATION_PREFIX: Name = Name('/autoconfig/service')
+from PiCN.Layers.AutoconfigLayer.AutoconfigLayerCore import AutoconfigClientCore
+from PiCN.Processes.Outbound import Outbound
 
 
 class AutoconfigClientLayer(LayerProcess):
@@ -28,20 +25,41 @@ class AutoconfigClientLayer(LayerProcess):
                                        Nack NO_ROUTE upwards.
         """
         super().__init__('AutoconfigClientLayer', log_level=log_level)
-        self._held_interests: List[Interest] = []
-        self._linklayer: BasicLinkLayer = linklayer
-        self._bc_port = bcport
-        self._solicitation_timeout: float = solicitation_timeout
-        self._solicitation_max_retry: int = solicitation_max_retry
+        self._core = AutoconfigClientCore(
+            linklayer=linklayer,
+            bcport=bcport,
+            solicitation_timeout=solicitation_timeout,
+            solicitation_max_retry=solicitation_max_retry,
+            logger=self.logger,
+        )
         self._solicitation_timer: threading.Timer = None
+        self._solicitation_max_retry: int = solicitation_max_retry
 
-        self._bc_interfaces: List[int] = list()
-        # Enable broadcasting on the link layer's socket.
-        if self._linklayer is not None:
-            for i in range(len(self._linklayer.interfaces)):
-                interface = self._linklayer.interfaces[i]
-                if interface.get_broadcast_address() is not None and interface.enable_broadcast():
-                    self._bc_interfaces.append(i)
+    @property
+    def _solicitation_timeout(self) -> float:
+        return self._core._solicitation_timeout
+
+    @property
+    def _linklayer(self) -> BasicLinkLayer:
+        return self._core._linklayer
+
+    def _apply_outbound(self, out: Outbound, to_lower, to_higher) -> None:
+        if out.direction == "lower":
+            to_lower.put(out.item)
+        elif out.direction == "higher":
+            to_higher.put(out.item)
+        elif out.direction == "queue_lower":
+            if self.queue_to_lower is not None:
+                self.queue_to_lower.put(out.item)
+        elif out.direction == "queue_higher":
+            if self.queue_to_higher is not None:
+                self.queue_to_higher.put(out.item)
+
+    def stop_process(self):
+        super().stop_process()
+        if self._solicitation_timer is not None:
+            self._solicitation_timer.cancel()
+            self._solicitation_timer = None
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         self.logger.info(f'Got data from lower: {data}')
@@ -53,11 +71,12 @@ class AutoconfigClientLayer(LayerProcess):
             return
         fid, packet = data
         addr_info: AddressInfo = self._linklayer.faceidtable.get_address_info(fid)
-        if not _AUTOCONFIG_PREFIX.is_prefix_of(packet.name):
-            to_higher.put(data)
-            return
-        if packet.name == _AUTOCONFIG_FORWARDERS_PREFIX:
-            self._handle_forwarders(packet, addr_info)
+        for out in self._core.handle_from_lower(fid, packet, addr_info):
+            self._apply_outbound(out, to_lower, to_higher)
+        if self._core.should_cancel_solicitation_timer():
+            if self._solicitation_timer is not None:
+                self._solicitation_timer.cancel()
+                self._solicitation_timer = None
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
         self.logger.info(f'Got data from higher: {data}')
@@ -69,69 +88,22 @@ class AutoconfigClientLayer(LayerProcess):
             return
         fid: int = data[0]
         packet: Packet = data[1]
-        if fid is not None:
-            to_lower.put(data)
-            return
-        if isinstance(packet, Interest):
-            self._held_interests.append(packet)
-            self._send_forwarder_solicitation(self._solicitation_max_retry)
+        outbounds, solicitation_started = self._core.handle_from_higher(fid, packet)
+        for out in outbounds:
+            self._apply_outbound(out, to_lower, to_higher)
+        if solicitation_started and self._core.should_schedule_solicitation_retry(self._solicitation_max_retry):
+            self._schedule_solicitation_timer(self._solicitation_max_retry - 1)
 
-    def _handle_forwarders(self, packet: Packet, addr_info: AddressInfo):
-        if not isinstance(packet, Content):
-            return
-        if len(packet.content) > 0 and packet.content[0] == 128:
-            self.logger.error(f'This implementation cannot handle the autoconfig binary wire format.')
-            return
-        # Parse the received packet:
-        # Parse the first line containing the forwarder's ip:port.
-        lines: List[str] = packet.content.split('\n')
-        scheme, addr = lines[0].split('://', 1)
-        if scheme != 'udp4':
-            self.logger.error(f'Don\'t know how to handle scheme {scheme} in forwarder advertisement.')
-            return
-        host, port = addr.split(':')
-        fwd_addr = AddressInfo((host, int(port)), addr_info.interface_id)
-        fwd_fid = self._linklayer.faceidtable.get_or_create_faceid(fwd_addr)
-        # Parse the following lines of type:value pairs, only process routes.
-        for line in lines[1:]:
-            if len(line.strip()) == 0:
-                continue
-            t, n = line.split(':')
-            if t == 'r':
-                name: Name = Name(n)
-                for interest in self._held_interests:
-                    if name.is_prefix_of(interest.name):
-                        self.queue_to_lower.put([fwd_fid, interest])
-                self._held_interests = [i for i in self._held_interests if not name.is_prefix_of(i.name)]
-        # Only cancel the forwarder solicitation timer if there are not held interests left.
-        if self._solicitation_timer is not None and len(self._held_interests) == 0:
-            self._solicitation_timer.cancel()
-            self._solicitation_timer = None
+    def _schedule_solicitation_timer(self, retry: int):
+        self._solicitation_timer = threading.Timer(
+            self._core._solicitation_timeout,
+            self._send_forwarder_solicitation,
+            kwargs={'retry': retry},
+        )
+        self._solicitation_timer.start()
 
     def _send_forwarder_solicitation(self, retry: int):
-
-        autoconf: Interest = Interest(_AUTOCONFIG_FORWARDERS_PREFIX)
-
-        for i in self._bc_interfaces:
-            interface = self._linklayer.interfaces[i]
-            if not isinstance(interface, UDP4Interface):
-                # Autoconfig currently only supported for UDP over IPv4
-                continue
-            interface: UDP4Interface = interface
-            bcaddr: str = interface.get_broadcast_address()
-            if bcaddr is not None:
-                addr_info = AddressInfo((bcaddr, self._bc_port), i)
-                autoconf_fid = self._linklayer.faceidtable.get_or_create_faceid(addr_info)
-                self.queue_to_lower.put([autoconf_fid, autoconf])
-
-        # Schedule re-broadcast of the forwarder solicitation interest, which will recursively call this function.
-        if self._solicitation_timeout is not None and retry > 1:
-            self._solicitation_timer = threading.Timer(self._solicitation_timeout, self._send_forwarder_solicitation,
-                                                       kwargs={'retry': retry - 1})
-            self._solicitation_timer.start()
-        elif retry <= 1:
-            # If all forwarder solicitations timed out, send a Nack packet upwards for each held interest.
-            for interest in self._held_interests:
-                nack = Nack(interest.name, NackReason.NO_ROUTE, interest)
-                self.queue_to_higher.put([None, nack])
-            self._held_interests = []
+        for out in self._core.send_forwarder_solicitation(retry):
+            self._apply_outbound(out, self.queue_to_lower, self.queue_to_higher)
+        if self._core.should_schedule_solicitation_retry(retry):
+            self._schedule_solicitation_timer(retry - 1)

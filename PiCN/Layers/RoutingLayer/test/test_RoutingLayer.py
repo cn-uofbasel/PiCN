@@ -3,7 +3,7 @@ import unittest
 
 import multiprocessing
 import queue
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from time import sleep
 
 from PiCN.Layers.LinkLayer import BasicLinkLayer
@@ -58,9 +58,9 @@ class test_RoutingLayer(unittest.TestCase):
         i1 = Interest(Name('/test1'))
         self.queue_from_lower.put([42, i1])
         # Collect all packets for a short time
-        timeout = datetime.utcnow() + timedelta(seconds=waittime)
+        timeout = datetime.now(timezone.utc) + timedelta(seconds=waittime)
         packets = []
-        while datetime.utcnow() < timeout:
+        while datetime.now(timezone.utc) < timeout:
             try:
                 packets.append(self.queue_to_higher.get(timeout=waittime/10))
             except queue.Empty:
@@ -74,9 +74,9 @@ class test_RoutingLayer(unittest.TestCase):
         i2 = Interest(Name('/test2'))
         self.queue_from_higher.put([1337, i2])
         # Collect all packets for a short time
-        timeout = datetime.utcnow() + timedelta(seconds=waittime)
+        timeout = datetime.now(timezone.utc) + timedelta(seconds=waittime)
         packets = []
-        while datetime.utcnow() < timeout:
+        while datetime.now(timezone.utc) < timeout:
             try:
                 packets.append(self.queue_to_lower.get(timeout=waittime/10))
             except queue.Empty:
@@ -99,9 +99,9 @@ class test_RoutingLayer(unittest.TestCase):
         c = Content(Name('/routing'), bytes())
         self.queue_from_lower.put([42, i])
         # Collect all packets for a short time
-        timeout = datetime.utcnow() + timedelta(seconds=waittime)
+        timeout = datetime.now(timezone.utc) + timedelta(seconds=waittime)
         packets = []
-        while datetime.utcnow() < timeout:
+        while datetime.now(timezone.utc) < timeout:
             try:
                 packets.append(self.queue_to_lower.get(timeout=waittime/10))
             except queue.Empty:
@@ -123,9 +123,9 @@ class test_RoutingLayer(unittest.TestCase):
         c = Content(Name('/routing'), '/ndn/ch/unibas:3:-1\n'.encode('utf-8'))
         self.queue_from_lower.put([42, i])
         # Collect all packets for a short time
-        timeout = datetime.utcnow() + timedelta(seconds=waittime)
+        timeout = datetime.now(timezone.utc) + timedelta(seconds=waittime)
         packets = []
-        while datetime.utcnow() < timeout:
+        while datetime.now(timezone.utc) < timeout:
             try:
                 packets.append(self.queue_to_lower.get(timeout=waittime/10))
             except queue.Empty:
@@ -166,9 +166,9 @@ class test_RoutingLayer(unittest.TestCase):
         self.routinglayer.start_process()
 
         # Collect all packets for a short time
-        timeout = datetime.utcnow() + timedelta(seconds=waittime)
+        timeout = datetime.now(timezone.utc) + timedelta(seconds=waittime)
         packets = []
-        while datetime.utcnow() < timeout:
+        while datetime.now(timezone.utc) < timeout:
             try:
                 packets.append(self.queue_to_lower.get(timeout=waittime/10))
             except queue.Empty:

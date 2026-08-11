@@ -61,7 +61,7 @@ class Common(object):
           fractions of a millisecond.
         :rtype: float
         """
-        return (datetime.datetime.utcnow() - Common.epoch_).total_seconds() * 1000.0
+        return (datetime.datetime.now(datetime.UTC) - Common.epoch_).total_seconds() * 1000.0
 
     @staticmethod
     def getBytesIOString(bytesIO):
@@ -180,4 +180,4 @@ class Common(object):
     """
     MAX_NDN_PACKET_SIZE = 8800
 
-    epoch_ = datetime.datetime.utcfromtimestamp(0)
+    epoch_ = datetime.datetime.fromtimestamp(0, datetime.UTC)

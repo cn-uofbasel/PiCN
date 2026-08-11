@@ -5,3 +5,4 @@
     """
 
 from .BasicLinkLayer import BasicLinkLayer
+from .AsyncBasicLinkLayer import AsyncBasicLinkLayer

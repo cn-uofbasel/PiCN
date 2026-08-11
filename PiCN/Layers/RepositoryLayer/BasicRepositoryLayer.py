@@ -3,46 +3,62 @@
 import multiprocessing
 
 from PiCN.Layers.RepositoryLayer.Repository import BaseRepository
-from PiCN.Packets import Interest, Content, Packet, Nack, NackReason
+from PiCN.Layers.RepositoryLayer.RepositoryLayerCore import RepositoryLayerCore
+from PiCN.Packets import Packet
 from PiCN.Processes import LayerProcess
+from PiCN.Processes.Outbound import Outbound
 
 
 class BasicRepositoryLayer(LayerProcess):
-    """Basic implementation of the repository layer"""
+    """Basic implementation of the repository layer
 
-    def __init__(self, repository: BaseRepository, propagate_interest: bool=False, logger_name="RepoLayer", log_level=255):
+    Thin sync wrapper around :class:`RepositoryLayerCore` (ADR-003 extract-core).
+    """
+
+    def __init__(
+        self,
+        repository: BaseRepository,
+        propagate_interest: bool = False,
+        logger_name="RepoLayer",
+        log_level=255,
+    ):
         super().__init__(logger_name, log_level)
+        self._core = RepositoryLayerCore(
+            repository=repository,
+            propagate_interest=propagate_interest,
+            logger=self.logger,
+        )
 
-        self._repository: BaseRepository = repository
-        self._proagate_interest: bool = propagate_interest
+    @property
+    def repository(self) -> BaseRepository:
+        return self._core.repository
 
-    def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data: Packet):
-        pass #do not expect this to happen, since repository is highest layer
+    def _apply_outbound(self, out: Outbound, to_lower, to_higher) -> None:
+        if out.direction == "lower":
+            to_lower.put(out.item)
+        elif out.direction == "higher":
+            to_higher.put(out.item)
+        elif out.direction == "queue_lower":
+            if self.queue_to_lower is not None:
+                self.queue_to_lower.put(out.item)
+        elif out.direction == "queue_higher":
+            if self.queue_to_higher is not None:
+                self.queue_to_higher.put(out.item)
 
-    def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data: Packet):
-        self.logger.info("Got Data from lower")
-        if self._repository is None:
-            return
-        faceid = data[0]
-        packet = data[1]
-        if isinstance(packet, Interest):
-            if self._repository.is_content_available(packet.name):
-                c = self._repository.get_content(packet.name)
-                self.queue_to_lower.put([faceid, c])
-                self.logger.info("Found content object, sending down")
-                return
-            elif self._proagate_interest is True:
-                self.queue_to_lower.put([faceid, packet])
-                return
-            else:
-                self.logger.info("No matching data, dropping interest, sending nack")
-                nack = Nack(packet.name, NackReason.NO_CONTENT, interest=packet)
-                to_lower.put([faceid, nack])
-                return
-        if isinstance(packet, Content):
-            pass
+    def data_from_higher(
+        self,
+        to_lower: multiprocessing.Queue,
+        to_higher: multiprocessing.Queue,
+        data: Packet,
+    ):
+        for out in self._core.handle_from_higher(data):
+            self._apply_outbound(out, to_lower, to_higher)
 
-
-
-
-
+    def data_from_lower(
+        self,
+        to_lower: multiprocessing.Queue,
+        to_higher: multiprocessing.Queue,
+        data: Packet,
+    ):
+        for out in self._core.handle_from_lower(data):
+            self._apply_outbound(out, to_lower, to_higher)

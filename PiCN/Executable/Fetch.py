@@ -3,9 +3,11 @@ Fetch Content with resolved chunking
 """
 
 import argparse
+import asyncio
 
 from PiCN.Packets import Name
 from PiCN.ProgramLibs.Fetch import Fetch
+from PiCN.ProgramLibs.runtime import Runtime
 from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 from PiCN.Layers.NFNLayer.Parser import DefaultNFNParser
@@ -27,12 +29,26 @@ def main(args):
     log_level = 255
 
     encoder = NdnTlvEncoder() if args.format == 'ndntlv' else SimpleStringEncoder()
-    fetchTool = Fetch(ip=args.ip, port=args.port, log_level=log_level, encoder=encoder, autoconfig=args.autoconfig)
+    runtime = Runtime(args.runtime)
+    fetchTool = Fetch(
+        ip=args.ip, port=args.port, log_level=log_level, encoder=encoder,
+        autoconfig=args.autoconfig, runtime=runtime)
 
-    content = fetchTool.fetch_data(name, timeout=10)
-    print(content)
+    if runtime is Runtime.ASYNC:
+        asyncio.run(_fetch_async(fetchTool, name))
+    else:
+        content = fetchTool.fetch_data(name, timeout=10)
+        print(content)
+        fetchTool.stop_fetch()
 
-    fetchTool.stop_fetch()
+
+async def _fetch_async(fetchTool: Fetch, name: Name) -> None:
+    await fetchTool.start_fetch_async()
+    try:
+        content = await fetchTool.fetch_data_async(name, timeout=10)
+        print(content)
+    finally:
+        await fetchTool.stop_fetch_async()
 
 def unescape_name(name: Name):
     r = []
@@ -88,6 +104,8 @@ if __name__ == "__main__":
     parser.add_argument('--format', choices=['ndntlv', 'simple'], type=str,
                         default='ndntlv', help='default is: "ndntlv"')
     parser.add_argument('-a', '--autoconfig', action='store_true')
+    parser.add_argument('--runtime', choices=['sync', 'async'], type=str, default='sync',
+                        help='Execution runtime (default: sync)')
     parser.add_argument('ip', type=str,
                         help="IP addr of forwarder")
     parser.add_argument('port', type=int,

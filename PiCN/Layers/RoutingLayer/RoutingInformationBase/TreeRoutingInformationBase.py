@@ -1,7 +1,7 @@
 
 from typing import List, Tuple, Dict, Iterator
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase, ForwardingInformationBaseEntry
 from PiCN.Layers.RoutingLayer.RoutingInformationBase.BaseRoutingInformationBase import BaseRoutingInformationBase
@@ -173,7 +173,7 @@ class TreeRoutingInformationBase(BaseRoutingInformationBase):
         """
         Remove outdated entries from the RIB.
         """
-        self._tree.ageing(datetime.utcnow())
+        self._tree.ageing(datetime.now(timezone.utc))
 
     def insert(self, name: Name, fid: int, distance: int, timeout: datetime = None):
         """

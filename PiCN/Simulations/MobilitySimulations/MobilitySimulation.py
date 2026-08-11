@@ -16,7 +16,6 @@ from PiCN.Layers.NFNLayer.NFNOptimizer.EdgeComputingOptimizer import EdgeComputi
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder
 from PiCN.Layers.LinkLayer.Interfaces import SimulationBus
 from PiCN.ProgramLibs.NFNForwarder.NFNForwarder import NFNForwarder
-from PiCN.ProgramLibs.NFNForwarder.NFNForwarderData import NFNForwarderData
 from PiCN.Simulations.MobilitySimulations.Model.MobileNode import MobileNode
 from PiCN.Simulations.MobilitySimulations.Model.StationaryNode import StationaryNode
 from PiCN.Simulations.MobilitySimulations.Helper.ConsumerDistributionHelper import ZipfMandelbrotDistribution
@@ -106,12 +105,8 @@ class MobilitySimulation(object):
                 node.nfn_forwarder = NFNForwarder(0, encoder=SimpleStringEncoder(),
                                                   interfaces=[self._simulation_bus.add_interface(f"rsu{node.node_id}")],
                                                   ageing_interval=10)
-            elif self._forwarder == "NFNForwarderData":
-                node.nfn_forwarder = NFNForwarderData(0, encoder=SimpleStringEncoder(),
-                                                      interfaces=[self._simulation_bus.add_interface(f"rsu{node.node_id}")],
-                                                      chunk_size=self._chunk_size, num_of_forwards=1, ageing_interval=10)
             else:
-                self.logger.error("Forwarder: " + self._forwarder + " is not supported! Use 'NFNForwarder' or 'NFNForwarderData'!")
+                self.logger.error("Forwarder: " + self._forwarder + " is not supported! Use 'NFNForwarder'.")
 
             # install the optimizer
             if self._optimizer == "ToDataFirstOptimizer":

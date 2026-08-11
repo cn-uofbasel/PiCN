@@ -1,17 +1,21 @@
 ## PiCN Toolbox
 
-The PiCN toolbox contains:
-* `picn-relay`
-* `picn-peek`
-* `picn-repo`
-* `picn-fetch`
-* `picn-mgmt`
+The PiCN toolbox (`starter/`) contains:
+* `picn-relay` — ICN forwarder (`--runtime sync|async`, default sync)
+* `picn-nfn` — NFN forwarder (`--runtime sync|async`)
+* `picn-peek` / `picn-fetch` — fetch tools (`picn-fetch` supports `--runtime`)
+* `picn-repo` / `picn-pushrepo` — repositories
+* `picn-mgmt` — management client
+* `picn-setup` — multi-node helper
+
+See also [`docs/architecture.md`](architecture.md) for sync vs async runtimes.
 
 ### PiCN Forwarder
 
 ```
 usage: picn-relay [-h] [-p PORT] [-f {ndntlv,simple}]
                        [-l {debug,info,warning,error,none}]
+                       [--runtime {sync,async}]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -20,6 +24,8 @@ optional arguments:
                         Packet Format (default: ndntlv)
   -l {debug,info,warning,error,none}, --logging {debug,info,warning,error,none}
                         Logging Level (default: info)
+  --runtime {sync,async}
+                        Execution runtime (default: sync)
 ```
 
 
@@ -63,7 +69,8 @@ optional arguments:
 ### Fetch a high-level object (i.e. handle chunking)
 
 ```
-usage: picn-fetch [-h] [--format {ndntlv, simple}] ip port name
+usage: picn-fetch [-h] [--format {ndntlv, simple}] [--runtime {sync,async}]
+                  ip port name
 
 ICN Fetch Tool
 
@@ -75,6 +82,7 @@ positional arguments:
 optional arguments:
   -h, --help                  Show this help message and exit
   --format {ndntlv, simple}   Packet Format (default is: ndntlv)
+  --runtime {sync,async}      Execution runtime (default: sync)
 ```
 
 

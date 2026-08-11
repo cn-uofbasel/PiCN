@@ -1,1 +1,3 @@
-opencv-python==4.2.0.32     # required to run some data offloading examples using opencv
+# PiCN has no required runtime dependencies.
+# Optional extras are declared in pyproject.toml:
+#   pip install "PiCN[opencv]"

@@ -176,7 +176,7 @@ class LayerProcess(PiCNProcess):
         time.sleep(0.1)
 
     def in_unittest(self):
-        """Check if unittest is running for using poller instead of select, to enable more file descriptor"""
+        """Check if a test framework is running for using poller instead of select, to enable more file descriptors"""
         try:
             current_stack = inspect.stack()
             for stack_frame in current_stack:
@@ -184,6 +184,8 @@ class LayerProcess(PiCNProcess):
                     if "unittest" in program_line:
                         return True
                     if "nose" in program_line:
+                        return True
+                    if "pytest" in program_line:
                         return True
             return False
         except:

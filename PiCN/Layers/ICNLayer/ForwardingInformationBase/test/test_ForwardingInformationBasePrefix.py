@@ -139,3 +139,36 @@ class test_ForwardingInformationBaseMemoryPrefix(unittest.TestCase):
         self.fib.add_faceid_to_entry(Name("/test/bar"), 21)
         entry = self.fib.find_fib_entry(Name("/test/bar"))
         self.assertEqual([1337, 21], entry.faceid)
+
+    def test_find_empty_name_no_match(self):
+        """Empty Name() never matches: LPM loop is over components (len 0 → no probe).
+
+        Even an installed empty-prefix FIB entry is unreachable via find_fib_entry(Name())
+        with the current algorithm — documented Phase 8 edge case, not changed.
+        """
+        self.fib.add_fib_entry(Name("/test/data"), [1])
+        self.assertIsNone(self.fib.find_fib_entry(Name()))
+        self.fib.add_fib_entry(Name(), [9])
+        self.assertIsNone(self.fib.find_fib_entry(Name()))
+
+    def test_find_single_component_lpm(self):
+        """Single-component interest matches a single-component FIB entry."""
+        self.fib.add_fib_entry(Name("/a"), [1])
+        self.fib.add_fib_entry(Name("/b"), [2])
+        entry = self.fib.find_fib_entry(Name("/a"))
+        self.assertIsNotNone(entry)
+        self.assertEqual(entry.faceid, [1])
+        self.assertEqual(entry.name, Name("/a"))
+
+    def test_find_overlapping_prefixes_longest_wins(self):
+        """Overlapping /a, /a/b, /a/b/c — longest matching prefix wins."""
+        self.fib.add_fib_entry(Name("/a"), [1])
+        self.fib.add_fib_entry(Name("/a/b"), [2])
+        self.fib.add_fib_entry(Name("/a/b/c"), [3])
+        entry = self.fib.find_fib_entry(Name("/a/b/c/d"))
+        self.assertIsNotNone(entry)
+        self.assertEqual(entry.name, Name("/a/b/c"))
+        self.assertEqual(entry.faceid, [3])
+        entry_mid = self.fib.find_fib_entry(Name("/a/b/x"))
+        self.assertEqual(entry_mid.name, Name("/a/b"))
+        self.assertEqual(entry_mid.faceid, [2])

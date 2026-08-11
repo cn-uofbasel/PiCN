@@ -1,97 +1,148 @@
-*This is work in progress! Everything can change at any moment! :-)*
+# PiCN
 
-# PiCN 
+[![CI](https://github.com/cn-uofbasel/PiCN/actions/workflows/ci.yml/badge.svg)](https://github.com/cn-uofbasel/PiCN/actions/workflows/ci.yml)
 
-[![Build Status](https://semaphoreci.com/api/v1/cn-unibas/picn/branches/master/badge.svg)](https://semaphoreci.com/cn-unibas/picn)
+PiCN is a:
 
-PiCN is a...
-* prototyping-friendly, modular and extensible library for content-centric networkig (CCN).
-* a set of tools and network nodes.
-* our platform to build the next generation of [NFN](docs/nfn.md).
-* a simple [Simulation System](docs/simulation.md) for ICN and NFN 
+* prototyping-friendly, modular library for Information-Centric Networking (ICN / CCN)
+* set of tools and network nodes (forwarder, repository, fetch, management)
+* platform for [Named Function Networking (NFN)](docs/nfn.md)
+* simple [simulation system](docs/simulation.md) for ICN and NFN
 
-PiCN is written in Python 3.6+ and tested on Linux, Mac OS X and Windows. More than 400 unit tests are included.
+PiCN supports **Python 3.14** and includes an **asyncio** runtime alongside the
+original multiprocessing-per-layer path (`--runtime sync|async`, default
+**sync**, so existing workflows keep working unchanged). See
+[`docs/modernization.md`](docs/modernization.md) for how the migration got
+here and [`docs/design-adrs/`](docs/design-adrs/README.md) for the design
+rationale behind the dual runtime.
+
+| Topic | Doc |
+|---|---|
+| Architecture (layers + dual runtime) | [`docs/architecture.md`](docs/architecture.md) |
+| Package layout | [`docs/project_structure.md`](docs/project_structure.md) |
+| Design decisions (ADRs) | [`docs/design-adrs/`](docs/design-adrs/README.md) |
+| Contributor conventions | [`AGENTS.md`](AGENTS.md) |
 
 ## Features
 
 #### Library
 
-* Link Layer (UDP faces)
-* Packet Encoding Layer (NDN packet format + link protocol)
-* CCN Layer (basic forwarding logic, data structs)
-* Chunking Layer
-* Computation Layer (next-gen [NFN](docs/nfn.md) implementation)
-* Management interface to each layer
+* Link Layer (UDP faces, simulation bus)
+* Packet Encoding Layer (NDN TLV + simple string format)
+* ICN Layer (forwarding, CS / FIB / PIT)
+* Chunking, repository, NFN / thunk / routing / autoconfig layers
+* Management interface (sync process or async TCP task)
 
-#### Tools
+#### Tools (`starter/`)
 
-* Forwarder
-* Setup Tool to start, connect, configure and inspect multiple nodes (with NDN testbed access)
-* Peek Tool
-* Management Tool
+* `picn-relay` — ICN forwarder (`--runtime sync|async`)
+* `picn-nfn` — NFN forwarder (`--runtime sync|async`)
+* `picn-repo` / `picn-pushrepo` — content repositories
+* `picn-fetch` / `picn-peek` — fetch tools (`picn-fetch` supports `--runtime`)
+* `picn-mgmt` — management client
+* `picn-setup` — multi-node setup helper
 
-## Getting Started!
-Let us setup a simple network which consists of a data repository and a forwarding node:
+## Requirements
+
+* **Python ≥ 3.14** (see `pyproject.toml`)
+* No hard runtime dependencies for the default CLI path
+* Optional: `pip install "PiCN[dev]"` for pytest; `pip install "PiCN[config]"` for `picn-relay -c` TOML configs (`pytoml`)
+
+## Setup
+
+```console
+git clone https://github.com/cn-uofbasel/PiCN.git
+cd PiCN
+python3 -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]"
+export PATH="$PATH:$(pwd)/starter"
+# starter scripts also set PYTHONPATH to the repo root
+```
+
+Alternatively without editable install: `export PYTHONPATH=$(pwd)` and put `starter/` on your `PATH`.
+
+## Getting Started (ICN)
+
+Set up a repository and a forwarding node:
 
 ![Hands On: Topology](https://raw.githubusercontent.com/cn-uofbasel/PiCN/master/docs/img/initial-hands-on.png "Hands On: Topology")
-             
-Clone PiCN from github:
+
+Prepare content:
+
 ```console
-you@machine:~$ git clone https://github.com/cn-uofbasel/PiCN.git
+mkdir -p /tmp/repo
+echo "HELLO WORLD" > /tmp/repo/example
 ```
 
-Add the PiCN-tools to your PATH (bash):
+Start a repository and a forwarder (default **sync** runtime):
+
 ```console
-you@machine:~$ PATH=$PATH:`pwd`/PiCN/starter
-```
-or config python library:
-```console
-you@machine:~$ cd PiCN && export PYTHONPATH=${PYTHONPATH}:`pwd`
+picn-repo --format ndntlv /tmp/repo /the/prefix 10000 &
+picn-relay --format ndntlv --port 9000 &
 ```
 
-Prepare content for a repository:
+Configure a face and forwarding rule:
+
 ```console
-you@machine:~$ mkdir /tmp/repo
-you@machine:~$ touch /tmp/repo/example && echo "HELLO WORLD" > /tmp/repo/example
-...
+picn-mgmt --ip 127.0.0.1 --port 9000 newface 127.0.0.1:10000:0
+picn-mgmt --ip 127.0.0.1 --port 9000 newforwardingrule /the:0
 ```
 
-Start a repository node and a forwarder:
+You can also install a rule that fans out to multiple faces (e.g. face-ids 0 and 1):
+
 ```console
-you@machine:~$ picn-repo --format ndntlv /tmp/repo /the/prefix 10000 &
-you@machine:~$ picn-relay --format ndntlv --port 9000 &  
-...
+picn-mgmt --ip 127.0.0.1 --port 9000 newforwardingrule /prefix:0,1
 ```
 
-Configure a forwarding rule from the forwarder to the repository:
-```console
-you@machine:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newface 127.0.0.1:10000:0
-you@machine:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newforwardingrule /the:0
-...
-```
+Fetch content via the forwarder:
 
-**Note:** you can also install a forwarding rule, which forwards an interest to multiple faces in parallel (Assuming there are faces with the face-id 0 and 1. All interests with the prefix "/prefix" will be forwarded to the faces with face-id 0 and 1 in parallel): 
 ```console
-you@machine:~$ picn-mgmt --ip 127.0.0.1 --port 9000 newforwardingrule /prefix:0,1
-...
-```
-
-Fetch content from the repository via the forwarding node:
-```console
-you@machine:~$ picn-fetch --format ndntlv 127.0.0.1 9000 /the/prefix/example 
+picn-fetch --format ndntlv 127.0.0.1 9000 /the/prefix/example
 HELLO WORLD
 ```
 
+### Async runtime (optional)
+
+Relay and fetch accept `--runtime async` (one event loop per node instead of
+one process per layer). Example:
+
+```console
+picn-relay --format ndntlv --port 9000 --runtime async &
+picn-fetch --format ndntlv --runtime async 127.0.0.1 9000 /the/prefix/example
+```
+
+Details: [`docs/architecture.md`](docs/architecture.md).
+
 ## Getting Started with NFN
 
-NFN is a computation engine for ICN. It enables user to express a how data should be
-transformed before they are delivered, and the network will find a way to deliver the result. 
+NFN is a computation engine for ICN: express how data should be transformed;
+the network finds where to compute. Tutorial: [`docs/nfn.md`](docs/nfn.md).
 
-More details: [PiCN NFN](docs/nfn.md)
+Minimal sketch (commands unchanged; add `--runtime async` on `picn-nfn` /
+`picn-fetch` if desired):
 
-## More about...
+```console
+picn-nfn --port 9000 --format ndntlv -l debug &
+picn-nfn --port 9001 --format ndntlv -l debug &
+picn-mgmt --port 9000 newface 127.0.0.1:9001:0
+picn-mgmt --port 9000 newforwardingrule /data:0
+# … install function + data via picn-mgmt newcontent, then:
+picn-fetch 127.0.0.1 9000 '/func/combine("Hello",/data/obj1)/NFN'
+```
 
-### Operational Matters
+## Tests and CI
+
+```console
+python -m pytest PiCN/ --ignore=PiCN/Simulations -q --timeout=90
+```
+
+GitHub Actions (this branch): **fast** suite on every push; **full** suite
+(Ubuntu + macOS) on pull requests and `workflow_dispatch`. Simulations are
+excluded from CI (slow / environment-sensitive).
+
+## More about…
+
+### Operational
 
 * [PiCN Toolbox](docs/toolbox.md)
 * [Setting up a Network](docs/network_setup.md)
@@ -104,9 +155,15 @@ More details: [PiCN NFN](docs/nfn.md)
 * [Architecture](docs/architecture.md)
 * [Project Structure](docs/project_structure.md)
 * [Management Interface](docs/management_interface.md)
+* [Design decisions (ADRs)](docs/design-adrs/README.md)
 
+### Migration history
 
-### The Project
+The asyncio/Python 3.14 migration is complete. Its rationale and verification
+record are kept for reference: [plan and current-state audit](docs/modernization.md) ·
+[per-phase test evidence](docs/baseline.md).
+
+### The project
 
 * [Licensing](docs/licensing.md)
-* [Mailinglist](https://www.maillist.unibas.ch/mailman/listinfo/picn)
+* Upstream mailing list: [picn@unibas](https://www.maillist.unibas.ch/mailman/listinfo/picn)

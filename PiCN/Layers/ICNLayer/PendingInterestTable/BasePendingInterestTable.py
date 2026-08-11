@@ -68,7 +68,9 @@ class PendingInterestTableEntry(object):
 
     @timestamp.setter
     def timestamp(self, timestamp):
-        self._timestamp
+        # Was a no-op (`self._timestamp` with no assignment) — ageing tests and
+        # any caller updating freshness depended on this writing through.
+        self._timestamp = timestamp
 
     @property
     def retransmits(self):

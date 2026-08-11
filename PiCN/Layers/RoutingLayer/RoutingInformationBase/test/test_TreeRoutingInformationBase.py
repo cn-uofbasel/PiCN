@@ -1,6 +1,6 @@
 
 import unittest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from PiCN.Layers.RoutingLayer.RoutingInformationBase.TreeRoutingInformationBase import _RIBTreeNode
 from PiCN.Layers.RoutingLayer.RoutingInformationBase import BaseRoutingInformationBase, TreeRoutingInformationBase
@@ -75,15 +75,15 @@ class test_TreeRoutingInformationBase(unittest.TestCase):
         self.assertEqual(4, len(fib))
 
     def test_ageing(self):
-        timeout1 = datetime.utcnow() + timedelta(hours=24)
-        timeout2 = datetime.utcnow() - timedelta(seconds=10)
+        timeout1 = datetime.now(timezone.utc) + timedelta(hours=24)
+        timeout2 = datetime.now(timezone.utc) - timedelta(seconds=10)
         tree: _RIBTreeNode = _RIBTreeNode()
         tree.insert(Name([]), 0, 1, timeout1)
         tree.insert(Name([]), 1, 2, timeout2)
         self.assertEqual(2, len(tree._distance_vector))
         self.assertIn(0, tree._distance_vector)
         self.assertIn(1, tree._distance_vector)
-        tree.ageing(datetime.utcnow())
+        tree.ageing(datetime.now(timezone.utc))
         self.assertIn(0, tree._distance_vector)
         self.assertNotIn(1, tree._distance_vector)
 
@@ -100,7 +100,7 @@ class test_TreeRoutingInformationBase(unittest.TestCase):
 
     def test_iter_len(self):
         rib: BaseRoutingInformationBase = TreeRoutingInformationBase()
-        timeout = datetime.utcnow() + timedelta(hours=1)
+        timeout = datetime.now(timezone.utc) + timedelta(hours=1)
         rib.insert(Name('/foo/bar'), 0, 4, timeout=timeout)
         rib.insert(Name('/ndn/ch/unibas/dmi'), 1, 2)
         rib.insert(Name('/ndn/ch/unibas/cs'), 1, 3)

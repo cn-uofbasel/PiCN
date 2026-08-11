@@ -5,7 +5,7 @@ import os
 import shutil
 import queue
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
 from PiCN.Layers.PacketEncodingLayer.Encoder import NdnTlvEncoder
@@ -52,17 +52,17 @@ class test_RoutingLayerFullStack(unittest.TestCase):
         shutil.rmtree('/tmp/test_repo')
 
     def test_network(self):
-        """
+        r"""
                 C
                 |
              F[9004] -- F[9003]
-             /   \         /
-            /     \       /
-           /       \     /
+             /   \\         /
+            /     \\       /
+           /       \\     /
         F[9002] -- F[9001]
-            \        /
-             \      /
-              \    /
+            \\        /
+             \\      /
+              \\    /
              F[9000]
                 |
                 R
@@ -76,21 +76,21 @@ class test_RoutingLayerFullStack(unittest.TestCase):
         self.repo.start_repo()
 
         hw: str = ''
-        until = datetime.utcnow() + timedelta(seconds=20)
-        while hw != 'Hello, World!\n' and datetime.utcnow() < until:
+        until = datetime.now(timezone.utc) + timedelta(seconds=20)
+        while hw != 'Hello, World!\n' and datetime.now(timezone.utc) < until:
             try:
                 hw = self.fetch.fetch_data(Name('/testrepo/helloworld'), timeout=1.0)
             except queue.Empty:
                 pass
         self.assertEqual('Hello, World!\n', hw)
-        until = datetime.utcnow() + timedelta(seconds=20)
+        until = datetime.now(timezone.utc) + timedelta(seconds=20)
         hw = ''
-        start = datetime.utcnow()
+        start = datetime.now(timezone.utc)
         end = start
-        while hw != 'Hello, World!\n' and datetime.utcnow() < until:
+        while hw != 'Hello, World!\n' and datetime.now(timezone.utc) < until:
             try:
                 hw = self.fetch.fetch_data(Name('/testrepo/helloworld'), timeout=1.0)
-                end = datetime.utcnow()
+                end = datetime.now(timezone.utc)
             except queue.Empty:
                 pass
         self.assertEqual('Hello, World!\n', hw)

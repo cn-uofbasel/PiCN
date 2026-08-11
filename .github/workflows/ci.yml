@@ -1,0 +1,90 @@
+name: CI
+
+# Fast checks on every push; full suite on
+# pull requests / workflow_dispatch. Simulations stay excluded (slow,
+# environment-sensitive — see docs/baseline.md).
+#
+# Full suite also runs on macos-latest. Darwin native-code tests skip when
+# the NFN-x86-file-osx fixture is absent — they must not fail CI.
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch: {}
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fast:
+    name: pytest fast (Python 3.14)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install test dependencies
+        # Deliberately not `pip install -e .` or `requirements.txt`: the
+        # package doesn't need to be installed to run its own test suite
+        # (pytest picks it up via rootdir), and requirements.txt pins an
+        # obsolete opencv-python build that doesn't build on current Python
+        # and is only needed for unrelated demos (see AGENTS.md). The same
+        # packages are declared as the "dev" extra in pyproject.toml for
+        # local contributors who do want `pip install -e .[dev]`.
+        run: python -m pip install --upgrade pip && pip install pytest pytest-timeout pytest-rerunfailures pytest-asyncio numpy
+
+      - name: Run fast suite
+        run: >
+          python -m pytest
+          PiCN/Layers
+          PiCN/LayerStack
+          PiCN/Processes
+          PiCN/Packets
+          PiCN/Mgmt
+          --ignore=PiCN/Simulations
+          -v
+          --timeout=90
+          -p no:cacheprovider
+          --reruns 2
+          --reruns-delay 1
+
+  full:
+    name: pytest full (${{ matrix.os }}, Python 3.14)
+    # Full stack on PR / manual dispatch only — not every push (Phase 7).
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install test dependencies
+        run: python -m pip install --upgrade pip && pip install pytest pytest-timeout pytest-rerunfailures pytest-asyncio numpy
+
+      - name: Run full suite
+        run: >
+          python -m pytest PiCN/
+          --ignore=PiCN/Simulations
+          -v
+          --timeout=90
+          -p no:cacheprovider
+          --reruns 2
+          --reruns-delay 1

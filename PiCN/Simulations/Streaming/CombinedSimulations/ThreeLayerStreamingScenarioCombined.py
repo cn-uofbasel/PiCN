@@ -12,7 +12,7 @@ def pathDetection(fileName: str):
     pathList = fileName.split("/")
     path = ""
     for j in range(0, len(pathList) - 1):
-        if j is 0:
+        if j == 0:
             path = path + pathList[j]
         else:
             path = path + "/" + pathList[j]

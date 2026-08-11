@@ -51,3 +51,15 @@ class test_UDP4Interface(unittest.TestCase):
 
         self.assertEqual(data, b"HelloWorld")
         self.assertEqual(addr, ("127.0.0.1", self.interface1.get_port()))
+
+    def test_send_after_close_raises(self):
+        """After close(), send must fail with OSError (no reconnect API)."""
+        self.interface1.close()
+        with self.assertRaises(OSError):
+            self.interface1.send(b"x", ("127.0.0.1", self.interface2.get_port()))
+
+    def test_close_is_idempotent(self):
+        """Closing twice must not raise."""
+        self.interface1.close()
+        self.interface1.close()
+

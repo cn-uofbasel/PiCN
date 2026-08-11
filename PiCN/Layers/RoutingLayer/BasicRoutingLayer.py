@@ -3,14 +3,14 @@ from typing import List, Tuple
 
 import multiprocessing
 import threading
-from datetime import datetime, timedelta
+from datetime import timedelta
 
-from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
-from PiCN.Processes import LayerProcess
-from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase, ForwardingInformationBaseEntry
-from PiCN.Layers.RoutingLayer.RoutingInformationBase import BaseRoutingInformationBase
 from PiCN.Layers.LinkLayer import BasicLinkLayer
-from PiCN.Packets import Name, Content, Interest
+from PiCN.Layers.ICNLayer.ForwardingInformationBase import BaseForwardingInformationBase
+from PiCN.Layers.RoutingLayer.RoutingInformationBase import BaseRoutingInformationBase
+from PiCN.Layers.RoutingLayer.RoutingLayerCore import RoutingLayerCore
+from PiCN.Processes import LayerProcess
+from PiCN.Processes.Outbound import Outbound
 
 
 class BasicRoutingLayer(LayerProcess):
@@ -18,14 +18,40 @@ class BasicRoutingLayer(LayerProcess):
     def __init__(self, linklayer: BasicLinkLayer,
                  peers: List[Tuple[str, int]] = None, log_level: int = 255):
         super().__init__('BasicRoutingLayer', log_level)
-        self._prefix: Name = Name('/routing')
-        self._linklayer: BasicLinkLayer = linklayer
-        self.rib: BaseRoutingInformationBase = None
-        self.fib: BaseForwardingInformationBase = None
-        self._rib_maxage: timedelta = timedelta(seconds=3600)
-        self._peers: List[Tuple[str, int]] = peers if peers is not None else []
+        self._core = RoutingLayerCore(linklayer=linklayer, peers=peers, logger=self.logger)
         self._ageing_interval: float = 5.0
         self._ageing_timer: threading.Timer = None
+
+    @property
+    def rib(self) -> BaseRoutingInformationBase:
+        return self._core.rib
+
+    @rib.setter
+    def rib(self, value: BaseRoutingInformationBase):
+        self._core.rib = value
+
+    @property
+    def fib(self) -> BaseForwardingInformationBase:
+        return self._core.fib
+
+    @fib.setter
+    def fib(self, value: BaseForwardingInformationBase):
+        self._core.fib = value
+
+    def _apply_outbound(self, out: Outbound, to_lower, to_higher) -> None:
+        if out.direction == "lower":
+            to_lower.put(out.item)
+        elif out.direction == "higher":
+            to_higher.put(out.item)
+        elif out.direction == "queue_lower":
+            if self.queue_to_lower is not None:
+                try:
+                    self.queue_to_lower.put(out.item)
+                except AssertionError:
+                    return
+        elif out.direction == "queue_higher":
+            if self.queue_to_higher is not None:
+                self.queue_to_higher.put(out.item)
 
     def start_process(self):
         super().start_process()
@@ -38,57 +64,15 @@ class BasicRoutingLayer(LayerProcess):
             self._ageing_timer = None
 
     def data_from_lower(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
-        self.logger.info(f'Received data from lower: {data}')
-        if len(data) != 2:
-            self.logger.warn('Expects [fid, Packet] from lower')
-            return
-        rcv_fid, packet = data
-        now = datetime.utcnow()
-        if packet.name == self._prefix:
-            if isinstance(packet, Interest):
-                self.logger.info('Received routing interest')
-                output: str = ''
-                for name, fid, dist, timeout in self.rib.entries():
-                    if timeout is None:
-                        output = f'{output}{name}:{dist}:-1\n'
-                    else:
-                        output = f'{output}{name}:{dist}:{int((timeout - now).total_seconds())}\n'
-                content: Content = Content(self._prefix, output.encode('utf-8'))
-                self.queue_to_lower.put([rcv_fid, content])
-            elif isinstance(packet, Content):
-                self.logger.info('Received routing content')
-                rib: BaseRoutingInformationBase = self.rib
-                lines: List[str] = [l for l in packet.content.split('\n') if len(l) > 0]
-                for line in lines:
-                    name, dist, timeout = line.rsplit(':', 2)
-                    if timeout == '-1':
-                        timeout = self._rib_maxage
-                    else:
-                        timeout = timedelta(seconds=int(timeout))
-                    rib.insert(Name(name), rcv_fid, int(dist) + 1, now + min(timeout, self._rib_maxage))
-            return
-        self.queue_to_higher.put(data)
+        for out in self._core.handle_from_lower(data):
+            self._apply_outbound(out, to_lower, to_higher)
 
     def data_from_higher(self, to_lower: multiprocessing.Queue, to_higher: multiprocessing.Queue, data):
-        self.queue_to_lower.put(data)
+        for out in self._core.handle_from_higher(data):
+            self._apply_outbound(out, to_lower, to_higher)
 
     def _ageing(self):
-        if self.rib is not None:
-            self.rib.ageing()
-            self.fib.clear()
-            for entry in self.rib.build_fib():
-                self.fib.add_fib_entry(entry.name, [entry.faceid], static=entry.static)
-        self._send_routing_interest()
+        for out in self._core.ageing_and_solicit():
+            self._apply_outbound(out, self.queue_to_lower, self.queue_to_higher)
         self._ageing_timer = threading.Timer(self._ageing_interval, self._ageing)
         self._ageing_timer.start()
-
-    def _send_routing_interest(self):
-        solicitation: Interest = Interest(self._prefix)
-        for addr in self._peers:
-            addr_info: AddressInfo = AddressInfo(addr, 0)
-            fid = self._linklayer.faceidtable.get_or_create_faceid(addr_info)
-            try:
-                self.queue_to_lower.put([fid, solicitation])
-            except AssertionError:
-                # Queue is closed.
-                return

@@ -3,7 +3,7 @@ import unittest
 import multiprocessing
 import socket
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import queue
 
 from PiCN.Layers.AutoconfigLayer import AutoconfigClientLayer
@@ -74,9 +74,9 @@ class test_AutoconfigClientLayer(unittest.TestCase):
         self.queue_from_higher.put([None, interest])
 
         # Catch all data the autoconfig layer sends downwards for 3 seconds
-        deadline = datetime.utcnow() + timedelta(seconds=waittime)
+        deadline = datetime.now(timezone.utc) + timedelta(seconds=waittime)
         tolower = []
-        while datetime.utcnow() < deadline:
+        while datetime.now(timezone.utc) < deadline:
             try:
                 data = self.queue_to_lower.get(timeout=waittime/10)
                 tolower.append(data)
@@ -104,9 +104,9 @@ class test_AutoconfigClientLayer(unittest.TestCase):
         self.queue_from_higher.put([None, barfoo])
 
         # Catch all data the autoconfig layer sends downwards for 3 seconds
-        deadline = datetime.utcnow() + timedelta(seconds=waittime)
+        deadline = datetime.now(timezone.utc) + timedelta(seconds=waittime)
         tolower = []
-        while datetime.utcnow() < deadline:
+        while datetime.now(timezone.utc) < deadline:
             try:
                 data = self.queue_to_lower.get(timeout=waittime/10)
                 tolower.append(data)
@@ -123,9 +123,9 @@ class test_AutoconfigClientLayer(unittest.TestCase):
         advertisement = Content(Name('/autoconfig/forwarders'), 'udp4://127.13.37.42:1234\nr:/foo\n')
         self.queue_from_lower.put([bcfid, advertisement])
         # Catch all data the autoconfig layer sends downwards for 3 seconds
-        deadline = datetime.utcnow() + timedelta(seconds=waittime)
+        deadline = datetime.now(timezone.utc) + timedelta(seconds=waittime)
         tolower = []
-        while datetime.utcnow() < deadline:
+        while datetime.now(timezone.utc) < deadline:
             try:
                 data = self.queue_to_lower.get(timeout=waittime/10)
                 tolower.append(data)
@@ -147,9 +147,9 @@ class test_AutoconfigClientLayer(unittest.TestCase):
         self.queue_from_higher.put([None, interest])
 
         # Catch all data the autoconfig layer sends downwards for 3 seconds
-        deadline = datetime.utcnow() + timedelta(seconds=waittime)
+        deadline = datetime.now(timezone.utc) + timedelta(seconds=waittime)
         tolower = []
-        while datetime.utcnow() < deadline:
+        while datetime.now(timezone.utc) < deadline:
             try:
                 data = self.queue_to_lower.get(timeout=waittime/10)
                 tolower.append(data)
@@ -171,9 +171,9 @@ class test_AutoconfigClientLayer(unittest.TestCase):
         interest = Interest(Name('/foo/bar'))
         self.queue_from_higher.put([None, interest])
 
-        deadline = datetime.utcnow() + timedelta(seconds=waittime)
+        deadline = datetime.now(timezone.utc) + timedelta(seconds=waittime)
         tolower = []
-        while datetime.utcnow() < deadline:
+        while datetime.now(timezone.utc) < deadline:
             try:
                 data = self.queue_to_lower.get(timeout=waittime/10)
                 tolower.append(data)

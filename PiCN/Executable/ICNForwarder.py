@@ -1,13 +1,14 @@
 """ICN Forwarder executable"""
 
 import argparse
+import asyncio
 import logging
 
 import PiCN.ProgramLibs.ICNForwarder
-from PiCN.Executable.Helpers.ConfigParser import ConfigParser
-from PiCN.Executable.Helpers.ConfigParser.ConfigParser import CouldNotOpenConfigError, CouldNotParseError, MalformedConfigurationError
+from PiCN.Executable.Helpers.async_runtime import run_until_signal
 from PiCN.Logger import Logger
 from PiCN.Layers.PacketEncodingLayer.Encoder import SimpleStringEncoder, NdnTlvEncoder
+from PiCN.ProgramLibs.runtime import Runtime
 
 # default arguments
 default_port = 9000
@@ -18,9 +19,13 @@ def main(args):
     logger = Logger("ICNForwarder", logging.DEBUG) # note: set later according to cli/config arguments
     logger.info("Starting a CCN Forwarder...")
 
-    # Parse Configuration file
+    # Parse Configuration file (pytoml required only when -c/--config is used)
     conf = None
     if args.config != "none":
+        from PiCN.Executable.Helpers.ConfigParser import ConfigParser
+        from PiCN.Executable.Helpers.ConfigParser.ConfigParser import (
+            CouldNotOpenConfigError, CouldNotParseError, MalformedConfigurationError)
+
         try:
             conf = ConfigParser(args.config)
             logger.info("Successfully parsed configuration file.")
@@ -68,14 +73,21 @@ def main(args):
     logger.info("UDP Port:       " + str(args.port))
     logger.info("Log Level:      " + args.logging)
     logger.info("Packet Format:  " + args.format)
+    logger.info("Runtime:        " + args.runtime)
 
     # Packet encoder
     encoder = NdnTlvEncoder(log_level) if args.format == 'ndntlv' else SimpleStringEncoder(log_level)
 
-    # Start
-    forwarder = PiCN.ProgramLibs.ICNForwarder.ICNForwarder(args.port, log_level, encoder, autoconfig=args.autoconfig)
-    forwarder.start_forwarder()
-    forwarder.linklayer.process.join()
+    runtime = Runtime(args.runtime)
+    forwarder = PiCN.ProgramLibs.ICNForwarder.ICNForwarder(
+        args.port, log_level, encoder, autoconfig=args.autoconfig, runtime=runtime)
+
+    if runtime is Runtime.ASYNC:
+        asyncio.run(run_until_signal(
+            forwarder.start_forwarder_async, forwarder.stop_forwarder_async))
+    else:
+        forwarder.start_forwarder()
+        forwarder.linklayer.process.join()
 
 
 if __name__ == "__main__":
@@ -85,5 +97,7 @@ if __name__ == "__main__":
     parser.add_argument('-c', '--config', type=str, default="none", help="Path to configuration file")
     parser.add_argument('-a', '--autoconfig', action='store_true', help='Enable autoconfig server')
     parser.add_argument('-l', '--logging', choices=['debug', 'info', 'warning', 'error', 'none'], type=str, default=None, help=f'Logging Level (default: {default_logging})')
+    parser.add_argument('--runtime', choices=['sync', 'async'], type=str, default='sync',
+                        help='Execution runtime (default: sync)')
     args = parser.parse_args()
     main(args)

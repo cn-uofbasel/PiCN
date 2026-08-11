@@ -3,9 +3,9 @@
 Scenario consists of two NFN nodes and a Client. Goal of the simulation is to add en
 
 Client <--------> NFN0 <-*-----------> NFN1 <-----------> Repo1
-                         \-----------> NFN2 <-----------> Repo2
-                         \-----------> NFN3 <-----------> Repo3
-                         \-----------> NFN4 <-----------> Repo4
+                         \\-----------> NFN2 <-----------> Repo2
+                         \\-----------> NFN3 <-----------> Repo3
+                         \\-----------> NFN4 <-----------> Repo4
 """
 
 import abc

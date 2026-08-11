@@ -3,13 +3,14 @@ import multiprocessing
 import select
 import socket
 
-from typing import List
+from typing import List, Optional
 
 from PiCN.Processes import LayerProcess
 
 from PiCN.Layers.LinkLayer.Interfaces import AddressInfo
 from PiCN.Layers.LinkLayer.Interfaces import BaseInterface
 from PiCN.Layers.LinkLayer.FaceIDTable import BaseFaceIDTable
+from PiCN.Layers.LinkLayer.RunStrategy import LinkLayerRunStrategy, SyncRunStrategy
 
 
 class BasicLinkLayer(LayerProcess):
@@ -17,12 +18,18 @@ class BasicLinkLayer(LayerProcess):
     :param interface: preconfigured interfaces used by the link layer
     :param faceidtable: faceidtable, that maintains the mapping between IDs and Interfaces
     :param log_level: Loglevel used in the Linklayer
+    :param run_strategy: decides what start_process() actually runs. Defaults to
+        SyncRunStrategy, today's behaviour, so existing callers are unaffected.
+        See docs/design-adrs/ADR-008-baseinterface-contract.md's 2026-08-04
+        addendum.
     """
 
-    def __init__(self, interfaces: List[BaseInterface], faceidtable: BaseFaceIDTable, log_level=255):
+    def __init__(self, interfaces: List[BaseInterface], faceidtable: BaseFaceIDTable, log_level=255,
+                 run_strategy: Optional[LinkLayerRunStrategy] = None):
         super().__init__(logger_name="LinkLayer", log_level=log_level)
         self.interfaces = interfaces
         self.faceidtable = faceidtable
+        self._run_strategy = run_strategy if run_strategy is not None else SyncRunStrategy()
 
     def data_from_lower(self, interface: BaseInterface, to_higher: multiprocessing.Queue, data):
         """In the Linklayer, it handles received data, to lower is the network interface
@@ -108,6 +115,11 @@ class BasicLinkLayer(LayerProcess):
         #TODO this is not implemented
         raise NotImplemented()
 
+
+    def start_process(self):
+        """Start the Layer Process. Delegates to self._run_strategy -- see
+        RunStrategy.py and ADR-008's 2026-08-04 addendum."""
+        self._run_strategy.start(self)
 
     def stop_process(self):
         for i in self.interfaces:
